@@ -1,10 +1,10 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClInclude Include="stdafx.h" />
+    <ClCompile Include="src\stdafx.cc" />
+    <ClCompile Include="src\yogi-core-tests.cc" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="stdafx.cc" />
-    <ClCompile Include="yogi-core-tests.cc" />
+    <ClInclude Include="src\stdafx.h" />
   </ItemGroup>
 </Project>

@@ -4,15 +4,15 @@
     <ClInclude Include="..\include\yogi_core.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="stdafx.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="yogi_core.cc" />
-    <ClCompile Include="stdafx.cc" />
+    <ClInclude Include="src\stdafx.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="include">
       <UniqueIdentifier>{a0fba8dc-d79f-4dc3-b8c4-0aa87f84a6b9}</UniqueIdentifier>
     </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\stdafx.cc" />
+    <ClCompile Include="src\yogi_core.cc" />
   </ItemGroup>
 </Project>
