@@ -10,5 +10,5 @@ set_property(TARGET boost PROPERTY
 
 enable_testing()
 add_subdirectory(yogi-core)
-# add_subdirectory(yogi-cpp)
+add_subdirectory(yogi-cpp)
 add_subdirectory(yogi-hub)
