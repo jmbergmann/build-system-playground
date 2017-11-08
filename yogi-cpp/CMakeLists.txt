@@ -1,5 +1,3 @@
-project(yogi-cpp VERSION 0.0.3 LANGUAGES CXX)
-
 add_library(yogi-cpp INTERFACE)
 
 target_link_libraries(yogi-cpp INTERFACE yogi-core)

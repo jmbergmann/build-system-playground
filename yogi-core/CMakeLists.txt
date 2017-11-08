@@ -1,5 +1,3 @@
-project(yogi-core VERSION 0.0.3 LANGUAGES CXX)
-
 add_library(yogi-core-static STATIC
     src/stdafx.cc
     src/errors.cc)

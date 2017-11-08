@@ -1,5 +1,3 @@
-project(yogi-hub VERSION 0.0.3 LANGUAGES CXX)
-
 add_library(yogi-hub-static STATIC
     src/random_stuff.cc)
 
