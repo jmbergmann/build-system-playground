@@ -108,7 +108,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionPath)\yogi-core\include;$(SolutionPath)\yogi-cpp\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../yogi-core/include;../yogi-cpp/include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -122,7 +122,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionPath)\yogi-core\include;$(SolutionPath)\yogi-cpp\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../yogi-core/include;../yogi-cpp/include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -138,7 +138,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionPath)\yogi-core\include;$(SolutionPath)\yogi-cpp\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../yogi-core/include;../yogi-cpp/include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -156,7 +156,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionPath)\yogi-core\include;$(SolutionPath)\yogi-cpp\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../yogi-core/include;../yogi-cpp/include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
