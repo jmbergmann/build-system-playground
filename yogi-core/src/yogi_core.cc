@@ -1,6 +1,7 @@
 #include "stdafx.h"
-#include "../../include/yogi_core.h"
-#include "../../yogi-core-lib/src/errors.h"
+#include "config.h"
+#include "../include/yogi_core.h"
+#include "errors.h"
 
 
 YOGI_API const char* YOGI_GetVersion()
