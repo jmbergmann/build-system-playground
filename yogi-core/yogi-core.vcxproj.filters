@@ -1,15 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClInclude Include="..\include\yogi_core.h">
-      <Filter>include</Filter>
-    </ClInclude>
     <ClInclude Include="src\stdafx.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <Filter Include="include">
-      <UniqueIdentifier>{a0fba8dc-d79f-4dc3-b8c4-0aa87f84a6b9}</UniqueIdentifier>
-    </Filter>
+    <ClInclude Include="include\yogi_core.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\stdafx.cc" />

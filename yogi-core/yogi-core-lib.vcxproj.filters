@@ -3,8 +3,10 @@
   <ItemGroup>
     <ClInclude Include="src\config.h" />
     <ClInclude Include="src\stdafx.h" />
+    <ClInclude Include="src\errors.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\stdafx.cc" />
+    <ClCompile Include="src\errors.cc" />
   </ItemGroup>
 </Project>
