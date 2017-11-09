@@ -17,7 +17,9 @@ export(TARGETS yogi-core-static FILE YogiCoreStaticConfig.cmake)
 export(TARGETS yogi-core FILE YogiCoreConfig.cmake)
 
 add_executable(yogi-core-test
-    test/yogi_core_test.cc)
+    test/main.cc
+    test/errors_test.cc
+    test/version_test.cc)
 
 target_link_libraries(yogi-core-test
     yogi-core-static
