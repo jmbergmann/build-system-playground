@@ -174,7 +174,7 @@
     <ClCompile Include="src\yogi_core.cc" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="yogi-core-lib.vcxproj">
+    <ProjectReference Include="yogi-core-static.vcxproj">
       <Project>{6c8f3a0d-715b-4cfe-b080-0f288f707415}</Project>
     </ProjectReference>
   </ItemGroup>

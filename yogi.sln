@@ -8,7 +8,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "yogi-core", "yogi-core\yogi
 		{6C8F3A0D-715B-4CFE-B080-0F288F707415} = {6C8F3A0D-715B-4CFE-B080-0F288F707415}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "yogi-core-lib", "yogi-core\yogi-core-lib.vcxproj", "{6C8F3A0D-715B-4CFE-B080-0F288F707415}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "yogi-core-static", "yogi-core\yogi-core-static.vcxproj", "{6C8F3A0D-715B-4CFE-B080-0F288F707415}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "yogi-core-tests", "yogi-core\yogi-core-tests.vcxproj", "{33E639FE-F5A7-4FD7-A644-12323FC07BB1}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -24,7 +24,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "yogi-cpp-tests", "yogi-cpp\
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "yogi-cpp", "yogi-cpp\yogi-cpp.vcxproj", "{E0507035-DF2E-409B-B71D-5FD05C2EA63B}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "yogi-hub-lib", "yogi-hub\yogi-hub-lib.vcxproj", "{8404D766-AF07-4D2C-B775-727538BC5E82}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "yogi-hub-static", "yogi-hub\yogi-hub-static.vcxproj", "{8404D766-AF07-4D2C-B775-727538BC5E82}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "yogi-hub", "yogi-hub\yogi-hub.vcxproj", "{6739FABA-B343-4DCE-B6CB-E0E2EF7D6E94}"
 EndProject

@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include <yogi_core.h>
 #include "../src/errors.h"
 
