@@ -1,3 +1,5 @@
 build/
 .vs/
 *.vcxproj.user
+UpgradeLog*.htm
+__pycache__

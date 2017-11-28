@@ -4,13 +4,21 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>65a37e32-d04c-4470-86c9-36328abcc7e3</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>yogi_python.py</StartupFile>
+    <StartupFile>yogi/__init__.py</StartupFile>
     <SearchPath>
     </SearchPath>
-    <WorkingDirectory>.</WorkingDirectory>
+    <WorkingDirectory>../build/Debug</WorkingDirectory>
     <OutputPath>.</OutputPath>
     <Name>yogi-python</Name>
     <RootNamespace>yogi-python</RootNamespace>
+    <IsWindowsApplication>False</IsWindowsApplication>
+    <LaunchProvider>Standard Python launcher</LaunchProvider>
+    <EnableNativeCodeDebugging>False</EnableNativeCodeDebugging>
+    <InterpreterPath>
+    </InterpreterPath>
+    <Environment>
+    </Environment>
+    <InterpreterId>Global|PythonCore|3.6-32</InterpreterId>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <DebugSymbols>true</DebugSymbols>
@@ -21,7 +29,36 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="yogi_python.py" />
+    <Folder Include="yogi\" />
+    <Folder Include="test\" />
+    <Folder Include="test\__pycache__\" />
+    <Folder Include="yogi\private\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="test\__pycache__\test1.cpython-36.pyc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="test\test_free_functions.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="test\__init__.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="yogi\private\library.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="yogi\private\version.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="yogi\private\__init__.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="yogi\__init__.py">
+      <SubType>Code</SubType>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <InterpreterReference Include="Global|PythonCore|3.6-32" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
   <!-- Uncomment the CoreCompile target to enable the Build command in

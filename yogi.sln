@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.27004.2008
+VisualStudioVersion = 15.0.27004.2009
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "yogi-core", "yogi-core\yogi-core.vcxproj", "{B9745F60-F3B9-4B6A-A53D-96DD224B2B45}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -31,8 +31,6 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "yogi-hub-tests", "yogi-hub\yogi-hub-tests.vcxproj", "{997E8D18-5B40-44C5-85C5-6DD9EB495FFB}"
 EndProject
 Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "yogi-python", "yogi-python\yogi-python.pyproj", "{65A37E32-D04C-4470-86C9-36328ABCC7E3}"
-EndProject
-Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "yogi-python-tests", "yogi-python\yogi-python-tests.pyproj", "{2AAB2832-0397-411B-AA07-A4EC5D969D04}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -130,12 +128,6 @@ Global
 		{65A37E32-D04C-4470-86C9-36328ABCC7E3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{65A37E32-D04C-4470-86C9-36328ABCC7E3}.Release|x64.ActiveCfg = Release|Any CPU
 		{65A37E32-D04C-4470-86C9-36328ABCC7E3}.Release|x86.ActiveCfg = Release|Any CPU
-		{2AAB2832-0397-411B-AA07-A4EC5D969D04}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{2AAB2832-0397-411B-AA07-A4EC5D969D04}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{2AAB2832-0397-411B-AA07-A4EC5D969D04}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{2AAB2832-0397-411B-AA07-A4EC5D969D04}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{2AAB2832-0397-411B-AA07-A4EC5D969D04}.Release|x64.ActiveCfg = Release|Any CPU
-		{2AAB2832-0397-411B-AA07-A4EC5D969D04}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
