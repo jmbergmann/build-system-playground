@@ -1,5 +1,9 @@
 build/
 .vs/
-*.vcxproj.user
 UpgradeLog*.htm
 __pycache__
+*.suo
+*.user
+**/obj/*
+packages/
+TestResults/
