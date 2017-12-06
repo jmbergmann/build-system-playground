@@ -15,4 +15,6 @@ target_link_libraries(yogi-cpp-test
     yogi-cpp
     ${GTEST_BOTH_LIBRARIES})
 
+cotire(yogi-cpp-test)
+
 add_test(yogi-cpp-test yogi-cpp-test)

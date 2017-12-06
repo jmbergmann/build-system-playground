@@ -1,5 +1,4 @@
-#include "stdafx.h"
-
+#include <gtest/gtest.h>
 #include <yogi_core.h>
 #include "../src/errors.h"
 
