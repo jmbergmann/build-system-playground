@@ -26,7 +26,8 @@ add_executable(yogi-core-test
 target_link_libraries(yogi-core-test
     yogi-core-static
     yogi-core
-    ${GTEST_BOTH_LIBRARIES})
+    ${GTEST_BOTH_LIBRARIES}
+    Threads::Threads)
 
 cotire(yogi-core-test)
 

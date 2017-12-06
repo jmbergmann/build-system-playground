@@ -16,7 +16,8 @@ add_executable(yogi-hub-test
 
 target_link_libraries(yogi-hub-test
     yogi-cpp
-    ${GTEST_BOTH_LIBRARIES})
+    ${GTEST_BOTH_LIBRARIES}
+    Threads::Threads)
 
 cotire(yogi-hub-test)
 

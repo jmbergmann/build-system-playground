@@ -13,7 +13,8 @@ add_executable(yogi-cpp-test
 
 target_link_libraries(yogi-cpp-test
     yogi-cpp
-    ${GTEST_BOTH_LIBRARIES})
+    ${GTEST_BOTH_LIBRARIES}
+    Threads::Threads)
 
 cotire(yogi-cpp-test)
 
