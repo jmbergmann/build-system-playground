@@ -17,12 +17,12 @@ export(TARGETS yogi-core-static FILE YogiCoreStaticConfig.cmake)
 export(TARGETS yogi-core FILE YogiCoreConfig.cmake)
 
 add_executable(yogi-core-test
-    test/main.cc
     test/errors_test.cc
     test/version_test.cc)
 
 target_link_libraries(yogi-core-test
     yogi-core-static
-    yogi-core)
+    yogi-core
+    ${GTEST_BOTH_LIBRARIES})
 
 add_test(yogi-core-test yogi-core-test)

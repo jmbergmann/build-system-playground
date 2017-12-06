@@ -1,9 +1,3 @@
 build/
 .vs/
-UpgradeLog*.htm
 __pycache__
-*.suo
-*.user
-**/obj/*
-packages/
-TestResults/

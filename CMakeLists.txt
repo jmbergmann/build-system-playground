@@ -9,6 +9,9 @@ set_property(TARGET boost PROPERTY
     INTERFACE_INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIR})
 
 enable_testing()
+find_package(GTest REQUIRED)
+include_directories(${GTEST_INCLUDE_DIRS})
+
 add_subdirectory(yogi-core)
 add_subdirectory(yogi-cpp)
 add_subdirectory(yogi-hub)

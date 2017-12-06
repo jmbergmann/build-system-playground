@@ -12,6 +12,7 @@ add_executable(yogi-cpp-test
     test/yogi_cpp_test.cc)
 
 target_link_libraries(yogi-cpp-test
-    yogi-cpp)
+    yogi-cpp
+    ${GTEST_BOTH_LIBRARIES})
 
 add_test(yogi-cpp-test yogi-cpp-test)
