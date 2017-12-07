@@ -9,7 +9,6 @@ module.exports = {
     yogi: [namespaceFile].concat(glob.sync('./src/*.js').filter(x => x !== namespaceFile))
   },
   output: {
-    path: path.resolve(__dirname, 'build/'),
     filename: '[name].js'
   },
   module: {

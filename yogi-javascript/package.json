@@ -3,6 +3,7 @@
   "name": "yogi-javascript",
   "description": "Javascript bindings for Yogi",
   "scripts": {
+    "build": "webpack",
     "test": "karma start --single-run"
   },
   "license": "GPL-3.0",
