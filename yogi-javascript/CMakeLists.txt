@@ -30,6 +30,7 @@ add_custom_target(yogi-javascript
   DEPENDS ${bundle_files}
 )
 
+#===== Tests =====
 add_test(
   NAME yogi-javascript
   COMMAND npm test

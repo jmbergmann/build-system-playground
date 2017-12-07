@@ -1,8 +1,10 @@
+#===== Static library =====
 add_library(yogi-hub-static STATIC
     src/random_stuff.cc)
 
 cotire(yogi-hub-static)
 
+#===== Executable =====
 add_executable(yogi-hub
     src/main.cc)
 
@@ -11,6 +13,7 @@ target_link_libraries(yogi-hub
 
 cotire(yogi-hub)
 
+#===== Tests =====
 add_executable(yogi-hub-test
     test/yogi_hub_test.cc)
 

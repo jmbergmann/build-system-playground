@@ -1,8 +1,12 @@
+#===== Static library =====
 add_library(yogi-core-static STATIC
     src/errors.cc)
 
 cotire(yogi-core-static)
 
+export(TARGETS yogi-core-static FILE YogiCoreStaticConfig.cmake)
+
+#===== Dynamic library =====
 add_library(yogi-core SHARED
     src/yogi_core.cc)
 
@@ -16,9 +20,9 @@ target_include_directories(yogi-core PUBLIC
     $<INSTALL_INTERFACE:include>
     PRIVATE src)
 
-export(TARGETS yogi-core-static FILE YogiCoreStaticConfig.cmake)
 export(TARGETS yogi-core FILE YogiCoreConfig.cmake)
 
+#===== Tests =====
 add_executable(yogi-core-test
     test/errors_test.cc
     test/version_test.cc)

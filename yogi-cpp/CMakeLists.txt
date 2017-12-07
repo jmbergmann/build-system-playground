@@ -1,3 +1,4 @@
+#===== Static library =====
 add_library(yogi-cpp INTERFACE)
 
 target_link_libraries(yogi-cpp INTERFACE yogi-core)
@@ -8,6 +9,7 @@ target_include_directories(yogi-cpp INTERFACE
 
 export(TARGETS yogi-cpp FILE YogiCppConfig.cmake)
 
+#===== Tests =====
 add_executable(yogi-cpp-test
     test/yogi_cpp_test.cc)
 
