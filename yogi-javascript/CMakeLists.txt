@@ -5,8 +5,7 @@ set(npm_ok_file
 
 add_custom_command(
   OUTPUT ${npm_ok_file}
-  COMMAND npm install
-  COMMAND echo > ${CMAKE_CURRENT_BINARY_DIR}/${npm_ok_file}
+  COMMAND npm install && echo > ${CMAKE_CURRENT_BINARY_DIR}/${npm_ok_file}
   WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
 )
 
@@ -33,6 +32,6 @@ add_custom_target(yogi-javascript
 #===== Tests =====
 add_test(
   NAME yogi-javascript
-  COMMAND npm test
+  COMMAND npm run build
   WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
 )
