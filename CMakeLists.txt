@@ -14,14 +14,17 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake")
 include(cotire)
 include(GNUInstallDirs)
 
-# Find required packages
+# Boost
 find_package(Boost REQUIRED)
 add_library(boost INTERFACE IMPORTED)
 set_property(TARGET boost PROPERTY
   INTERFACE_INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIR})
-
 find_package(Threads REQUIRED)
 
+# Python
+find_package(PythonInterp 3.6 REQUIRED)
+
+# Testing
 enable_testing()
 find_package(GTest REQUIRED)
 include_directories(${GTEST_INCLUDE_DIRS})
