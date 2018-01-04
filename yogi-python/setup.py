@@ -20,7 +20,7 @@ config = {
     'license'         : 'GPLv3',
     'keywords'        : 'yogi decoupling networking',
     'test_suite'      : 'test',
-    'python_requires' : '>=3.6',
+    'python_requires' : '>=3.5',
     'classifiers'     : [
         'Development Status :: 3 - Alpha',
         'License :: OSI Approved :: GPLv3',

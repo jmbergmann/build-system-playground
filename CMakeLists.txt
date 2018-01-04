@@ -21,8 +21,11 @@ set_property(TARGET boost PROPERTY
   INTERFACE_INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIR})
 find_package(Threads REQUIRED)
 
-# Python
-find_package(PythonInterp 3.6 REQUIRED)
+# Read required Python version from setup.py
+file(STRINGS "${CMAKE_SOURCE_DIR}/yogi-python/setup.py" python_version
+  REGEX "'python_requires'.*$")
+string(REGEX MATCH "[0-9]+\\.[0-9]+" python_version ${python_version})
+find_package(PythonInterp ${python_version} REQUIRED)
 
 # Testing
 enable_testing()
