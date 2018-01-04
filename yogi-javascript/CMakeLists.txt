@@ -32,6 +32,6 @@ add_custom_target(yogi-javascript
 #===== Tests =====
 add_test(
   NAME yogi-javascript
-  COMMAND npm run build
+  COMMAND npm test
   WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
 )
