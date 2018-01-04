@@ -25,8 +25,7 @@ config = {
         'Development Status :: 3 - Alpha',
         'License :: OSI Approved :: GPLv3',
         'Intended Audience :: Developers',
-        'Topic :: Software Development :: Libraries',
-        'Programming Language :: Python :: 3.6'
+        'Topic :: Software Development :: Libraries'
     ]
 }
 
