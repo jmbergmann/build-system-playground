@@ -1,11 +1,10 @@
 #ifndef YOGI_CORE_H
 #define YOGI_CORE_H
 
-#define YOGI_VERSION "0.0.3-alpha"
+#define YOGI_VERSION "0.0.3"
 #define YOGI_VERSION_MAJOR 0
 #define YOGI_VERSION_MINOR 0
 #define YOGI_VERSION_PATCH 3
-#define YOGI_VERSION_SUFFIX "alpha"
 
 #ifndef YOGI_API
 # ifdef _MSC_VER
