@@ -6,6 +6,7 @@ build/
 .vscode/
 .idea/
 *.userprefs
+*.user
 
 # NodeJS
 node_modules/
