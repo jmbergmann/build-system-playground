@@ -1,7 +1,20 @@
+# General
 build/
+
+# IDEs
 .vs/
 .vscode/
 .idea/
-__pycache__/
+*.userprefs
+
+# NodeJS
 node_modules/
+
+# Python
+__pycache__/
 *.egg-info/
+
+# .NET
+yogi-dotnet/**/bin/
+yogi-dotnet/**/obj/
+yogi-dotnet/**/packages/

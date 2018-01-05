@@ -2,7 +2,7 @@ import os
 import platform
 from ctypes import *
 
-# Load the shared library
+# Determine shared library path and filename
 lib_filename = os.getenv('YOGI_CORE_LIBRARY')
 if lib_filename is None:
     if platform.system() == 'Windows':
@@ -12,6 +12,7 @@ if lib_filename is None:
     else:
         raise Exception(platform.system() + ' is not supported')
 
+# Load the shared library
 try:
     yogi = cdll.LoadLibrary(lib_filename)
 except Exception as e:
