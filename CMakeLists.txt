@@ -1,40 +1,40 @@
-cmake_minimum_required(VERSION 3.2 FATAL_ERROR)
+cmake_minimum_required (VERSION 3.2 FATAL_ERROR)
 
 # Read version number from yogi_core.h
-file(STRINGS "${CMAKE_SOURCE_DIR}/yogi-core/include/yogi_core.h" core_version
+file (STRINGS "${CMAKE_SOURCE_DIR}/yogi-core/include/yogi_core.h" core_version
   REGEX "#define YOGI_VERSION +\".*$")
-string(REGEX MATCH "[0-9]+\\.[0-9]+\\.[0-9]+" core_version ${core_version})
+string (REGEX MATCH "[0-9]+\\.[0-9]+\\.[0-9]+" core_version ${core_version})
 
-message("Yogi version: ${core_version}")
-project(yogi VERSION ${core_version} LANGUAGES CXX)
+message ("Yogi version: ${core_version}")
+project (yogi VERSION ${core_version} LANGUAGES CXX)
 
 # Include CMake modules
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake")
+set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake")
 
-include(cotire)
-include(GNUInstallDirs)
+include (cotire)
+include (GNUInstallDirs)
 
 # Boost
-find_package(Boost REQUIRED)
-add_library(boost INTERFACE IMPORTED)
-set_property(TARGET boost PROPERTY
-  INTERFACE_INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIR})
-find_package(Threads REQUIRED)
+find_package (Boost REQUIRED)
+add_library (boost INTERFACE IMPORTED)
+set_property (TARGET boost
+  PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIR})
+find_package (Threads REQUIRED)
 
 # Read required Python version from setup.py
-file(STRINGS "${CMAKE_SOURCE_DIR}/yogi-python/setup.py" python_version
+file (STRINGS "${CMAKE_SOURCE_DIR}/yogi-python/setup.py" python_version
   REGEX "'python_requires'.*$")
-string(REGEX MATCH "[0-9]+\\.[0-9]+" python_version ${python_version})
-find_package(PythonInterp ${python_version} REQUIRED)
+string (REGEX MATCH "[0-9]+\\.[0-9]+" python_version ${python_version})
+find_package (PythonInterp ${python_version} REQUIRED)
 
 # Testing
-enable_testing()
-find_package(GTest REQUIRED)
-include_directories(${GTEST_INCLUDE_DIRS})
+enable_testing ()
+find_package (GTest REQUIRED)
+include_directories (${GTEST_INCLUDE_DIRS})
 
 # Include sub-projects
-add_subdirectory(yogi-core)
-add_subdirectory(yogi-cpp)
-add_subdirectory(yogi-hub)
-add_subdirectory(yogi-python)
-add_subdirectory(yogi-javascript)
+add_subdirectory (yogi-core)
+add_subdirectory (yogi-cpp)
+add_subdirectory (yogi-hub)
+add_subdirectory (yogi-python)
+add_subdirectory (yogi-javascript)

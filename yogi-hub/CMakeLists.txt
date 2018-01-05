@@ -1,27 +1,32 @@
-#===== Static library =====
-add_library(yogi-hub-static STATIC
-    src/random_stuff.cc)
+# Static library
+add_library (yogi-hub-static STATIC
+  src/random_stuff.cc
+)
 
-cotire(yogi-hub-static)
+cotire (yogi-hub-static)
 
-#===== Executable =====
-add_executable(yogi-hub
-    src/main.cc)
+# Executable
+add_executable (yogi-hub
+  src/main.cc
+)
 
-target_link_libraries(yogi-hub
-    yogi-cpp)
+target_link_libraries (yogi-hub
+  yogi-cpp
+)
 
-cotire(yogi-hub)
+cotire (yogi-hub)
 
-#===== Tests =====
-add_executable(yogi-hub-test
-    test/yogi_hub_test.cc)
+# Tests
+add_executable (yogi-hub-test
+  test/yogi_hub_test.cc
+)
 
-target_link_libraries(yogi-hub-test
-    yogi-cpp
-    ${GTEST_BOTH_LIBRARIES}
-    Threads::Threads)
+target_link_libraries (yogi-hub-test
+  yogi-cpp
+  ${GTEST_BOTH_LIBRARIES}
+  Threads::Threads
+)
 
-cotire(yogi-hub-test)
+cotire (yogi-hub-test)
 
-add_test(yogi-hub-test yogi-hub-test)
+add_test (yogi-hub-test yogi-hub-test)
