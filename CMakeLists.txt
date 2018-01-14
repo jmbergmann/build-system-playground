@@ -5,7 +5,7 @@ file (STRINGS "${CMAKE_SOURCE_DIR}/yogi-core/include/yogi_core.h" core_version
   REGEX "#define YOGI_VERSION +\".*$")
 string (REGEX MATCH "[0-9]+\\.[0-9]+\\.[0-9]+" core_version ${core_version})
 
-message ("-- Yogi version: ${core_version}")
+message (STATUS "Yogi version: ${core_version}")
 project (yogi VERSION ${core_version} LANGUAGES CXX)
 
 # Include CMake modules
