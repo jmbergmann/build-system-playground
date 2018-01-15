@@ -28,8 +28,23 @@ add_custom_target (yogi-javascript
 )
 
 # Tests
-add_test (
-  NAME yogi-javascript
-  COMMAND npm test
-  WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
-)
+if (WIN32)
+  set (run_npm_test_script ${CMAKE_CURRENT_BINARY_DIR}/run-npm-test.bat)
+
+  file (
+    WRITE ${run_npm_test_script}
+    "npm test"
+  )
+
+  add_test (
+    NAME yogi-javascript
+    COMMAND ${run_npm_test_script}
+    WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
+  )
+else ()
+  add_test (
+    NAME yogi-javascript
+    COMMAND npm test
+    WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
+  )
+endif ()
