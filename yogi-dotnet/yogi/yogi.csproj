@@ -1,15 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard1.6</TargetFramework>
-    <RootNamespace>Yogi</RootNamespace>
-    <ReleaseVersion>0.0.0</ReleaseVersion>
-    <Authors>Johannes Bergmann</Authors>
-    <Owners>Johannes Bergmann</Owners>
-    <Title>Yogi</Title>
-  </PropertyGroup>
-
-  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
   </PropertyGroup>
 
