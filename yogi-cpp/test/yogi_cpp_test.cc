@@ -1,5 +1,6 @@
 #include <gtest/gtest.h>
 #include <yogi.h>
 
-TEST(Foo, Bar) {
+TEST(VersionTest, GetVersion) {
+  EXPECT_STREQ(YOGI_VERSION, YOGI_GetVersion());
 }
