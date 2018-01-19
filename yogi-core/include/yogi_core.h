@@ -24,7 +24,7 @@ YOGI_API const char* YOGI_GetErrorString(int err);
 
 YOGI_API int YOGI_CreateContext(void** context, int flags);
 
-YOGI_API int YGOGI_Destroy(void* object);
+YOGI_API int YOGI_Destroy(void* object);
 
 // advertise locally and via UDP IPv6 multicast
 // advport parameter is the UDP port that is used for advertising
