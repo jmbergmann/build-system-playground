@@ -1,3 +1,10 @@
+# Build library and test assemblies
+add_custom_target (yogi-dotnet
+  ALL
+  COMMAND dotnet build
+  WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
+)
+
 # Tests
 add_test (
   NAME yogi-dotnet

@@ -31,6 +31,7 @@ find_package (PythonInterp ${python_version} REQUIRED)
 enable_testing ()
 find_package (GTest REQUIRED)
 include_directories (${GTEST_INCLUDE_DIRS})
+add_definitions (-D_SILENCE_TR1_NAMESPACE_DEPRECATION_WARNING)
 
 # Include sub-projects
 add_subdirectory (yogi-core)
