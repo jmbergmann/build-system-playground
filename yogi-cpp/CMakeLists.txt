@@ -14,7 +14,7 @@ export (TARGETS yogi-cpp FILE YogiCppConfig.cmake)
 
 # Tests
 add_executable (yogi-cpp-test
-  test/yogi_cpp_test.cc
+  test/library_test.cc
 )
 
 target_link_libraries (yogi-cpp-test

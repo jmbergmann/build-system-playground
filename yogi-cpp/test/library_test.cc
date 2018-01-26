@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 #include <yogi.h>
 
-TEST(VersionTest, GetVersion) {
+TEST(LibraryTest, GetVersion) {
   EXPECT_EQ(yogi::GetVersion(), YOGI_GetVersion());
 }
