@@ -3,6 +3,7 @@ add_library (yogi-cpp INTERFACE)
 
 target_link_libraries (yogi-cpp INTERFACE
   yogi-core-header
+  ${CMAKE_DL_LIBS}
 )
 
 target_include_directories (yogi-cpp INTERFACE
