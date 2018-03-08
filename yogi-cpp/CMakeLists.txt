@@ -2,7 +2,7 @@
 add_library (yogi-cpp INTERFACE)
 
 target_link_libraries (yogi-cpp INTERFACE
-  yogi-core
+  yogi-core-header
 )
 
 target_include_directories (yogi-cpp INTERFACE
@@ -10,7 +10,9 @@ target_include_directories (yogi-cpp INTERFACE
   $<INSTALL_INTERFACE:include>
 )
 
-export (TARGETS yogi-cpp FILE YogiCppConfig.cmake)
+export (TARGETS yogi-cpp
+  FILE YogiCppConfig.cmake
+)
 
 # Tests
 add_executable (yogi-cpp-test
@@ -25,4 +27,11 @@ target_link_libraries (yogi-cpp-test
 
 cotire (yogi-cpp-test)
 
-add_test (yogi-cpp-test yogi-cpp-test)
+add_test (
+  NAME yogi-cpp-test
+  COMMAND yogi-cpp-test
+)
+
+set_property (TEST yogi-cpp-test PROPERTY
+  ENVIRONMENT "YOGI_CORE_LIBRARY=$<TARGET_FILE:yogi-core>"
+)

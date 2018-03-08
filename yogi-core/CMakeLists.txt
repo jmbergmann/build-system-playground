@@ -5,7 +5,9 @@ add_library (yogi-core-static STATIC
 
 cotire (yogi-core-static)
 
-export (TARGETS yogi-core-static FILE YogiCoreStaticConfig.cmake)
+export (TARGETS yogi-core-static
+  FILE YogiCoreStaticConfig.cmake
+)
 
 # Dynamic library
 add_library (yogi-core SHARED
@@ -24,7 +26,20 @@ target_include_directories (yogi-core PUBLIC
   PRIVATE src
 )
 
-export (TARGETS yogi-core FILE YogiCoreConfig.cmake)
+export (TARGETS yogi-core
+  FILE YogiCoreConfig.cmake
+)
+
+# Core header only
+add_library (yogi-core-header INTERFACE)
+
+target_include_directories (yogi-core-header INTERFACE
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+)
+
+export (TARGETS yogi-core-header
+  FILE YogiCoreHeaderConfig.cmake
+)
 
 # Tests
 add_executable (yogi-core-test

@@ -2,5 +2,5 @@
 #include <yogi.h>
 
 TEST(VersionTest, GetVersion) {
-  EXPECT_EQ(yogi::GetVersion(), YOGI_GetVersion());
+  EXPECT_EQ(yogi::GetVersion(), YOGI_VERSION);
 }

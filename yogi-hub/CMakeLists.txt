@@ -29,4 +29,11 @@ target_link_libraries (yogi-hub-test
 
 cotire (yogi-hub-test)
 
-add_test (yogi-hub-test yogi-hub-test)
+add_test (
+  NAME yogi-hub-test
+  COMMAND yogi-hub-test
+)
+
+set_property (TEST yogi-hub-test PROPERTY
+  ENVIRONMENT "YOGI_CORE_LIBRARY=$<TARGET_FILE:yogi-core>"
+)
