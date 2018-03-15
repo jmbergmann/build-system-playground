@@ -1,3 +1,3 @@
 #pragma once
 
-const char* getErrorString(int err);
+const char* GetErrorString(int err);

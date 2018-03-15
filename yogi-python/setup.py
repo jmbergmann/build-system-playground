@@ -5,7 +5,7 @@ import setuptools
 
 core_header_file = os.path.realpath(os.path.dirname(__file__) + '/../yogi-core/include/yogi_core.h')
 for _, line in enumerate(open(core_header_file)):
-    if line.startswith('#define YOGI_VERSION '):
+    if line.startswith('#define YOGI_HDR_VERSION '):
         version = re.search('"(.*)"', line).group(1)
 
 config = {

@@ -1,6 +1,5 @@
 #include "errors.h"
 
-const char* getErrorString(int err)
-{
-    return "Hello World";
+const char* GetErrorString(int err) {
+  return "Hello World";
 }

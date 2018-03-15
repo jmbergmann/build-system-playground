@@ -4,10 +4,10 @@
 
 YOGI_API const char* YOGI_GetVersion()
 {
-  return YOGI_VERSION;
+  return YOGI_HDR_VERSION;
 }
 
 YOGI_API const char* YOGI_GetErrorString(int err)
 {
-  return getErrorString(err);
+  return GetErrorString(err);
 }

@@ -2,7 +2,7 @@ cmake_minimum_required (VERSION 3.2 FATAL_ERROR)
 
 # Read version number from yogi_core.h
 file (STRINGS "${CMAKE_SOURCE_DIR}/yogi-core/include/yogi_core.h" core_version
-  REGEX "#define YOGI_VERSION +\".*$")
+  REGEX "#define YOGI_HDR_VERSION +\".*$")
 string (REGEX MATCH "[0-9]+\\.[0-9]+\\.[0-9]+" core_version ${core_version})
 
 message (STATUS "Yogi version: ${core_version}")
