@@ -1,5 +1,4 @@
 #include "errors.h"
-#include "../include/yogi_core.h"
 
 namespace errors {
 

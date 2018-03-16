@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../include/yogi_core.h"
+#include "config.h"
 
 namespace constants {
 

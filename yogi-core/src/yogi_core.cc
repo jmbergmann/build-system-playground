@@ -16,6 +16,9 @@
 }
 
 #define CATCH_AND_RETURN                       \
+  catch (const errors::Error& err) {           \
+    return err.error_code();                   \
+  }                                            \
   catch (const std::bad_alloc&) {              \
     return YOGI_ERR_BAD_ALLOC;                 \
   }                                            \

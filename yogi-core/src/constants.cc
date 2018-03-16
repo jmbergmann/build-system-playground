@@ -1,6 +1,5 @@
 #include "constants.h"
 #include "errors.h"
-#include "../include/yogi_core.h"
 
 namespace constants {
 
