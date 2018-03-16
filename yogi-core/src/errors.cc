@@ -1,19 +1,21 @@
 #include "errors.h"
 #include "../include/yogi_core.h"
 
-const char* GetErrorString(int err) {
-  if (err >= 0) {
+namespace errors {
+
+const char* Error::what() const throw() {
+  if (err_ >= 0) {
     return "Success";
   }
 
-  switch (err) {
+  switch (err_) {
     case YOGI_ERR_UNKNOWN:
       return "Unknown internal error";
 
     case YOGI_ERR_OBJECT_STILL_USED:
       return "Object is still being used by another object";
 
-    case YOGI_ERR_BAD_ALLOCATION:
+    case YOGI_ERR_BAD_ALLOC:
       return "Memory allocation failed";
 
     case YOGI_ERR_INVALID_PARAM:
@@ -28,3 +30,5 @@ const char* GetErrorString(int err) {
 
   return "Invalid error code";
 }
+
+} // namespace errors

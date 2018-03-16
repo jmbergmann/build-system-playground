@@ -30,13 +30,13 @@
 #define YOGI_CONST_VERSION_NUMBER 1
 
 //! Major version number of the library (integer)
-#define YOGI_CONST_MAJOR_VERSION 2
+#define YOGI_CONST_VERSION_MAJOR 2
 
 //! Major version number of the library (integer)
-#define YOGI_CONST_MINOR_VERSION 3
+#define YOGI_CONST_VERSION_MINOR 3
 
 //! Major version number of the library (integer)
-#define YOGI_CONST_PATCH_VERSION 4
+#define YOGI_CONST_VERSION_PATCH 4
 
 //! Default port to use for advertising via UDP IPv6 multicasts (integer)
 #define YOGI_CONST_DEFAULT_ADV_PORT 5
@@ -63,7 +63,7 @@
 #define YOGI_ERR_OBJECT_STILL_USED -2
 
 //! Insufficient memory to complete the operation
-#define YOGI_ERR_BAD_ALLOCATION -3
+#define YOGI_ERR_BAD_ALLOC -3
 
 //! Invalid parameter
 #define YOGI_ERR_INVALID_PARAM -4
@@ -130,12 +130,13 @@ YOGI_API const char* YOGI_GetErrorString(int err);
  * a char* string and its target will be set to the address of the string
  * constant.
  *
- * \param[out] dest Pointer to where the value will be written to
+ * \param[out] dest     Pointer to where the value will be written to
+ * \param[in]  constant The constant to retrieve (see \ref CV)
  *
  * \returns [=0] #YOGI_OK if successful
  * \returns [<0] An error code in case of a failure (see \ref EC)
  ******************************************************************************/
-YOGI_API int YOGI_GetConstant(void* dest);
+YOGI_API int YOGI_GetConstant(void* dest, int constant);
 
 /***************************************************************************//**
  * Creates a context for the execution of asynchronous operations.
