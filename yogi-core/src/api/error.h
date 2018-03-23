@@ -1,10 +1,10 @@
 #pragma once
 
-#include "config.h"
+#include "../config.h"
 
 #include <stdexcept>
 
-namespace errors {
+namespace api {
 
 class Error : public std::exception {
 public:
@@ -22,4 +22,4 @@ private:
   const int err_;
 };
 
-} // namespace errors
+} // namespace api

@@ -1,9 +1,16 @@
 #include <gtest/gtest.h>
-#include "../src/constants.h"
+#include "../src/api/constants.h"
 
-template <typename T>
-void check_constant(int constant, T value) {
+void check_constant(int constant, int value) {
+  int x;
+  YOGI_GetConstant(&x, constant);
+  EXPECT_EQ(x, value) << "Constant (int): ";
+}
 
+void check_constant(int constant, const char* value) {
+  const char* x;
+  YOGI_GetConstant(&x, constant);
+  EXPECT_STREQ(x, value) << "Constant (string): ";
 }
 
 TEST(ConstantsTest, GetConstant) {
@@ -18,7 +25,7 @@ TEST(ConstantsTest, GetConstant) {
 }
 
 TEST(ConstantsTest, GetEachConstant) {
-  using namespace constants;
+  using namespace api;
 
   check_constant(YOGI_CONST_VERSION_NUMBER,       kVersionNumber);
   check_constant(YOGI_CONST_VERSION_MAJOR,        kVersionMajor);

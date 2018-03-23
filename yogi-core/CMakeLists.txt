@@ -1,7 +1,7 @@
 # Static library
 add_library (yogi-core-static STATIC
-  src/constants.cc
-  src/errors.cc
+  src/api/constants.cc
+  src/api/error.cc
 )
 
 cotire (yogi-core-static)

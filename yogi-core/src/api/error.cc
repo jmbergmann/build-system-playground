@@ -1,6 +1,6 @@
-#include "errors.h"
+#include "error.h"
 
-namespace errors {
+namespace api {
 
 const char* Error::what() const throw() {
   if (err_ >= 0) {
@@ -30,4 +30,4 @@ const char* Error::what() const throw() {
   return "Invalid error code";
 }
 
-} // namespace errors
+} // namespace api

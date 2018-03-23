@@ -1,7 +1,7 @@
 #include "config.h"
 #include "../include/yogi_core.h"
-#include "constants.h"
-#include "errors.h"
+#include "api/constants.h"
+#include "api/error.h"
 
 #include <stdexcept>
 
@@ -16,7 +16,7 @@
 }
 
 #define CATCH_AND_RETURN                       \
-  catch (const errors::Error& err) {           \
+  catch (const api::Error& err) {              \
     return err.error_code();                   \
   }                                            \
   catch (const std::bad_alloc&) {              \
@@ -28,18 +28,27 @@
   return YOGI_OK;
 
 YOGI_API const char* YOGI_GetVersion() {
-  return constants::kVersionNumber;
+  return api::kVersionNumber;
 }
 
 YOGI_API const char* YOGI_GetErrorString(int err) {
-  return errors::Error(err).what();
+  return api::Error(err).what();
 }
 
 YOGI_API int YOGI_GetConstant(void* dest, int constant) {
   CHECK_PARAM(dest != nullptr);
 
   try {
-    constants::GetConstant(dest, constant);
+    api::GetConstant(dest, constant);
+  }
+  CATCH_AND_RETURN;
+}
+
+YOGI_API int YOGI_CreateContext(void** context) {
+  CHECK_PARAM(context != nullptr);
+
+  try {
+    // TODO
   }
   CATCH_AND_RETURN;
 }

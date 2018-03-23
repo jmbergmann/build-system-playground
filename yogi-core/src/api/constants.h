@@ -1,8 +1,8 @@
 #pragma once
 
-#include "config.h"
+#include "../config.h"
 
-namespace constants {
+namespace api {
 
 static constexpr const char* kVersionNumber      = YOGI_HDR_VERSION;
 static constexpr const int   kVersionMajor       = YOGI_HDR_VERSION_MAJOR;
@@ -13,4 +13,4 @@ static constexpr const int   kDefaultAdvInterval = 1000;
 
 void GetConstant(void* dest, int constant);
 
-} // namespace constants
+} // namespace api

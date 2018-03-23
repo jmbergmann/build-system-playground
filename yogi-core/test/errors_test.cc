@@ -1,6 +1,5 @@
 #include <gtest/gtest.h>
 #include <yogi_core.h>
-#include "../src/errors.h"
 
 static constexpr int kLastError = YOGI_ERR_CANCELED;
 

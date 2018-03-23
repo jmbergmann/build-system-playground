@@ -167,6 +167,7 @@ YOGI_API int YOGI_Destroy(void* object);
  * \param[out] branch  Pointer to the branch handle
  * \param[in]  context The context to use
  * \param[in]  netname Name of network to join
+ * \param[in]  advaddr Advertising address (NULL means all available addresses)
  * \param[in]  advport Advertising port (set to 0 for default)
  * \param[in]  advint  Advertising interval (set to 0 for default)
  *
@@ -174,7 +175,8 @@ YOGI_API int YOGI_Destroy(void* object);
  * \returns [<0] An error code in case of a failure (see \ref EC)
  ******************************************************************************/
 YOGI_API int YOGI_CreateBranch(void** branch, void* context,
-                               const char* netname, int advport, int advint);
+                               const char* netname, const char* advaddr,
+                               int advport, int advint);
 
 //! @}
 
