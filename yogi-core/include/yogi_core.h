@@ -38,11 +38,14 @@
 //! Major version number of the library (integer)
 #define YOGI_CONST_VERSION_PATCH 4
 
+//! Default addresses/interfaces to use for connections and advertising (string)
+#define YOGI_CONST_DEFAULT_INTERFACE 5
+
 //! Default port to use for advertising via UDP IPv6 multicasts (integer)
-#define YOGI_CONST_DEFAULT_ADV_PORT 5
+#define YOGI_CONST_DEFAULT_ADV_PORT 6
 
 //! Default advertising interval in milliseconds (integer)
-#define YOGI_CONST_DEFAULT_ADV_INTERVAL 6
+#define YOGI_CONST_DEFAULT_ADV_INTERVAL 7
 
 //! @}
 //!
@@ -164,18 +167,18 @@ YOGI_API int YOGI_Destroy(void* object);
 /***************************************************************************//**
  * Creates a new branch.
  *
- * \param[out] branch  Pointer to the branch handle
- * \param[in]  context The context to use
- * \param[in]  netname Name of network to join
- * \param[in]  advaddr Advertising address (NULL means all available addresses)
- * \param[in]  advport Advertising port (set to 0 for default)
- * \param[in]  advint  Advertising interval (set to 0 for default)
+ * \param[out] branch    Pointer to the branch handle
+ * \param[in]  context   The context to use
+ * \param[in]  netname   Name of network to join
+ * \param[in]  interface Network interface to use (set to NULL for default)
+ * \param[in]  advport   Advertising port (set to 0 for default)
+ * \param[in]  advint    Advertising interval in ms (set to 0 for default)
  *
  * \returns [=0] #YOGI_OK if successful
  * \returns [<0] An error code in case of a failure (see \ref EC)
  ******************************************************************************/
 YOGI_API int YOGI_CreateBranch(void** branch, void* context,
-                               const char* netname, const char* advaddr,
+                               const char* netname, const char* interface,
                                int advport, int advint);
 
 //! @}
