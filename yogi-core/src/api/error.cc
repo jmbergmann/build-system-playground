@@ -20,6 +20,9 @@ const char* Error::what() const throw() {
     case YOGI_ERR_INVALID_PARAM:
       return "Invalid parameter";
 
+    case YOGI_ERR_INVALID_HANDLE:
+      return "Invalid handle";
+
     case YOGI_ERR_WRONG_OBJECT_TYPE:
       return "Wrong object type";
 

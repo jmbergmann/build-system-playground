@@ -2,6 +2,7 @@
 #include "../include/yogi_core.h"
 #include "api/constants.h"
 #include "api/error.h"
+#include "objects/context.h"
 
 #include <stdexcept>
 
@@ -10,7 +11,7 @@
     return YOGI_ERR_INVALID_PARAM;             \
 }
 
-#define CHECK_BUFFER_PARAM(buffer, size) {     \
+#define CHECK_BUFFER_PARAMS(buffer, size) {     \
   CHECK_PARAM(buffer != nullptr || size == 0); \
   CHECK_PARAM(size >= 0);                      \
 }
@@ -48,7 +49,7 @@ YOGI_API int YOGI_CreateContext(void** context) {
   CHECK_PARAM(context != nullptr);
 
   try {
-    // TODO
+    auto obj = std::make_shared<objects::Context>();
   }
   CATCH_AND_RETURN;
 }

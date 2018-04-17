@@ -71,11 +71,14 @@
 //! Invalid parameter
 #define YOGI_ERR_INVALID_PARAM -4
 
+//! Invalid Handle
+#define YOGI_ERR_INVALID_HANDLE -5
+
 //! Object is of the wrong type
-#define YOGI_ERR_WRONG_OBJECT_TYPE -5
+#define YOGI_ERR_WRONG_OBJECT_TYPE -6
 
 //! The operation has been canceled
-#define YOGI_ERR_CANCELED -6
+#define YOGI_ERR_CANCELED -7
 
 //! @}
 

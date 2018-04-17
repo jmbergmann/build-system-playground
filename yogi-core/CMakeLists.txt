@@ -2,6 +2,7 @@
 add_library (yogi-core-static STATIC
   src/api/constants.cc
   src/api/error.cc
+  src/api/object.cc
 )
 
 cotire (yogi-core-static)
@@ -44,9 +45,10 @@ export (TARGETS yogi-core-header
 
 # Tests
 add_executable (yogi-core-test
-  test/errors_test.cc
-  test/version_test.cc
   test/constants_test.cc
+  test/errors_test.cc
+  test/object_test.cc
+  test/version_test.cc
 )
 
 target_link_libraries (yogi-core-test
