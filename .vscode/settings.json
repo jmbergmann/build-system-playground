@@ -34,5 +34,22 @@
         "xstring": "cpp",
         "xtr1common": "cpp",
         "xutility": "cpp"
-    }
+    },
+    "files.exclude": {
+      "**/.git": true,
+      "**/.svn": true,
+      "**/.hg": true,
+      "**/CVS": true,
+      "**/.DS_Store": true,
+      "**/.vs": true,
+      "**/.idea": true,
+      "**/bin/": true,
+      "**/obj/": true,
+      "build/": true,
+      "**/.exe/": true
+  },
+  "clang-format.executable": "C:/Program Files/LLVM/bin/clang-format",
+  "clang-format.language.c.style": "{BasedOnStyle: Google, SortIncludes: false}",
+  "clang-format.language.cpp.style": "{BasedOnStyle: Google, SortIncludes: false}",
+  "clang-format.style": "{BasedOnStyle: Google, SortIncludes: false}"
 }

@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include "../src/objects/context.h"
+#include "../src/api/object.h"
 
 class Dummy : public api::ExposedObjectT<Dummy, api::ObjectType::kDummy> {};
 
@@ -78,8 +78,8 @@ TEST(ObjectTest, GetRegisteredObject) {
   EXPECT_THROW(api::ObjectRegister::Get<Dummy>(handle), api::Error);
 }
 
-TEST(ObjectTest, ClearObjectRegister) {
-  EXPECT_NO_THROW(api::ObjectRegister::Clear());
+TEST(ObjectTest, DestroyAllObjects) {
+  EXPECT_NO_THROW(api::ObjectRegister::DestroyAll());
 
   auto obj1 = MyObject::Create(123);
   auto obj2 = MyObject::Create(456);
@@ -91,6 +91,6 @@ TEST(ObjectTest, ClearObjectRegister) {
 
   obj1.reset();
   obj2.reset();
-  api::ObjectRegister::Clear();
+  api::ObjectRegister::DestroyAll();
   EXPECT_EQ(MyObject::GetDtorCalls(), dtor_calls + 2);
 }

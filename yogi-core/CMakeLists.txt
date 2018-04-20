@@ -3,6 +3,8 @@ add_library (yogi-core-static STATIC
   src/api/constants.cc
   src/api/error.cc
   src/api/object.cc
+  src/objects/branch.cc
+  src/utils/system.cc
 )
 
 cotire (yogi-core-static)
@@ -18,6 +20,7 @@ add_library (yogi-core SHARED
 
 target_link_libraries (yogi-core
   yogi-core-static
+  ${Boost_LIBRARIES}
 )
 
 cotire (yogi-core)
@@ -45,7 +48,9 @@ export (TARGETS yogi-core-header
 
 # Tests
 add_executable (yogi-core-test
+  test/branch_test.cc
   test/constants_test.cc
+  test/context_test.cc
   test/errors_test.cc
   test/object_test.cc
   test/version_test.cc

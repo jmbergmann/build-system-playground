@@ -12,6 +12,7 @@ namespace api {
 enum class ObjectType {
   kDummy,  // For testing
   kContext,
+  kBranch,
 };
 
 typedef void* ObjectHandle;
@@ -77,7 +78,7 @@ class ObjectRegister {
 
   static ObjectHandle Register(ObjectPtr obj);
   static void Destroy(ObjectHandle handle);
-  static void Clear();
+  static void DestroyAll();
 
  private:
   typedef std::unordered_map<ObjectHandle, ObjectPtr> ObjectsMap;

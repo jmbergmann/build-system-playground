@@ -35,7 +35,7 @@ void ObjectRegister::Destroy(ObjectHandle handle) {
   objects_.erase(it);
 }
 
-void ObjectRegister::Clear() {
+void ObjectRegister::DestroyAll() {
   ObjectsMap objs;
 
   {

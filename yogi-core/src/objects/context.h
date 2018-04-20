@@ -8,4 +8,6 @@ namespace objects {
 class Context : public api::ExposedObjectT<Context, api::ObjectType::kContext> {
 };
 
-} // namespace objects
+typedef std::shared_ptr<Context> ContextPtr;
+
+}  // namespace objects

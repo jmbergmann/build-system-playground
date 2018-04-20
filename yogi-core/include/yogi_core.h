@@ -145,16 +145,6 @@ YOGI_API const char* YOGI_GetErrorString(int err);
 YOGI_API int YOGI_GetConstant(void* dest, int constant);
 
 /***************************************************************************//**
- * Creates a context for the execution of asynchronous operations.
- *
- * \param[out] context Pointer to the context handle
- *
- * \returns [=0] #YOGI_OK if successful
- * \returns [<0] An error code in case of a failure (see \ref EC)
- ******************************************************************************/
-YOGI_API int YOGI_CreateContext(void** context);
-
-/***************************************************************************//**
  * Destroys an object.
  *
  * Tries to destroy the object belonging to the given handle. The call fails and
@@ -168,11 +158,34 @@ YOGI_API int YOGI_CreateContext(void** context);
 YOGI_API int YOGI_Destroy(void* object);
 
 /***************************************************************************//**
+ * Destroys all objects.
+ *
+ * Destroys all previously created objects. All handles will be invalidated and
+ * must not be used any more. This effectively resets the library.
+ *
+ * Destroying objects will cause any active asynchronous operations to get
+ * canceled and the corresponding completion handlers will be invoked with an
+ * error code of #YOGI_ERR_CANCELED.
+ ******************************************************************************/
+YOGI_API int YOGI_DestroyAll();
+
+/***************************************************************************//**
+ * Creates a context for the execution of asynchronous operations.
+ *
+ * \param[out] context Pointer to the context handle
+ *
+ * \returns [=0] #YOGI_OK if successful
+ * \returns [<0] An error code in case of a failure (see \ref EC)
+ ******************************************************************************/
+YOGI_API int YOGI_CreateContext(void** context);
+
+/***************************************************************************//**
  * Creates a new branch.
  *
  * \param[out] branch    Pointer to the branch handle
  * \param[in]  context   The context to use
- * \param[in]  netname   Name of network to join
+ * \param[in]  netname   Name of network to join (set to NULL to use the
+ *                       machine's hostname)
  * \param[in]  interface Network interface to use (set to NULL for default)
  * \param[in]  advport   Advertising port (set to 0 for default)
  * \param[in]  advint    Advertising interval in ms (set to 0 for default)
