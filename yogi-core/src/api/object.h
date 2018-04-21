@@ -28,6 +28,7 @@ class ExposedObject : public std::enable_shared_from_this<ExposedObject> {
 
   template <typename TO>
   std::shared_ptr<TO> Cast() {
+    // Specialization for ExposeObject type is below this class
     if (Type() != TO::kType) {
       throw Error(YOGI_ERR_WRONG_OBJECT_TYPE);
     }
@@ -35,16 +36,16 @@ class ExposedObject : public std::enable_shared_from_this<ExposedObject> {
     return std::static_pointer_cast<TO>(this->shared_from_this());
   }
 
-  template <>
-  std::shared_ptr<ExposedObject> Cast() {
-    return std::static_pointer_cast<ExposedObject>(this->shared_from_this());
-  }
-
  private:
   // noncopyable
   ExposedObject(const ExposedObject&) = delete;
   void operator=(const ExposedObject&) = delete;
 };
+
+template <>
+inline std::shared_ptr<ExposedObject> ExposedObject::Cast() {
+  return std::static_pointer_cast<ExposedObject>(this->shared_from_this());
+}
 
 typedef std::shared_ptr<ExposedObject> ObjectPtr;
 

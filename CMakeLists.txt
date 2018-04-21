@@ -17,7 +17,7 @@ include (GNUInstallDirs)
 # Boost
 set (Boost_USE_STATIC_LIBS ON)
 set (Boost_MULTITHREADED ON)
-find_package (Boost 1.65 COMPONENTS system filesystem thread REQUIRED)
+find_package (Boost 1.66 COMPONENTS system filesystem thread REQUIRED)
 add_library (boost INTERFACE IMPORTED)
 set_property (TARGET boost
   PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIR})
