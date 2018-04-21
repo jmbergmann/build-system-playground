@@ -6,7 +6,7 @@ if (NOT WIN32)
   set (CMAKE_CXX_FLAGS           "-std=c++${CMAKE_CXX_STANDARD} -Wall -Werror ${ignored_warnings} -fvisibility=hidden -fPIC -DBOOST_ALL_DYN_LINK")
   set (CMAKE_CXX_FLAGS_DEBUG     "-g -ggdb")
   set (CMAKE_CXX_FLAGS_RELEASE   "-O2 -DNDEBUG")
-  # set (CMAKE_SHARED_LINKER_FLAGS "${export_map}")
+  set (CMAKE_SHARED_LINKER_FLAGS "${export_map}")
 endif ()
 
 # Static library
