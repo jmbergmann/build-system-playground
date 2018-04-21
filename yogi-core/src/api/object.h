@@ -29,7 +29,7 @@ class ExposedObject : public std::enable_shared_from_this<ExposedObject> {
   template <typename TO>
   std::shared_ptr<TO> Cast() {
     // Specialization for ExposeObject type is below this class
-    if (Type() != TO::kType) {
+    if (Type() != TO::StaticType()) {
       throw Error(YOGI_ERR_WRONG_OBJECT_TYPE);
     }
 
@@ -52,14 +52,16 @@ typedef std::shared_ptr<ExposedObject> ObjectPtr;
 template <typename TO, ObjectType TK>
 class ExposedObjectT : public ExposedObject {
  public:
-  static constexpr ObjectType kType = TK;
+  static constexpr ObjectType StaticType() {
+    return TK;
+  }
 
   template <typename... TArgs>
   static std::shared_ptr<TO> Create(TArgs&&... args) {
     return std::make_shared<TO>(std::forward<TArgs>(args)...);
   }
 
-  virtual ObjectType Type() const override { return TK; };
+  virtual ObjectType Type() const override { return StaticType(); };
 };
 
 class ObjectRegister {

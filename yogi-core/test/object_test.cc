@@ -1,3 +1,5 @@
+
+
 #include <gtest/gtest.h>
 #include "../src/api/object.h"
 
@@ -25,7 +27,7 @@ TEST(ObjectTest, Create) {
 TEST(ObjectTest, Type) {
   auto obj = MyObject::Create(123);
   EXPECT_EQ(obj->Type(), api::ObjectType::kContext);
-  EXPECT_EQ(MyObject::kType, api::ObjectType::kContext);
+  EXPECT_EQ(MyObject::StaticType(), api::ObjectType::kContext);
 }
 
 TEST(ObjectTest, Handle) {
