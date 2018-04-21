@@ -1,7 +1,7 @@
 # Compiler flags
 if (NOT WIN32)
   set (ignored_warnings          "-Wno-unused-variable -Wno-unused-function -Wno-overloaded-virtual -Wno-unused-value")
-  set (export_map                "-Wl,--version-script='${PROJECT_SOURCE_DIR}/src/export.map'")
+  set (export_map                "-Wl,--version-script='${CMAKE_CURRENT_LIST_DIR}/src/export.map'")
   set (CMAKE_CXX_STANDARD        14)
   set (CMAKE_CXX_FLAGS           "-std=c++${CMAKE_CXX_STANDARD} -Wall -Werror ${ignored_warnings} -fvisibility=hidden -fPIC -DBOOST_ALL_DYN_LINK")
   set (CMAKE_CXX_FLAGS_DEBUG     "-g -ggdb")
