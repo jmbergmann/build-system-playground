@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 #include <yogi_core.h>
 #include <atomic>
+#include <thread>
 
 using namespace std::chrono_literals;
 
@@ -82,7 +83,7 @@ TEST_F(ContextTest, Run) {
   });
   YOGI_ContextWaitForRunning(context_, -1, 0);
 
-  std::atomic<int> n = 0;
+  std::atomic<int> n(0);
   YOGI_ContextPost(context_, [](void* n) { ++*static_cast<int*>(n); }, &n);
   YOGI_ContextPost(context_, [](void* n) { ++*static_cast<int*>(n); }, &n);
 
@@ -113,7 +114,7 @@ TEST_F(ContextTest, RunOne) {
   });
   YOGI_ContextWaitForRunning(context_, -1, 0);
 
-  std::atomic<int> n = 0;
+  std::atomic<int> n(0);
   YOGI_ContextPost(context_, [](void* n) { ++*static_cast<int*>(n); }, &n);
   YOGI_ContextPost(context_, [](void* n) { ++*static_cast<int*>(n); }, &n);
 
@@ -176,7 +177,7 @@ TEST_F(ContextTest, RunOneFor) {
 }
 
 TEST_F(ContextTest, RunInBackground) {
-  std::atomic<int> n = 0;
+  std::atomic<int> n(0);
   YOGI_ContextPost(context_, [](void* n) { ++*static_cast<int*>(n); }, &n);
 
   int res = YOGI_ContextRunInBackground(context_);
