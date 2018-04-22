@@ -51,17 +51,19 @@ void Context::Stop() {
 
 bool Context::WaitForStopped(std::chrono::nanoseconds timeout) {
   std::unique_lock<std::mutex> lock(mutex_);
+  bool timed_out = false;
   if (timeout == timeout.max()) {
     cv_.wait(lock, [&] { return !running_; });
-    return true;
   }
   else {
-    return cv_.wait_for(lock, timeout, [&] { return !running_; });
+    timed_out = !cv_.wait_for(lock, timeout, [&] { return !running_; });
   }
 
-  if (thread_.joinable()) {
+  if (!timed_out && thread_.joinable()) {
     thread_.join();
   }
+
+  return !timed_out;
 }
 
 void Context::Post(std::function<void ()> fn) {

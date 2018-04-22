@@ -193,7 +193,7 @@ YOGI_API int YOGI_ContextWaitForStopped(void* context, int seconds,
   try {
     auto ctx = api::ObjectRegister::Get<objects::Context>(context);
     auto timeout = std::chrono::nanoseconds::max();
-    if (seconds == -1) {
+    if (seconds != -1) {
       timeout =
           std::chrono::nanoseconds(nanoseconds) + std::chrono::seconds(seconds);
     }

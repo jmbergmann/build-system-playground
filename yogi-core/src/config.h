@@ -22,6 +22,7 @@
 // Debug & development
 #ifndef NDEBUG
 # include <stdio.h>
+# define YOGI_TRACE printf("%s: %d\n", __FILE__, __LINE__);
 # define YOGI_ASSERT(x) {                                      \
     if (!(x)) {                                                \
       fprintf(stderr, "ASSERTION \"" #x "\" in %s:%d FAILED.", \

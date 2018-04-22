@@ -91,7 +91,20 @@ TEST_F(ContextTest, RunInBackground) {
 }
 
 TEST_F(ContextTest, WaitForStopped) {
+  YOGI_ContextRunInBackground(context_);
 
+  int res = YOGI_ContextWaitForStopped(context_, 0, 0);
+  EXPECT_EQ(res, YOGI_ERR_TIMEOUT);
+
+  auto start_time = std::chrono::steady_clock::now();
+  res = YOGI_ContextWaitForStopped(context_, 0, 1000000);
+  auto dur = std::chrono::steady_clock::now() - start_time;
+  EXPECT_EQ(res, YOGI_ERR_TIMEOUT);
+  EXPECT_GE(dur, std::chrono::milliseconds(1));
+
+  YOGI_ContextStop(context_);
+  res = YOGI_ContextWaitForStopped(context_, 1, 0);
+  EXPECT_EQ(res, YOGI_OK);
 }
 
 TEST_F(ContextTest, Post) {
