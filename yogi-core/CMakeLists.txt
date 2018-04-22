@@ -15,6 +15,7 @@ add_library (yogi-core-static STATIC
   src/api/error.cc
   src/api/object.cc
   src/objects/branch.cc
+  src/objects/context.cc
   src/utils/system.cc
 )
 

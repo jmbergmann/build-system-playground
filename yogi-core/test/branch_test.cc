@@ -5,12 +5,13 @@ class BranchTest : public ::testing::Test {
  protected:
   virtual void SetUp() override {
     context_ = nullptr;
-    ASSERT_EQ(YOGI_CreateContext(&context_), YOGI_OK);
+    int res = YOGI_ContextCreate(&context_);
+    ASSERT_EQ(res, YOGI_OK);
     ASSERT_NE(context_, nullptr);
 
     branch_ = nullptr;
-    ASSERT_EQ(YOGI_CreateBranch(&branch_, context_, nullptr, nullptr, 0, 0),
-              YOGI_OK);
+    res = YOGI_BranchCreate(&branch_, context_, nullptr, nullptr, 0, 0);
+    ASSERT_EQ(res, YOGI_OK);
     ASSERT_NE(branch_, nullptr);
   }
 

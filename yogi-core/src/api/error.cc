@@ -28,6 +28,12 @@ const char* Error::what() const throw() {
 
     case YOGI_ERR_CANCELED:
       return "Operation has been canceled";
+
+    case YOGI_ERR_BUSY:
+      return "Object is busy";
+
+    case YOGI_ERR_TIMEOUT:
+      return "The operation timed out";
   }
 
   return "Invalid error code";

@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 #include <yogi_core.h>
 
-static constexpr int kLastError = YOGI_ERR_CANCELED;
+static constexpr int kLastError = YOGI_ERR_TIMEOUT;
 
 TEST(ErrorsTest, GetErrorString) {
   EXPECT_STRNE(YOGI_GetErrorString(-2), YOGI_GetErrorString(-1));

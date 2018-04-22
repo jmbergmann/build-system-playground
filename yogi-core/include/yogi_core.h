@@ -80,6 +80,12 @@
 //! The operation has been canceled
 #define YOGI_ERR_CANCELED -7
 
+//! Operation failed because the object is busy
+#define YOGI_ERR_BUSY -8
+
+//! The operation timed out
+#define YOGI_ERR_TIMEOUT -9
+
 //! @}
 
 #ifndef YOGI_API
@@ -151,6 +157,9 @@ YOGI_API int YOGI_GetConstant(void* dest, int constant);
  * returns #YOGI_ERR_OBJECT_STILL_USED if the object is still being used by other
  * objects that have been created via other library calls.
  *
+ * Never destroy a context object from within a handler function that is executed
+ * through the same context.
+ *
  * Destroying an object will cause any active asynchronous operations to get
  * canceled and the corresponding completion handlers will be invoked with an
  * error code of #YOGI_ERR_CANCELED.
@@ -177,15 +186,18 @@ YOGI_API int YOGI_DestroyAll();
  * \returns [=0] #YOGI_OK if successful
  * \returns [<0] An error code in case of a failure (see \ref EC)
  ******************************************************************************/
-YOGI_API int YOGI_CreateContext(void** context);
+YOGI_API int YOGI_ContextCreate(void** context);
 
 /***************************************************************************//**
  * Runs the context's event processing loop to execute ready handlers.
  *
  * This function runs handlers (internal and user-supplied such as functions
- * registered through YOGI_RunInContext() or YOGI_StartSingleShotTimer()) that
+ * registered through YOGI_ContextPost() or YOGI_TimerStartSingleShot()) that
  * are ready to run, without blocking, until the YOGI_ContextStop() function has
  * been called or there are no more ready handlers.
+ *
+ * This function must be called from outside any handler functions that are being
+ * executed through the context.
  *
  * \param[in]  context The context to use
  * \param[out] count   Number of executed handlers (may be set to NULL)
@@ -200,8 +212,11 @@ YOGI_API int YOGI_ContextPoll(void* context, int* count);
  * handler.
  *
  * This function runs at most one handler (internal and user-supplied such as
- * functions registered through YOGI_RunInContext() or
- * YOGI_StartSingleShotTimer()) that is ready to run, without blocking.
+ * functions registered through YOGI_ContextPost() or
+ * YOGI_TimerStartSingleShot()) that is ready to run, without blocking.
+ *
+ * This function must be called from outside any handler functions that are being
+ * executed through the context.
  *
  * \param[in]  context The context to use
  * \param[out] count   Number of executed handlers (may be set to NULL)
@@ -216,8 +231,11 @@ YOGI_API int YOGI_ContextPollOne(void* context, int* count);
  *
  * This function blocks while running the context's event processing loop and
  * calling dispatched handlers (internal and user-supplied such as functions
- * registered through RunInContext() or YOGI_StartSingleShotTimer()) until the
+ * registered through RunInContext() or YOGI_TimerStartSingleShot()) until the
  * YOGI_ContextStop() function has been called.
+ *
+ * This function must be called from outside any handler functions that are being
+ * executed through the context.
  *
  * \param[in]  context The context to use
  * \param[out] count   Number of executed handlers (may be set to NULL)
@@ -233,9 +251,12 @@ YOGI_API int YOGI_ContextRun(void* context, int* count);
  *
  * This function blocks while running the context's event processing loop and
  * calling dispatched handlers (internal and user-supplied such as functions
- * registered through RunInContext() or YOGI_StartSingleShotTimer()) until a
+ * registered through RunInContext() or YOGI_TimerStartSingleShot()) until a
  * single handler function has been executed or until the YOGI_ContextStop()
  * function has been called.
+ *
+ * This function must be called from outside any handler functions that are being
+ * executed through the context.
  *
  * \param[in]  context The context to use
  * \param[out] count   Number of executed handlers (may be set to NULL)
@@ -250,8 +271,11 @@ YOGI_API int YOGI_ContextRunOne(void* context, int* count);
  *
  * This function blocks while running the context's event processing loop and
  * calling dispatched handlers (internal and user-supplied such as functions
- * registered through RunInContext() or YOGI_StartSingleShotTimer()) for the
+ * registered through RunInContext() or YOGI_TimerStartSingleShot()) for the
  * specified duration unless YOGI_ContextStop() is called within that time.
+ *
+ * This function must be called from outside any handler functions that are being
+ * executed through the context.
  *
  * \param[in]  context     The context to use
  * \param[out] count       Number of executed handlers (may be set to NULL)
@@ -270,9 +294,12 @@ YOGI_API int YOGI_ContextRunFor(void* context, int* count, int seconds,
  *
  * This function blocks while running the context's event processing loop and
  * calling dispatched handlers (internal and user-supplied such as functions
- * registered through RunInContext() or YOGI_StartSingleShotTimer()) for the
+ * registered through RunInContext() or YOGI_TimerStartSingleShot()) for the
  * specified duration until a single handler function has been executed,
  * unless YOGI_ContextStop() is called within that time.
+ *
+ * This function must be called from outside any handler functions that are being
+ * executed through the context.
  *
  * \param[in]  context     The context to use
  * \param[out] count       Number of executed handlers (may be set to NULL)
@@ -293,19 +320,22 @@ YOGI_API int YOGI_ContextRunOneFor(void* context, int* count, int seconds,
  * calling the appropriate YOGI_ContextRun... or YOGI_ContextPoll... functions
  * themself. The thread can be stopped using YOGI_ContextStop().
  *
+ * This function must be called from outside any handler functions that are being
+ * executed through the context.
+ *
  * \param[in] context The context to use
  *
  * \returns [=0] #YOGI_OK if successful
  * \returns [<0] An error code in case of a failure (see \ref EC)
  ******************************************************************************/
-YOGI_API int YOGI_ContextStartThread(void* context);
+YOGI_API int YOGI_ContextRunInBackground(void* context);
 
 /***************************************************************************//**
  * Stops the context's event processing loop.
  *
  * This function signals the context to stop running its event processing loop.
  * This causes YOGI_ContextRun... functions to return as soon as possible and it
- * terminates the thread started via YOGI_ContextStartThread().
+ * terminates the thread started via YOGI_ContextRunInBackground().
  *
  * \param[in] context The context to use
  *
@@ -315,11 +345,36 @@ YOGI_API int YOGI_ContextStartThread(void* context);
 YOGI_API int YOGI_ContextStop(void* context);
 
 /***************************************************************************//**
- * Calls the given function from within a thread that is executing the context's
- * event processing loop.
+ * Blocks until no thread is running the context's event processing loop any
+ * or until the specified timeout is reached.
  *
- * The only parameter of the function \p fn will be set to the value of the
- * \p userarg parameter.
+ * If the \p seconds and the \p nanoseconds parameter are both set to 0, the
+ * function works in polling mode.
+ *
+ * If a thread is still running the event processing loop after the specified
+ * timeout, then the YOGI_ERR_TIMEOUT error is returned. This also applies when
+ * this function is used in polling mode as described above.
+ *
+ * This function must be called from outside any handler functions that are being
+ * executed through the context.
+ *
+ * \param[in] context The context to use
+ * \param[in] seconds     Timeout in seconds (set to -1 for infinity)
+ * \param[in] nanoseconds Sub-second part of the timeout
+ *
+ * \returns [=0] #YOGI_OK if successful
+ * \returns [<0] An error code in case of a failure (see \ref EC)
+ ******************************************************************************/
+YOGI_API int YOGI_ContextWaitForStopped(void* context, int seconds,
+                                        int nanoseconds);
+
+/***************************************************************************//**
+ * Adds the given functions to the context's event processing queue to be
+ * executed and returns immediately.
+ *
+ * The handler \p fn will will only be executed after this function returns and
+ * only by a thread running the context's event processing loop. The only
+ * parameter for \p fn will be set to the value of the \p userarg parameter.
  *
  * \param[in] context The context to use
  * \param[in] fn      The function to call from within the given context
@@ -328,17 +383,18 @@ YOGI_API int YOGI_ContextStop(void* context);
  * \returns [=0] #YOGI_OK if successful
  * \returns [<0] An error code in case of a failure (see \ref EC)
  ******************************************************************************/
-YOGI_API int YOGI_RunInContext(void* context, void (*fn)(void*), void* userarg);
+YOGI_API int YOGI_ContextPost(void* context, void (*fn)(void*), void* userarg);
 
 /***************************************************************************//**
  * Creates a new timer.
  *
- * \param[out] timer Pointer to the timer handle
+ * \param[out] timer   Pointer to the timer handle
+ * \param[in]  context The context to use
  *
  * \returns [=0] #YOGI_OK if successful
  * \returns [<0] An error code in case of a failure (see \ref EC)
  ******************************************************************************/
-YOGI_API int YOGI_CreateTimer(void* context);
+YOGI_API int YOGI_TimerCreate(void** timer, void* context);
 
 /***************************************************************************//**
  * Starts the given timer in single shot mode.
@@ -356,7 +412,7 @@ YOGI_API int YOGI_CreateTimer(void* context);
  * \returns [=0] #YOGI_OK if successful
  * \returns [<0] An error code in case of a failure (see \ref EC)
  ******************************************************************************/
-YOGI_API int YOGI_StartSingleShotTimer(void* timer, int seconds,
+YOGI_API int YOGI_TimerStartSingleShot(void* timer, int seconds,
                                        int nanoseconds, void (*fn)(int, void*),
                                        void* userarg);
 
@@ -376,7 +432,7 @@ YOGI_API int YOGI_StartSingleShotTimer(void* timer, int seconds,
  * \returns [=0] #YOGI_OK if successful
  * \returns [<0] An error code in case of a failure (see \ref EC)
  ******************************************************************************/
-YOGI_API int YOGI_StartPeriodicTimer(void* timer, int seconds,
+YOGI_API int YOGI_TimerStartPeriodic(void* timer, int seconds,
                                      int nanoseconds, void (*fn)(int, void*),
                                      void* userarg);
 
@@ -388,7 +444,7 @@ YOGI_API int YOGI_StartPeriodicTimer(void* timer, int seconds,
  * \returns [=0] #YOGI_OK if successful
  * \returns [<0] An error code in case of a failure (see \ref EC)
  ******************************************************************************/
-YOGI_API int YOGI_CancelTimer(void* timer);
+YOGI_API int YOGI_TimerCancel(void* timer);
 
 /***************************************************************************//**
  * Creates a new branch.
@@ -404,7 +460,7 @@ YOGI_API int YOGI_CancelTimer(void* timer);
  * \returns [=0] #YOGI_OK if successful
  * \returns [<0] An error code in case of a failure (see \ref EC)
  ******************************************************************************/
-YOGI_API int YOGI_CreateBranch(void** branch, void* context,
+YOGI_API int YOGI_BranchCreate(void** branch, void* context,
                                const char* netname, const char* interface,
                                int advport, int advint);
 
