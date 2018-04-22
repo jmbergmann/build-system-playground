@@ -19,6 +19,13 @@
     CHECK_PARAM(size >= 0);                      \
   }
 
+#define CHECK_TIMEOUT_PARAMS(seconds, nanoseconds)               \
+  {                                                              \
+    CHECK_PARAM(seconds >= -1);                                  \
+    CHECK_PARAM(seconds == -1 ||                                 \
+                (1000000000 > nanoseconds && nanoseconds >= 0)); \
+  }
+
 #define CATCH_AND_RETURN          \
   catch (const api::Error& err) { \
     return err.error_code();      \
@@ -30,6 +37,20 @@
     return YOGI_ERR_UNKNOWN;      \
   }                               \
   return YOGI_OK;
+
+namespace {
+
+std::chrono::nanoseconds ConvertTimeout(int seconds, int nanoseconds) {
+  if (seconds == -1) {
+    return std::chrono::nanoseconds::max();
+  }
+  else {
+    return std::chrono::nanoseconds(nanoseconds) +
+           std::chrono::seconds(seconds);
+  }
+}
+
+}  // anonymous namespace
 
 YOGI_API const char* YOGI_GetVersion() { return api::kVersionNumber; }
 
@@ -184,19 +205,30 @@ YOGI_API int YOGI_ContextStop(void* context) {
   CATCH_AND_RETURN;
 }
 
-YOGI_API int YOGI_ContextWaitForStopped(void* context, int seconds,
+YOGI_API int YOGI_ContextWaitForRunning(void* context, int seconds,
                                         int nanoseconds) {
   CHECK_PARAM(context != nullptr);
-  CHECK_PARAM(seconds >= -1);
-  CHECK_PARAM(seconds == -1 || (1000000000 > nanoseconds && nanoseconds >= 0));
+  CHECK_TIMEOUT_PARAMS(seconds, nanoseconds);
 
   try {
     auto ctx = api::ObjectRegister::Get<objects::Context>(context);
-    auto timeout = std::chrono::nanoseconds::max();
-    if (seconds != -1) {
-      timeout =
-          std::chrono::nanoseconds(nanoseconds) + std::chrono::seconds(seconds);
+    auto timeout = ConvertTimeout(seconds, nanoseconds);
+
+    if (!ctx->WaitForRunning(timeout)) {
+      return YOGI_ERR_TIMEOUT;
     }
+  }
+  CATCH_AND_RETURN;
+}
+
+YOGI_API int YOGI_ContextWaitForStopped(void* context, int seconds,
+                                        int nanoseconds) {
+  CHECK_PARAM(context != nullptr);
+  CHECK_TIMEOUT_PARAMS(seconds, nanoseconds);
+
+  try {
+    auto ctx = api::ObjectRegister::Get<objects::Context>(context);
+    auto timeout = ConvertTimeout(seconds, nanoseconds);
 
     if (!ctx->WaitForStopped(timeout)) {
       return YOGI_ERR_TIMEOUT;

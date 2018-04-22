@@ -345,6 +345,30 @@ YOGI_API int YOGI_ContextRunInBackground(void* context);
 YOGI_API int YOGI_ContextStop(void* context);
 
 /***************************************************************************//**
+ * Blocks until the context's event processing loop is being run or until the
+ * specified timeout is reached.
+ *
+ * If the \p seconds and the \p nanoseconds parameter are both set to 0, the
+ * function works in polling mode.
+ *
+ * If the event processing loop has not been running after the specified
+ * timeout, then the YOGI_ERR_TIMEOUT error is returned. This also applies when
+ * this function is used in polling mode as described above.
+ *
+ * This function must be called from outside any handler functions that are being
+ * executed through the context.
+ *
+ * \param[in] context The context to use
+ * \param[in] seconds     Timeout in seconds (set to -1 for infinity)
+ * \param[in] nanoseconds Sub-second part of the timeout
+ *
+ * \returns [=0] #YOGI_OK if successful
+ * \returns [<0] An error code in case of a failure (see \ref EC)
+ ******************************************************************************/
+YOGI_API int YOGI_ContextWaitForRunning(void* context, int seconds,
+                                        int nanoseconds);
+
+/***************************************************************************//**
  * Blocks until no thread is running the context's event processing loop any
  * or until the specified timeout is reached.
  *

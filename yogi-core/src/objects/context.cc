@@ -46,7 +46,21 @@ void Context::RunInBackground() {
 }
 
 void Context::Stop() {
+  std::lock_guard<std::mutex> lock(mutex_);
   ios_.stop();
+}
+
+bool Context::WaitForRunning(std::chrono::nanoseconds timeout) {
+  std::unique_lock<std::mutex> lock(mutex_);
+  bool timed_out = false;
+  if (timeout == timeout.max()) {
+    cv_.wait(lock, [&] { return running_; });
+  }
+  else {
+    timed_out = !cv_.wait_for(lock, timeout, [&] { return running_; });
+  }
+
+  return !timed_out;
 }
 
 bool Context::WaitForStopped(std::chrono::nanoseconds timeout) {
@@ -77,7 +91,8 @@ void Context::SetRunningFlagAndReset() {
   }
 
   running_ = true;
-  ios_.reset();
+  ios_.restart();
+  cv_.notify_all();
 }
 
 void Context::ClearRunningFlag() {

@@ -25,6 +25,7 @@ class Context : public api::ExposedObjectT<Context, api::ObjectType::kContext> {
   int RunOneFor(std::chrono::nanoseconds dur);
   void RunInBackground();
   void Stop();
+  bool WaitForRunning(std::chrono::nanoseconds timeout);
   bool WaitForStopped(std::chrono::nanoseconds timeout);
   void Post(std::function<void ()> fn);
 
