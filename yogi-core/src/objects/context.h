@@ -17,6 +17,8 @@ class Context : public api::ExposedObjectT<Context, api::ObjectType::kContext> {
   Context();
   virtual ~Context();
 
+  boost::asio::io_service& IoService() { return ios_; }
+
   int Poll();
   int PollOne();
   int Run();

@@ -86,6 +86,9 @@
 //! The operation timed out
 #define YOGI_ERR_TIMEOUT -9
 
+//! The timer has not been started or already expired
+#define YOGI_ERR_TIMER_EXPIRED -10
+
 //! @}
 
 #ifndef YOGI_API
@@ -423,12 +426,15 @@ YOGI_API int YOGI_TimerCreate(void** timer, void* context);
 /***************************************************************************//**
  * Starts the given timer in single shot mode.
  *
+ * If the timer is already running, the timer will be canceled first, as if
+ * YOGI_TimerCancel() were called explicitly.
+ *
  * The parameters of the handler function \p fn are:
  *  -# Error code
  *  -# Value of the user-specified \p userarg parameter
  *
  * \param[in] timer       The timer to start
- * \param[in] seconds     Timeout in seconds
+ * \param[in] seconds     Timeout in seconds (-1 for infinity)
  * \param[in] nanoseconds Sub-second part of the timeout
  * \param[in] fn          The function to call after the given time passed
  * \param[in] userarg     User-specified argument to be passed to \p fn
@@ -436,32 +442,19 @@ YOGI_API int YOGI_TimerCreate(void** timer, void* context);
  * \returns [=0] #YOGI_OK if successful
  * \returns [<0] An error code in case of a failure (see \ref EC)
  ******************************************************************************/
-YOGI_API int YOGI_TimerStartSingleShot(void* timer, int seconds,
-                                       int nanoseconds, void (*fn)(int, void*),
-                                       void* userarg);
-
-/***************************************************************************//**
- * Starts the given timer in interval mode.
- *
- * The parameters of the handler function \p fn are:
- *  -# Error code
- *  -# Value of the user-specified \p userarg parameter
- *
- * \param[in] timer       The timer to start
- * \param[in] seconds     Interval in seconds
- * \param[in] nanoseconds Sub-second part of the interval
- * \param[in] fn          The function to call after the given time passed
- * \param[in] userarg     User-specified argument to be passed to \p fn
- *
- * \returns [=0] #YOGI_OK if successful
- * \returns [<0] An error code in case of a failure (see \ref EC)
- ******************************************************************************/
-YOGI_API int YOGI_TimerStartPeriodic(void* timer, int seconds,
-                                     int nanoseconds, void (*fn)(int, void*),
-                                     void* userarg);
+YOGI_API int YOGI_TimerStart(void* timer, int seconds, int nanoseconds,
+                             void (*fn)(int, void*), void* userarg);
 
 /***************************************************************************//**
  * Cancels the given timer.
+ *
+ * Canceling a timer will result in the handler function registered via
+ * YOGI_TimerStart() to be called with the YOGI_ERR_CANCELED error as first
+ * parameter. Note that if the handler is already scheduled for executing, it
+ * will be called with YOGI_OK instead.
+ *
+ * If the timer has not been started or it already expired, this function will
+ * return YOGI_ERR_TIMER_EXPIRED.
  *
  * \param[in] timer The timer to cancel
  *

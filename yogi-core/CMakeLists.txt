@@ -16,6 +16,7 @@ add_library (yogi-core-static STATIC
   src/api/object.cc
   src/objects/branch.cc
   src/objects/context.cc
+  src/objects/timer.cc
   src/utils/system.cc
 )
 
@@ -65,6 +66,7 @@ add_executable (yogi-core-test
   test/context_test.cc
   test/errors_test.cc
   test/object_test.cc
+  test/timer_test.cc
   test/version_test.cc
 )
 

@@ -4,6 +4,7 @@
 #include "api/error.h"
 #include "objects/context.h"
 #include "objects/branch.h"
+#include "objects/timer.h"
 #include "utils/system.h"
 
 #include <stdexcept>
@@ -253,32 +254,23 @@ YOGI_API int YOGI_TimerCreate(void** timer, void* context) {
   CHECK_PARAM(context != nullptr);
 
   try {
+    auto ctx = api::ObjectRegister::Get<objects::Context>(context);
+    auto tmr = objects::Timer::Create(ctx);
+    *timer = api::ObjectRegister::Register(tmr);
   }
   CATCH_AND_RETURN;
 }
 
-YOGI_API int YOGI_TimerStartSingleShot(void* timer, int seconds,
-                                       int nanoseconds, void (*fn)(int, void*),
-                                       void* userarg) {
+YOGI_API int YOGI_TimerStart(void* timer, int seconds, int nanoseconds,
+                             void (*fn)(int, void*), void* userarg) {
   CHECK_PARAM(timer != nullptr);
-  CHECK_PARAM(seconds >= 0);
-  CHECK_PARAM(1000000000 > nanoseconds && nanoseconds >= 0);
+  CHECK_TIMEOUT_PARAMS(seconds, nanoseconds);
   CHECK_PARAM(fn != nullptr);
 
   try {
-  }
-  CATCH_AND_RETURN;
-}
-
-YOGI_API int YOGI_TimerStartPeriodic(void* timer, int seconds,
-                                     int nanoseconds, void (*fn)(int, void*),
-                                     void* userarg) {
-  CHECK_PARAM(timer != nullptr);
-  CHECK_PARAM(seconds >= 0);
-  CHECK_PARAM(1000000000 > nanoseconds && nanoseconds >= 0);
-  CHECK_PARAM(fn != nullptr);
-
-  try {
+    auto tmr = api::ObjectRegister::Get<objects::Timer>(timer);
+    auto timeout = ConvertTimeout(seconds, nanoseconds);
+    tmr->Start(timeout, [=](int res) { fn(res, userarg); });
   }
   CATCH_AND_RETURN;
 }
@@ -287,6 +279,10 @@ YOGI_API int YOGI_TimerCancel(void* timer) {
   CHECK_PARAM(timer != nullptr);
 
   try {
+    auto tmr = api::ObjectRegister::Get<objects::Timer>(timer);
+    if (!tmr->Cancel()) {
+      return YOGI_ERR_TIMER_EXPIRED;
+    }
   }
   CATCH_AND_RETURN;
 }

@@ -34,6 +34,9 @@ const char* Error::what() const throw() {
 
     case YOGI_ERR_TIMEOUT:
       return "The operation timed out";
+
+    case YOGI_ERR_TIMER_EXPIRED:
+      return "The timer has not been started or already expired";
   }
 
   return "Invalid error code";
