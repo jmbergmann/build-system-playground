@@ -10,7 +10,8 @@ class BranchTest : public ::testing::Test {
     ASSERT_NE(context_, nullptr);
 
     branch_ = nullptr;
-    res = YOGI_BranchCreate(&branch_, context_, nullptr, nullptr, 0, 0);
+    res =
+        YOGI_BranchCreate(&branch_, context_, nullptr, nullptr, nullptr, 0, 0);
     ASSERT_EQ(res, YOGI_OK);
     ASSERT_NE(branch_, nullptr);
   }

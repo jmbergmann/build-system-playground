@@ -288,8 +288,8 @@ YOGI_API int YOGI_TimerCancel(void* timer) {
 }
 
 YOGI_API int YOGI_BranchCreate(void** branch, void* context,
-                               const char* netname, const char* interface,
-                               int advport, int advint) {
+                               const char* netname, const char* password,
+                               const char* interface, int advport, int advint) {
   CHECK_PARAM(branch != nullptr);
   CHECK_PARAM(context != nullptr);
   CHECK_PARAM(netname == nullptr || *netname != '\0');

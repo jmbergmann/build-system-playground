@@ -33,6 +33,7 @@ add_library (yogi-core SHARED
 
 target_link_libraries (yogi-core
   yogi-core-static
+  OpenSSL::Crypto
   ${Boost_LIBRARIES}
 )
 

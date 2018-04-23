@@ -470,6 +470,7 @@ YOGI_API int YOGI_TimerCancel(void* timer);
  * \param[in]  context   The context to use
  * \param[in]  netname   Name of network to join (set to NULL to use the
  *                       machine's hostname)
+ * \param[in]  password  Password for the network (set to NULL for none)
  * \param[in]  interface Network interface to use (set to NULL for default)
  * \param[in]  advport   Advertising port (set to 0 for default)
  * \param[in]  advint    Advertising interval in ms (set to 0 for default)
@@ -478,8 +479,8 @@ YOGI_API int YOGI_TimerCancel(void* timer);
  * \returns [<0] An error code in case of a failure (see \ref EC)
  ******************************************************************************/
 YOGI_API int YOGI_BranchCreate(void** branch, void* context,
-                               const char* netname, const char* interface,
-                               int advport, int advint);
+                               const char* netname, const char* password,
+                               const char* interface, int advport, int advint);
 
 //! @}
 

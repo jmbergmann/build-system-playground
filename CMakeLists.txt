@@ -14,6 +14,9 @@ set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake")
 include (cotire)
 include (GNUInstallDirs)
 
+# OpenSSL
+find_package (OpenSSL REQUIRED)
+
 # Boost
 set (Boost_USE_STATIC_LIBS ON)
 set (Boost_MULTITHREADED ON)
