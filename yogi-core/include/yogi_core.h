@@ -89,6 +89,9 @@
 //! The timer has not been started or already expired
 #define YOGI_ERR_TIMER_EXPIRED -10
 
+//! The supplied buffer is too small
+#define YOGI_ERR_BUFFER_TOO_SMALL -11
+
 //! @}
 
 #ifndef YOGI_API
@@ -410,7 +413,8 @@ YOGI_API int YOGI_ContextWaitForStopped(void* context, int seconds,
  * \returns [=0] #YOGI_OK if successful
  * \returns [<0] An error code in case of a failure (see \ref EC)
  ******************************************************************************/
-YOGI_API int YOGI_ContextPost(void* context, void (*fn)(void*), void* userarg);
+YOGI_API int YOGI_ContextPost(void* context, void (*fn)(void* userarg),
+                              void* userarg);
 
 /***************************************************************************//**
  * Creates a new timer.
@@ -430,8 +434,8 @@ YOGI_API int YOGI_TimerCreate(void** timer, void* context);
  * YOGI_TimerCancel() were called explicitly.
  *
  * The parameters of the handler function \p fn are:
- *  -# Error code
- *  -# Value of the user-specified \p userarg parameter
+ *  -# *res*: YOGI_OK or error code in case of a failure (see \ref EC)
+ *  -# *userarg*: Value of the user-specified \p userarg parameter
  *
  * \param[in] timer       The timer to start
  * \param[in] seconds     Timeout in seconds (-1 for infinity)
@@ -443,7 +447,7 @@ YOGI_API int YOGI_TimerCreate(void** timer, void* context);
  * \returns [<0] An error code in case of a failure (see \ref EC)
  ******************************************************************************/
 YOGI_API int YOGI_TimerStart(void* timer, int seconds, int nanoseconds,
-                             void (*fn)(int, void*), void* userarg);
+                             void (*fn)(int res, void* userarg), void* userarg);
 
 /***************************************************************************//**
  * Cancels the given timer.
@@ -466,21 +470,182 @@ YOGI_API int YOGI_TimerCancel(void* timer);
 /***************************************************************************//**
  * Creates a new branch.
  *
- * \param[out] branch    Pointer to the branch handle
- * \param[in]  context   The context to use
- * \param[in]  netname   Name of network to join (set to NULL to use the
- *                       machine's hostname)
- * \param[in]  password  Password for the network (set to NULL for none)
- * \param[in]  interface Network interface to use (set to NULL for default)
- * \param[in]  advport   Advertising port (set to 0 for default)
- * \param[in]  advint    Advertising interval in ms (set to 0 for default)
+ * A branch represents an entry point into a YOGI network. It advertises itself
+ * via IPv6 multicasts with its unique ID and information required for
+ * establishing a connection. If a branch detects other branches on the network,
+ * it connects to them via TCP to retrieve further information such as their
+ * name, description and network name. If the network names match, two branches
+ * attempt to authenticate with each other by securely comparing passwords.
+ * Once authentication succeeds and there is no other known branch with the same
+ * path then the branches can actively communicate as part of the YOGI network.
+ *
+ * Advertising and establishing connections can be limited to certain network
+ * interfaces via the \p interface parameter. The default is to use all
+ * available interfaces.
+ *
+ * The \p advint parameter can be set to -1 which prevents the branch from
+ * actively participating in the YOGI network, i.e. the branch will not
+ * advertise itself and it will not authenticate in order to join a network.
+ * However, the branch will temporarily connect to other branches in order to
+ * obtain more detailed information such as name, description, network name
+ * and so on. This is useful for obtaining information about active branches
+ * without actually becoming part of the YOGI network.
+ *
+ * Note: Even though the authentication process via passwords is done in a
+ *       secure manor, any further communication is done in plain text.
+ *
+ * \param[out] branch      Pointer to the branch handle
+ * \param[in]  context     The context to use
+ * \param[in]  name        Name of the branch (set to NULL to use the format
+ *                         PID@hostname with PID being the process ID)
+ * \param[in]  description Description of the branch (set to NULL for none)
+ * \param[in]  netname     Name of network to join (set to NULL to use the
+ *                         machine's hostname)
+ * \param[in]  password    Password for the network (set to NULL for none)
+ * \param[in]  path        Path of the branch in the network (set to NULL to use
+ *                         the format /name where name is the branch's name)
+ * \param[in]  interface   Network interface to use (set to NULL for default)
+ * \param[in]  advport     Advertising port (set to 0 for default)
+ * \param[in]  advint      Advertising interval in ms (set to 0 for default;
+ *                         set to -1 for no advertising and no joining networks)
  *
  * \returns [=0] #YOGI_OK if successful
  * \returns [<0] An error code in case of a failure (see \ref EC)
  ******************************************************************************/
-YOGI_API int YOGI_BranchCreate(void** branch, void* context,
-                               const char* netname, const char* password,
+YOGI_API int YOGI_BranchCreate(void** branch, void* context, const char* name,
+                               const char* description, const char* netname,
+                               const char* password, const char* path,
                                const char* interface, int advport, int advint);
+
+/***************************************************************************//**
+ * Retrieves information about a local branch.
+ *
+ * This function writes the branch's UUID (16 bytes) in binary form to \p uuid.
+ * Any further information is written to \p json in JSON format. The function
+ * call fails with the YOGI_ERR_BUFFER_TOO_SMALL error if the produced JSON
+ * string does not fit into \p json, i.e. if \p jsonsize is too small.
+ *
+ * The produced JSON string is as follows, without any unnecessary whitespace:
+ *
+ *    {
+ *      "uuid":        "6ba7b810-9dad-11d1-80b4-00c04fd430c8",
+ *      "name":        "Fan Controller",
+ *      "description": "Controls a fan via PWM",
+ *      "netname":     "Hardware Control",
+ *      "path":        "/Cooling System/Fan Controller",
+ *      "hostname":    "beaglebone",
+ *      "pid":         4124,
+ *      "interface":   "TODO",
+ *      "advport":     13531,
+ *      "advint":      1.0,
+ *      "started":     "2018-04-23T18:25:43.511Z",
+ *      "connections": 3
+ *    }
+ *
+ * \param[in]  branch   The branch handle
+ * \param[out] uuid     Pointer to 16 byte array for storing the UUID (can be
+ *                      set to NULL)
+ * \param[out] json     Pointer to a char array for storing the information (can
+ *                      be set to NULL)
+ * \param[in]  jsonsize Maximum number of bytes to write to \p json
+ *
+ * \returns [=0] #YOGI_OK if successful
+ * \returns [<0] An error code in case of a failure (see \ref EC)
+ ******************************************************************************/
+YOGI_API int YOGI_BranchGetInfo(void* branch, void* uuid, char* json,
+                                int jsonsize);
+
+/***************************************************************************//**
+ * Retrieves information about all remote branches that were discovered.
+ *
+ * For each of the discovered remote branches, this function will:
+ * -# Write the branch's UUID (16 bytes) in binary form to \p uuid.
+ * -# Generate a JSON string containing further information to \p json.
+ * -# Execute the handler \p fn.
+ *
+ * If the produced JSON string for any of the discovered branches does not fit
+ * into \p json, i.e. if \p jsonsize is too small, then the function stops
+ * calling \p fn and returns with the YOGI_ERR_BUFFER_TOO_SMALL error.
+ *
+ * The produced JSON string is as follows, without any unnecessary whitespace:
+ *
+ *    {
+ *      "uuid":              "123e4567-e89b-12d3-a456-426655440000",
+ *      "name":              "Pump Safety Logic",
+ *      "description":       "Monitors the pump for safety",
+ *      "netname":           "Hardware Control",
+ *      "path":              "/Cooling System/Pump/Safety",
+ *      "hostname":          "beaglebone",
+ *      "pid":               3321,
+ *      "started":           "2018-04-23T18:25:43.511Z",
+ *      "connected":         true,
+ *      "last_connected":    "2018-04-23T18:28:12.333Z",
+ *      "last_disconnected": "2018-04-23T18:27:12.333Z"
+ *    }
+ *
+ * \param[in]  branch   The branch handle
+ * \param[out] uuid     Pointer to 16 byte array for storing the UUID (can be
+ *                      set to NULL)
+ * \param[out] json     Pointer to a char array for storing the information (can
+ *                      be set to NULL)
+ * \param[in]  jsonsize Maximum number of bytes to write to \p json
+ * \param[in]  fn       Handler to call for each discovered branch
+ * \param[in]  userarg  User-specified argument to be passed to \p fn
+ *
+ * \returns [=0] #YOGI_OK if successful
+ * \returns [<0] An error code in case of a failure (see \ref EC)
+ ******************************************************************************/
+YOGI_API int YOGI_BranchGetDiscoveredBranches(void* branch, void* uuid,
+                                              char* json, int jsonsize,
+                                              void (*fn)(void* userarg),
+                                              void* userarg);
+
+/***************************************************************************//**
+ * Asynchronously waits for the list of discovered branches to change.
+ *
+ * This function will register \p fn to be called once the list of discovered
+ * branches changes. The first parameter passed to \p fn is set to YOGI_OK on
+ * success and an error code (see \ref EC) in case of a failure.
+ *
+ * Note: Make sure that the two supplied buffers \p uuid and \p json remain
+ *       valid until \p fn has been executed.
+ *
+ * If the produced JSON string for the branch does not fit into \p json, i.e. if
+ * \p jsonsize is too small, then \p fn will be called with the
+ * YOGI_ERR_BUFFER_TOO_SMALL error.
+ *
+ * The produced JSON string is as described in the
+ * YOGI_BranchGetDiscoveredBranches() function.
+ *
+ * \param[in]  branch   The branch handle
+ * \param[out] uuid     Pointer to 16 byte array for storing the UUID (can be
+ *                      set to NULL)
+ * \param[out] json     Pointer to a char array for storing the information (can
+ *                      be set to NULL)
+ * \param[in]  jsonsize Maximum number of bytes to write to \p json
+ * \param[in]  fn       Handler to call for each discovered branch
+ * \param[in]  userarg  User-specified argument to be passed to \p fn
+ *
+ * \returns [=0] #YOGI_OK if successful
+ * \returns [<0] An error code in case of a failure (see \ref EC)
+ ******************************************************************************/
+YOGI_API int YOGI_BranchAwaitDiscoveredBranchesChange(
+    void* branch, void* uuid, char* json, int jsonsize,
+    void (*fn)(int res, void* userarg), void* userarg);
+
+/***************************************************************************//**
+ * Cancels waiting for the list of discovered branches to change.
+ *
+ * Calling this function will cause the handler registered via
+ * YOGI_BranchAwaitDiscoveredBranchesChange() to be called with the
+ * YOGI_ERR_CANCELED error.
+ *
+ * \param[in] branch The branch handle
+ *
+ * \returns [=0] #YOGI_OK if successful
+ * \returns [<0] An error code in case of a failure (see \ref EC)
+ ******************************************************************************/
+YOGI_API int YOGI_BranchCancelAwaitDiscoveredBranchesChange(void* branch);
 
 //! @}
 

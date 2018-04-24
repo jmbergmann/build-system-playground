@@ -287,27 +287,87 @@ YOGI_API int YOGI_TimerCancel(void* timer) {
   CATCH_AND_RETURN;
 }
 
-YOGI_API int YOGI_BranchCreate(void** branch, void* context,
-                               const char* netname, const char* password,
+YOGI_API int YOGI_BranchCreate(void** branch, void* context, const char* name,
+                               const char* description, const char* netname,
+                               const char* password, const char* path,
                                const char* interface, int advport, int advint) {
   CHECK_PARAM(branch != nullptr);
   CHECK_PARAM(context != nullptr);
+  CHECK_PARAM(name == nullptr || *name != '\0');
   CHECK_PARAM(netname == nullptr || *netname != '\0');
+  CHECK_PARAM(password == nullptr || *password != '\0');
+  CHECK_PARAM(path == nullptr || *path == '/');
+  CHECK_PARAM(interface == nullptr || *interface != '\0');
   CHECK_PARAM(advport >= 0);
-  CHECK_PARAM(advint >= 0);
+  CHECK_PARAM(advint >= -1);
 
   try {
     auto ctx = api::ObjectRegister::Get<objects::Context>(context);
 
+    auto final_name =
+        name ? std::string(name)
+             : std::to_string(utils::GetPid()) + '@' + utils::GetHostname();
+    auto final_description = description ? description : "";
     auto final_netname = netname ? std::string(netname) : utils::GetHostname();
+    auto final_password = password ? password : "";
+    auto final_path =
+        path ? std::string(path) : (std::string("/") + final_name);
     auto final_interface = interface ? interface : api::kDefaultInterface;
     auto final_advport = advport ? advport : api::kDefaultAdvPort;
-    auto final_advint = advint ? advint : api::kDefaultAdvInterval;
+    auto final_advint = std::chrono::milliseconds::max();
+    if (advint >= 0) {
+      final_advint =
+          std::chrono::milliseconds(advint ? advint : api::kDefaultAdvInterval);
+    }
 
-    auto brn = objects::Branch::Create(ctx, final_netname, final_interface,
-                                       final_advport,
-                                       std::chrono::milliseconds(final_advint));
+    auto brn = objects::Branch::Create(
+        ctx, final_name, final_description, final_netname, final_password,
+        final_path, final_interface, final_advport, final_advint);
     *branch = api::ObjectRegister::Register(brn);
+  }
+  CATCH_AND_RETURN;
+}
+
+YOGI_API int YOGI_BranchGetInfo(void* branch, void* uuid, char* json,
+                                int jsonsize) {
+  CHECK_PARAM(branch != nullptr);
+  CHECK_PARAM(json == nullptr || jsonsize > 0);
+
+  try {
+  }
+  CATCH_AND_RETURN;
+}
+
+YOGI_API int YOGI_BranchGetDiscoveredBranches(void* branch, void* uuid,
+                                              char* json, int jsonsize,
+                                              void (*fn)(void*),
+                                              void* userarg) {
+  CHECK_PARAM(branch != nullptr);
+  CHECK_PARAM(json == nullptr || jsonsize > 0);
+  CHECK_PARAM(fn != nullptr);
+
+  try {
+  }
+  CATCH_AND_RETURN;
+}
+
+YOGI_API int YOGI_BranchAwaitDiscoveredBranchesChange(void* branch, void* uuid,
+                                                      char* json, int jsonsize,
+                                                      void (*fn)(int, void*),
+                                                      void* userarg) {
+  CHECK_PARAM(branch != nullptr);
+  CHECK_PARAM(json == nullptr || jsonsize > 0);
+  CHECK_PARAM(fn != nullptr);
+
+  try {
+  }
+  CATCH_AND_RETURN;
+}
+
+YOGI_API int YOGI_BranchCancelAwaitDiscoveredBranchesChange(void* branch) {
+  CHECK_PARAM(branch != nullptr);
+
+  try {
   }
   CATCH_AND_RETURN;
 }

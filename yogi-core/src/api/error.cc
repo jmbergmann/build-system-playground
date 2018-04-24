@@ -37,6 +37,9 @@ const char* Error::what() const throw() {
 
     case YOGI_ERR_TIMER_EXPIRED:
       return "The timer has not been started or already expired";
+
+    case YOGI_ERR_BUFFER_TOO_SMALL:
+      return "The supplied buffer is too small";
   }
 
   return "Invalid error code";
