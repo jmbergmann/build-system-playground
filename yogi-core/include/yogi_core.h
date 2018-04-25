@@ -541,7 +541,7 @@ YOGI_API int YOGI_BranchCreate(void** branch, void* context, const char* name,
  *      "advertising_port":     13531,
  *      "advertising_interval": 1.0,
  *      "start_time":           "2018-04-23T18:25:43.511Z",
- *      "connections":          3
+ *      "active_connections":   3
  *    }
  *
  * \param[in]  branch   The branch handle

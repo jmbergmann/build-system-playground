@@ -39,7 +39,7 @@ std::string Branch::MakeInfo() const {
   pt.put("advertising_port", adv_port_);
   pt.put("advertising_interval", (float)adv_interval_.count() / 1000.0f);
   pt.put("start_time", utils::TimeToJavaScriptString(start_time_));
-  pt.put("connections", 0);  // TODO
+  pt.put("active_connections", 0);  // TODO
 
   std::stringstream oss;
   boost::property_tree::json_parser::write_json(oss, pt);
