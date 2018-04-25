@@ -18,6 +18,7 @@ add_library (yogi-core-static STATIC
   src/objects/context.cc
   src/objects/timer.cc
   src/utils/system.cc
+  src/utils/time.cc
 )
 
 cotire (yogi-core-static)

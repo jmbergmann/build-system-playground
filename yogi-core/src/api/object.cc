@@ -43,7 +43,7 @@ void ObjectRegister::DestroyAll() {
     std::swap(objects_, objs);
   }
 
-  auto old_size = std::numeric_limits<std::size_t>::max();
+  auto old_size = std::numeric_limits<size_t>::max();
   while (objs.size() < old_size) {
     old_size = objs.size();
 

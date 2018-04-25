@@ -523,23 +523,25 @@ YOGI_API int YOGI_BranchCreate(void** branch, void* context, const char* name,
  * This function writes the branch's UUID (16 bytes) in binary form to \p uuid.
  * Any further information is written to \p json in JSON format. The function
  * call fails with the YOGI_ERR_BUFFER_TOO_SMALL error if the produced JSON
- * string does not fit into \p json, i.e. if \p jsonsize is too small.
+ * string does not fit into \p json, i.e. if \p jsonsize is too small. However,
+ * in that case, the first \p jsonsize - 1 characters and a trailing zero will
+ * be written to \p json.
  *
  * The produced JSON string is as follows, without any unnecessary whitespace:
  *
  *    {
- *      "uuid":        "6ba7b810-9dad-11d1-80b4-00c04fd430c8",
- *      "name":        "Fan Controller",
- *      "description": "Controls a fan via PWM",
- *      "netname":     "Hardware Control",
- *      "path":        "/Cooling System/Fan Controller",
- *      "hostname":    "beaglebone",
- *      "pid":         4124,
- *      "interface":   "TODO",
- *      "advport":     13531,
- *      "advint":      1.0,
- *      "started":     "2018-04-23T18:25:43.511Z",
- *      "connections": 3
+ *      "uuid":                 "6ba7b810-9dad-11d1-80b4-00c04fd430c8",
+ *      "name":                 "Fan Controller",
+ *      "description":          "Controls a fan via PWM",
+ *      "net_name":             "Hardware Control",
+ *      "path":                 "/Cooling System/Fan Controller",
+ *      "hostname":             "beaglebone",
+ *      "pid":                  4124,
+ *      "interface":            "TODO",
+ *      "advertising_port":     13531,
+ *      "advertising_interval": 1.0,
+ *      "start_time":           "2018-04-23T18:25:43.511Z",
+ *      "connections":          3
  *    }
  *
  * \param[in]  branch   The branch handle
@@ -561,26 +563,34 @@ YOGI_API int YOGI_BranchGetInfo(void* branch, void* uuid, char* json,
  * For each of the discovered remote branches, this function will:
  * -# Write the branch's UUID (16 bytes) in binary form to \p uuid.
  * -# Generate a JSON string containing further information to \p json.
- * -# Execute the handler \p fn.
+ * -# Execute the handler \p fn with YOGI_OK as first argument if \p jsonsize
+ *    is as least as large as the length of the generated JSON string
  *
- * If the produced JSON string for any of the discovered branches does not fit
- * into \p json, i.e. if \p jsonsize is too small, then the function stops
- * calling \p fn and returns with the YOGI_ERR_BUFFER_TOO_SMALL error.
+ * If the produced JSON string for the branch does not fit into \p json, i.e. if
+ * \p jsonsize is too small, then \p json will be filled with the first
+ * \p jsonsize - 1 characters and a trailing zero and \p fn will be called with
+ * the YOGI_ERR_BUFFER_TOO_SMALL error for that particular branch.
+ *
+ * This function will return YOGI_ERR_BUFFER_TOO_SMALL if \p json is not large
+ * enough to hold each one of the JSON strings. However, \p fn will still be
+ * called for each discovered branch.
  *
  * The produced JSON string is as follows, without any unnecessary whitespace:
  *
  *    {
- *      "uuid":              "123e4567-e89b-12d3-a456-426655440000",
- *      "name":              "Pump Safety Logic",
- *      "description":       "Monitors the pump for safety",
- *      "netname":           "Hardware Control",
- *      "path":              "/Cooling System/Pump/Safety",
- *      "hostname":          "beaglebone",
- *      "pid":               3321,
- *      "started":           "2018-04-23T18:25:43.511Z",
- *      "connected":         true,
- *      "last_connected":    "2018-04-23T18:28:12.333Z",
- *      "last_disconnected": "2018-04-23T18:27:12.333Z"
+ *      "uuid":                 "123e4567-e89b-12d3-a456-426655440000",
+ *      "name":                 "Pump Safety Logic",
+ *      "description":          "Monitors the pump for safety",
+ *      "net_name":             "Hardware Control",
+ *      "path":                 "/Cooling System/Pump/Safety",
+ *      "hostname":             "beaglebone",
+ *      "pid":                  3321,
+ *      "advertising_interval": 1.0,
+ *      "start_time":           "2018-04-23T18:25:43.511Z",
+ *      "connected":            true,
+ *      "last_connected":       "2018-04-23T18:28:12.333Z",
+ *      "last_disconnected":    "2018-04-23T18:27:12.333Z",
+ *      "last_error":           ""
  *    }
  *
  * \param[in]  branch   The branch handle
@@ -597,7 +607,7 @@ YOGI_API int YOGI_BranchGetInfo(void* branch, void* uuid, char* json,
  ******************************************************************************/
 YOGI_API int YOGI_BranchGetDiscoveredBranches(void* branch, void* uuid,
                                               char* json, int jsonsize,
-                                              void (*fn)(void* userarg),
+                                              void (*fn)(int, void* userarg),
                                               void* userarg);
 
 /***************************************************************************//**
@@ -611,8 +621,9 @@ YOGI_API int YOGI_BranchGetDiscoveredBranches(void* branch, void* uuid,
  *       valid until \p fn has been executed.
  *
  * If the produced JSON string for the branch does not fit into \p json, i.e. if
- * \p jsonsize is too small, then \p fn will be called with the
- * YOGI_ERR_BUFFER_TOO_SMALL error.
+ * \p jsonsize is too small, then \p json will be filled with the first
+ * \p jsonsize - 1 characters and a trailing zero and \p fn will be called with
+ * the YOGI_ERR_BUFFER_TOO_SMALL error for that particular branch.
  *
  * The produced JSON string is as described in the
  * YOGI_BranchGetDiscoveredBranches() function.

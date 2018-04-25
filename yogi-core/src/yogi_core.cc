@@ -334,19 +334,69 @@ YOGI_API int YOGI_BranchGetInfo(void* branch, void* uuid, char* json,
   CHECK_PARAM(json == nullptr || jsonsize > 0);
 
   try {
+    auto brn = api::ObjectRegister::Get<objects::Branch>(branch);
+
+    if (uuid) {
+      auto& tmp = brn->GetUuid();
+      std::memcpy(uuid, &tmp, tmp.size());
+    }
+
+    if (json) {
+      auto tmp = brn->MakeInfo();
+      auto n = std::min(tmp.size() + 1, static_cast<size_t>(jsonsize));
+      strncpy(json, tmp.c_str(), n);
+      if (tmp.size() + 1 > n) {
+        json[jsonsize - 1] = '\0';
+        return YOGI_ERR_BUFFER_TOO_SMALL;
+      }
+    }
   }
   CATCH_AND_RETURN;
 }
 
 YOGI_API int YOGI_BranchGetDiscoveredBranches(void* branch, void* uuid,
                                               char* json, int jsonsize,
-                                              void (*fn)(void*),
+                                              void (*fn)(int, void*),
                                               void* userarg) {
   CHECK_PARAM(branch != nullptr);
   CHECK_PARAM(json == nullptr || jsonsize > 0);
   CHECK_PARAM(fn != nullptr);
 
   try {
+    auto brn = api::ObjectRegister::Get<objects::Branch>(branch);
+
+    auto buffer_too_small = false;
+    if (json) {
+      brn->ForeachDiscoveredBranch([&](auto& tmp_uuid, auto tmp_json) {
+        if (uuid) {
+          memcpy(uuid, &tmp_uuid, tmp_uuid.size());
+        }
+
+        auto n = std::min(tmp_json.size() + 1, static_cast<size_t>(jsonsize));
+        std::strncpy(json, tmp_json.c_str(), n);
+        if (tmp_json.size() + 1 > n) {
+          json[jsonsize - 1] = '\0';
+          fn(YOGI_ERR_BUFFER_TOO_SMALL, userarg);
+          buffer_too_small = true;
+        }
+        else {
+          fn(YOGI_OK, userarg);
+        }
+      });
+    }
+    else {
+      brn->ForeachDiscoveredBranch([&](auto& tmp_uuid) {
+        if (uuid) {
+          memcpy(uuid, &tmp_uuid, tmp_uuid.size());
+        }
+
+        fn(YOGI_OK, userarg);
+      });
+    }
+
+    if (buffer_too_small) {
+      return YOGI_ERR_BUFFER_TOO_SMALL;
+    }
   }
   CATCH_AND_RETURN;
 }
