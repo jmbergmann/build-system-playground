@@ -38,8 +38,8 @@
 //! Major version number of the library (integer)
 #define YOGI_CONST_VERSION_PATCH 4
 
-//! Default addresses/interfaces to use for connections and advertising (string)
-#define YOGI_CONST_DEFAULT_INTERFACE 5
+//! Default multicast addresses to use for advertising (string)
+#define YOGI_CONST_DEFAULT_ADV_ADDRESS 5
 
 //! Default port to use for advertising via UDP IPv6 multicasts (integer)
 #define YOGI_CONST_DEFAULT_ADV_PORT 6
@@ -471,7 +471,7 @@ YOGI_API int YOGI_TimerCancel(void* timer);
  * Creates a new branch.
  *
  * A branch represents an entry point into a YOGI network. It advertises itself
- * via IPv6 multicasts with its unique ID and information required for
+ * via IP broadcasts/multicasts with its unique ID and information required for
  * establishing a connection. If a branch detects other branches on the network,
  * it connects to them via TCP to retrieve further information such as their
  * name, description and network name. If the network names match, two branches
@@ -504,7 +504,8 @@ YOGI_API int YOGI_TimerCancel(void* timer);
  * \param[in]  password    Password for the network (set to NULL for none)
  * \param[in]  path        Path of the branch in the network (set to NULL to use
  *                         the format /name where name is the branch's name)
- * \param[in]  interface   Network interface to use (set to NULL for default)
+ * \param[in]  advaddr     Multicast address to use; e.g. 239.255.0.1 for IPv4
+ *                         or ff31::8000:1234 for IPv6 (set to NULL for default)
  * \param[in]  advport     Advertising port (set to 0 for default)
  * \param[in]  advint      Advertising interval in ms (set to 0 for default;
  *                         set to -1 for no advertising and no joining networks)
@@ -515,7 +516,7 @@ YOGI_API int YOGI_TimerCancel(void* timer);
 YOGI_API int YOGI_BranchCreate(void** branch, void* context, const char* name,
                                const char* description, const char* netname,
                                const char* password, const char* path,
-                               const char* interface, int advport, int advint);
+                               const char* advaddr, int advport, int advint);
 
 /***************************************************************************//**
  * Retrieves information about a local branch.
@@ -537,7 +538,7 @@ YOGI_API int YOGI_BranchCreate(void** branch, void* context, const char* name,
  *      "path":                 "/Cooling System/Fan Controller",
  *      "hostname":             "beaglebone",
  *      "pid":                  4124,
- *      "interface":            "TODO",
+ *      "advertising_address":  "ff31::8000:2439",
  *      "advertising_port":     13531,
  *      "advertising_interval": 1.0,
  *      "start_time":           "2018-04-23T18:25:43.511Z",

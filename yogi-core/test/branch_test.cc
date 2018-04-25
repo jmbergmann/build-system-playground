@@ -72,7 +72,7 @@ TEST_F(BranchTest, GetInfoJson) {
   EXPECT_EQ(pt.get("path", "NOT FOUND"), std::string("/") + default_name);
   EXPECT_EQ(pt.get("hostname", "NOT FOUND"), utils::GetHostname());
   EXPECT_EQ(pt.get("pid", -1), utils::GetPid());
-  EXPECT_EQ(pt.get("interface", "NOT FOUND"), api::kDefaultInterface);
+  EXPECT_EQ(pt.get("advertising_address", "NOT FOUND"), api::kDefaultAdvAddress);
   EXPECT_EQ(pt.get("advertising_port", -1), api::kDefaultAdvPort);
   EXPECT_EQ(pt.get("advertising_interval", -1),
             (float)api::kDefaultAdvInterval / 1000.0f);

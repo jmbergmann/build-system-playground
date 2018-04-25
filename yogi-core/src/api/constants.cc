@@ -21,8 +21,8 @@ void GetConstant(void* dest, int constant) {
       *static_cast<int*>(dest) = kVersionPatch;
       break;
 
-    case YOGI_CONST_DEFAULT_INTERFACE:
-      *static_cast<const char**>(dest) = kDefaultInterface;
+    case YOGI_CONST_DEFAULT_ADV_ADDRESS:
+      *static_cast<const char**>(dest) = kDefaultAdvAddress;
       break;
 
     case YOGI_CONST_DEFAULT_ADV_PORT:

@@ -5,6 +5,7 @@
 
 #include <boost/uuid/uuid.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/asio.hpp>
 #include <chrono>
 #include <vector>
 #include <string>
@@ -16,7 +17,8 @@ class Branch : public api::ExposedObjectT<Branch, api::ObjectType::kBranch> {
  public:
   Branch(ContextPtr context, std::string name, std::string description,
          std::string net_name, std::string password, std::string path,
-         std::string interface, int adv_port, std::chrono::milliseconds adv_interval);
+         std::string adv_address, int adv_port,
+         std::chrono::milliseconds adv_interval);
 
   const boost::uuids::uuid& GetUuid() const {
     return uuid_;
@@ -38,10 +40,14 @@ class Branch : public api::ExposedObjectT<Branch, api::ObjectType::kBranch> {
   const std::string net_name_;
   const std::string password_;
   const std::string path_;
-  const std::string interface_;
+  const std::string adv_address_;
   const int adv_port_;
   const std::chrono::milliseconds adv_interval_;
   const boost::posix_time::ptime start_time_;
+
+  boost::asio::ip::udp::endpoint adv_endpoint_;
+  boost::asio::ip::udp::socket adv_socket_;
+  boost::asio::steady_timer adv_timer_;
 };
 
 typedef std::shared_ptr<Branch> BranchPtr;

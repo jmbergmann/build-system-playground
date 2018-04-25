@@ -3,7 +3,7 @@
 #include "../config.h"
 #include "../api/object.h"
 
-#include <boost/asio/io_service.hpp>
+#include <boost/asio/io_context.hpp>
 #include <chrono>
 #include <functional>
 #include <mutex>
@@ -17,7 +17,7 @@ class Context : public api::ExposedObjectT<Context, api::ObjectType::kContext> {
   Context();
   virtual ~Context();
 
-  boost::asio::io_service& IoService() { return ios_; }
+  boost::asio::io_context& IoContext() { return ioc_; }
 
   int Poll();
   int PollOne();
@@ -38,8 +38,8 @@ class Context : public api::ExposedObjectT<Context, api::ObjectType::kContext> {
   template <typename Fn>
   int RunImpl(Fn fn);
 
-  boost::asio::io_service ios_;
-  boost::asio::io_service::work work_;
+  boost::asio::io_context ioc_;
+  boost::asio::io_context::work work_;
   bool running_;
   std::mutex mutex_;
   std::condition_variable cv_;

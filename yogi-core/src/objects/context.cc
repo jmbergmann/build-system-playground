@@ -5,7 +5,7 @@
 
 namespace objects {
 
-Context::Context() : work_(ios_), running_(false) {
+Context::Context() : work_(ioc_), running_(false) {
 }
 
 Context::~Context() {
@@ -14,40 +14,40 @@ Context::~Context() {
 }
 
 int Context::Poll() {
-  return RunImpl([&] { return ios_.poll(); });
+  return RunImpl([&] { return ioc_.poll(); });
 }
 
 int Context::PollOne() {
-  return RunImpl([&] { return ios_.poll_one(); });
+  return RunImpl([&] { return ioc_.poll_one(); });
 }
 
 int Context::Run() {
-  return RunImpl([&] { return ios_.run(); });
+  return RunImpl([&] { return ioc_.run(); });
 }
 
 int Context::RunOne() {
-  return RunImpl([&] { return ios_.run_one(); });
+  return RunImpl([&] { return ioc_.run_one(); });
 }
 
 int Context::RunFor(std::chrono::nanoseconds dur) {
-  return RunImpl([&] { return ios_.run_for(dur); });
+  return RunImpl([&] { return ioc_.run_for(dur); });
 }
 
 int Context::RunOneFor(std::chrono::nanoseconds dur) {
-  return RunImpl([&] { return ios_.run_one_for(dur); });
+  return RunImpl([&] { return ioc_.run_one_for(dur); });
 }
 
 void Context::RunInBackground() {
   SetRunningFlagAndReset();
   thread_ = std::thread([&] {
-    ios_.run();
+    ioc_.run();
     ClearRunningFlag();
   });
 }
 
 void Context::Stop() {
   std::lock_guard<std::mutex> lock(mutex_);
-  ios_.stop();
+  ioc_.stop();
 }
 
 bool Context::WaitForRunning(std::chrono::nanoseconds timeout) {
@@ -81,7 +81,7 @@ bool Context::WaitForStopped(std::chrono::nanoseconds timeout) {
 }
 
 void Context::Post(std::function<void ()> fn) {
-  boost::asio::post(ios_, fn);
+  boost::asio::post(ioc_, fn);
 }
 
 void Context::SetRunningFlagAndReset() {
@@ -91,7 +91,7 @@ void Context::SetRunningFlagAndReset() {
   }
 
   running_ = true;
-  ios_.restart();
+  ioc_.restart();
   cv_.notify_all();
 }
 

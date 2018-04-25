@@ -4,7 +4,7 @@
 namespace objects {
 
 Timer::Timer(ContextPtr context)
-    : context_(context), timer_(context->IoService()) {}
+    : context_(context), timer_(context->IoContext()) {}
 
 void Timer::Start(std::chrono::nanoseconds timeout,
                   std::function<void(int res)> fn) {
