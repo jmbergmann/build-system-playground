@@ -20,6 +20,8 @@ class Branch : public api::ExposedObjectT<Branch, api::ObjectType::kBranch> {
          std::string adv_address, int adv_port,
          std::chrono::milliseconds adv_interval);
 
+  void Start();
+
   const boost::uuids::uuid& GetUuid() const {
     return uuid_;
   }
@@ -33,6 +35,11 @@ class Branch : public api::ExposedObjectT<Branch, api::ObjectType::kBranch> {
       const;
 
  private:
+  std::vector<char> MakeAdvertisingMessage() const;
+  void SetupAcceptor();
+  void SendAdvertisement();
+  void StartAdvertisingTimer();
+
   const ContextPtr context_;
   const boost::uuids::uuid uuid_;
   const std::string name_;
@@ -45,9 +52,12 @@ class Branch : public api::ExposedObjectT<Branch, api::ObjectType::kBranch> {
   const std::chrono::milliseconds adv_interval_;
   const boost::posix_time::ptime start_time_;
 
-  boost::asio::ip::udp::endpoint adv_endpoint_;
-  boost::asio::ip::udp::socket adv_socket_;
-  boost::asio::steady_timer adv_timer_;
+  boost::asio::ip::udp::endpoint adv_tx_endpoint_;
+  boost::asio::ip::udp::socket adv_tx_socket_;
+  boost::asio::steady_timer adv_tx_timer_;
+  std::vector<char> adv_message_;
+
+  boost::asio::ip::tcp::acceptor acceptor_;
 };
 
 typedef std::shared_ptr<Branch> BranchPtr;

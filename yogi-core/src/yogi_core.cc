@@ -27,16 +27,23 @@
                 (1000000000 > nanoseconds && nanoseconds >= 0)); \
   }
 
-#define CATCH_AND_RETURN          \
-  catch (const api::Error& err) { \
-    return err.error_code();      \
-  }                               \
-  catch (const std::bad_alloc&) { \
-    return YOGI_ERR_BAD_ALLOC;    \
-  }                               \
-  catch (...) {                   \
-    return YOGI_ERR_UNKNOWN;      \
-  }                               \
+#define CATCH_AND_RETURN                                                  \
+  catch (const api::Error& err) {                                         \
+    return err.error_code();                                              \
+  }                                                                       \
+  catch (const std::bad_alloc&) {                                         \
+    return YOGI_ERR_BAD_ALLOC;                                            \
+  }                                                                       \
+  catch (const std::exception& e) {                                       \
+    std::cerr << __FILE__ << ':' << __LINE__ << ':'                       \
+              << "INTERNAL ERROR: " << e.what() << std::endl;             \
+    return YOGI_ERR_UNKNOWN;                                              \
+  }                                                                       \
+  catch (...) {                                                           \
+    std::cerr << __FILE__ << ':' << __LINE__ << ':' << "INTERNAL ERROR: " \
+              << "Unknown error" << std::endl;                            \
+    return YOGI_ERR_UNKNOWN;                                              \
+  }                                                                       \
   return YOGI_OK;
 
 namespace {
@@ -323,6 +330,8 @@ YOGI_API int YOGI_BranchCreate(void** branch, void* context, const char* name,
     auto brn = objects::Branch::Create(
         ctx, final_name, final_description, final_netname, final_password,
         final_path, final_advaddr, final_advport, final_advint);
+    brn->Start();
+
     *branch = api::ObjectRegister::Register(brn);
   }
   CATCH_AND_RETURN;
