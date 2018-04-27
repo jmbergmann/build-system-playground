@@ -90,11 +90,11 @@ void Branch::SetupAcceptor() {
 }
 
 void Branch::SendAdvertisement() {
-  auto weak_self = this->weak_from_this();
+  auto weak_self = this->MakeWeakPtr();
   adv_tx_socket_.async_send_to(
       boost::asio::buffer(adv_message_), adv_tx_endpoint_,
       [weak_self](auto ec, auto) {
-        auto self = std::static_pointer_cast<Branch>(weak_self.lock());
+        auto self = weak_self.lock();
         if (!self) {
           return;
         }
@@ -110,9 +110,9 @@ void Branch::SendAdvertisement() {
 void Branch::StartAdvertisingTimer() {
   adv_tx_timer_.expires_after(adv_interval_);
 
-  auto weak_self = this->weak_from_this();
+  auto weak_self = this->MakeWeakPtr();
   adv_tx_timer_.async_wait([weak_self](auto ec) {
-    auto self = std::static_pointer_cast<Branch>(weak_self.lock());
+    auto self = weak_self.lock();
     if (!self) {
       return;
     }

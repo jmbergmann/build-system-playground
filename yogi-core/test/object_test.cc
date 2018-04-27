@@ -52,6 +52,12 @@ TEST_F(ObjectTest, Cast) {
   EXPECT_THROW(obj->Cast<Dummy>(), api::Error);
 }
 
+TEST_F(ObjectTest, MakeWeakPtr) {
+  auto obj = MyObject::Create(123);
+  auto weak = obj->MakeWeakPtr();
+  EXPECT_EQ(weak.lock(), obj);
+}
+
 TEST_F(ObjectTest, RegisterAndDestroyObject) {
   auto dtor_calls = MyObject::GetDtorCalls();
 
