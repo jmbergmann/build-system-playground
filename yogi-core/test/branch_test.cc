@@ -117,7 +117,7 @@ TEST_F(BranchTest, Advertising) {
 
   RunContextInBackground();
 
-  ioc.run_for(kAdvInterval * 2);
+  ioc.run_one_for(1s);
 
   ASSERT_TRUE(rx_callback_called) << "UDP receive callback function not called";
   EXPECT_FALSE(error_code) << error_code.message();

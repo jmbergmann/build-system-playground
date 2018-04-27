@@ -31,11 +31,11 @@ class TimerTest : public ::testing::Test {
 
 TEST_F(TimerTest, Start) {
   int handler_res = 1;
+  auto start_time = std::chrono::steady_clock::now();
   int res = YOGI_TimerStart(
       timer_, 0, 1000000,  // 1ms timeout
       [](int res, void* handler_res) { *static_cast<int*>(handler_res) = res; },
       &handler_res);
-  auto start_time = std::chrono::steady_clock::now();
   EXPECT_EQ(res, YOGI_OK);
 
   YOGI_ContextRunOneFor(context_, nullptr, 1, 0);

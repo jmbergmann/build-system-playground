@@ -80,6 +80,20 @@ class ObjectRegister {
     return obj->second->Cast<TO>();
   }
 
+  template <typename TO>
+  static std::vector<std::shared_ptr<TO>> GetAll() {
+    std::lock_guard<std::mutex> lock(mutex_);
+
+    std::vector<std::shared_ptr<TO>> vec;
+    for (auto& obj : objects_) {
+      if (obj.second->Type() == TO::StaticType()) {
+        vec.push_back(std::static_pointer_cast<TO>(obj.second));
+      }
+    }
+
+    return vec;
+  }
+
   static ObjectHandle Register(ObjectPtr obj);
   static void Destroy(ObjectHandle handle);
   static void DestroyAll();

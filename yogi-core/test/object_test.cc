@@ -19,23 +19,30 @@ class MyObject
 
 int MyObject::dtor_calls_ = 0;
 
-TEST(ObjectTest, Create) {
+class ObjectTest : public ::testing::Test {
+ protected:
+  virtual void TearDown() override {
+    api::ObjectRegister::DestroyAll();
+  }
+};
+
+TEST_F(ObjectTest, Create) {
   auto obj = MyObject::Create(123);
   EXPECT_TRUE(obj.unique());
 }
 
-TEST(ObjectTest, Type) {
+TEST_F(ObjectTest, Type) {
   auto obj = MyObject::Create(123);
   EXPECT_EQ(obj->Type(), api::ObjectType::kContext);
   EXPECT_EQ(MyObject::StaticType(), api::ObjectType::kContext);
 }
 
-TEST(ObjectTest, Handle) {
+TEST_F(ObjectTest, Handle) {
   auto obj = MyObject::Create(123);
   EXPECT_NE(obj->Handle(), nullptr);
 }
 
-TEST(ObjectTest, Cast) {
+TEST_F(ObjectTest, Cast) {
   auto my_obj = MyObject::Create(123);
   auto obj = std::dynamic_pointer_cast<api::ExposedObject>(my_obj);
   auto my_obj_2 = obj->Cast<MyObject>();
@@ -45,7 +52,7 @@ TEST(ObjectTest, Cast) {
   EXPECT_THROW(obj->Cast<Dummy>(), api::Error);
 }
 
-TEST(ObjectTest, RegisterAndDestroyObject) {
+TEST_F(ObjectTest, RegisterAndDestroyObject) {
   auto dtor_calls = MyObject::GetDtorCalls();
 
   auto obj = MyObject::Create(123);
@@ -65,7 +72,7 @@ TEST(ObjectTest, RegisterAndDestroyObject) {
   EXPECT_THROW(api::ObjectRegister::Destroy(handle), api::Error);
 }
 
-TEST(ObjectTest, GetRegisteredObject) {
+TEST_F(ObjectTest, GetRegisteredObject) {
   EXPECT_THROW(api::ObjectRegister::Get(nullptr), api::Error);
 
   auto obj = MyObject::Create(123);
@@ -80,7 +87,21 @@ TEST(ObjectTest, GetRegisteredObject) {
   EXPECT_THROW(api::ObjectRegister::Get<Dummy>(handle), api::Error);
 }
 
-TEST(ObjectTest, DestroyAllObjects) {
+TEST_F(ObjectTest, GetAllRegisteredObjectsOfType) {
+  auto obj1 = MyObject::Create(123);
+  api::ObjectRegister::Register(obj1);
+  auto obj2 = MyObject::Create(456);
+  api::ObjectRegister::Register(obj2);
+  auto dummy = Dummy::Create();
+  api::ObjectRegister::Register(dummy);
+
+  auto vec = api::ObjectRegister::GetAll<MyObject>();
+  EXPECT_EQ(vec.size(), 2);
+  EXPECT_EQ(std::count(vec.begin(), vec.end(), obj1), 1);
+  EXPECT_EQ(std::count(vec.begin(), vec.end(), obj2), 1);
+}
+
+TEST_F(ObjectTest, DestroyAllObjects) {
   EXPECT_NO_THROW(api::ObjectRegister::DestroyAll());
 
   auto obj1 = MyObject::Create(123);

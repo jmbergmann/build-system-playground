@@ -178,6 +178,9 @@ YOGI_API int YOGI_Destroy(void* object);
  * Destroys all previously created objects. All handles will be invalidated and
  * must not be used any more. This effectively resets the library.
  *
+ * This function must be called outside of any handler function that is executed
+ * through a context's event loop.
+ *
  * Destroying objects will cause any active asynchronous operations to get
  * canceled and the corresponding completion handlers will be invoked with an
  * error code of #YOGI_ERR_CANCELED.

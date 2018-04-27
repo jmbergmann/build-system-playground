@@ -90,10 +90,17 @@ void Branch::SetupAcceptor() {
 }
 
 void Branch::SendAdvertisement() {
+  auto weak_self = this->weak_from_this();
   adv_tx_socket_.async_send_to(
-      boost::asio::buffer(adv_message_), adv_tx_endpoint_, [this](auto ec, auto) {
+      boost::asio::buffer(adv_message_), adv_tx_endpoint_,
+      [weak_self](auto ec, auto) {
+        auto self = std::static_pointer_cast<Branch>(weak_self.lock());
+        if (!self) {
+          return;
+        }
+
         if (!ec) {
-          this->StartAdvertisingTimer();
+          self->StartAdvertisingTimer();
         } else if (ec != boost::asio::error::operation_aborted) {
           // TODO: logging error
         }
@@ -102,9 +109,16 @@ void Branch::SendAdvertisement() {
 
 void Branch::StartAdvertisingTimer() {
   adv_tx_timer_.expires_after(adv_interval_);
-  adv_tx_timer_.async_wait([this](auto ec) {
+
+  auto weak_self = this->weak_from_this();
+  adv_tx_timer_.async_wait([weak_self](auto ec) {
+    auto self = std::static_pointer_cast<Branch>(weak_self.lock());
+    if (!self) {
+      return;
+    }
+
     if (!ec) {
-      this->SendAdvertisement();
+      self->SendAdvertisement();
     } else if (ec != boost::asio::error::operation_aborted) {
       // TODO: logging error
     }
