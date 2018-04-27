@@ -14,6 +14,11 @@ set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake")
 include (cotire)
 include (GNUInstallDirs)
 
+# Windows feature set
+if (WIN32)
+  add_definitions(-D_WIN32_WINNT=0x0601) # Windows 7
+endif ()
+
 # OpenSSL
 find_package (OpenSSL REQUIRED)
 

@@ -34,9 +34,15 @@ add_library (yogi-core SHARED
 
 target_link_libraries (yogi-core
   yogi-core-static
-  OpenSSL::Crypto
   ${Boost_LIBRARIES}
+  OpenSSL::Crypto
 )
+
+if (WIN32)
+  target_link_libraries (yogi-core
+    bcrypt.lib
+  )
+endif ()
 
 cotire (yogi-core)
 
