@@ -20,7 +20,6 @@ class AdvertisingSender
                     std::chrono::milliseconds adv_interval,
                     const boost::uuids::uuid& uuid,
                     const boost::asio::ip::tcp::endpoint& tcp_acceptor_ep);
-
   void Start();
   std::size_t GetMessageSize() const { return message_.size(); }
 
@@ -28,8 +27,9 @@ class AdvertisingSender
   void SetupSocket();
   std::vector<char> MakeAdvMessage();
   void SendAdvertisement();
-  void StartAdvertisingTimer();
+  void StartTimer();
 
+  const ContextPtr context_;
   const std::chrono::milliseconds interval_;
   const boost::uuids::uuid uuid_;
   const boost::asio::ip::tcp::endpoint tcp_acceptor_ep_;

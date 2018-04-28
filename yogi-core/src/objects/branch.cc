@@ -28,9 +28,6 @@ Branch::Branch(ContextPtr context, std::string name, std::string description,
               static_cast<unsigned short>(adv_port)),
       adv_interval_(adv_interval),
       start_time_(utils::GetCurrentUtcTime()),
-      adv_tx_socket_(context_->IoContext()),
-      adv_tx_timer_(context->IoContext()),
-      adv_rx_socket_(context_->IoContext()),
       acceptor_(context_->IoContext()) {
   SetupAcceptor();
   SetupAdvertising();
@@ -38,7 +35,7 @@ Branch::Branch(ContextPtr context, std::string name, std::string description,
 
 void Branch::Start() {
   adv_sender_->Start();
-  ReceiveAdvertisement();
+  adv_receiver_->Start();
 }
 
 std::string Branch::MakeInfo() const {
@@ -102,57 +99,16 @@ void Branch::SetupAdvertising() {
   adv_sender_ = std::make_shared<detail::AdvertisingSender>(
       context_, adv_ep_, adv_interval_, uuid_, acceptor_.local_endpoint());
 
-  boost::system::error_code ec;
-
-  adv_rx_buffer_.resize(adv_sender_->GetMessageSize() + 1);
-
-  adv_rx_socket_.open(adv_ep_.protocol(), ec);
-  if (ec) {
-    throw api::Error(YOGI_ERR_OPEN_SOCKET_FAILED);
-  }
-
-  adv_rx_socket_.set_option(boost::asio::ip::udp::socket::reuse_address(true),
-                            ec);
-  if (ec) {
-    throw api::Error(YOGI_ERR_SET_SOCKET_OPTION_FAILED);
-  }
-
-  adv_rx_socket_.bind(
-      boost::asio::ip::udp::endpoint(adv_ep_.protocol(), adv_ep_.port()), ec);
-  if (ec) {
-    throw api::Error(YOGI_ERR_BIND_SOCKET_FAILED);
-  }
-
-  adv_rx_socket_.set_option(
-      boost::asio::ip::multicast::join_group(adv_ep_.address()), ec);
-  if (ec) {
-    throw api::Error(YOGI_ERR_SET_SOCKET_OPTION_FAILED);
-  }
-}
-
-void Branch::ReceiveAdvertisement() {
-  auto weak_self = this->MakeWeakPtr();
-  adv_rx_socket_.async_receive_from(
-      boost::asio::buffer(adv_rx_buffer_), adv_rx_sender_ep_,
-      [weak_self](auto ec, auto size) {
-        auto self = weak_self.lock();
-        if (!self) return;
-
-        if (!ec) {
-          if (size == self->adv_tx_message_.size()) {
-            self->HandleReceivedAdvertisement();
-            self->ReceiveAdvertisement();
-          } else {
-            // TODO: logging error (unexpected adv size received)
-          }
-        } else if (ec != boost::asio::error::operation_aborted) {
-          // TODO: logging error
-        }
+  adv_receiver_ = std::make_shared<detail::AdvertisingReceiver>(
+      context_, adv_ep_, adv_sender_->GetMessageSize(),
+      [this](auto& uuid, auto tcp_port) {
+        this->OnAdvertisementReceived(uuid, tcp_port);
       });
 }
 
-void Branch::HandleReceivedAdvertisement() {
-  printf("COOOOOOOOOOOOOOOOOOOOOL\n");
+void Branch::OnAdvertisementReceived(const boost::uuids::uuid& uuid,
+                                     unsigned short tcp_port) {
+  printf("ADV RECEIVED\n");
 }
 
 }  // namespace objects

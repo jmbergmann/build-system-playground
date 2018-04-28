@@ -11,7 +11,8 @@ AdvertisingSender::AdvertisingSender(
     ContextPtr context, const boost::asio::ip::udp::endpoint& adv_ep,
     std::chrono::milliseconds adv_interval, const boost::uuids::uuid& uuid,
     const boost::asio::ip::tcp::endpoint& tcp_acceptor_ep)
-    : interval_(adv_interval),
+    : context_(context),
+      interval_(adv_interval),
       uuid_(uuid),
       tcp_acceptor_ep_(tcp_acceptor_ep),
       message_(MakeAdvMessage()),
@@ -43,7 +44,6 @@ std::vector<char> AdvertisingSender::MakeAdvMessage() {
 }
 
 void AdvertisingSender::SendAdvertisement() {
-  shared_from_this();
   auto weak_self = std::weak_ptr<AdvertisingSender>{shared_from_this()};
   socket_.async_send_to(
       boost::asio::buffer(message_), ep_, [weak_self](auto ec, auto) {
@@ -51,14 +51,14 @@ void AdvertisingSender::SendAdvertisement() {
         if (!self) return;
 
         if (!ec) {
-          self->StartAdvertisingTimer();
+          self->StartTimer();
         } else if (ec != boost::asio::error::operation_aborted) {
           // TODO: logging error
         }
       });
 }
 
-void AdvertisingSender::StartAdvertisingTimer() {
+void AdvertisingSender::StartTimer() {
   timer_.expires_after(interval_);
 
   auto weak_self = std::weak_ptr<AdvertisingSender>(shared_from_this());

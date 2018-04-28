@@ -24,23 +24,21 @@ class Branch : public api::ExposedObjectT<Branch, api::ObjectType::kBranch> {
 
   void Start();
 
-  const boost::uuids::uuid& GetUuid() const {
-    return uuid_;
-  }
+  const boost::uuids::uuid& GetUuid() const { return uuid_; }
 
   std::string MakeInfo() const;
   void ForeachDiscoveredBranch(
-      const std::function<void (const boost::uuids::uuid&)>& fn) const;
+      const std::function<void(const boost::uuids::uuid&)>& fn) const;
 
   void ForeachDiscoveredBranch(
-      const std::function<void (const boost::uuids::uuid&, std::string)>& fn)
+      const std::function<void(const boost::uuids::uuid&, std::string)>& fn)
       const;
 
  private:
   void SetupAcceptor();
   void SetupAdvertising();
-  void ReceiveAdvertisement();
-  void HandleReceivedAdvertisement();
+  void OnAdvertisementReceived(const boost::uuids::uuid& uuid,
+                               unsigned short tcp_port);
 
   const ContextPtr context_;
   const boost::uuids::uuid uuid_;
@@ -55,15 +53,6 @@ class Branch : public api::ExposedObjectT<Branch, api::ObjectType::kBranch> {
 
   detail::AdvertisingSenderPtr adv_sender_;
   detail::AdvertisingReceiverPtr adv_receiver_;
-
-  boost::asio::ip::udp::endpoint adv_tx_endpoint_;
-  boost::asio::ip::udp::socket adv_tx_socket_;
-  boost::asio::steady_timer adv_tx_timer_;
-  std::vector<char> adv_tx_message_;
-
-  boost::asio::ip::udp::socket adv_rx_socket_;
-  boost::asio::ip::udp::endpoint adv_rx_sender_ep_;
-  std::vector<char> adv_rx_buffer_;
 
   boost::asio::ip::tcp::acceptor acceptor_;
 };

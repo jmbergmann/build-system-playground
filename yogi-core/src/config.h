@@ -2,9 +2,6 @@
 
 // MSVC-specific
 #ifdef _MSC_VER
-# define _SCL_SECURE_NO_WARNINGS
-# define _CRT_SECURE_NO_WARNINGS
-# define _WINSOCK_DEPRECATED_NO_WARNINGS
 # pragma warning (disable: 4250 4503)
 #endif
 
