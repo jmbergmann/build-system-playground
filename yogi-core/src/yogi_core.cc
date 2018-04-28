@@ -34,16 +34,7 @@
   catch (const std::bad_alloc&) {                                         \
     return YOGI_ERR_BAD_ALLOC;                                            \
   }                                                                       \
-  catch (const std::exception& e) {                                       \
-    std::cerr << __FILE__ << ':' << __LINE__ << ':'                       \
-              << "INTERNAL ERROR: " << e.what() << std::endl;             \
-    return YOGI_ERR_UNKNOWN;                                              \
-  }                                                                       \
-  catch (...) {                                                           \
-    std::cerr << __FILE__ << ':' << __LINE__ << ':' << "INTERNAL ERROR: " \
-              << "Unknown error" << std::endl;                            \
-    return YOGI_ERR_UNKNOWN;                                              \
-  }                                                                       \
+                                                                  \
   return YOGI_OK;
 
 namespace {

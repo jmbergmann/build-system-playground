@@ -14,6 +14,8 @@ add_library (yogi-core-static STATIC
   src/api/constants.cc
   src/api/error.cc
   src/api/object.cc
+  src/objects/detail/adv_receiver.cc
+  src/objects/detail/adv_sender.cc
   src/objects/branch.cc
   src/objects/context.cc
   src/objects/timer.cc

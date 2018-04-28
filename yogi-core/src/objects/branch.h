@@ -2,6 +2,8 @@
 
 #include "../config.h"
 #include "context.h"
+#include "detail/adv_receiver.h"
+#include "detail/adv_sender.h"
 
 #include <boost/uuid/uuid.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
@@ -35,15 +37,10 @@ class Branch : public api::ExposedObjectT<Branch, api::ObjectType::kBranch> {
       const;
 
  private:
-  std::vector<char> MakeAdvertisingMessage() const;
   void SetupAcceptor();
   void SetupAdvertising();
-  void SendAdvertisement();
-  void StartAdvertisingTimer();
   void ReceiveAdvertisement();
   void HandleReceivedAdvertisement();
-  boost::asio::ip::tcp::endpoint MakeTcpEndpoint(int port);
-  boost::asio::ip::udp::endpoint MakeUdpEndpoint(int port);
 
   const ContextPtr context_;
   const boost::uuids::uuid uuid_;
@@ -52,10 +49,12 @@ class Branch : public api::ExposedObjectT<Branch, api::ObjectType::kBranch> {
   const std::string net_name_;
   const std::string password_;
   const std::string path_;
-  const boost::asio::ip::address adv_address_;
-  const int adv_port_;
+  const boost::asio::ip::udp::endpoint adv_ep_;
   const std::chrono::milliseconds adv_interval_;
   const boost::posix_time::ptime start_time_;
+
+  detail::AdvertisingSenderPtr adv_sender_;
+  detail::AdvertisingReceiverPtr adv_receiver_;
 
   boost::asio::ip::udp::endpoint adv_tx_endpoint_;
   boost::asio::ip::udp::socket adv_tx_socket_;

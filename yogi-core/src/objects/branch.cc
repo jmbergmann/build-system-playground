@@ -24,8 +24,8 @@ Branch::Branch(ContextPtr context, std::string name, std::string description,
       net_name_(net_name),
       password_(password),
       path_(path),
-      adv_address_(boost::asio::ip::address::from_string(adv_address)),
-      adv_port_(adv_port),
+      adv_ep_(boost::asio::ip::address::from_string(adv_address),
+              static_cast<unsigned short>(adv_port)),
       adv_interval_(adv_interval),
       start_time_(utils::GetCurrentUtcTime()),
       adv_tx_socket_(context_->IoContext()),
@@ -37,7 +37,7 @@ Branch::Branch(ContextPtr context, std::string name, std::string description,
 }
 
 void Branch::Start() {
-  SendAdvertisement();
+  adv_sender_->Start();
   ReceiveAdvertisement();
 }
 
@@ -50,8 +50,8 @@ std::string Branch::MakeInfo() const {
   pt.put("path", path_);
   pt.put("hostname", utils::GetHostname());
   pt.put("pid", utils::GetPid());
-  pt.put("advertising_address", adv_address_.to_string());
-  pt.put("advertising_port", adv_port_);
+  pt.put("advertising_address", adv_ep_.address().to_string());
+  pt.put("advertising_port", adv_ep_.port());
   pt.put("advertising_interval", (float)adv_interval_.count() / 1000.0f);
   pt.put("tcp_server_port", acceptor_.local_endpoint().port());
   pt.put("start_time", utils::TimeToJavaScriptString(start_time_));
@@ -69,22 +69,14 @@ void Branch::ForeachDiscoveredBranch(
     const std::function<void(const boost::uuids::uuid&, std::string)>& fn)
     const {}
 
-std::vector<char> Branch::MakeAdvertisingMessage() const {
-  std::vector<char> vec = {'Y', 'O', 'G', 'I', 0};
-  vec.push_back(api::kVersionMajor);
-  vec.push_back(api::kVersionMinor);
-  vec.insert(vec.end(), uuid_.begin(), uuid_.end());
-  boost::endian::big_uint16_t port = acceptor_.local_endpoint().port();
-  vec.resize(vec.size() + 2);
-  std::memcpy(vec.data() + vec.size() - 2, &port, 2);
-
-  return vec;
-}
-
 void Branch::SetupAcceptor() {
   boost::system::error_code ec;
 
-  auto ep = MakeTcpEndpoint(0);
+  auto protocol = adv_ep_.protocol() == boost::asio::ip::udp::v4()
+                      ? boost::asio::ip::tcp::v4()
+                      : boost::asio::ip::tcp::v6();
+  auto ep = boost::asio::ip::tcp::endpoint(protocol, 0);
+
   acceptor_.open(ep.protocol(), ec);
   if (ec) {
     throw api::Error(YOGI_ERR_OPEN_SOCKET_FAILED);
@@ -107,111 +99,60 @@ void Branch::SetupAcceptor() {
 }
 
 void Branch::SetupAdvertising() {
+  adv_sender_ = std::make_shared<detail::AdvertisingSender>(
+      context_, adv_ep_, adv_interval_, uuid_, acceptor_.local_endpoint());
+
   boost::system::error_code ec;
 
-  adv_tx_endpoint_ = MakeUdpEndpoint(adv_port_);
-  adv_tx_endpoint_.address(adv_address_);
+  adv_rx_buffer_.resize(adv_sender_->GetMessageSize() + 1);
 
-  adv_tx_socket_.open(adv_tx_endpoint_.protocol(), ec);
+  adv_rx_socket_.open(adv_ep_.protocol(), ec);
   if (ec) {
     throw api::Error(YOGI_ERR_OPEN_SOCKET_FAILED);
   }
 
-  adv_tx_message_ = MakeAdvertisingMessage();
-
-  adv_rx_buffer_.resize(adv_tx_message_.size() + 1);
-
-  auto ep = MakeUdpEndpoint(adv_port_);
-  adv_rx_socket_.open(ep.protocol(), ec);
-  if (ec) {
-    throw api::Error(YOGI_ERR_OPEN_SOCKET_FAILED);
-  }
-
-  adv_rx_socket_.set_option(boost::asio::ip::tcp::acceptor::reuse_address(true),
+  adv_rx_socket_.set_option(boost::asio::ip::udp::socket::reuse_address(true),
                             ec);
   if (ec) {
     throw api::Error(YOGI_ERR_SET_SOCKET_OPTION_FAILED);
   }
 
-  adv_rx_socket_.bind(ep, ec);
+  adv_rx_socket_.bind(
+      boost::asio::ip::udp::endpoint(adv_ep_.protocol(), adv_ep_.port()), ec);
   if (ec) {
     throw api::Error(YOGI_ERR_BIND_SOCKET_FAILED);
   }
 
   adv_rx_socket_.set_option(
-      boost::asio::ip::multicast::join_group(adv_address_), ec);
+      boost::asio::ip::multicast::join_group(adv_ep_.address()), ec);
   if (ec) {
     throw api::Error(YOGI_ERR_SET_SOCKET_OPTION_FAILED);
   }
 }
 
-void Branch::SendAdvertisement() {
+void Branch::ReceiveAdvertisement() {
   auto weak_self = this->MakeWeakPtr();
-  adv_tx_socket_.async_send_to(
-      boost::asio::buffer(adv_tx_message_), adv_tx_endpoint_,
-      [weak_self](auto ec, auto) {
+  adv_rx_socket_.async_receive_from(
+      boost::asio::buffer(adv_rx_buffer_), adv_rx_sender_ep_,
+      [weak_self](auto ec, auto size) {
         auto self = weak_self.lock();
         if (!self) return;
 
         if (!ec) {
-          self->StartAdvertisingTimer();
+          if (size == self->adv_tx_message_.size()) {
+            self->HandleReceivedAdvertisement();
+            self->ReceiveAdvertisement();
+          } else {
+            // TODO: logging error (unexpected adv size received)
+          }
         } else if (ec != boost::asio::error::operation_aborted) {
           // TODO: logging error
         }
       });
 }
 
-void Branch::StartAdvertisingTimer() {
-  adv_tx_timer_.expires_after(adv_interval_);
-
-  auto weak_self = this->MakeWeakPtr();
-  adv_tx_timer_.async_wait([weak_self](auto ec) {
-    auto self = weak_self.lock();
-    if (!self) return;
-
-    if (!ec) {
-      self->SendAdvertisement();
-    } else if (ec != boost::asio::error::operation_aborted) {
-      // TODO: logging error
-    }
-  });
-}
-
-void Branch::ReceiveAdvertisement() {
-  auto weak_self = this->MakeWeakPtr();
-  adv_rx_socket_.async_receive_from(boost::asio::buffer(adv_rx_buffer_), adv_rx_sender_ep_, [weak_self](auto ec, auto size) {
-    auto self = weak_self.lock();
-    if (!self) return;
-
-    if (!ec) {
-      if (size == self->adv_tx_message_.size()) {
-        self->HandleReceivedAdvertisement();
-        self->ReceiveAdvertisement();
-      } else {
-        // TODO: logging error (unexpected adv size received)
-      }
-    } else if (ec != boost::asio::error::operation_aborted) {
-      // TODO: logging error
-    }
-  });
-}
-
 void Branch::HandleReceivedAdvertisement() {
   printf("COOOOOOOOOOOOOOOOOOOOOL\n");
-}
-
-boost::asio::ip::tcp::endpoint Branch::MakeTcpEndpoint(int port) {
-  auto protocol = adv_address_.is_v4() ? boost::asio::ip::tcp::v4()
-                                       : boost::asio::ip::tcp::v6();
-  return boost::asio::ip::tcp::endpoint(protocol,
-                                        static_cast<unsigned short>(port));
-}
-
-boost::asio::ip::udp::endpoint Branch::MakeUdpEndpoint(int port) {
-  auto protocol = adv_address_.is_v4() ? boost::asio::ip::udp::v4()
-                                       : boost::asio::ip::udp::v6();
-  return boost::asio::ip::udp::endpoint(protocol,
-                                        static_cast<unsigned short>(port));
 }
 
 }  // namespace objects
