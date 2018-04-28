@@ -66,6 +66,35 @@ YOGI_API int YOGI_GetConstant(void* dest, int constant) {
   CATCH_AND_RETURN;
 }
 
+YOGI_API int YOGI_TraceToHook(void (*fn)(int, int, int, const char*),
+                              int verbosity) {
+  CHECK_PARAM(YOGI_VB_NONE <= verbosity && verbosity <= YOGI_VB_TRACE);
+
+  try {
+  }
+  CATCH_AND_RETURN;
+}
+
+YOGI_API int YOGI_TraceToStderr(const char* fmt, int verbosity) {
+  CHECK_PARAM(fmt == nullptr || *fmt != '\0');
+  CHECK_PARAM(YOGI_VB_NONE <= verbosity && verbosity <= YOGI_VB_TRACE);
+
+  try {
+  }
+  CATCH_AND_RETURN;
+}
+
+YOGI_API int YOGI_TraceToFile(const char* filename, const char* fmt,
+                              int verbosity) {
+  CHECK_PARAM(filename == nullptr || *filename != '\0');
+  CHECK_PARAM(fmt == nullptr || *fmt != '\0');
+  CHECK_PARAM(YOGI_VB_NONE <= verbosity && verbosity <= YOGI_VB_TRACE);
+
+  try {
+  }
+  CATCH_AND_RETURN;
+}
+
 YOGI_API int YOGI_Destroy(void* object) {
   CHECK_PARAM(object != nullptr);
 

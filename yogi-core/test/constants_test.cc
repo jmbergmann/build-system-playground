@@ -34,4 +34,5 @@ TEST(ConstantsTest, GetEachConstant) {
   check_constant(YOGI_CONST_DEFAULT_ADV_ADDRESS,  kDefaultAdvAddress);
   check_constant(YOGI_CONST_DEFAULT_ADV_PORT,     kDefaultAdvPort);
   check_constant(YOGI_CONST_DEFAULT_ADV_INTERVAL, kDefaultAdvInterval);
+  check_constant(YOGI_CONST_DEFAULT_TRACE_FORMAT, kDefaultTraceFormat);
 }

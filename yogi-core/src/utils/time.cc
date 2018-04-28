@@ -15,7 +15,7 @@ boost::posix_time::ptime GetCurrentUtcTime() {
 
 std::string TimeToJavaScriptString(const boost::posix_time::ptime& time) {
   auto facet = new boost::posix_time::time_facet();
-  facet->format("%Y-%m-%dT%H:%M:%S.%fZ");
+  facet->format("%Y-%m-%dT%T.%fZ");
 
   std::ostringstream oss;
   oss.imbue(std::locale(std::locale::classic(), facet));

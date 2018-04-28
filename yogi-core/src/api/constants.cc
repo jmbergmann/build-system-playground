@@ -33,6 +33,10 @@ void GetConstant(void* dest, int constant) {
       *static_cast<int*>(dest) = kDefaultAdvInterval;
       break;
 
+    case YOGI_CONST_DEFAULT_TRACE_FORMAT:
+      *static_cast<const char**>(dest) = kDefaultTraceFormat;
+      break;
+
     default:
       throw Error(YOGI_ERR_INVALID_PARAM);
   }

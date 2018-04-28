@@ -47,6 +47,9 @@
 //! Default advertising interval in milliseconds (integer)
 #define YOGI_CONST_DEFAULT_ADV_INTERVAL 7
 
+//! Default textual format for trace entries
+#define YOGI_CONST_DEFAULT_TRACE_FORMAT 8
+
 //! @}
 //!
 //! @defgroup EC Error Codes
@@ -103,6 +106,49 @@
 
 //! Could not set a socket option
 #define YOGI_ERR_SET_SOCKET_OPTION_FAILED -15
+
+//! @}
+//!
+//! @defgroup VB Log verbosity
+//!
+//! Verbosity levels for logging
+//!
+//! @{
+
+//! Used to disable logging
+#define YOGI_VB_NONE -1
+
+//! Fatal errors are error that requires a process restart
+#define YOGI_VB_FATAL 0
+
+//! Errors that the system can recover from
+#define YOGI_VB_ERROR 1
+
+//! Warnings
+#define YOGI_VB_WARNING 2
+
+//! Useful general information about the system state
+#define YOGI_VB_INFO 3
+
+//! Information for debugging
+#define YOGI_VB_DEBUG 4
+
+//! Detailed debugging
+#define YOGI_VB_TRACE 5
+
+//! @}
+//!
+//! @defgroup BC Boolean Constants
+//!
+//! Definitions for true and false
+//!
+//! @{
+
+//! Represents a logical false
+#define YOGI_FALSE 0
+
+//! Represents a logical true
+#define YOGI_TRUE 1
 
 //! @}
 
@@ -167,6 +213,102 @@ YOGI_API const char* YOGI_GetErrorString(int err);
  * \returns [<0] An error code in case of a failure (see \ref EC)
  ******************************************************************************/
 YOGI_API int YOGI_GetConstant(void* dest, int constant);
+
+/***************************************************************************//**
+ * Installs a callback function for receiving library-internal logging.
+ *
+ * This function can be used to get notified whenever the YOGI library itself
+ * produces log messages. These messages can then be processed further in user
+ * code.
+ *
+ * Only one callback function can be registered. Calling YOGI_TraceToHook()
+ * again will override the previous function. Setting \p fn to NULL or
+ * \p verbosity to #YOGI_VB_NONE will disable the hook.
+ *
+ * Note: The library will call \p fn from only one thread at a time, i.e. \p fn
+ *       does not have to be thread-safe.
+ *
+ * The parameters passed to \p fn are:
+ *  -# *severity*: Severity (verbosity) of the message (see \ref VB)
+ *  -# *stampsec*: Timestamp of the message; seconds since 01/01/2018
+ *  -# *stampns*: Timestamp of the message; nanoseconds part
+ *  -# *msg*: Log message
+ *
+ * \param[in] fn        Callback function
+ * \param[in] verbosity Maximum verbosity of messages to call \p fn for
+ *
+ * \returns [=0] #YOGI_OK if successful
+ * \returns [<0] An error code in case of a failure (see \ref EC)
+ ******************************************************************************/
+YOGI_API int YOGI_TraceToHook(void (*fn)(int, int, int, const char*),
+                              int verbosity);
+
+/***************************************************************************//**
+ * Allows the YOGI to write library-internal logging to stderr.
+ *
+ * This function causes the library to write logging information to stderr. This
+ * is useful for debugging.
+ *
+ * Writing to stderr can be disabled by setting \p verbosity to #YOGI_VB_NONE.
+ *
+ * The \p fmt parameter describes the textual format of a log entry. The
+ * following placeholders can be used:
+ *  - *%Y*: Four digit year
+ *  - *%m*: Month name as a decimal 01 to 12
+ *  - *%d*: Day of the month as decimal 01 to 31
+ *  - *%H*: The hour as a decimal number using a 24-hour clock (range 00 to 23)
+ *  - *%M*: The minute as a decimal 00 to 59
+ *  - *%S*: Seconds as a decimal 00 to 59
+ *  - *%T*: The time in 24-hour notation (%H:%M:%S)
+ *  - *%3*: Milliseconds as decimal number 000 to 999
+ *  - *%6*: Microseconds as decimal number 000 to 999
+ *  - *%9*: Nanoseconds as decimal number 000 to 999 (nanoseconds are useless)
+ *  - *%V*: Verbosity as three letter string (e.g. WRN or ERR)
+ *  - *%X*: Log message
+ *  - *%P*: Process ID (PID)
+ *  - *%t*: Thread ID
+ *  - *%%*: A % sign
+ *  - *%f*: Source filename
+ *  - *%l*: Source line number
+ *
+ * \param[in] fmt       Format of a trace entry (set to NULL for default)
+ * \param[in] verbosity Maximum verbosity of messages to log to stderr
+ *
+ * \returns [=0] #YOGI_OK if successful
+ * \returns [<0] An error code in case of a failure (see \ref EC)
+ ******************************************************************************/
+YOGI_API int YOGI_TraceToStderr(const char* fmt, int verbosity);
+
+/***************************************************************************//**
+ * Creates log file for library-internal logging.
+ *
+ * This function opens a file to write logging information to. This is useful
+ * for debugging. If the file with the given filename already exists then it
+ * will be overwritten.
+ *
+ * Writing to a log file can be disabled by setting \p filename to NULL or
+ * \p verbosity to #YOGI_VB_NONE.
+ *
+ * The \p filename parameter supports the following placeholders:
+ *  - *%Y*: Four digit year
+ *  - *%m*: Month name as a decimal 01 to 12
+ *  - *%d*: Day of the month as decimal 01 to 31
+ *  - *%H*: The hour as a decimal number using a 24-hour clock (range 00 to 23)
+ *  - *%M*: The minute as a decimal 00 to 59
+ *  - *%S*: Seconds as a decimal 00 to 59
+ *
+ * The \p fmt parameter describes the textual format of a log entry. See the
+ * YOGI_TraceToStderr() function for supported placeholders.
+ *
+ * \param[in] filename  Path to the logfile (see description for placeholders)
+ * \param[in] fmt       Format of a trace entry (set to NULL for default)
+ * \param[in] verbosity Maximum verbosity of messages to log to stderr
+ *
+ * \returns [=0] #YOGI_OK if successful
+ * \returns [<0] An error code in case of a failure (see \ref EC)
+ ******************************************************************************/
+YOGI_API int YOGI_TraceToFile(const char* filename, const char* fmt,
+                              int verbosity);
 
 /***************************************************************************//**
  * Destroys an object.

@@ -11,6 +11,7 @@ static constexpr const int   kVersionPatch       = YOGI_HDR_VERSION_PATCH;
 static constexpr const char* kDefaultAdvAddress  = "ff31::8000:2439";
 static constexpr const int   kDefaultAdvPort     = 13531;
 static constexpr const int   kDefaultAdvInterval = 1000;
+static constexpr const char* kDefaultTraceFormat = "%Y-%m-%d %T.%3 %V: %X";
 
 void GetConstant(void* dest, int constant);
 
