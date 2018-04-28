@@ -37,8 +37,13 @@ class Branch : public api::ExposedObjectT<Branch, api::ObjectType::kBranch> {
  private:
   std::vector<char> MakeAdvertisingMessage() const;
   void SetupAcceptor();
+  void SetupAdvertising();
   void SendAdvertisement();
   void StartAdvertisingTimer();
+  void ReceiveAdvertisement();
+  void HandleReceivedAdvertisement();
+  boost::asio::ip::tcp::endpoint MakeTcpEndpoint(int port);
+  boost::asio::ip::udp::endpoint MakeUdpEndpoint(int port);
 
   const ContextPtr context_;
   const boost::uuids::uuid uuid_;
@@ -47,7 +52,7 @@ class Branch : public api::ExposedObjectT<Branch, api::ObjectType::kBranch> {
   const std::string net_name_;
   const std::string password_;
   const std::string path_;
-  const std::string adv_address_;
+  const boost::asio::ip::address adv_address_;
   const int adv_port_;
   const std::chrono::milliseconds adv_interval_;
   const boost::posix_time::ptime start_time_;
@@ -55,7 +60,11 @@ class Branch : public api::ExposedObjectT<Branch, api::ObjectType::kBranch> {
   boost::asio::ip::udp::endpoint adv_tx_endpoint_;
   boost::asio::ip::udp::socket adv_tx_socket_;
   boost::asio::steady_timer adv_tx_timer_;
-  std::vector<char> adv_message_;
+  std::vector<char> adv_tx_message_;
+
+  boost::asio::ip::udp::socket adv_rx_socket_;
+  boost::asio::ip::udp::endpoint adv_rx_sender_ep_;
+  std::vector<char> adv_rx_buffer_;
 
   boost::asio::ip::tcp::acceptor acceptor_;
 };

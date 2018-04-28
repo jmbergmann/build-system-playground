@@ -92,6 +92,18 @@
 //! The supplied buffer is too small
 #define YOGI_ERR_BUFFER_TOO_SMALL -11
 
+//! Could not open a socket
+#define YOGI_ERR_OPEN_SOCKET_FAILED -12
+
+//! Could not bind a socket
+#define YOGI_ERR_BIND_SOCKET_FAILED -13
+
+//! Could not listen on socket
+#define YOGI_ERR_LISTEN_SOCKET_FAILED -14
+
+//! Could not set a socket option
+#define YOGI_ERR_SET_SOCKET_OPTION_FAILED -15
+
 //! @}
 
 #ifndef YOGI_API

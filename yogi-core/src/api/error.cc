@@ -40,6 +40,18 @@ const char* Error::what() const throw() {
 
     case YOGI_ERR_BUFFER_TOO_SMALL:
       return "The supplied buffer is too small";
+
+    case YOGI_ERR_OPEN_SOCKET_FAILED:
+      return "Could not open a socket";
+
+    case YOGI_ERR_BIND_SOCKET_FAILED:
+      return "Could not bind a socket";
+
+    case YOGI_ERR_LISTEN_SOCKET_FAILED:
+      return "Could not listen on socket";
+
+    case YOGI_ERR_SET_SOCKET_OPTION_FAILED:
+      return "Could not set a socket option";
   }
 
   return "Invalid error code";
