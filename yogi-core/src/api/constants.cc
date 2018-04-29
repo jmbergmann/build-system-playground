@@ -33,8 +33,12 @@ void GetConstant(void* dest, int constant) {
       *static_cast<int*>(dest) = kDefaultAdvInterval;
       break;
 
-    case YOGI_CONST_DEFAULT_TRACE_FORMAT:
-      *static_cast<const char**>(dest) = kDefaultTraceFormat;
+    case YOGI_CONST_DEFAULT_LOG_VERBOSITY:
+      *static_cast<int*>(dest) = kDefaultLogVerbosity;
+      break;
+
+    case YOGI_CONST_DEFAULT_LOG_FORMAT:
+      *static_cast<const char**>(dest) = kDefaultLogFormat;
       break;
 
     default:

@@ -47,8 +47,11 @@
 //! Default advertising interval in milliseconds (integer)
 #define YOGI_CONST_DEFAULT_ADV_INTERVAL 7
 
-//! Default textual format for trace entries
-#define YOGI_CONST_DEFAULT_TRACE_FORMAT 8
+//! Default logging verbosity
+#define YOGI_CONST_DEFAULT_LOG_VERBOSITY 8
+
+//! Default textual format for LOG entries
+#define YOGI_CONST_DEFAULT_LOG_FORMAT 9
 
 //! @}
 //!
@@ -151,7 +154,20 @@
 #define YOGI_TRUE 1
 
 //! @}
+//!
+//! @defgroup ST Stream Constants
+//!
+//! Constants for differentiating between stdout and stderr
+//!
+//! @{
 
+//! Standard output
+#define YOGI_STDOUT 0
+
+//! Standard error output
+#define YOGI_STDERR 1
+
+//! @}
 #ifndef YOGI_API
 # ifdef _MSC_VER
 #   define YOGI_API __declspec(dllimport)
@@ -215,41 +231,22 @@ YOGI_API const char* YOGI_GetErrorString(int err);
 YOGI_API int YOGI_GetConstant(void* dest, int constant);
 
 /***************************************************************************//**
- * Installs a callback function for receiving library-internal logging.
+ * Allows the YOGI to write library-internal and user logging to stdout or
+ * stderr.
  *
- * This function can be used to get notified whenever the YOGI library itself
- * produces log messages. These messages can then be processed further in user
- * code.
+ * This function supports colourizing the output if the terminal that the
+ * process is running in supports it. The colour used for a log entry depends on
+ * the entry's severity. For example, errors will be printed in red and warnings
+ * in yellow.
  *
- * Only one callback function can be registered. Calling YOGI_TraceToHook()
- * again will override the previous function. Setting \p fn to NULL or
- * \p verbosity to #YOGI_VB_NONE will disable the hook.
+ * Writing to the console can be disabled by setting \p verbosity to
+ * #YOGI_VB_NONE.
  *
- * Note: The library will call \p fn from only one thread at a time, i.e. \p fn
- *       does not have to be thread-safe.
- *
- * The parameters passed to \p fn are:
- *  -# *severity*: Severity (verbosity) of the message (see \ref VB)
- *  -# *stampsec*: Timestamp of the message; seconds since 01/01/2018
- *  -# *stampns*: Timestamp of the message; nanoseconds part
- *  -# *msg*: Log message
- *
- * \param[in] fn        Callback function
- * \param[in] verbosity Maximum verbosity of messages to call \p fn for
- *
- * \returns [=0] #YOGI_OK if successful
- * \returns [<0] An error code in case of a failure (see \ref EC)
- ******************************************************************************/
-YOGI_API int YOGI_TraceToHook(void (*fn)(int, int, int, const char*),
-                              int verbosity);
-
-/***************************************************************************//**
- * Allows the YOGI to write library-internal logging to stderr.
- *
- * This function causes the library to write logging information to stderr. This
- * is useful for debugging.
- *
- * Writing to stderr can be disabled by setting \p verbosity to #YOGI_VB_NONE.
+ * Each log entry contains the *component* tag which describes which part of a
+ * program issued the log entry. For entries created by the library itself, this
+ * parameter is prefixed with the string "Yogi.", followed by the internal
+ * component name. For example, the component tag for a branch would be
+ * "Yogi.Branch".
  *
  * The \p fmt parameter describes the textual format of a log entry. The
  * following placeholders can be used:
@@ -270,20 +267,58 @@ YOGI_API int YOGI_TraceToHook(void (*fn)(int, int, int, const char*),
  *  - *%%*: A % sign
  *  - *%f*: Source filename
  *  - *%l*: Source line number
+ *  - *%c*: Component that created the entry
  *
- * \param[in] fmt       Format of a trace entry (set to NULL for default)
+ * \param[in] stream    The stream to use (#YOGI_STDOUT or #YOGI_STDERR)
+ * \param[in] colour    Use colours in output (#YOGI_TRUE or #YOGI_FALSE)
+ * \param[in] fmt       Format of a log entry (set to NULL for default)
  * \param[in] verbosity Maximum verbosity of messages to log to stderr
  *
  * \returns [=0] #YOGI_OK if successful
  * \returns [<0] An error code in case of a failure (see \ref EC)
  ******************************************************************************/
-YOGI_API int YOGI_TraceToStderr(const char* fmt, int verbosity);
+YOGI_API int YOGI_LogToConsole(int stream, int colour, const char* fmt,
+                               int verbosity);
 
 /***************************************************************************//**
- * Creates log file for library-internal logging.
+ * Installs a callback function for receiving log entries.
  *
- * This function opens a file to write logging information to. This is useful
- * for debugging. If the file with the given filename already exists then it
+ * This function can be used to get notified whenever the YOGI library itself or
+ * the user produces log messages. These messages can then be processed further
+ * in user code.
+ *
+ * Only one callback function can be registered. Calling LogToHook()
+ * again will override the previous function. Setting \p fn to NULL or
+ * \p verbosity to #YOGI_VB_NONE will disable the hook.
+ *
+ * Note: The library will call \p fn from only one thread at a time, i.e. \p fn
+ *       does not have to be thread-safe.
+ *
+ * The parameters passed to \p fn are:
+ *  -# *severity*: Severity (verbosity) of the message (see \ref VB)
+ *  -# *stampsec*: Timestamp of the message; seconds since 01/01/2018
+ *  -# *stampns*: Timestamp of the message; nanoseconds part
+ *  -# *tid*: Thread ID
+ *  -# *file*: Source file name
+ *  -# *line*: Source file line number
+ *  -# *comp*: Component that created the entry
+ *  -# *msg*: Log message
+ *
+ * \param[in] fn        Callback function
+ * \param[in] verbosity Maximum verbosity of messages to call \p fn for
+ *
+ * \returns [=0] #YOGI_OK if successful
+ * \returns [<0] An error code in case of a failure (see \ref EC)
+ ******************************************************************************/
+YOGI_API int YOGI_LogToHook(void (*fn)(int, int, int, int, const char*, int,
+                                       const char*),
+                            int verbosity);
+
+/***************************************************************************//**
+ * Creates log file.
+ *
+ * This function opens a file to write library-internal and user logging
+ * information to. If the file with the given filename already exists then it
  * will be overwritten.
  *
  * Writing to a log file can be disabled by setting \p filename to NULL or
@@ -298,17 +333,88 @@ YOGI_API int YOGI_TraceToStderr(const char* fmt, int verbosity);
  *  - *%S*: Seconds as a decimal 00 to 59
  *
  * The \p fmt parameter describes the textual format of a log entry. See the
- * YOGI_TraceToStderr() function for supported placeholders.
+ * YOGI_LogToConsole() function for supported placeholders.
  *
- * \param[in] filename  Path to the logfile (see description for placeholders)
+ * \param[in] filename  Path to the log file (see description for placeholders)
  * \param[in] fmt       Format of a trace entry (set to NULL for default)
  * \param[in] verbosity Maximum verbosity of messages to log to stderr
  *
  * \returns [=0] #YOGI_OK if successful
  * \returns [<0] An error code in case of a failure (see \ref EC)
  ******************************************************************************/
-YOGI_API int YOGI_TraceToFile(const char* filename, const char* fmt,
-                              int verbosity);
+YOGI_API int YOGI_LogToFile(const char* filename, const char* fmt,
+                            int verbosity);
+
+/***************************************************************************//**
+ * Creates a logger.
+ *
+ * A logger is an object used for generating log entries that are tagged with
+ * the logger's component tag. A logger's component tag does not have to be
+ * unique, i.e. multiple loggers can be created using the same \p component
+ * parameter.
+ *
+ * The verbosity of new loggers is #YOGI_VB_INFO by default.
+ *
+ * \param[out] logger    Pointer to the logger handle
+ * \param[in]  component The component tag to use
+ *
+ * \returns [=0] #YOGI_OK if successful
+ * \returns [<0] An error code in case of a failure (see \ref EC)
+ ******************************************************************************/
+YOGI_API int YOGI_LoggerCreate(void** logger, const char* component);
+
+/***************************************************************************//**
+ * Sets the verbosity of a particular logger.
+ *
+ * The verbosity of a logger acts as a filter. Only messages with a verbosity
+ * less than or equal to the given value are being logged.
+ *
+ * Note: The verbosity of a logger affects only messages logged through that
+ *       particular logger, i.e. if two loggers have identical component tags
+ *       their verbosity settings are still independent from each other.
+ *
+ * \param[in] logger    Logger handle (set to NULL for the App logger)
+ * \param[in] verbosity Maximum verbosity entries to be logged (see \ref VB)
+ *
+ * \returns [=0] #YOGI_OK if successful
+ * \returns [<0] An error code in case of a failure (see \ref EC)
+ ******************************************************************************/
+YOGI_API int YOGI_LoggerSetVerbosity(void* logger, int verbosity);
+
+/***************************************************************************//**
+ * Sets the verbosity of all loggers matching a given component tag.
+ *
+ * This function finds all loggers whose component tag matches the regular
+ * expression given in the \p components parameter and sets their verbosity
+ * to \p verbosity.
+ *
+ * \param[in] components Regex (ECMAScript) for the component tags to match
+ * \param[in] verbosity  Maximum verbosity entries to be logged (see \ref VB)
+ *
+ * \returns [=0] #YOGI_OK if successful
+ * \returns [<0] An error code in case of a failure (see \ref EC)
+ ******************************************************************************/
+YOGI_API int YOGI_LoggerSetComponentsVerbosity(const char* components,
+                                               int verbosity);
+
+/***************************************************************************//**
+ * Creates a log entry.
+ *
+ * The entry can be generated using a specific logger or, by setting \p logger
+ * to NULL, the App logger will be used. The App logger is always present and
+ * uses the string "App" as the component tag.
+ *
+ * \param[in] logger   The logger to use (set to NULL for the App logger)
+ * \param[in] severity Severity (verbosity) of the entry (see \ref VB)
+ * \param[in] file     Source file name (can be set to NULL)
+ * \param[in] line     Source file line number (can be set to 0)
+ * \param[in] msg      Log message
+ *
+ * \returns [=0] #YOGI_OK if successful
+ * \returns [<0] An error code in case of a failure (see \ref EC)
+ ******************************************************************************/
+YOGI_API int YOGI_LoggerLog(void* logger, int severity, const char* file,
+                            int line, const char* msg);
 
 /***************************************************************************//**
  * Destroys an object.

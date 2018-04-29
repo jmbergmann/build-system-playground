@@ -66,16 +66,10 @@ YOGI_API int YOGI_GetConstant(void* dest, int constant) {
   CATCH_AND_RETURN;
 }
 
-YOGI_API int YOGI_TraceToHook(void (*fn)(int, int, int, const char*),
-                              int verbosity) {
-  CHECK_PARAM(YOGI_VB_NONE <= verbosity && verbosity <= YOGI_VB_TRACE);
-
-  try {
-  }
-  CATCH_AND_RETURN;
-}
-
-YOGI_API int YOGI_TraceToStderr(const char* fmt, int verbosity) {
+YOGI_API int YOGI_LogToConsole(int stream, int colour, const char* fmt,
+                               int verbosity) {
+  CHECK_PARAM(stream == YOGI_STDOUT || stream == YOGI_STDERR);
+  CHECK_PARAM(colour == YOGI_TRUE || colour == YOGI_FALSE);
   CHECK_PARAM(fmt == nullptr || *fmt != '\0');
   CHECK_PARAM(YOGI_VB_NONE <= verbosity && verbosity <= YOGI_VB_TRACE);
 
@@ -84,11 +78,60 @@ YOGI_API int YOGI_TraceToStderr(const char* fmt, int verbosity) {
   CATCH_AND_RETURN;
 }
 
-YOGI_API int YOGI_TraceToFile(const char* filename, const char* fmt,
+YOGI_API int YOGI_LogToHook(void (*fn)(int, int, int, int, const char*, int,
+                                       const char*),
+                            int verbosity) {
+  CHECK_PARAM(YOGI_VB_NONE <= verbosity && verbosity <= YOGI_VB_TRACE);
+
+  try {
+  }
+  CATCH_AND_RETURN;
+}
+
+YOGI_API int YOGI_LogToFile(const char* filename, const char* fmt,
                               int verbosity) {
   CHECK_PARAM(filename == nullptr || *filename != '\0');
   CHECK_PARAM(fmt == nullptr || *fmt != '\0');
   CHECK_PARAM(YOGI_VB_NONE <= verbosity && verbosity <= YOGI_VB_TRACE);
+
+  try {
+  }
+  CATCH_AND_RETURN;
+}
+
+YOGI_API int YOGI_LoggerCreate(void** logger, const char* component) {
+  CHECK_PARAM(logger != nullptr);
+  CHECK_PARAM(component != nullptr && *component != '\0');
+
+  try {
+  }
+  CATCH_AND_RETURN;
+}
+
+YOGI_API int YOGI_LoggerSetVerbosity(void* logger, int verbosity) {
+  CHECK_PARAM(YOGI_VB_NONE <= verbosity && verbosity <= YOGI_VB_TRACE);
+
+  try {
+  }
+  CATCH_AND_RETURN;
+}
+
+YOGI_API int YOGI_LoggerSetComponentsVerbosity(const char* components,
+                                               int verbosity) {
+  CHECK_PARAM(components != nullptr && *components != '\0');
+  CHECK_PARAM(YOGI_VB_NONE <= verbosity && verbosity <= YOGI_VB_TRACE);
+
+  try {
+  }
+  CATCH_AND_RETURN;
+}
+
+YOGI_API int YOGI_LoggerLog(void* logger, int severity, const char* file,
+                            int line, const char* msg) {
+  CHECK_PARAM(YOGI_VB_NONE <= severity && severity <= YOGI_VB_TRACE);
+  CHECK_PARAM(file == nullptr || *file != '\0');
+  CHECK_PARAM(file == nullptr || line >= 0);
+  CHECK_PARAM(msg != nullptr && *msg != '\0');
 
   try {
   }
