@@ -13,6 +13,7 @@ namespace api {
 enum class ObjectType {
   kDummy,  // For testing
   kContext,
+  kLogger,
   kTimer,
   kBranch,
 };

@@ -4,10 +4,12 @@
 #include "api/error.h"
 #include "objects/context.h"
 #include "objects/branch.h"
+#include "objects/logger.h"
 #include "objects/timer.h"
 #include "utils/system.h"
 
 #include <stdexcept>
+#include <regex>
 
 #define CHECK_PARAM(cond)                       \
   {                                             \
@@ -34,7 +36,19 @@
   catch (const std::bad_alloc&) {                                         \
     return YOGI_ERR_BAD_ALLOC;                                            \
   }                                                                       \
-                                                                  \
+  catch (const std::regex_error&) {                                       \
+    return YOGI_ERR_INVALID_REGEX;                                        \
+  }                                                                       \
+  catch (const std::exception& e) {                                       \
+    std::cerr << __FILE__ << ':' << __LINE__ << ':'                       \
+              << "INTERNAL ERROR: " << e.what() << std::endl;             \
+    return YOGI_ERR_UNKNOWN;                                              \
+  }                                                                       \
+  catch (...) {                                                           \
+    std::cerr << __FILE__ << ':' << __LINE__ << ':' << "INTERNAL ERROR: " \
+              << "Unknown error" << std::endl;                            \
+    return YOGI_ERR_UNKNOWN;                                              \
+  }                                                                       \
   return YOGI_OK;
 
 namespace {
@@ -74,6 +88,15 @@ YOGI_API int YOGI_LogToConsole(int stream, int colour, const char* fmt,
   CHECK_PARAM(YOGI_VB_NONE <= verbosity && verbosity <= YOGI_VB_TRACE);
 
   try {
+    if (verbosity == YOGI_VB_NONE) {
+      objects::Logger::SetSink(objects::detail::ConsoleLogSinkPtr());
+    } else {
+      objects::Logger::SetSink(
+          std::make_unique<objects::detail::ConsoleLogSink>(
+              stream == YOGI_STDOUT ? stdout : stderr, !!colour,
+              fmt ? fmt : api::kDefaultLogFormat,
+              static_cast<objects::Logger::Verbosity>(verbosity)));
+    }
   }
   CATCH_AND_RETURN;
 }
@@ -84,6 +107,16 @@ YOGI_API int YOGI_LogToHook(void (*fn)(int, int, int, int, const char*, int,
   CHECK_PARAM(YOGI_VB_NONE <= verbosity && verbosity <= YOGI_VB_TRACE);
 
   try {
+    if (fn == nullptr || verbosity == YOGI_VB_NONE) {
+      objects::Logger::SetSink(objects::detail::HookLogSinkPtr());
+    } else {
+      auto hook_fn = [fn](auto severity, auto& time, int tid, auto file,
+                          int line, auto& component, auto msg) {
+        // TODO: call fn and do some voodoo with the timestamp
+      };
+      objects::Logger::SetSink(std::make_unique<objects::detail::HookLogSink>(
+          hook_fn, static_cast<objects::Logger::Verbosity>(verbosity)));
+    }
   }
   CATCH_AND_RETURN;
 }
@@ -95,6 +128,13 @@ YOGI_API int YOGI_LogToFile(const char* filename, const char* fmt,
   CHECK_PARAM(YOGI_VB_NONE <= verbosity && verbosity <= YOGI_VB_TRACE);
 
   try {
+    if (filename == nullptr || verbosity == YOGI_VB_NONE) {
+      objects::Logger::SetSink(objects::detail::FileLogSinkPtr());
+    } else {
+      objects::Logger::SetSink(std::make_unique<objects::detail::FileLogSink>(
+          filename, fmt ? fmt : api::kDefaultLogFormat,
+          static_cast<objects::Logger::Verbosity>(verbosity)));
+    }
   }
   CATCH_AND_RETURN;
 }
@@ -104,6 +144,8 @@ YOGI_API int YOGI_LoggerCreate(void** logger, const char* component) {
   CHECK_PARAM(component != nullptr && *component != '\0');
 
   try {
+    auto log = objects::Logger::Create(component);
+    *logger = api::ObjectRegister::Register(log);
   }
   CATCH_AND_RETURN;
 }
@@ -112,16 +154,32 @@ YOGI_API int YOGI_LoggerSetVerbosity(void* logger, int verbosity) {
   CHECK_PARAM(YOGI_VB_NONE <= verbosity && verbosity <= YOGI_VB_TRACE);
 
   try {
+    auto log = logger ? api::ObjectRegister::Get<objects::Logger>(logger)
+                      : objects::Logger::GetAppLogger();
+    log->SetVerbosity(static_cast<objects::Logger::Verbosity>(verbosity));
   }
   CATCH_AND_RETURN;
 }
 
 YOGI_API int YOGI_LoggerSetComponentsVerbosity(const char* components,
-                                               int verbosity) {
+                                               int verbosity, int* count) {
   CHECK_PARAM(components != nullptr && *components != '\0');
   CHECK_PARAM(YOGI_VB_NONE <= verbosity && verbosity <= YOGI_VB_TRACE);
 
   try {
+    std::regex re(components);
+    std::smatch m;
+
+    auto loggers = api::ObjectRegister::GetAll<objects::Logger>();
+    for (auto& log : loggers) {
+      if (std::regex_match(log->GetComponent(), m, re)) {
+        log->SetVerbosity(static_cast<objects::Logger::Verbosity>(verbosity));
+      }
+    }
+
+    if (count) {
+      *count = static_cast<int>(loggers.size());
+    }
   }
   CATCH_AND_RETURN;
 }
@@ -134,6 +192,10 @@ YOGI_API int YOGI_LoggerLog(void* logger, int severity, const char* file,
   CHECK_PARAM(msg != nullptr && *msg != '\0');
 
   try {
+    auto log = logger ? api::ObjectRegister::Get<objects::Logger>(logger)
+                      : objects::Logger::GetAppLogger();
+    log->Log(static_cast<objects::Logger::Verbosity>(severity), file, line,
+             msg);
   }
   CATCH_AND_RETURN;
 }

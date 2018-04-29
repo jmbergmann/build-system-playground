@@ -52,6 +52,9 @@ const char* Error::what() const throw() {
 
     case YOGI_ERR_SET_SOCKET_OPTION_FAILED:
       return "Could not set a socket option";
+
+    case YOGI_ERR_INVALID_REGEX:
+      return "Invalid regular expression";
   }
 
   return "Invalid error code";

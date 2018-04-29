@@ -110,6 +110,9 @@
 //! Could not set a socket option
 #define YOGI_ERR_SET_SOCKET_OPTION_FAILED -15
 
+//! Invalid regular expression
+#define YOGI_ERR_INVALID_REGEX -16
+
 //! @}
 //!
 //! @defgroup VB Log verbosity
@@ -388,14 +391,15 @@ YOGI_API int YOGI_LoggerSetVerbosity(void* logger, int verbosity);
  * expression given in the \p components parameter and sets their verbosity
  * to \p verbosity.
  *
- * \param[in] components Regex (ECMAScript) for the component tags to match
- * \param[in] verbosity  Maximum verbosity entries to be logged (see \ref VB)
+ * \param[in]  components Regex (ECMAScript) for the component tags to match
+ * \param[in]  verbosity  Maximum verbosity entries to be logged (see \ref VB)
+ * \param[out] count      Number of matching loggers (can be set to NULL)
  *
  * \returns [=0] #YOGI_OK if successful
  * \returns [<0] An error code in case of a failure (see \ref EC)
  ******************************************************************************/
 YOGI_API int YOGI_LoggerSetComponentsVerbosity(const char* components,
-                                               int verbosity);
+                                               int verbosity, int* count);
 
 /***************************************************************************//**
  * Creates a log entry.

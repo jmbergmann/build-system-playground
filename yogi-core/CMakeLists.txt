@@ -16,8 +16,10 @@ add_library (yogi-core-static STATIC
   src/api/object.cc
   src/objects/detail/adv_receiver.cc
   src/objects/detail/adv_sender.cc
+  src/objects/detail/log_sinks.cc
   src/objects/branch.cc
   src/objects/context.cc
+  src/objects/logger.cc
   src/objects/timer.cc
   src/utils/system.cc
   src/utils/time.cc
@@ -75,6 +77,7 @@ add_executable (yogi-core-test
   test/constants_test.cc
   test/context_test.cc
   test/errors_test.cc
+  test/logger_test.cc
   test/object_test.cc
   test/timer_test.cc
   test/version_test.cc
