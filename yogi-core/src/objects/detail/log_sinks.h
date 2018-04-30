@@ -22,16 +22,16 @@ class LogSink {
   LogSink(Verbosity verbosity) : verbosity_(verbosity) {}
   virtual ~LogSink() {}
 
-  void Put(Verbosity verbosity, const utils::Timestamp& timestamp,
+  void Put(Verbosity severity, const utils::Timestamp& timestamp,
            int tid, const char* file, int line,
            const std::string& component, const char* msg);
 
-  virtual void Write(Verbosity verbosity, const utils::Timestamp& timestamp,
+  virtual void Write(Verbosity severity, const utils::Timestamp& timestamp,
                      int tid, const char* file, int line,
                      const std::string& component, const char* msg) = 0;
 
  private:
-  const Verbosity& verbosity_;
+  const Verbosity verbosity_;
 };
 
 typedef std::unique_ptr<LogSink> LogSinkPtr;
@@ -41,7 +41,7 @@ class ConsoleLogSink : public LogSink {
   ConsoleLogSink(FILE* stream, bool colour, std::string fmt,
                  Verbosity verbosity);
 
-  virtual void Write(Verbosity verbosity, const utils::Timestamp& timestamp,
+  virtual void Write(Verbosity severity, const utils::Timestamp& timestamp,
                      int tid, const char* file, int line,
                      const std::string& component, const char* msg) override;
 
@@ -61,7 +61,7 @@ class HookLogSink : public LogSink {
 
   HookLogSink(HookFn fn, Verbosity verbosity);
 
-  virtual void Write(Verbosity verbosity, const utils::Timestamp& timestamp,
+  virtual void Write(Verbosity severity, const utils::Timestamp& timestamp,
                      int tid, const char* file, int line,
                      const std::string& component, const char* msg) override;
 
@@ -75,7 +75,7 @@ class FileLogSink : public LogSink {
  public:
   FileLogSink(std::string filename, std::string fmt, Verbosity verbosity);
 
-  virtual void Write(Verbosity verbosity, const utils::Timestamp& timestamp,
+  virtual void Write(Verbosity severity, const utils::Timestamp& timestamp,
                      int tid, const char* file, int line,
                      const std::string& component, const char* msg) override;
 

@@ -31,6 +31,10 @@ Logger::Logger(std::string component)
 
 void Logger::Log(Verbosity severity, const char* file, int line,
                  const char* msg) {
+  if (severity > verbosity_) {
+    return;
+  }
+
   auto timestamp = utils::Timestamp::Now();
   int tid = utils::GetCurrentThreadId();
 

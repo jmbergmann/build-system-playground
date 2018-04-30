@@ -72,12 +72,12 @@ YOGI_API int YOGI_GetConstant(void* dest, int constant) {
   CATCH_AND_RETURN;
 }
 
-YOGI_API int YOGI_LogToConsole(int stream, int colour, const char* fmt,
-                               int verbosity) {
+YOGI_API int YOGI_LogToConsole(int verbosity, int stream, int colour,
+                               const char* fmt) {
+  CHECK_PARAM(YOGI_VB_NONE <= verbosity && verbosity <= YOGI_VB_TRACE);
   CHECK_PARAM(stream == YOGI_STDOUT || stream == YOGI_STDERR);
   CHECK_PARAM(colour == YOGI_TRUE || colour == YOGI_FALSE);
   CHECK_PARAM(fmt == nullptr || *fmt != '\0');
-  CHECK_PARAM(YOGI_VB_NONE <= verbosity && verbosity <= YOGI_VB_TRACE);
 
   try {
     if (verbosity == YOGI_VB_NONE) {
@@ -93,19 +93,21 @@ YOGI_API int YOGI_LogToConsole(int stream, int colour, const char* fmt,
   CATCH_AND_RETURN;
 }
 
-YOGI_API int YOGI_LogToHook(void (*fn)(int, long long, int, const char*, int,
-                                       const char*, const char*),
-                            int verbosity) {
+YOGI_API int YOGI_LogToHook(int verbosity,
+                            void (*fn)(int, long long, int, const char*, int,
+                                       const char*, const char*, void*),
+                            void* userarg) {
   CHECK_PARAM(YOGI_VB_NONE <= verbosity && verbosity <= YOGI_VB_TRACE);
 
   try {
     if (fn == nullptr || verbosity == YOGI_VB_NONE) {
       objects::Logger::SetSink(objects::detail::HookLogSinkPtr());
     } else {
-      auto hook_fn = [fn](auto severity, auto& time, int tid, auto file,
-                          int line, auto& component, auto msg) {
+      auto hook_fn = [fn, userarg](auto severity, auto& time, int tid,
+                                   auto file, int line, auto& component,
+                                   auto msg) {
         fn(severity, time.NanosecondsSinceEpoch(), tid, file, line,
-           component.c_str(), msg);
+           component.c_str(), msg, userarg);
       };
       objects::Logger::SetSink(std::make_unique<objects::detail::HookLogSink>(
           hook_fn, static_cast<objects::Logger::Verbosity>(verbosity)));
@@ -114,11 +116,11 @@ YOGI_API int YOGI_LogToHook(void (*fn)(int, long long, int, const char*, int,
   CATCH_AND_RETURN;
 }
 
-YOGI_API int YOGI_LogToFile(const char* filename, const char* fmt,
-                              int verbosity) {
+YOGI_API int YOGI_LogToFile(int verbosity, const char* filename,
+                            const char* fmt) {
+  CHECK_PARAM(YOGI_VB_NONE <= verbosity && verbosity <= YOGI_VB_TRACE);
   CHECK_PARAM(filename == nullptr || *filename != '\0');
   CHECK_PARAM(fmt == nullptr || *fmt != '\0');
-  CHECK_PARAM(YOGI_VB_NONE <= verbosity && verbosity <= YOGI_VB_TRACE);
 
   try {
     // Remove existing sink first in order to close the old log file
@@ -163,15 +165,17 @@ YOGI_API int YOGI_LoggerSetComponentsVerbosity(const char* components,
     std::regex re(components);
     std::smatch m;
 
+    int n = 0;
     auto loggers = api::ObjectRegister::GetAll<objects::Logger>();
     for (auto& log : loggers) {
       if (std::regex_match(log->GetComponent(), m, re)) {
         log->SetVerbosity(static_cast<objects::Logger::Verbosity>(verbosity));
+        ++n;
       }
     }
 
     if (count) {
-      *count = static_cast<int>(loggers.size());
+      *count = n;
     }
   }
   CATCH_AND_RETURN;
