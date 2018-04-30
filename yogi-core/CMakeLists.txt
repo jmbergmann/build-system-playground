@@ -16,7 +16,11 @@ add_library (yogi-core-static STATIC
   src/api/object.cc
   src/objects/detail/adv_receiver.cc
   src/objects/detail/adv_sender.cc
-  src/objects/detail/log_sinks.cc
+  src/objects/detail/log/console_sink.cc
+  src/objects/detail/log/file_sink.cc
+  src/objects/detail/log/hook_sink.cc
+  src/objects/detail/log/sink.cc
+  src/objects/detail/log/text_based_sink.cc
   src/objects/branch.cc
   src/objects/context.cc
   src/objects/logger.cc

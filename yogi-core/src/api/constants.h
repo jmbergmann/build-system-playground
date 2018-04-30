@@ -14,7 +14,7 @@ SCC int   kDefaultAdvPort         = 13531;
 SCC int   kDefaultAdvInterval     = 1000;
 SCC int   kDefaultLoggerVerbosity = YOGI_VB_INFO;
 SCC char* kDefaultLogTimeFormat   = "%F %T.%3";
-SCC char* kDefaultLogFormat       = "$t [T$T] $s $c: $m";
+SCC char* kDefaultLogFormat       = "$t [T$T] $<$s $c: $m$>";
 #undef SCC
 
 void GetConstant(void* dest, int constant);

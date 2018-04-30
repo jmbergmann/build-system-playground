@@ -82,14 +82,14 @@ YOGI_API int YOGI_LogToConsole(int verbosity, int stream, int colour,
 
   try {
     if (verbosity == YOGI_VB_NONE) {
-      objects::Logger::SetSink(objects::detail::ConsoleLogSinkPtr());
+      objects::Logger::SetSink(objects::detail::log::ConsoleSinkPtr());
     } else {
       objects::Logger::SetSink(
-          std::make_unique<objects::detail::ConsoleLogSink>(
+          std::make_unique<objects::detail::log::ConsoleSink>(
+              static_cast<objects::Logger::Verbosity>(verbosity),
               stream == YOGI_STDOUT ? stdout : stderr, !!colour,
               timefmt ? timefmt : api::kDefaultLogTimeFormat,
-              fmt ? fmt : api::kDefaultLogFormat,
-              static_cast<objects::Logger::Verbosity>(verbosity)));
+              fmt ? fmt : api::kDefaultLogFormat));
     }
   }
   CATCH_AND_RETURN;
@@ -103,7 +103,7 @@ YOGI_API int YOGI_LogToHook(int verbosity,
 
   try {
     if (fn == nullptr || verbosity == YOGI_VB_NONE) {
-      objects::Logger::SetSink(objects::detail::HookLogSinkPtr());
+      objects::Logger::SetSink(objects::detail::log::HookSinkPtr());
     } else {
       auto hook_fn = [fn, userarg](auto severity, auto& time, int tid,
                                    auto file, int line, auto& component,
@@ -111,8 +111,8 @@ YOGI_API int YOGI_LogToHook(int verbosity,
         fn(severity, time.NanosecondsSinceEpoch(), tid, file, line,
            component.c_str(), msg, userarg);
       };
-      objects::Logger::SetSink(std::make_unique<objects::detail::HookLogSink>(
-          hook_fn, static_cast<objects::Logger::Verbosity>(verbosity)));
+      objects::Logger::SetSink(std::make_unique<objects::detail::log::HookSink>(
+          static_cast<objects::Logger::Verbosity>(verbosity), hook_fn));
     }
   }
   CATCH_AND_RETURN;
@@ -127,12 +127,12 @@ YOGI_API int YOGI_LogToFile(int verbosity, const char* filename,
 
   try {
     // Remove existing sink first in order to close the old log file
-    objects::Logger::SetSink(objects::detail::FileLogSinkPtr());
+    objects::Logger::SetSink(objects::detail::log::FileSinkPtr());
     if (filename != nullptr && verbosity != YOGI_VB_NONE) {
-      objects::Logger::SetSink(std::make_unique<objects::detail::FileLogSink>(
-          filename, timefmt ? timefmt : api::kDefaultLogTimeFormat,
-          fmt ? fmt : api::kDefaultLogFormat,
-          static_cast<objects::Logger::Verbosity>(verbosity)));
+      objects::Logger::SetSink(std::make_unique<objects::detail::log::FileSink>(
+          static_cast<objects::Logger::Verbosity>(verbosity), filename,
+          timefmt ? timefmt : api::kDefaultLogTimeFormat,
+          fmt ? fmt : api::kDefaultLogFormat));
     }
   }
   CATCH_AND_RETURN;

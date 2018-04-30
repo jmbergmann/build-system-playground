@@ -5,22 +5,22 @@
 namespace objects {
 
 std::mutex Logger::sinks_mutex_;
-detail::LogSinkPtr Logger::console_sink_;
-detail::LogSinkPtr Logger::hook_sink_;
-detail::LogSinkPtr Logger::file_sink_;
+detail::log::SinkPtr Logger::console_sink_;
+detail::log::SinkPtr Logger::hook_sink_;
+detail::log::SinkPtr Logger::file_sink_;
 LoggerPtr Logger::app_logger_ = Logger::Create("App");
 
-void Logger::SetSink(detail::ConsoleLogSinkPtr&& sink) {
+void Logger::SetSink(detail::log::ConsoleSinkPtr&& sink) {
   std::lock_guard<std::mutex> lock(sinks_mutex_);
   console_sink_ = std::move(sink);
 }
 
-void Logger::SetSink(detail::HookLogSinkPtr&& sink) {
+void Logger::SetSink(detail::log::HookSinkPtr&& sink) {
   std::lock_guard<std::mutex> lock(sinks_mutex_);
   hook_sink_ = std::move(sink);
 }
 
-void Logger::SetSink(detail::FileLogSinkPtr&& sink) {
+void Logger::SetSink(detail::log::FileSinkPtr&& sink) {
   std::lock_guard<std::mutex> lock(sinks_mutex_);
   file_sink_ = std::move(sink);
 }
@@ -39,10 +39,10 @@ void Logger::Log(Verbosity severity, const char* file, int line,
   int tid = utils::GetCurrentThreadId();
 
   std::lock_guard<std::mutex> lock(sinks_mutex_);
-  detail::LogSinkPtr* sinks[] = {&console_sink_, &hook_sink_, &file_sink_};
+  detail::log::SinkPtr* sinks[] = {&console_sink_, &hook_sink_, &file_sink_};
   for (auto sink : sinks) {
     if (*sink) {
-      (*sink)->Put(severity, timestamp, tid, file, line, component_, msg);
+      (*sink)->Publish(severity, timestamp, tid, file, line, component_, msg);
     }
   }
 }

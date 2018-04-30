@@ -279,6 +279,8 @@ YOGI_API int YOGI_GetConstant(void* dest, int constant);
  *  - *$f*: Source filename
  *  - *$l*: Source line number
  *  - *$c*: Component tag
+ *  - *$<*: Set console colour corresponding to severity
+ *  - *$>*: Reset the colours (also done after each log entry)
  *  - *$$*: A $ sign
  *
  * \param[in] verbosity Maximum verbosity of messages to log to stderr
@@ -346,6 +348,8 @@ YOGI_API int YOGI_LogToHook(int verbosity,
  * entry. The \p filename parameter supports the all placeholders that are valid
  * for \p timefmt See the YOGI_LogToConsole() function for supported
  * placeholders.
+ *
+ * Note: The colour-related placeholders are ignored when writing to log files.
  *
  * \param[in] verbosity Maximum verbosity of messages to log to stderr
  * \param[in] filename  Path to the log file (see description for placeholders)
