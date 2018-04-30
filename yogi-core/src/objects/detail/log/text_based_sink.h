@@ -21,7 +21,9 @@ class TextBasedSink : public Sink {
                           const char* msg) override;
 
   virtual void WritePartialOutput(const std::string& str) = 0;
-  virtual void SetOutputColour(bool on) {}
+  virtual void SetOutputColours(Verbosity severity) {}
+  virtual void ResetOutputColours() {}
+  virtual void Flush() {}
 
  private:
   const std::string time_fmt_;

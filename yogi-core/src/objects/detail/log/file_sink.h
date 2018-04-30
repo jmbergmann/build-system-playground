@@ -14,6 +14,7 @@ class FileSink : public TextBasedSink {
 
  protected:
   virtual void WritePartialOutput(const std::string& str) override;
+  virtual void Flush() override;
 };
 
 typedef std::unique_ptr<FileSink> FileSinkPtr;

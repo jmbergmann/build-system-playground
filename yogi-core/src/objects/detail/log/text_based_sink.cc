@@ -75,7 +75,7 @@ void TextBasedSink::WriteEntry(Verbosity severity,
             ss.str(std::string());
           }
 
-          SetOutputColour(true);
+          SetOutputColours(severity);
           colour_cleared = false;
         }
         break;
@@ -87,7 +87,7 @@ void TextBasedSink::WriteEntry(Verbosity severity,
             ss.str(std::string());
           }
 
-          SetOutputColour(false);
+          ResetOutputColours();
           colour_cleared = true;
         }
         break;
@@ -104,8 +104,10 @@ void TextBasedSink::WriteEntry(Verbosity severity,
   ss << std::endl;
   WritePartialOutput(ss.str());
   if (!colour_cleared) {
-    SetOutputColour(false);
+    ResetOutputColours();
   }
+
+  Flush();
 }
 
 }  // namespace log

@@ -10,6 +10,8 @@ FileSink::FileSink(Verbosity verbosity, std::string filename, std::string time_f
 
 void FileSink::WritePartialOutput(const std::string& str) {}
 
+void FileSink::Flush() {}
+
 }  // namespace log
 }  // namespace detail
 }  // namespace objects

@@ -94,15 +94,19 @@ TEST_F(LoggerTest, LogToConsole) {
 TEST_F(LoggerTest, Colours) {
   // This is not easily testable so we just print a log message for each
   // severity to show the different colours
-  YOGI_LogToConsole(YOGI_VB_TRACE, YOGI_ST_STDOUT, YOGI_TRUE, nullptr, nullptr);
   YOGI_LoggerSetVerbosity(logger_, YOGI_VB_TRACE);
 
-  YOGI_LoggerLog(logger_, YOGI_VB_FATAL, "myfile.cc", 123, "Hello");
-  YOGI_LoggerLog(logger_, YOGI_VB_ERROR, "myfile.cc", 123, "Hello");
-  YOGI_LoggerLog(logger_, YOGI_VB_WARNING, "myfile.cc", 123, "Hello");
-  YOGI_LoggerLog(logger_, YOGI_VB_INFO, "myfile.cc", 123, "Hello");
-  YOGI_LoggerLog(logger_, YOGI_VB_DEBUG, "myfile.cc", 123, "Hello");
-  YOGI_LoggerLog(logger_, YOGI_VB_TRACE, "myfile.cc", 123, "Hello");
+  int streams[] = {YOGI_ST_STDOUT, YOGI_ST_STDERR};
+  for (int stream : streams) {
+    YOGI_LogToConsole(YOGI_VB_TRACE, stream, YOGI_TRUE, nullptr, nullptr);
+
+    YOGI_LoggerLog(logger_, YOGI_VB_FATAL, "myfile.cc", 123, "Hello");
+    YOGI_LoggerLog(logger_, YOGI_VB_ERROR, "myfile.cc", 123, "Hello");
+    YOGI_LoggerLog(logger_, YOGI_VB_WARNING, "myfile.cc", 123, "Hello");
+    YOGI_LoggerLog(logger_, YOGI_VB_INFO, "myfile.cc", 123, "Hello");
+    YOGI_LoggerLog(logger_, YOGI_VB_DEBUG, "myfile.cc", 123, "Hello");
+    YOGI_LoggerLog(logger_, YOGI_VB_TRACE, "myfile.cc", 123, "Hello");
+  }
 }
 
 TEST_F(LoggerTest, LogToHook) {

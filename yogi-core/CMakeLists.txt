@@ -25,6 +25,7 @@ add_library (yogi-core-static STATIC
   src/objects/context.cc
   src/objects/logger.cc
   src/objects/timer.cc
+  src/utils/console.cc
   src/utils/system.cc
   src/utils/timestamp.cc
 )

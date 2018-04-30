@@ -14,7 +14,9 @@ class ConsoleSink : public TextBasedSink {
 
  protected:
   virtual void WritePartialOutput(const std::string& str) override;
-  virtual void SetOutputColour(bool on) override;
+  virtual void SetOutputColours(Verbosity severity) override;
+  virtual void ResetOutputColours() override;
+  virtual void Flush() override;
 
  private:
   FILE* const stream_;
