@@ -50,6 +50,7 @@ class LoggerTest : public ::testing::Test {
 };
 
 TEST_F(LoggerTest, Colours) {
+#ifdef _WIN32
   std::cout
       << "NOTE: This test shows the different colours associated with the"
       << std::endl
@@ -64,6 +65,7 @@ TEST_F(LoggerTest, Colours) {
       << "      be run before the LogToConsole test. Otherwise there will be no"
       << std::endl
       << "      coloured output." << std::endl;
+#endif
 
   YOGI_LoggerSetVerbosity(logger_, YOGI_VB_TRACE);
 
