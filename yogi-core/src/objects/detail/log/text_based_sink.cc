@@ -70,7 +70,7 @@ void TextBasedSink::WriteEntry(Verbosity severity,
 
       case '<':
         if (!ignore_colour_ && colour_cleared) {
-          if (!ss.rdbuf()->in_avail()) {
+          if (ss.rdbuf()->in_avail()) {
             WritePartialOutput(ss.str());
             ss.str(std::string());
           }
@@ -82,7 +82,7 @@ void TextBasedSink::WriteEntry(Verbosity severity,
 
       case '>':
         if (!ignore_colour_ && !colour_cleared) {
-          if (!ss.rdbuf()->in_avail()) {
+          if (ss.rdbuf()->in_avail()) {
             WritePartialOutput(ss.str());
             ss.str(std::string());
           }
