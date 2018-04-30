@@ -61,7 +61,7 @@ bool IsTimeFormatValid(const std::string& fmt) {
     return false;
   }
 
-  std::regex re("%[^YmdFHMST369]");
+  std::regex re("%([^YmdFHMST369]|$)");
   return !std::regex_search(fmt, re);
 }
 
@@ -71,7 +71,7 @@ bool IsLogFormatValid(std::string fmt) {
   }
 
   boost::replace_all(fmt, "$$", "");
-  std::regex re("\\$[^tPTsmflc<>]");
+  std::regex re("\\$([^tPTsmflc<>]|$)");
   return !std::regex_search(fmt, re);
 }
 

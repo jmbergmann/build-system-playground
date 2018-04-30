@@ -91,6 +91,29 @@ TEST_F(LoggerTest, LogToConsole) {
   EXPECT_TRUE(std::regex_match(text, m, std::regex(re))) << text;
 }
 
+TEST_F(LoggerTest, FormatErrors) {
+  for (auto time_fmt : {"%4", "%%", "", "%%T", "%", "bla%"}) {
+    int res = YOGI_LogToConsole(YOGI_VB_TRACE, YOGI_ST_STDOUT, YOGI_FALSE,
+                                time_fmt, nullptr);
+    EXPECT_EQ(res, YOGI_ERR_INVALID_PARAM) << time_fmt;
+
+    res = YOGI_LogToFile(YOGI_VB_TRACE, "logfile.txt", time_fmt, nullptr);
+    EXPECT_EQ(res, YOGI_ERR_INVALID_PARAM) << time_fmt;
+
+    res = YOGI_LogToFile(YOGI_VB_TRACE, time_fmt, nullptr, nullptr);
+    EXPECT_EQ(res, YOGI_ERR_INVALID_PARAM) << time_fmt;
+  }
+
+  for (auto fmt : {"$;", "", "$$$", "$", "bla$"}) {
+    int res = YOGI_LogToConsole(YOGI_VB_TRACE, YOGI_ST_STDOUT, YOGI_FALSE,
+                                nullptr, fmt);
+    EXPECT_EQ(res, YOGI_ERR_INVALID_PARAM) << fmt;
+
+    res = YOGI_LogToFile(YOGI_VB_TRACE, "logfile.txt", nullptr, fmt);
+    EXPECT_EQ(res, YOGI_ERR_INVALID_PARAM) << fmt;
+  }
+}
+
 TEST_F(LoggerTest, Colours) {
   // This is not easily testable so we just print a log message for each
   // severity to show the different colours
