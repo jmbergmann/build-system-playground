@@ -49,6 +49,37 @@ class LoggerTest : public ::testing::Test {
   std::vector<Entry> entries_;
 };
 
+TEST_F(LoggerTest, Colours) {
+  std::cout
+      << "NOTE: This test shows the different colours associated with the"
+      << std::endl
+      << "      different severity levels. Due to a quirk when using"
+      << std::endl
+      << "      googletest's CaptureStdout() and CaptureStderr() functions on"
+      << std::endl
+      << "      Windows, output colours seem to be disabled after that. This"
+      << std::endl
+      << "      means in order for this test to actually show colour, it has to"
+      << std::endl
+      << "      be run before the LogToConsole test. Otherwise there will be no"
+      << std::endl
+      << "      coloured output." << std::endl;
+
+  YOGI_LoggerSetVerbosity(logger_, YOGI_VB_TRACE);
+
+  int streams[] = {YOGI_ST_STDOUT, YOGI_ST_STDERR};
+  for (int stream : streams) {
+    YOGI_LogToConsole(YOGI_VB_TRACE, stream, YOGI_TRUE, nullptr, nullptr);
+
+    YOGI_LoggerLog(logger_, YOGI_VB_FATAL, "myfile.cc", 123, "Hello");
+    YOGI_LoggerLog(logger_, YOGI_VB_ERROR, "myfile.cc", 123, "Hello");
+    YOGI_LoggerLog(logger_, YOGI_VB_WARNING, "myfile.cc", 123, "Hello");
+    YOGI_LoggerLog(logger_, YOGI_VB_INFO, "myfile.cc", 123, "Hello");
+    YOGI_LoggerLog(logger_, YOGI_VB_DEBUG, "myfile.cc", 123, "Hello");
+    YOGI_LoggerLog(logger_, YOGI_VB_TRACE, "myfile.cc", 123, "Hello");
+  }
+}
+
 TEST_F(LoggerTest, LogToConsole) {
   const char* timefmt = "_%Y_%m_%d_%F_%H_%M_%S_%T_%3_%6_%9_";
   const char* fmt = "_$t_$P_$T_$s_$m_$f_$l_$c_$<_$>_$$_";
@@ -111,24 +142,6 @@ TEST_F(LoggerTest, FormatErrors) {
 
     res = YOGI_LogToFile(YOGI_VB_TRACE, "logfile.txt", nullptr, fmt);
     EXPECT_EQ(res, YOGI_ERR_INVALID_PARAM) << fmt;
-  }
-}
-
-TEST_F(LoggerTest, Colours) {
-  // This is not easily testable so we just print a log message for each
-  // severity to show the different colours
-  YOGI_LoggerSetVerbosity(logger_, YOGI_VB_TRACE);
-
-  int streams[] = {YOGI_ST_STDOUT, YOGI_ST_STDERR};
-  for (int stream : streams) {
-    YOGI_LogToConsole(YOGI_VB_TRACE, stream, YOGI_TRUE, nullptr, nullptr);
-
-    YOGI_LoggerLog(logger_, YOGI_VB_FATAL, "myfile.cc", 123, "Hello");
-    YOGI_LoggerLog(logger_, YOGI_VB_ERROR, "myfile.cc", 123, "Hello");
-    YOGI_LoggerLog(logger_, YOGI_VB_WARNING, "myfile.cc", 123, "Hello");
-    YOGI_LoggerLog(logger_, YOGI_VB_INFO, "myfile.cc", 123, "Hello");
-    YOGI_LoggerLog(logger_, YOGI_VB_DEBUG, "myfile.cc", 123, "Hello");
-    YOGI_LoggerLog(logger_, YOGI_VB_TRACE, "myfile.cc", 123, "Hello");
   }
 }
 
