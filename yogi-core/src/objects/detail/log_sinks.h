@@ -38,8 +38,8 @@ typedef std::unique_ptr<LogSink> LogSinkPtr;
 
 class ConsoleLogSink : public LogSink {
  public:
-  ConsoleLogSink(FILE* stream, bool colour, std::string fmt,
-                 Verbosity verbosity);
+  ConsoleLogSink(FILE* stream, bool colour, std::string timefmt,
+                 std::string fmt, Verbosity verbosity);
 
   virtual void Write(Verbosity severity, const utils::Timestamp& timestamp,
                      int tid, const char* file, int line,
@@ -73,7 +73,8 @@ typedef std::unique_ptr<HookLogSink> HookLogSinkPtr;
 
 class FileLogSink : public LogSink {
  public:
-  FileLogSink(std::string filename, std::string fmt, Verbosity verbosity);
+  FileLogSink(std::string filename, std::string timefmt, std::string fmt,
+              Verbosity verbosity);
 
   virtual void Write(Verbosity severity, const utils::Timestamp& timestamp,
                      int tid, const char* file, int line,

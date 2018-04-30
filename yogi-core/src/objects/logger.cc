@@ -27,7 +27,7 @@ void Logger::SetSink(detail::FileLogSinkPtr&& sink) {
 
 Logger::Logger(std::string component)
     : component_(component),
-      verbosity_(static_cast<Verbosity>(api::kDefaultLogVerbosity)) {}
+      verbosity_(static_cast<Verbosity>(api::kDefaultLoggerVerbosity)) {}
 
 void Logger::Log(Verbosity severity, const char* file, int line,
                  const char* msg) {

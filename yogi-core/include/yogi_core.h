@@ -48,10 +48,13 @@
 #define YOGI_CONST_DEFAULT_ADV_INTERVAL 7
 
 //! Default logging verbosity
-#define YOGI_CONST_DEFAULT_LOG_VERBOSITY 8
+#define YOGI_CONST_DEFAULT_LOGGER_VERBOSITY 8
 
-//! Default textual format for LOG entries
-#define YOGI_CONST_DEFAULT_LOG_FORMAT 9
+//! Default textual format for timestamps in log entries
+#define YOGI_CONST_DEFAULT_LOG_TIME_FORMAT 9
+
+//! Default textual format for log entries
+#define YOGI_CONST_DEFAULT_LOG_FORMAT 10
 
 //! @}
 //!
@@ -251,37 +254,44 @@ YOGI_API int YOGI_GetConstant(void* dest, int constant);
  * component name. For example, the component tag for a branch would be
  * "Yogi.Branch".
  *
- * The \p fmt parameter describes the textual format of a log entry. The
- * following placeholders can be used:
+ * The \p timefmt parameter describes the textual format of a log entry's
+ * timestamp. The following placeholders are supported:
  *  - *%Y*: Four digit year
  *  - *%m*: Month name as a decimal 01 to 12
  *  - *%d*: Day of the month as decimal 01 to 31
+ *  - *%F*: Equivalent to "%Y-%m-%d" (the ISO 8601 date format)
  *  - *%H*: The hour as a decimal number using a 24-hour clock (range 00 to 23)
  *  - *%M*: The minute as a decimal 00 to 59
  *  - *%S*: Seconds as a decimal 00 to 59
- *  - *%T*: The time in 24-hour notation (%H:%M:%S)
+ *  - *%T*: Equivalent to "%H:%M:%S" (the ISO 8601 time format)
  *  - *%3*: Milliseconds as decimal number 000 to 999
  *  - *%6*: Microseconds as decimal number 000 to 999
  *  - *%9*: Nanoseconds as decimal number 000 to 999
- *  - *%V*: Verbosity as three letter string (e.g. WRN or ERR)
- *  - *%X*: Log message
- *  - *%P*: Process ID (PID)
- *  - *%t*: Thread ID
- *  - *%%*: A % sign
- *  - *%f*: Source filename
- *  - *%l*: Source line number
- *  - *%c*: Component that created the entry
+ *
+ * The \p fmt parameter describes the textual format of the complete log entry
+ * as it will appear on the console or in a log file. The supported placeholders
+ * are:
+ *  - *$t*: Timestamp, formatted according to \p timefmt
+ *  - *$P*: Process ID (PID)
+ *  - *$T*: Thread ID
+ *  - *$s*: Severity as a 3 letter abbreviation (FAT, ERR, WRN, IFO, DBG or TRC)
+ *  - *$m*: Log message
+ *  - *$f*: Source filename
+ *  - *$l*: Source line number
+ *  - *$c*: Component tag
+ *  - *$$*: A $ sign
  *
  * \param[in] verbosity Maximum verbosity of messages to log to stderr
  * \param[in] stream    The stream to use (#YOGI_STDOUT or #YOGI_STDERR)
  * \param[in] colour    Use colours in output (#YOGI_TRUE or #YOGI_FALSE)
+ * \param[in] timefmt   Format of the timestamp (set to NULL for default)
  * \param[in] fmt       Format of a log entry (set to NULL for default)
  *
  * \returns [=0] #YOGI_OK if successful
  * \returns [<0] An error code in case of a failure (see \ref EC)
  ******************************************************************************/
 YOGI_API int YOGI_LogToConsole(int verbosity, int stream, int colour,
-                               const char* fmt);
+                               const char* timefmt, const char* fmt);
 
 /***************************************************************************//**
  * Installs a callback function for receiving log entries.
@@ -332,26 +342,21 @@ YOGI_API int YOGI_LogToHook(int verbosity,
  * Writing to a log file can be disabled by setting \p filename to NULL or
  * \p verbosity to #YOGI_VB_NONE.
  *
- * The \p filename parameter supports the following placeholders:
- *  - *%Y*: Four digit year
- *  - *%m*: Month name as a decimal 01 to 12
- *  - *%d*: Day of the month as decimal 01 to 31
- *  - *%H*: The hour as a decimal number using a 24-hour clock (range 00 to 23)
- *  - *%M*: The minute as a decimal 00 to 59
- *  - *%S*: Seconds as a decimal 00 to 59
- *
- * The \p fmt parameter describes the textual format of a log entry. See the
- * YOGI_LogToConsole() function for supported placeholders.
+ * The \p timefmt and \p fmt parameters describe the textual format for a log
+ * entry. The \p filename parameter supports the all placeholders that are valid
+ * for \p timefmt See the YOGI_LogToConsole() function for supported
+ * placeholders.
  *
  * \param[in] verbosity Maximum verbosity of messages to log to stderr
  * \param[in] filename  Path to the log file (see description for placeholders)
- * \param[in] fmt       Format of a trace entry (set to NULL for default)
+ * \param[in] timefmt   Format of the timestamp (set to NULL for default)
+ * \param[in] fmt       Format of a log entry (set to NULL for default)
  *
  * \returns [=0] #YOGI_OK if successful
  * \returns [<0] An error code in case of a failure (see \ref EC)
  ******************************************************************************/
 YOGI_API int YOGI_LogToFile(int verbosity, const char* filename,
-                            const char* fmt);
+                            const char* timefmt, const char* fmt);
 
 /***************************************************************************//**
  * Creates a logger.

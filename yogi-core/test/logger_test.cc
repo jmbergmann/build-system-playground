@@ -44,7 +44,11 @@ class LoggerTest : public ::testing::Test {
 };
 
 TEST_F(LoggerTest, LogToConsole) {
-
+  ::testing::internal::CaptureStdout();
+  std::cout << "sdfsdf" << std::endl;
+  printf("Hello\n");
+  auto s = ::testing::internal::GetCapturedStdout();
+  std::cout << "XXX" << s << std::endl;
 }
 
 TEST_F(LoggerTest, LogToHook) {

@@ -73,10 +73,11 @@ YOGI_API int YOGI_GetConstant(void* dest, int constant) {
 }
 
 YOGI_API int YOGI_LogToConsole(int verbosity, int stream, int colour,
-                               const char* fmt) {
+                               const char* timefmt, const char* fmt) {
   CHECK_PARAM(YOGI_VB_NONE <= verbosity && verbosity <= YOGI_VB_TRACE);
   CHECK_PARAM(stream == YOGI_STDOUT || stream == YOGI_STDERR);
   CHECK_PARAM(colour == YOGI_TRUE || colour == YOGI_FALSE);
+  CHECK_PARAM(timefmt == nullptr || *timefmt != '\0');
   CHECK_PARAM(fmt == nullptr || *fmt != '\0');
 
   try {
@@ -86,6 +87,7 @@ YOGI_API int YOGI_LogToConsole(int verbosity, int stream, int colour,
       objects::Logger::SetSink(
           std::make_unique<objects::detail::ConsoleLogSink>(
               stream == YOGI_STDOUT ? stdout : stderr, !!colour,
+              timefmt ? timefmt : api::kDefaultLogTimeFormat,
               fmt ? fmt : api::kDefaultLogFormat,
               static_cast<objects::Logger::Verbosity>(verbosity)));
     }
@@ -117,17 +119,19 @@ YOGI_API int YOGI_LogToHook(int verbosity,
 }
 
 YOGI_API int YOGI_LogToFile(int verbosity, const char* filename,
-                            const char* fmt) {
+                            const char* timefmt, const char* fmt) {
   CHECK_PARAM(YOGI_VB_NONE <= verbosity && verbosity <= YOGI_VB_TRACE);
   CHECK_PARAM(filename == nullptr || *filename != '\0');
   CHECK_PARAM(fmt == nullptr || *fmt != '\0');
+  CHECK_PARAM(timefmt == nullptr || *timefmt != '\0');
 
   try {
     // Remove existing sink first in order to close the old log file
     objects::Logger::SetSink(objects::detail::FileLogSinkPtr());
     if (filename != nullptr && verbosity != YOGI_VB_NONE) {
       objects::Logger::SetSink(std::make_unique<objects::detail::FileLogSink>(
-          filename, fmt ? fmt : api::kDefaultLogFormat,
+          filename, timefmt ? timefmt : api::kDefaultLogTimeFormat,
+          fmt ? fmt : api::kDefaultLogFormat,
           static_cast<objects::Logger::Verbosity>(verbosity)));
     }
   }

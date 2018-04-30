@@ -27,13 +27,14 @@ TEST(ConstantsTest, GetConstant) {
 TEST(ConstantsTest, GetEachConstant) {
   using namespace api;
 
-  check_constant(YOGI_CONST_VERSION_NUMBER,        kVersionNumber);
-  check_constant(YOGI_CONST_VERSION_MAJOR,         kVersionMajor);
-  check_constant(YOGI_CONST_VERSION_MINOR,         kVersionMinor);
-  check_constant(YOGI_CONST_VERSION_PATCH,         kVersionPatch);
-  check_constant(YOGI_CONST_DEFAULT_ADV_ADDRESS,   kDefaultAdvAddress);
-  check_constant(YOGI_CONST_DEFAULT_ADV_PORT,      kDefaultAdvPort);
-  check_constant(YOGI_CONST_DEFAULT_ADV_INTERVAL,  kDefaultAdvInterval);
-  check_constant(YOGI_CONST_DEFAULT_LOG_VERBOSITY, kDefaultLogVerbosity);
-  check_constant(YOGI_CONST_DEFAULT_LOG_FORMAT,    kDefaultLogFormat);
+  check_constant(YOGI_CONST_VERSION_NUMBER,           kVersionNumber);
+  check_constant(YOGI_CONST_VERSION_MAJOR,            kVersionMajor);
+  check_constant(YOGI_CONST_VERSION_MINOR,            kVersionMinor);
+  check_constant(YOGI_CONST_VERSION_PATCH,            kVersionPatch);
+  check_constant(YOGI_CONST_DEFAULT_ADV_ADDRESS,      kDefaultAdvAddress);
+  check_constant(YOGI_CONST_DEFAULT_ADV_PORT,         kDefaultAdvPort);
+  check_constant(YOGI_CONST_DEFAULT_ADV_INTERVAL,     kDefaultAdvInterval);
+  check_constant(YOGI_CONST_DEFAULT_LOGGER_VERBOSITY, kDefaultLoggerVerbosity);
+  check_constant(YOGI_CONST_DEFAULT_LOG_TIME_FORMAT,  kDefaultLogTimeFormat);
+  check_constant(YOGI_CONST_DEFAULT_LOG_FORMAT,       kDefaultLogFormat);
 }
