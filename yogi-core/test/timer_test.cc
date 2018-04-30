@@ -33,12 +33,12 @@ TEST_F(TimerTest, Start) {
   int handler_res = 1;
   auto start_time = std::chrono::steady_clock::now();
   int res = YOGI_TimerStart(
-      timer_, 0, 1000000,  // 1ms timeout
+      timer_, 1000000,  // 1ms timeout
       [](int res, void* handler_res) { *static_cast<int*>(handler_res) = res; },
       &handler_res);
   EXPECT_EQ(res, YOGI_OK);
 
-  YOGI_ContextRunOneFor(context_, nullptr, 1, 0);
+  YOGI_ContextRunOne(context_, nullptr, 1000000000);
   auto dur = std::chrono::steady_clock::now() - start_time;
 
   EXPECT_EQ(handler_res, YOGI_OK);
@@ -49,21 +49,21 @@ TEST_F(TimerTest, Start) {
 TEST_F(TimerTest, StartWhileRunning) {
   int handler_res = 1;
   int res = YOGI_TimerStart(
-      timer_, -1, 0,  // Infinite timeout
+      timer_, -1,  // Infinite timeout
       [](int res, void* handler_res) { *static_cast<int*>(handler_res) = res; },
       &handler_res);
   EXPECT_EQ(res, YOGI_OK);
 
   res = YOGI_TimerStart(
-      timer_, 0, 0,  // Immediate timeout
+      timer_, 0,  // Immediate timeout
       [](int res, void* handler_res) { *static_cast<int*>(handler_res) = res; },
       &handler_res);
   EXPECT_EQ(res, YOGI_OK);
 
-  YOGI_ContextRunOne(context_, nullptr);
+  YOGI_ContextRunOne(context_, nullptr, -1);
   EXPECT_EQ(handler_res, YOGI_ERR_CANCELED);
 
-  YOGI_ContextRunOne(context_, nullptr);
+  YOGI_ContextRunOne(context_, nullptr, -1);
   EXPECT_EQ(handler_res, YOGI_OK);
 }
 
@@ -73,14 +73,14 @@ TEST_F(TimerTest, Cancel) {
 
   int handler_res = 1;
   res = YOGI_TimerStart(
-      timer_, -1, 0,  // Infinite timeout
+      timer_, -1,  // Infinite timeout
       [](int res, void* handler_res) { *static_cast<int*>(handler_res) = res; },
       &handler_res);
 
   res = YOGI_TimerCancel(timer_);
   EXPECT_EQ(res, YOGI_OK);
 
-  YOGI_ContextRunOne(context_, nullptr);
+  YOGI_ContextRunOne(context_, nullptr, -1);
 
   EXPECT_EQ(handler_res, YOGI_ERR_CANCELED);
 }

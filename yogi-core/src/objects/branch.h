@@ -1,12 +1,12 @@
 #pragma once
 
 #include "../config.h"
+#include "../utils/timestamp.h"
 #include "context.h"
 #include "detail/adv_receiver.h"
 #include "detail/adv_sender.h"
 
 #include <boost/uuid/uuid.hpp>
-#include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/asio.hpp>
 #include <chrono>
 #include <vector>
@@ -49,7 +49,7 @@ class Branch : public api::ExposedObjectT<Branch, api::ObjectType::kBranch> {
   const std::string path_;
   const boost::asio::ip::udp::endpoint adv_ep_;
   const std::chrono::milliseconds adv_interval_;
-  const boost::posix_time::ptime start_time_;
+  const utils::Timestamp start_time_;
 
   detail::AdvertisingSenderPtr adv_sender_;
   detail::AdvertisingReceiverPtr adv_receiver_;

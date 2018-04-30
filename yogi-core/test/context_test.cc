@@ -69,9 +69,9 @@ TEST_F(ContextTest, PollOne) {
 TEST_F(ContextTest, Run) {
   int res;
   std::thread th([&] {
-    res = YOGI_ContextRun(context_, nullptr);
+    res = YOGI_ContextRun(context_, nullptr, -1);
   });
-  YOGI_ContextWaitForRunning(context_, -1, 0);
+  YOGI_ContextWaitForRunning(context_, -1);
 
   YOGI_ContextStop(context_);
   th.join();
@@ -79,9 +79,9 @@ TEST_F(ContextTest, Run) {
 
   int count = -1;
   th = std::thread([&] {
-    res = YOGI_ContextRun(context_, &count);
+    res = YOGI_ContextRun(context_, &count, -1);
   });
-  YOGI_ContextWaitForRunning(context_, -1, 0);
+  YOGI_ContextWaitForRunning(context_, -1);
 
   std::atomic<int> n(0);
   YOGI_ContextPost(context_, [](void* n) { ++*static_cast<int*>(n); }, &n);
@@ -100,9 +100,9 @@ TEST_F(ContextTest, Run) {
 TEST_F(ContextTest, RunOne) {
   int res;
   std::thread th([&] {
-    res = YOGI_ContextRunOne(context_, nullptr);
+    res = YOGI_ContextRunOne(context_, nullptr, -1);
   });
-  YOGI_ContextWaitForRunning(context_, -1, 0);
+  YOGI_ContextWaitForRunning(context_, -1);
 
   YOGI_ContextStop(context_);
   th.join();
@@ -110,9 +110,9 @@ TEST_F(ContextTest, RunOne) {
 
   int count = -1;
   th = std::thread([&] {
-    res = YOGI_ContextRunOne(context_, &count);
+    res = YOGI_ContextRunOne(context_, &count, -1);
   });
-  YOGI_ContextWaitForRunning(context_, -1, 0);
+  YOGI_ContextWaitForRunning(context_, -1);
 
   std::atomic<int> n(0);
   YOGI_ContextPost(context_, [](void* n) { ++*static_cast<int*>(n); }, &n);
@@ -129,7 +129,7 @@ TEST_F(ContextTest, RunOne) {
 }
 
 TEST_F(ContextTest, RunFor) {
-  int res = YOGI_ContextRunFor(context_, nullptr, 0, 0);
+  int res = YOGI_ContextRun(context_, nullptr, 0);
   EXPECT_EQ(res, YOGI_OK);
 
   int n = 0;
@@ -138,7 +138,7 @@ TEST_F(ContextTest, RunFor) {
 
   int count = -1;
   auto start_time = std::chrono::steady_clock::now();
-  res = YOGI_ContextRunFor(context_, &count, 0, 5000000);
+  res = YOGI_ContextRun(context_, &count, 5000000);
   auto dur = std::chrono::steady_clock::now() - start_time;
 
   EXPECT_EQ(res, YOGI_OK);
@@ -149,7 +149,7 @@ TEST_F(ContextTest, RunFor) {
 }
 
 TEST_F(ContextTest, RunOneFor) {
-  int res = YOGI_ContextRunOneFor(context_, nullptr, 0, 0);
+  int res = YOGI_ContextRunOne(context_, nullptr, 0);
   EXPECT_EQ(res, YOGI_OK);
 
   int n = 0;
@@ -157,7 +157,7 @@ TEST_F(ContextTest, RunOneFor) {
 
   int count = -1;
   auto start_time = std::chrono::steady_clock::now();
-  res = YOGI_ContextRunOneFor(context_, &count, 0, 5000000);
+  res = YOGI_ContextRunOne(context_, &count, 5000000);
   auto dur = std::chrono::steady_clock::now() - start_time;
 
   EXPECT_EQ(res, YOGI_OK);
@@ -166,7 +166,7 @@ TEST_F(ContextTest, RunOneFor) {
   EXPECT_EQ(n, 1);
 
   start_time = std::chrono::steady_clock::now();
-  res = YOGI_ContextRunOneFor(context_, &count, 0, 5000000);
+  res = YOGI_ContextRunOne(context_, &count, 5000000);
   dur = std::chrono::steady_clock::now() - start_time;
 
   EXPECT_EQ(res, YOGI_OK);
@@ -192,18 +192,18 @@ TEST_F(ContextTest, RunInBackground) {
 TEST_F(ContextTest, WaitForStopped) {
   YOGI_ContextRunInBackground(context_);
 
-  int res = YOGI_ContextWaitForStopped(context_, 0, 0);
+  int res = YOGI_ContextWaitForStopped(context_, 0);
   EXPECT_EQ(res, YOGI_ERR_TIMEOUT);
 
   auto start_time = std::chrono::steady_clock::now();
-  res = YOGI_ContextWaitForStopped(context_, 0, 1000000);
+  res = YOGI_ContextWaitForStopped(context_, 1000000);
   auto dur = std::chrono::steady_clock::now() - start_time;
   EXPECT_EQ(res, YOGI_ERR_TIMEOUT);
   EXPECT_GE(dur, 1ms);
   EXPECT_LT(dur, 1ms + kTimingMargin);
 
   YOGI_ContextStop(context_);
-  res = YOGI_ContextWaitForStopped(context_, 1, 0);
+  res = YOGI_ContextWaitForStopped(context_, 1000000000);
   EXPECT_EQ(res, YOGI_OK);
 }
 

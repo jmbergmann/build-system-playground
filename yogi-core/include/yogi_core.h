@@ -262,7 +262,7 @@ YOGI_API int YOGI_GetConstant(void* dest, int constant);
  *  - *%T*: The time in 24-hour notation (%H:%M:%S)
  *  - *%3*: Milliseconds as decimal number 000 to 999
  *  - *%6*: Microseconds as decimal number 000 to 999
- *  - *%9*: Nanoseconds as decimal number 000 to 999 (nanoseconds are useless)
+ *  - *%9*: Nanoseconds as decimal number 000 to 999
  *  - *%V*: Verbosity as three letter string (e.g. WRN or ERR)
  *  - *%X*: Log message
  *  - *%P*: Process ID (PID)
@@ -299,13 +299,15 @@ YOGI_API int YOGI_LogToConsole(int stream, int colour, const char* fmt,
  *
  * The parameters passed to \p fn are:
  *  -# *severity*: Severity (verbosity) of the message (see \ref VB)
- *  -# *stampsec*: Timestamp of the message; seconds since 01/01/2018
- *  -# *stampns*: Timestamp of the message; nanoseconds part
+ *  -# *timestamp*: Timestamp of the message in nanoseconds since 01/01/1970 UTC
  *  -# *tid*: Thread ID
  *  -# *file*: Source file name
  *  -# *line*: Source file line number
  *  -# *comp*: Component that created the entry
  *  -# *msg*: Log message
+ *
+ * Note: The two string arguments *comp* and *msg* of \p fn are valid only while
+ *       \p fn is being executed. Do not access those variables at a later time!
  *
  * \param[in] fn        Callback function
  * \param[in] verbosity Maximum verbosity of messages to call \p fn for
@@ -313,7 +315,7 @@ YOGI_API int YOGI_LogToConsole(int stream, int colour, const char* fmt,
  * \returns [=0] #YOGI_OK if successful
  * \returns [<0] An error code in case of a failure (see \ref EC)
  ******************************************************************************/
-YOGI_API int YOGI_LogToHook(void (*fn)(int, int, int, int, const char*, int,
+YOGI_API int YOGI_LogToHook(void (*fn)(int, long long, int, const char*, int,
                                        const char*),
                             int verbosity);
 
@@ -500,46 +502,6 @@ YOGI_API int YOGI_ContextPoll(void* context, int* count);
 YOGI_API int YOGI_ContextPollOne(void* context, int* count);
 
 /***************************************************************************//**
- * Runs the context's event processing loop until the context has been stopped.
- *
- * This function blocks while running the context's event processing loop and
- * calling dispatched handlers (internal and user-supplied such as functions
- * registered through RunInContext() or YOGI_TimerStartSingleShot()) until the
- * YOGI_ContextStop() function has been called.
- *
- * This function must be called from outside any handler functions that are being
- * executed through the context.
- *
- * \param[in]  context The context to use
- * \param[out] count   Number of executed handlers (may be set to NULL)
- *
- * \returns [=0] #YOGI_OK if successful
- * \returns [<0] An error code in case of a failure (see \ref EC)
- ******************************************************************************/
-YOGI_API int YOGI_ContextRun(void* context, int* count);
-
-/***************************************************************************//**
- * Runs the context's event processing loop to execute a single handler has or
- * until the context has been stopped.
- *
- * This function blocks while running the context's event processing loop and
- * calling dispatched handlers (internal and user-supplied such as functions
- * registered through RunInContext() or YOGI_TimerStartSingleShot()) until a
- * single handler function has been executed or until the YOGI_ContextStop()
- * function has been called.
- *
- * This function must be called from outside any handler functions that are being
- * executed through the context.
- *
- * \param[in]  context The context to use
- * \param[out] count   Number of executed handlers (may be set to NULL)
- *
- * \returns [=0] #YOGI_OK if successful
- * \returns [<0] An error code in case of a failure (see \ref EC)
- ******************************************************************************/
-YOGI_API int YOGI_ContextRunOne(void* context, int* count);
-
-/***************************************************************************//**
  * Runs the context's event processing loop for the specified duration.
  *
  * This function blocks while running the context's event processing loop and
@@ -550,16 +512,14 @@ YOGI_API int YOGI_ContextRunOne(void* context, int* count);
  * This function must be called from outside any handler functions that are being
  * executed through the context.
  *
- * \param[in]  context     The context to use
- * \param[out] count       Number of executed handlers (may be set to NULL)
- * \param[in]  seconds     Duration in seconds
- * \param[in]  nanoseconds Sub-second part of the duration
+ * \param[in]  context  The context to use
+ * \param[out] count    Number of executed handlers (may be set to NULL)
+ * \param[in]  duration Duration in nanoseconds (-1 for infinity)
  *
  * \returns [=0] #YOGI_OK if successful
  * \returns [<0] An error code in case of a failure (see \ref EC)
  ******************************************************************************/
-YOGI_API int YOGI_ContextRunFor(void* context, int* count, int seconds,
-                                int nanoseconds);
+YOGI_API int YOGI_ContextRun(void* context, int* count, long long duration);
 
 /***************************************************************************//**
  * Runs the context's event processing loop for the specified duration to
@@ -574,16 +534,14 @@ YOGI_API int YOGI_ContextRunFor(void* context, int* count, int seconds,
  * This function must be called from outside any handler functions that are being
  * executed through the context.
  *
- * \param[in]  context     The context to use
- * \param[out] count       Number of executed handlers (may be set to NULL)
- * \param[in]  seconds     Duration in seconds
- * \param[in]  nanoseconds Sub-second part of the duration
+ * \param[in]  context  The context to use
+ * \param[out] count    Number of executed handlers (may be set to NULL)
+ * \param[in]  duration Duration in nanoseconds (-1 for infinity)
  *
  * \returns [=0] #YOGI_OK if successful
  * \returns [<0] An error code in case of a failure (see \ref EC)
  ******************************************************************************/
-YOGI_API int YOGI_ContextRunOneFor(void* context, int* count, int seconds,
-                                   int nanoseconds);
+YOGI_API int YOGI_ContextRunOne(void* context, int* count, long long duration);
 
 /***************************************************************************//**
  * Starts an internal thread for running the context's event processing loop.
@@ -621,8 +579,8 @@ YOGI_API int YOGI_ContextStop(void* context);
  * Blocks until the context's event processing loop is being run or until the
  * specified timeout is reached.
  *
- * If the \p seconds and the \p nanoseconds parameter are both set to 0, the
- * function works in polling mode.
+ * If the \p duration parameter is set to 0 then the function works in polling
+ * mode.
  *
  * If the event processing loop has not been running after the specified
  * timeout, then the YOGI_ERR_TIMEOUT error is returned. This also applies when
@@ -631,22 +589,20 @@ YOGI_API int YOGI_ContextStop(void* context);
  * This function must be called from outside any handler functions that are being
  * executed through the context.
  *
- * \param[in] context The context to use
- * \param[in] seconds     Timeout in seconds (set to -1 for infinity)
- * \param[in] nanoseconds Sub-second part of the timeout
+ * \param[in] context  The context to use
+ * \param[in] duration Duration in nanoseconds (-1 for infinity)
  *
  * \returns [=0] #YOGI_OK if successful
  * \returns [<0] An error code in case of a failure (see \ref EC)
  ******************************************************************************/
-YOGI_API int YOGI_ContextWaitForRunning(void* context, int seconds,
-                                        int nanoseconds);
+YOGI_API int YOGI_ContextWaitForRunning(void* context, long long duration);
 
 /***************************************************************************//**
  * Blocks until no thread is running the context's event processing loop any
  * or until the specified timeout is reached.
  *
- * If the \p seconds and the \p nanoseconds parameter are both set to 0, the
- * function works in polling mode.
+ * If the \p duration parameter is set to 0 then the function works in polling
+ * mode.
  *
  * If a thread is still running the event processing loop after the specified
  * timeout, then the YOGI_ERR_TIMEOUT error is returned. This also applies when
@@ -655,15 +611,13 @@ YOGI_API int YOGI_ContextWaitForRunning(void* context, int seconds,
  * This function must be called from outside any handler functions that are being
  * executed through the context.
  *
- * \param[in] context The context to use
- * \param[in] seconds     Timeout in seconds (set to -1 for infinity)
- * \param[in] nanoseconds Sub-second part of the timeout
+ * \param[in] context  The context to use
+ * \param[in] duration Duration in nanoseconds (-1 for infinity)
  *
  * \returns [=0] #YOGI_OK if successful
  * \returns [<0] An error code in case of a failure (see \ref EC)
  ******************************************************************************/
-YOGI_API int YOGI_ContextWaitForStopped(void* context, int seconds,
-                                        int nanoseconds);
+YOGI_API int YOGI_ContextWaitForStopped(void* context, long long duration);
 
 /***************************************************************************//**
  * Adds the given functions to the context's event processing queue to be
@@ -704,16 +658,15 @@ YOGI_API int YOGI_TimerCreate(void** timer, void* context);
  *  -# *res*: YOGI_OK or error code in case of a failure (see \ref EC)
  *  -# *userarg*: Value of the user-specified \p userarg parameter
  *
- * \param[in] timer       The timer to start
- * \param[in] seconds     Timeout in seconds (-1 for infinity)
- * \param[in] nanoseconds Sub-second part of the timeout
- * \param[in] fn          The function to call after the given time passed
- * \param[in] userarg     User-specified argument to be passed to \p fn
+ * \param[in] timer    The timer to start
+ * \param[in] duration Duration in nanoseconds (-1 for infinity)
+ * \param[in] fn       The function to call after the given time passed
+ * \param[in] userarg  User-specified argument to be passed to \p fn
  *
  * \returns [=0] #YOGI_OK if successful
  * \returns [<0] An error code in case of a failure (see \ref EC)
  ******************************************************************************/
-YOGI_API int YOGI_TimerStart(void* timer, int seconds, int nanoseconds,
+YOGI_API int YOGI_TimerStart(void* timer, long long duration,
                              void (*fn)(int res, void* userarg), void* userarg);
 
 /***************************************************************************//**

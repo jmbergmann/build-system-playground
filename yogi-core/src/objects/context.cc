@@ -21,20 +21,24 @@ int Context::PollOne() {
   return RunImpl([&] { return ioc_.poll_one(); });
 }
 
-int Context::Run() {
-  return RunImpl([&] { return ioc_.run(); });
+int Context::Run(std::chrono::nanoseconds dur) {
+  return RunImpl([&] {
+    if (dur == dur.max()) {
+      return ioc_.run();
+    } else {
+      return ioc_.run_for(dur);
+    }
+  });
 }
 
-int Context::RunOne() {
-  return RunImpl([&] { return ioc_.run_one(); });
-}
-
-int Context::RunFor(std::chrono::nanoseconds dur) {
-  return RunImpl([&] { return ioc_.run_for(dur); });
-}
-
-int Context::RunOneFor(std::chrono::nanoseconds dur) {
-  return RunImpl([&] { return ioc_.run_one_for(dur); });
+int Context::RunOne(std::chrono::nanoseconds dur) {
+  return RunImpl([&] {
+    if (dur == dur.max()) {
+      return ioc_.run_one();
+    } else {
+      return ioc_.run_one_for(dur);
+    }
+  });
 }
 
 void Context::RunInBackground() {

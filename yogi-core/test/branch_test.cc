@@ -36,7 +36,7 @@ class BranchTest : public ::testing::Test {
   void RunContextInBackground() {
     int res = YOGI_ContextRunInBackground(context_);
     ASSERT_EQ(res, YOGI_OK);
-    res = YOGI_ContextWaitForRunning(context_, 1, 0);
+    res = YOGI_ContextWaitForRunning(context_, 1000000000);
     ASSERT_EQ(res, YOGI_OK);
   }
 

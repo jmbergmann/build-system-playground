@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../../config.h"
+#include "../../utils/timestamp.h"
 
 #include <memory>
 
@@ -29,7 +30,7 @@ typedef std::unique_ptr<ConsoleLogSink> ConsoleLogSinkPtr;
 
 class HookLogSink : public LogSink {
  public:
-  typedef std::function<void(Verbosity, const boost::posix_time::ptime&, int,
+  typedef std::function<void(Verbosity, const utils::Timestamp&, int,
                              const char*, int, const std::string&, const char*)>
       HookFn;
 

@@ -2,7 +2,6 @@
 #include "../api/constants.h"
 #include "../api/error.h"
 #include "../utils/system.h"
-#include "../utils/time.h"
 
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -27,7 +26,7 @@ Branch::Branch(ContextPtr context, std::string name, std::string description,
       adv_ep_(boost::asio::ip::address::from_string(adv_address),
               static_cast<unsigned short>(adv_port)),
       adv_interval_(adv_interval),
-      start_time_(utils::GetCurrentUtcTime()),
+      start_time_(utils::Timestamp::Now()),
       acceptor_(context_->IoContext()) {
   SetupAcceptor();
   SetupAdvertising();
@@ -51,7 +50,7 @@ std::string Branch::MakeInfo() const {
   pt.put("advertising_port", adv_ep_.port());
   pt.put("advertising_interval", (float)adv_interval_.count() / 1000.0f);
   pt.put("tcp_server_port", acceptor_.local_endpoint().port());
-  pt.put("start_time", utils::TimeToJavaScriptString(start_time_));
+  pt.put("start_time", start_time_.ToJavaScriptString());
   pt.put("active_connections", 0);  // TODO
 
   std::stringstream oss;

@@ -22,7 +22,7 @@ add_library (yogi-core-static STATIC
   src/objects/logger.cc
   src/objects/timer.cc
   src/utils/system.cc
-  src/utils/time.cc
+  src/utils/timestamp.cc
 )
 
 cotire (yogi-core-static)

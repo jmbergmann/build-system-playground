@@ -21,10 +21,8 @@ class Context : public api::ExposedObjectT<Context, api::ObjectType::kContext> {
 
   int Poll();
   int PollOne();
-  int Run();
-  int RunOne();
-  int RunFor(std::chrono::nanoseconds dur);
-  int RunOneFor(std::chrono::nanoseconds dur);
+  int Run(std::chrono::nanoseconds dur);
+  int RunOne(std::chrono::nanoseconds dur);
   void RunInBackground();
   void Stop();
   bool WaitForRunning(std::chrono::nanoseconds timeout);

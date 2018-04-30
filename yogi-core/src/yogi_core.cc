@@ -22,44 +22,36 @@
     CHECK_PARAM(size >= 0);                      \
   }
 
-#define CHECK_TIMEOUT_PARAMS(seconds, nanoseconds)               \
-  {                                                              \
-    CHECK_PARAM(seconds >= -1);                                  \
-    CHECK_PARAM(seconds == -1 ||                                 \
-                (1000000000 > nanoseconds && nanoseconds >= 0)); \
-  }
-
-#define CATCH_AND_RETURN                                                  \
-  catch (const api::Error& err) {                                         \
-    return err.error_code();                                              \
-  }                                                                       \
-  catch (const std::bad_alloc&) {                                         \
-    return YOGI_ERR_BAD_ALLOC;                                            \
-  }                                                                       \
-  catch (const std::regex_error&) {                                       \
-    return YOGI_ERR_INVALID_REGEX;                                        \
-  }                                                                       \
-  catch (const std::exception& e) {                                       \
-    std::cerr << __FILE__ << ':' << __LINE__ << ':'                       \
-              << "INTERNAL ERROR: " << e.what() << std::endl;             \
-    return YOGI_ERR_UNKNOWN;                                              \
-  }                                                                       \
-  catch (...) {                                                           \
-    std::cerr << __FILE__ << ':' << __LINE__ << ':' << "INTERNAL ERROR: " \
-              << "Unknown error" << std::endl;                            \
-    return YOGI_ERR_UNKNOWN;                                              \
-  }                                                                       \
+#define CATCH_AND_RETURN                                               \
+  catch (const api::Error& err) {                                      \
+    return err.error_code();                                           \
+  }                                                                    \
+  catch (const std::bad_alloc&) {                                      \
+    return YOGI_ERR_BAD_ALLOC;                                         \
+  }                                                                    \
+  catch (const std::regex_error&) {                                    \
+    return YOGI_ERR_INVALID_REGEX;                                     \
+  }                                                                    \
+  catch (const std::exception& e) {                                    \
+    fprintf(stderr, "%s:%i: INTERNAL ERROR: %s\n", __FILE__, __LINE__, \
+            e.what());                                                 \
+    return YOGI_ERR_UNKNOWN;                                           \
+  }                                                                    \
+  catch (...) {                                                        \
+    fprintf(stderr, "%s:%i: INTERNAL ERROR: %s\n", __FILE__, __LINE__, \
+            "Unknown error");                                          \
+    return YOGI_ERR_UNKNOWN;                                           \
+  }                                                                    \
   return YOGI_OK;
 
 namespace {
 
-std::chrono::nanoseconds ConvertTimeout(int seconds, int nanoseconds) {
-  if (seconds == -1) {
+std::chrono::nanoseconds ConvertDuration(long long duration) {
+  if (duration == -1) {
     return std::chrono::nanoseconds::max();
   }
   else {
-    return std::chrono::nanoseconds(nanoseconds) +
-           std::chrono::seconds(seconds);
+    return std::chrono::nanoseconds(duration);
   }
 }
 
@@ -101,8 +93,8 @@ YOGI_API int YOGI_LogToConsole(int stream, int colour, const char* fmt,
   CATCH_AND_RETURN;
 }
 
-YOGI_API int YOGI_LogToHook(void (*fn)(int, int, int, int, const char*, int,
-                                       const char*),
+YOGI_API int YOGI_LogToHook(void (*fn)(int, long long, int, const char*, int,
+                                       const char*, const char*),
                             int verbosity) {
   CHECK_PARAM(YOGI_VB_NONE <= verbosity && verbosity <= YOGI_VB_TRACE);
 
@@ -112,7 +104,8 @@ YOGI_API int YOGI_LogToHook(void (*fn)(int, int, int, int, const char*, int,
     } else {
       auto hook_fn = [fn](auto severity, auto& time, int tid, auto file,
                           int line, auto& component, auto msg) {
-        // TODO: call fn and do some voodoo with the timestamp
+        fn(severity, time.NanosecondsSinceEpoch(), tid, file, line,
+           component.c_str(), msg);
       };
       objects::Logger::SetSink(std::make_unique<objects::detail::HookLogSink>(
           hook_fn, static_cast<objects::Logger::Verbosity>(verbosity)));
@@ -259,13 +252,14 @@ YOGI_API int YOGI_ContextPollOne(void* context, int* count) {
   CATCH_AND_RETURN;
 }
 
-YOGI_API int YOGI_ContextRun(void* context, int* count) {
+YOGI_API int YOGI_ContextRun(void* context, int* count, long long duration) {
   CHECK_PARAM(context != nullptr);
+  CHECK_PARAM(duration >= -1);
 
   try {
     auto ctx = api::ObjectRegister::Get<objects::Context>(context);
 
-    int n = ctx->Run();
+    int n = ctx->Run(ConvertDuration(duration));
     if (count) {
       *count = n;
     }
@@ -273,49 +267,14 @@ YOGI_API int YOGI_ContextRun(void* context, int* count) {
   CATCH_AND_RETURN;
 }
 
-YOGI_API int YOGI_ContextRunOne(void* context, int* count) {
+YOGI_API int YOGI_ContextRunOne(void* context, int* count, long long duration) {
   CHECK_PARAM(context != nullptr);
+  CHECK_PARAM(duration >= -1);
 
   try {
     auto ctx = api::ObjectRegister::Get<objects::Context>(context);
 
-    int n = ctx->RunOne();
-    if (count) {
-      *count = n;
-    }
-  }
-  CATCH_AND_RETURN;
-}
-
-YOGI_API int YOGI_ContextRunFor(void* context, int* count, int seconds,
-                                int nanoseconds) {
-  CHECK_PARAM(context != nullptr);
-  CHECK_PARAM(seconds >= 0);
-  CHECK_PARAM(1000000000 > nanoseconds && nanoseconds >= 0);
-
-  try {
-    auto ctx = api::ObjectRegister::Get<objects::Context>(context);
-    auto dur = std::chrono::nanoseconds(nanoseconds) + std::chrono::seconds(seconds);
-
-    int n = ctx->RunFor(dur);
-    if (count) {
-      *count = n;
-    }
-  }
-  CATCH_AND_RETURN;
-}
-
-YOGI_API int YOGI_ContextRunOneFor(void* context, int* count, int seconds,
-                                   int nanoseconds) {
-  CHECK_PARAM(context != nullptr);
-  CHECK_PARAM(seconds >= 0);
-  CHECK_PARAM(1000000000 > nanoseconds && nanoseconds >= 0);
-
-  try {
-    auto ctx = api::ObjectRegister::Get<objects::Context>(context);
-    auto dur = std::chrono::nanoseconds(nanoseconds) + std::chrono::seconds(seconds);
-
-    int n = ctx->RunOneFor(dur);
+    int n = ctx->RunOne(ConvertDuration(duration));
     if (count) {
       *count = n;
     }
@@ -343,32 +302,26 @@ YOGI_API int YOGI_ContextStop(void* context) {
   CATCH_AND_RETURN;
 }
 
-YOGI_API int YOGI_ContextWaitForRunning(void* context, int seconds,
-                                        int nanoseconds) {
+YOGI_API int YOGI_ContextWaitForRunning(void* context, long long duration) {
   CHECK_PARAM(context != nullptr);
-  CHECK_TIMEOUT_PARAMS(seconds, nanoseconds);
+  CHECK_PARAM(duration >= -1);
 
   try {
     auto ctx = api::ObjectRegister::Get<objects::Context>(context);
-    auto timeout = ConvertTimeout(seconds, nanoseconds);
-
-    if (!ctx->WaitForRunning(timeout)) {
+    if (!ctx->WaitForRunning(ConvertDuration(duration))) {
       return YOGI_ERR_TIMEOUT;
     }
   }
   CATCH_AND_RETURN;
 }
 
-YOGI_API int YOGI_ContextWaitForStopped(void* context, int seconds,
-                                        int nanoseconds) {
+YOGI_API int YOGI_ContextWaitForStopped(void* context, long long duration) {
   CHECK_PARAM(context != nullptr);
-  CHECK_TIMEOUT_PARAMS(seconds, nanoseconds);
+  CHECK_PARAM(duration >= -1);
 
   try {
     auto ctx = api::ObjectRegister::Get<objects::Context>(context);
-    auto timeout = ConvertTimeout(seconds, nanoseconds);
-
-    if (!ctx->WaitForStopped(timeout)) {
+    if (!ctx->WaitForStopped(ConvertDuration(duration))) {
       return YOGI_ERR_TIMEOUT;
     }
   }
@@ -398,15 +351,15 @@ YOGI_API int YOGI_TimerCreate(void** timer, void* context) {
   CATCH_AND_RETURN;
 }
 
-YOGI_API int YOGI_TimerStart(void* timer, int seconds, int nanoseconds,
+YOGI_API int YOGI_TimerStart(void* timer, long long duration,
                              void (*fn)(int, void*), void* userarg) {
   CHECK_PARAM(timer != nullptr);
-  CHECK_TIMEOUT_PARAMS(seconds, nanoseconds);
+  CHECK_PARAM(duration >= -1);
   CHECK_PARAM(fn != nullptr);
 
   try {
     auto tmr = api::ObjectRegister::Get<objects::Timer>(timer);
-    auto timeout = ConvertTimeout(seconds, nanoseconds);
+    auto timeout = ConvertDuration(duration);
     tmr->Start(timeout, [=](int res) { fn(res, userarg); });
   }
   CATCH_AND_RETURN;
