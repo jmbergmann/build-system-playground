@@ -121,9 +121,9 @@ YOGI_API int YOGI_LogToFile(const char* filename, const char* fmt,
   CHECK_PARAM(YOGI_VB_NONE <= verbosity && verbosity <= YOGI_VB_TRACE);
 
   try {
-    if (filename == nullptr || verbosity == YOGI_VB_NONE) {
-      objects::Logger::SetSink(objects::detail::FileLogSinkPtr());
-    } else {
+    // Remove existing sink first in order to close the old log file
+    objects::Logger::SetSink(objects::detail::FileLogSinkPtr());
+    if (filename != nullptr && verbosity != YOGI_VB_NONE) {
       objects::Logger::SetSink(std::make_unique<objects::detail::FileLogSink>(
           filename, fmt ? fmt : api::kDefaultLogFormat,
           static_cast<objects::Logger::Verbosity>(verbosity)));
@@ -396,7 +396,7 @@ YOGI_API int YOGI_BranchCreate(void** branch, void* context, const char* name,
 
     auto final_name =
         name ? std::string(name)
-             : std::to_string(utils::GetPid()) + '@' + utils::GetHostname();
+             : std::to_string(utils::GetProcessId()) + '@' + utils::GetHostname();
     auto final_description = description ? description : "";
     auto final_netname = netname ? std::string(netname) : utils::GetHostname();
     auto final_password = password ? password : "";

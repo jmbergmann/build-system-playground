@@ -45,7 +45,7 @@ std::string Branch::MakeInfo() const {
   pt.put("net_name", net_name_);
   pt.put("path", path_);
   pt.put("hostname", utils::GetHostname());
-  pt.put("pid", utils::GetPid());
+  pt.put("pid", utils::GetProcessId());
   pt.put("advertising_address", adv_ep_.address().to_string());
   pt.put("advertising_port", adv_ep_.port());
   pt.put("advertising_interval", (float)adv_interval_.count() / 1000.0f);

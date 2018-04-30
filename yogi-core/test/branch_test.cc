@@ -75,7 +75,7 @@ TEST_F(BranchTest, GetInfoJson) {
   auto time_regex = std::regex(
       "^20\\d\\d-\\d\\d-\\d\\dT[0-2]\\d:[0-5]\\d:[0-5]\\d\\.\\d\\d\\dZ$");
   auto default_name =
-      std::to_string(utils::GetPid()) + '@' + utils::GetHostname();
+      std::to_string(utils::GetProcessId()) + '@' + utils::GetHostname();
 
   EXPECT_EQ(pt.get("uuid", "NOT FOUND"), boost::uuids::to_string(uuid));
   EXPECT_EQ(pt.get("name", "NOT FOUND"), default_name);
@@ -83,7 +83,7 @@ TEST_F(BranchTest, GetInfoJson) {
   EXPECT_EQ(pt.get("net_name", "NOT FOUND"), utils::GetHostname());
   EXPECT_EQ(pt.get("path", "NOT FOUND"), std::string("/") + default_name);
   EXPECT_EQ(pt.get("hostname", "NOT FOUND"), utils::GetHostname());
-  EXPECT_EQ(pt.get("pid", -1), utils::GetPid());
+  EXPECT_EQ(pt.get("pid", -1), utils::GetProcessId());
   EXPECT_EQ(pt.get("advertising_address", "NOT FOUND"), api::kDefaultAdvAddress);
   EXPECT_EQ(pt.get("advertising_port", -1), api::kDefaultAdvPort);
   EXPECT_EQ(pt.get("advertising_interval", -1.0f),

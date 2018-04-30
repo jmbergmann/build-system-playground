@@ -21,12 +21,22 @@ std::string GetHostname() {
   return hostname;
 }
 
-int GetPid() {
+int GetProcessId() {
 #ifdef _WIN32
   return _getpid();
 #else
   return getpid();
 #endif
+}
+
+int GetCurrentThreadId() {
+#ifdef _WIN32
+  auto id = ::GetCurrentThreadId();
+#else
+  auto id = pthread_self();
+#endif
+
+  return static_cast<int>(id);
 }
 
 }  // namespace utils

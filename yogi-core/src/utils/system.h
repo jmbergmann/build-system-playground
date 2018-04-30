@@ -5,6 +5,7 @@
 namespace utils {
 
 std::string GetHostname();
-int GetPid();
+int GetProcessId();
+int GetCurrentThreadId();
 
 }  // namespace utils
