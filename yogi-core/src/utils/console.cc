@@ -95,7 +95,7 @@ void SetConsoleColour(FILE* stream, BackgroundColour colour) {
     switch (colour) {
       case BackgroundColour::kBlack:   seq = "\033[40m"; break;
       case BackgroundColour::kRed:     seq = "\033[41m"; break;
-      case BackgroundColour::kGreed:   seq = "\033[42m"; break;
+      case BackgroundColour::kGreen:   seq = "\033[42m"; break;
       case BackgroundColour::kYellow:  seq = "\033[43m"; break;
       case BackgroundColour::kBlue:    seq = "\033[44m"; break;
       case BackgroundColour::kMagenta: seq = "\033[45m"; break;
