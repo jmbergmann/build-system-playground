@@ -9,9 +9,9 @@ AdvertisingReceiver::AdvertisingReceiver(
     ContextPtr context, const boost::asio::ip::udp::endpoint& adv_ep,
     std::size_t adv_msg_size, ObserverFn observer_fn)
     : context_(context),
+      adv_ep_(adv_ep),
       adv_msg_size_(adv_msg_size),
       observer_fn_(observer_fn),
-      adv_ep_(adv_ep),
       socket_(context->IoContext()),
       buffer_(adv_msg_size + 1) {
   SetupSocket();

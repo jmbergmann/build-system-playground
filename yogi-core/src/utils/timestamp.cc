@@ -20,7 +20,7 @@ std::string Timestamp::ToJavaScriptString() const {
 #ifdef _WIN32
   gmtime_s(&buf, &time);
 #else
-  gmtime_s(&time, &buf);
+  gmtime_r(&time, &buf);
 #endif
 
   std::stringstream ss;
