@@ -8,7 +8,7 @@ namespace log {
 
 ConsoleSink::ConsoleSink(Verbosity verbosity, FILE* stream, bool colour,
                          std::string time_fmt, std::string fmt)
-    : TextBasedSink(verbosity, time_fmt, fmt),
+    : TextBasedSink(verbosity, time_fmt, fmt, !colour),
       stream_(stream),
       colour_(colour) {}
 

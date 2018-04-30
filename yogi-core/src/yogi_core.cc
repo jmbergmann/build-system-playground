@@ -8,6 +8,7 @@
 #include "objects/timer.h"
 #include "utils/system.h"
 
+#include <boost/algorithm/string.hpp>
 #include <stdexcept>
 #include <regex>
 
@@ -55,6 +56,25 @@ std::chrono::nanoseconds ConvertDuration(long long duration) {
   }
 }
 
+bool IsTimeFormatValid(const std::string& fmt) {
+  if (fmt.empty()) {
+    return false;
+  }
+
+  std::regex re("%[^YmdFHMST369]");
+  return !std::regex_search(fmt, re);
+}
+
+bool IsLogFormatValid(std::string fmt) {
+  if (fmt.empty()) {
+    return false;
+  }
+
+  boost::replace_all(fmt, "$$", "");
+  std::regex re("\\$[^tPTsmflc<>]");
+  return !std::regex_search(fmt, re);
+}
+
 }  // anonymous namespace
 
 YOGI_API const char* YOGI_GetVersion() { return api::kVersionNumber; }
@@ -74,11 +94,13 @@ YOGI_API int YOGI_GetConstant(void* dest, int constant) {
 
 YOGI_API int YOGI_LogToConsole(int verbosity, int stream, int colour,
                                const char* timefmt, const char* fmt) {
-  CHECK_PARAM(YOGI_VB_NONE <= verbosity && verbosity <= YOGI_VB_TRACE);
-  CHECK_PARAM(stream == YOGI_STDOUT || stream == YOGI_STDERR);
-  CHECK_PARAM(colour == YOGI_TRUE || colour == YOGI_FALSE);
-  CHECK_PARAM(timefmt == nullptr || *timefmt != '\0');
-  CHECK_PARAM(fmt == nullptr || *fmt != '\0');
+  if (verbosity != YOGI_VB_NONE) {
+    CHECK_PARAM(YOGI_VB_FATAL <= verbosity && verbosity <= YOGI_VB_TRACE);
+    CHECK_PARAM(stream == YOGI_ST_STDOUT || stream == YOGI_ST_STDERR);
+    CHECK_PARAM(colour == YOGI_TRUE || colour == YOGI_FALSE);
+    CHECK_PARAM(timefmt == nullptr || IsTimeFormatValid(timefmt));
+    CHECK_PARAM(fmt == nullptr || IsLogFormatValid(fmt));
+  }
 
   try {
     if (verbosity == YOGI_VB_NONE) {
@@ -87,7 +109,7 @@ YOGI_API int YOGI_LogToConsole(int verbosity, int stream, int colour,
       objects::Logger::SetSink(
           std::make_unique<objects::detail::log::ConsoleSink>(
               static_cast<objects::Logger::Verbosity>(verbosity),
-              stream == YOGI_STDOUT ? stdout : stderr, !!colour,
+              stream == YOGI_ST_STDOUT ? stdout : stderr, !!colour,
               timefmt ? timefmt : api::kDefaultLogTimeFormat,
               fmt ? fmt : api::kDefaultLogFormat));
     }
@@ -120,10 +142,12 @@ YOGI_API int YOGI_LogToHook(int verbosity,
 
 YOGI_API int YOGI_LogToFile(int verbosity, const char* filename,
                             const char* timefmt, const char* fmt) {
-  CHECK_PARAM(YOGI_VB_NONE <= verbosity && verbosity <= YOGI_VB_TRACE);
-  CHECK_PARAM(filename == nullptr || *filename != '\0');
-  CHECK_PARAM(fmt == nullptr || *fmt != '\0');
-  CHECK_PARAM(timefmt == nullptr || *timefmt != '\0');
+  if (verbosity != YOGI_VB_NONE) {
+    CHECK_PARAM(YOGI_VB_FATAL <= verbosity && verbosity <= YOGI_VB_TRACE);
+    CHECK_PARAM(filename == nullptr || IsTimeFormatValid(filename));
+    CHECK_PARAM(timefmt == nullptr || IsTimeFormatValid(timefmt));
+    CHECK_PARAM(fmt == nullptr || IsLogFormatValid(fmt));
+  }
 
   try {
     // Remove existing sink first in order to close the old log file

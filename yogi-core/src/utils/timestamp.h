@@ -26,6 +26,7 @@ class Timestamp {
     return static_cast<int>((NanosecondsSinceEpoch() / 1000000) % 1000);
   }
 
+  std::string ToFormattedString(std::string fmt) const;
   std::string ToJavaScriptString() const;
 
  private:

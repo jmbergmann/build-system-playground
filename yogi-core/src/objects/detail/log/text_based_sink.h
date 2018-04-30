@@ -11,7 +11,8 @@ namespace log {
 
 class TextBasedSink : public Sink {
  public:
-  TextBasedSink(Verbosity verbosity, std::string time_fmt, std::string fmt);
+  TextBasedSink(Verbosity verbosity, std::string time_fmt, std::string fmt,
+                bool ignore_colour);
 
  protected:
   virtual void WriteEntry(Verbosity severity, const utils::Timestamp& timestamp,
@@ -25,6 +26,7 @@ class TextBasedSink : public Sink {
  private:
   const std::string time_fmt_;
   const std::string fmt_;
+  const bool ignore_colour_;
 };
 
 typedef std::unique_ptr<Sink> SinkPtr;

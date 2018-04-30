@@ -168,10 +168,10 @@
 //! @{
 
 //! Standard output
-#define YOGI_STDOUT 0
+#define YOGI_ST_STDOUT 0
 
 //! Standard error output
-#define YOGI_STDERR 1
+#define YOGI_ST_STDERR 1
 
 //! @}
 #ifndef YOGI_API
@@ -284,7 +284,7 @@ YOGI_API int YOGI_GetConstant(void* dest, int constant);
  *  - *$$*: A $ sign
  *
  * \param[in] verbosity Maximum verbosity of messages to log to stderr
- * \param[in] stream    The stream to use (#YOGI_STDOUT or #YOGI_STDERR)
+ * \param[in] stream    The stream to use (#YOGI_ST_STDOUT or #YOGI_ST_STDERR)
  * \param[in] colour    Use colours in output (#YOGI_TRUE or #YOGI_FALSE)
  * \param[in] timefmt   Format of the timestamp (set to NULL for default)
  * \param[in] fmt       Format of a log entry (set to NULL for default)

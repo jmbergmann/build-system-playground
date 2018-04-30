@@ -3,16 +3,18 @@
 
 #include "../src/utils/system.h"
 
+#include <boost/algorithm/string.hpp>
 #include <time.h>
+#include <regex>
 
 class LoggerTest : public ::testing::Test {
  protected:
   struct Entry {
-    int         severity;
-    long long   timestamp;
-    int         tid;
+    int severity;
+    long long timestamp;
+    int tid;
     std::string file;
-    int         line;
+    int line;
     std::string component;
     std::string msg;
   };
@@ -37,6 +39,10 @@ class LoggerTest : public ::testing::Test {
   virtual void TearDown() override {
     int res = YOGI_DestroyAll();
     ASSERT_EQ(res, YOGI_OK);
+
+    YOGI_LogToConsole(YOGI_VB_NONE, 0, 0, nullptr, nullptr);
+    YOGI_LogToHook(YOGI_VB_NONE, nullptr, nullptr);
+    YOGI_LogToFile(YOGI_VB_NONE, nullptr, nullptr, nullptr);
   }
 
   void* logger_;
@@ -44,11 +50,59 @@ class LoggerTest : public ::testing::Test {
 };
 
 TEST_F(LoggerTest, LogToConsole) {
+  const char* timefmt = "_%Y_%m_%d_%F_%H_%M_%S_%T_%3_%6_%9_";
+  const char* fmt = "_$t_$P_$T_$s_$m_$f_$l_$c_$<_$>_$$_";
+
+  std::string re = "^__####_##_##_####-##-##_##_##_##_##:##:##_###_###_###__";
+  boost::replace_all(re, "#", "\\d");
+  re += std::to_string(utils::GetProcessId()) + "_";
+  re += std::to_string(utils::GetCurrentThreadId()) + "_";
+  re += "ERR_Hello_myfile\\.cc_123_My\\.Component___\\$";
+  re += "$";
+
+  std::smatch m;
+
+  // Test stdout
+  int res = YOGI_LogToConsole(YOGI_VB_TRACE, YOGI_ST_STDOUT, YOGI_FALSE,
+                              timefmt, fmt);
+  ASSERT_EQ(res, YOGI_OK);
+
   ::testing::internal::CaptureStdout();
-  std::cout << "sdfsdf" << std::endl;
-  printf("Hello\n");
-  auto s = ::testing::internal::GetCapturedStdout();
-  std::cout << "XXX" << s << std::endl;
+  YOGI_LoggerLog(logger_, YOGI_VB_ERROR, "myfile.cc", 123, "Hello");
+  auto text = ::testing::internal::GetCapturedStdout();
+
+  ASSERT_TRUE(text.back() == '\n');
+  text.pop_back();
+  if (text.back() == '\r') text.pop_back();
+  EXPECT_TRUE(std::regex_match(text, m, std::regex(re))) << text;
+
+  // Test stderr
+  res = YOGI_LogToConsole(YOGI_VB_TRACE, YOGI_ST_STDERR, YOGI_FALSE, timefmt,
+                          fmt);
+  ASSERT_EQ(res, YOGI_OK);
+
+  ::testing::internal::CaptureStderr();
+  YOGI_LoggerLog(logger_, YOGI_VB_ERROR, "myfile.cc", 123, "Hello");
+  text = ::testing::internal::GetCapturedStderr();
+
+  ASSERT_TRUE(text.back() == '\n');
+  text.pop_back();
+  if (text.back() == '\r') text.pop_back();
+  EXPECT_TRUE(std::regex_match(text, m, std::regex(re))) << text;
+}
+
+TEST_F(LoggerTest, Colours) {
+  // This is not easily testable so we just print a log message for each
+  // severity to show the different colours
+  YOGI_LogToConsole(YOGI_VB_TRACE, YOGI_ST_STDOUT, YOGI_TRUE, nullptr, nullptr);
+  YOGI_LoggerSetVerbosity(logger_, YOGI_VB_TRACE);
+
+  YOGI_LoggerLog(logger_, YOGI_VB_FATAL, "myfile.cc", 123, "Hello");
+  YOGI_LoggerLog(logger_, YOGI_VB_ERROR, "myfile.cc", 123, "Hello");
+  YOGI_LoggerLog(logger_, YOGI_VB_WARNING, "myfile.cc", 123, "Hello");
+  YOGI_LoggerLog(logger_, YOGI_VB_INFO, "myfile.cc", 123, "Hello");
+  YOGI_LoggerLog(logger_, YOGI_VB_DEBUG, "myfile.cc", 123, "Hello");
+  YOGI_LoggerLog(logger_, YOGI_VB_TRACE, "myfile.cc", 123, "Hello");
 }
 
 TEST_F(LoggerTest, LogToHook) {
@@ -65,9 +119,7 @@ TEST_F(LoggerTest, LogToHook) {
   EXPECT_EQ(entry.msg, "Hello");
 }
 
-TEST_F(LoggerTest, LogToFile) {
-
-}
+TEST_F(LoggerTest, LogToFile) {}
 
 TEST_F(LoggerTest, SetVerbosity) {
   int res = YOGI_LoggerSetVerbosity(logger_, YOGI_VB_ERROR);

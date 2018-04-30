@@ -12,12 +12,12 @@ namespace log {
 class Sink {
  public:
   enum Verbosity {
-    kVerbosityFatal = YOGI_VB_FATAL,
-    kVerbosityError = YOGI_VB_ERROR,
-    kVerbosityWarning = YOGI_VB_WARNING,
-    kVerbosityInfo = YOGI_VB_INFO,
-    kVerbosityDebug = YOGI_VB_DEBUG,
-    kVerbosityTrace = YOGI_VB_TRACE,
+    kFatal   = YOGI_VB_FATAL,
+    kError   = YOGI_VB_ERROR,
+    kWarning = YOGI_VB_WARNING,
+    kInfo    = YOGI_VB_INFO,
+    kDebug   = YOGI_VB_DEBUG,
+    kTrace   = YOGI_VB_TRACE,
   };
 
   Sink(Verbosity verbosity) : verbosity_(verbosity) {}

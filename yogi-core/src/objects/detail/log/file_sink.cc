@@ -6,7 +6,7 @@ namespace log {
 
 FileSink::FileSink(Verbosity verbosity, std::string filename, std::string time_fmt,
                          std::string fmt)
-    : TextBasedSink(verbosity, time_fmt, fmt) {}
+    : TextBasedSink(verbosity, time_fmt, fmt, true) {}
 
 void FileSink::WritePartialOutput(const std::string& str) {}
 
