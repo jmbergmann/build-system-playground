@@ -82,8 +82,9 @@ void AdvertisingReceiver::HandleReceivedAdvertisement() {
   boost::endian::big_uint16_t tcp_port;
   std::memcpy(&tcp_port, buffer_.data() + 23, 2);
 
-  YOGI_LOG_TRACE(logger_, "Received advertising message for " << uuid);
-  observer_fn_(uuid, tcp_port);
+  YOGI_LOG_TRACE(logger_, "Received advertising message for "
+                              << uuid << " from " << sender_ep_.address());
+  observer_fn_(uuid, sender_ep_.address(), tcp_port);
 }
 
 }  // namespace detail

@@ -100,12 +100,13 @@ void Branch::SetupAdvertising() {
 
   adv_receiver_ = std::make_shared<detail::AdvertisingReceiver>(
       context_, adv_ep_, adv_sender_->GetMessageSize(),
-      [this](auto& uuid, auto tcp_port) {
-        this->OnAdvertisementReceived(uuid, tcp_port);
+      [this](auto& uuid, auto& address, auto tcp_port) {
+        this->OnAdvertisementReceived(uuid, address, tcp_port);
       });
 }
 
 void Branch::OnAdvertisementReceived(const boost::uuids::uuid& uuid,
+                                     const boost::asio::ip::address& address,
                                      unsigned short tcp_port) {
   printf("ADV RECEIVED\n");
 }

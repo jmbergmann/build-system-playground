@@ -6,8 +6,6 @@
 #include "detail/adv_receiver.h"
 #include "detail/adv_sender.h"
 
-#include <boost/uuid/uuid.hpp>
-#include <boost/asio.hpp>
 #include <chrono>
 #include <vector>
 #include <string>
@@ -38,6 +36,7 @@ class Branch : public api::ExposedObjectT<Branch, api::ObjectType::kBranch> {
   void SetupAcceptor();
   void SetupAdvertising();
   void OnAdvertisementReceived(const boost::uuids::uuid& uuid,
+                               const boost::asio::ip::address& address,
                                unsigned short tcp_port);
 
   const ContextPtr context_;

@@ -16,6 +16,7 @@ class AdvertisingReceiver
     : public std::enable_shared_from_this<AdvertisingReceiver> {
  public:
   typedef std::function<void(const boost::uuids::uuid& uuid,
+                             const boost::asio::ip::address& address,
                              unsigned short port)>
       ObserverFn;
 
