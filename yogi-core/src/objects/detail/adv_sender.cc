@@ -16,6 +16,7 @@ AdvertisingSender::AdvertisingSender(
       uuid_(uuid),
       tcp_acceptor_ep_(tcp_acceptor_ep),
       message_(MakeAdvMessage()),
+      logger_(Logger::CreateInternalLogger("Branch")),
       ep_(adv_ep),
       socket_(context->IoContext()),
       timer_(context->IoContext()) {
@@ -53,7 +54,8 @@ void AdvertisingSender::SendAdvertisement() {
         if (!ec) {
           self->StartTimer();
         } else if (ec != boost::asio::error::operation_aborted) {
-          // TODO: logging error
+          YOGI_LOG_ERROR(self->logger_,
+                         "Sending advertisement failed: " << ec.message());
         }
       });
 }
@@ -69,7 +71,8 @@ void AdvertisingSender::StartTimer() {
     if (!ec) {
       self->SendAdvertisement();
     } else if (ec != boost::asio::error::operation_aborted) {
-      // TODO: logging error
+      YOGI_LOG_ERROR(self->logger_, "Awaiting advertising timer expiry failed: "
+                                        << ec.message());
     }
   });
 }

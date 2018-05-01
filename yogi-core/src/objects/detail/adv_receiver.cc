@@ -12,6 +12,7 @@ AdvertisingReceiver::AdvertisingReceiver(
       adv_ep_(adv_ep),
       adv_msg_size_(adv_msg_size),
       observer_fn_(observer_fn),
+      logger_(Logger::CreateInternalLogger("Branch")),
       socket_(context->IoContext()),
       buffer_(adv_msg_size + 1) {
   SetupSocket();
@@ -49,21 +50,29 @@ void AdvertisingReceiver::ReceiveAdvertisement() {
             self->HandleReceivedAdvertisement();
             self->ReceiveAdvertisement();
           } else {
-            // TODO: logging error (unexpected adv size received)
+            YOGI_LOG_WARNING(self->logger_,
+                             "Unexpected advertising message size ("
+                                 << size << " bytes) received");
           }
         } else if (ec != boost::asio::error::operation_aborted) {
-          // TODO: logging error
+          YOGI_LOG_ERROR(
+              self->logger_,
+              "Failed to receive advertising message: " << ec.message());
         }
       });
 }
 
 void AdvertisingReceiver::HandleReceivedAdvertisement() {
   if (std::memcmp(buffer_.data(), "YOGI", 5) != 0) {
-    // TODO: logging: Adv received but magic prefix is wrong
+    YOGI_LOG_WARNING(logger_,
+                     "Received advertising message with invalid magic prefix");
   }
 
   if (buffer_[5] != api::kVersionMajor || buffer_[6] != api::kVersionMinor) {
-    // TODO: logging: Adv received but versions incompatible
+    YOGI_LOG_WARNING(logger_,
+                     "Received advertising message with incompatible Yogi "
+                     "version (version " << static_cast<int>(buffer_[5])
+                         << "." << static_cast<int>(buffer_[6]) << ")");
   }
 
   boost::uuids::uuid uuid;
@@ -72,7 +81,7 @@ void AdvertisingReceiver::HandleReceivedAdvertisement() {
   boost::endian::big_uint16_t tcp_port;
   std::memcpy(&tcp_port, buffer_.data() + 23, 2);
 
-  // TODO: logging success
+  YOGI_LOG_TRACE(logger_, "Received advertising message for " << uuid);
   observer_fn_(uuid, tcp_port);
 }
 

@@ -216,13 +216,28 @@ YOGI_API int YOGI_LoggerSetComponentsVerbosity(const char* components,
   try {
     std::regex re(components);
     std::smatch m;
-
     int n = 0;
-    auto loggers = api::ObjectRegister::GetAll<objects::Logger>();
-    for (auto& log : loggers) {
+
+    auto fn = [&](const objects::LoggerPtr& log) {
       if (std::regex_match(log->GetComponent(), m, re)) {
         log->SetVerbosity(static_cast<objects::Logger::Verbosity>(verbosity));
         ++n;
+      }
+    };
+
+    // App logger
+    fn(objects::Logger::GetAppLogger());
+
+    // Loggers created by the user
+    for (auto& log : api::ObjectRegister::GetAll<objects::Logger>()) {
+      fn(log);
+    }
+
+    // Internal loggers
+    for (auto& weak_log : objects::Logger::GetInternalLoggers()) {
+      auto log = weak_log.lock();
+      if (log) {
+        fn(log);
       }
     }
 

@@ -2,6 +2,7 @@
 
 #include "../../config.h"
 #include "../context.h"
+#include "../logger.h"
 
 #include <boost/uuid/uuid.hpp>
 #include <boost/asio.hpp>
@@ -34,6 +35,7 @@ class AdvertisingSender
   const boost::uuids::uuid uuid_;
   const boost::asio::ip::tcp::endpoint tcp_acceptor_ep_;
   const std::vector<char> message_;
+  const LoggerPtr logger_;
   boost::asio::ip::udp::endpoint ep_;
   boost::asio::ip::udp::socket socket_;
   boost::asio::steady_timer timer_;

@@ -232,6 +232,29 @@ TEST_F(LoggerTest, SetComponentsVerbosity) {
   EXPECT_EQ(entries_.back().component, "Another Logger");
 }
 
+TEST_F(LoggerTest, SetComponentsVerbosityAppLogger) {
+  int count = -1;
+  int res = YOGI_LoggerSetComponentsVerbosity("App", YOGI_VB_ERROR, &count);
+  EXPECT_EQ(res, YOGI_OK);
+  EXPECT_EQ(count, 1);
+}
+
+TEST_F(LoggerTest, SetComponentsVerbosityInternalLoggers) {
+  void* context;
+  int res = YOGI_ContextCreate(&context);
+  ASSERT_EQ(res, YOGI_OK);
+
+  void* branch;
+  res = YOGI_BranchCreate(&branch, context, nullptr, nullptr, nullptr, nullptr,
+                          nullptr, nullptr, 0, 0);
+  ASSERT_EQ(res, YOGI_OK);
+
+  int count = -1;
+  res = YOGI_LoggerSetComponentsVerbosity("Yogi\\..*", YOGI_VB_ERROR, &count);
+  EXPECT_EQ(res, YOGI_OK);
+  EXPECT_GT(count, 0);
+}
+
 TEST_F(LoggerTest, Log) {
   int res = YOGI_LoggerLog(logger_, YOGI_VB_FATAL, "myfile.cc", 123, "Hello");
   EXPECT_EQ(res, YOGI_OK);

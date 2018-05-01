@@ -8,6 +8,25 @@
 
 #include <atomic>
 #include <mutex>
+#include <vector>
+#include <sstream>
+
+#define YOGI_LOG_FATAL(logger, ...) YOGI_LOG(kFatal, logger, __VA_ARGS__)
+#define YOGI_LOG_ERROR(logger, ...) YOGI_LOG(kError, logger, __VA_ARGS__)
+#define YOGI_LOG_WARNING(logger, ...) YOGI_LOG(kWarning, logger, __VA_ARGS__)
+#define YOGI_LOG_INFO(logger, ...) YOGI_LOG(kInfo, logger, __VA_ARGS__)
+#define YOGI_LOG_DEBUG(logger, ...) YOGI_LOG(kDebug, logger, __VA_ARGS__)
+#define YOGI_LOG_TRACE(logger, ...) YOGI_LOG(kTrace, logger, __VA_ARGS__)
+
+#define YOGI_LOG(severity, logger, stream)                                    \
+  {                                                                           \
+    if (::objects::Logger::Verbosity::severity <= (logger)->GetVerbosity()) { \
+      std::stringstream ss;                                                   \
+      ss << stream;                                                           \
+      (logger)->Log(::objects::Logger::Verbosity::severity, __FILE__,         \
+                    __LINE__, ss.str().c_str());                              \
+    }                                                                         \
+  }
 
 namespace objects {
 
@@ -19,8 +38,12 @@ class Logger : public api::ExposedObjectT<Logger, api::ObjectType::kLogger> {
   static void SetSink(detail::log::HookSinkPtr&& sink);
   static void SetSink(detail::log::FileSinkPtr&& sink);
   static std::shared_ptr<Logger> GetAppLogger() { return app_logger_; }
+  static std::shared_ptr<Logger> CreateInternalLogger(
+      const std::string& component);
+  static std::vector<std::weak_ptr<Logger>> GetInternalLoggers();
 
   Logger(std::string component);
+  virtual ~Logger();
 
   const std::string& GetComponent() const { return component_; }
   Verbosity GetVerbosity() const { return verbosity_; }
@@ -32,6 +55,8 @@ class Logger : public api::ExposedObjectT<Logger, api::ObjectType::kLogger> {
   static detail::log::SinkPtr console_sink_;
   static detail::log::SinkPtr hook_sink_;
   static detail::log::SinkPtr file_sink_;
+  static std::mutex internal_loggers_mutex_;
+  static std::vector<std::weak_ptr<Logger>> internal_loggers_;
   static std::shared_ptr<Logger> app_logger_;
 
   const std::string component_;
