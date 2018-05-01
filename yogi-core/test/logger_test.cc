@@ -187,9 +187,18 @@ TEST_F(LoggerTest, LogToFile) {
   boost::filesystem::remove(filename);
 }
 
-TEST_F(LoggerTest, SetVerbosity) {
-  int res = YOGI_LoggerSetVerbosity(logger_, YOGI_VB_ERROR);
+TEST_F(LoggerTest, GetAndSetVerbosity) {
+  int verbosity = -1;
+  int res = YOGI_LoggerGetVerbosity(logger_, &verbosity);
   EXPECT_EQ(res, YOGI_OK);
+  EXPECT_NE(verbosity, YOGI_VB_ERROR);
+
+  res = YOGI_LoggerSetVerbosity(logger_, YOGI_VB_ERROR);
+  EXPECT_EQ(res, YOGI_OK);
+
+  res = YOGI_LoggerGetVerbosity(logger_, &verbosity);
+  EXPECT_EQ(res, YOGI_OK);
+  EXPECT_EQ(verbosity, YOGI_VB_ERROR);
 
   YOGI_LoggerLog(logger_, YOGI_VB_FATAL, "myfile.cc", 123, "Hello");
   YOGI_LoggerLog(logger_, YOGI_VB_ERROR, "myfile.cc", 123, "Hello");

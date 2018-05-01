@@ -197,6 +197,17 @@ YOGI_API int YOGI_LoggerSetVerbosity(void* logger, int verbosity) {
   CATCH_AND_RETURN;
 }
 
+YOGI_API int YOGI_LoggerGetVerbosity(void* logger, int* verbosity) {
+  CHECK_PARAM(verbosity != nullptr);
+
+  try {
+    auto log = logger ? api::ObjectRegister::Get<objects::Logger>(logger)
+                      : objects::Logger::GetAppLogger();
+    *verbosity = log->GetVerbosity();
+  }
+  CATCH_AND_RETURN;
+}
+
 YOGI_API int YOGI_LoggerSetComponentsVerbosity(const char* components,
                                                int verbosity, int* count) {
   CHECK_PARAM(components != nullptr && *components != '\0');

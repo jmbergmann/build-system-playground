@@ -393,6 +393,25 @@ YOGI_API int YOGI_LogToFile(int verbosity, const char* filename, char* genfn,
 YOGI_API int YOGI_LoggerCreate(void** logger, const char* component);
 
 /***************************************************************************//**
+ * Gets the verbosity of a particular logger.
+ *
+ * The verbosity of a logger acts as a filter. Only messages with a verbosity
+ * less than or equal to the given value are being logged.
+ *
+ * Note: The verbosity of a logger affects only messages logged through that
+ *       particular logger, i.e. if two loggers have identical component tags
+ *       their verbosity settings are still independent from each other.
+ *
+ * \param[in]  logger    Logger handle (set to NULL for the App logger)
+ * \param[out] verbosity Pointer to where the verbosity level shall be written
+ *                       to (see \ref VB)
+ *
+ * \returns [=0] #YOGI_OK if successful
+ * \returns [<0] An error code in case of a failure (see \ref EC)
+ ******************************************************************************/
+YOGI_API int YOGI_LoggerGetVerbosity(void* logger, int* verbosity);
+
+/***************************************************************************//**
  * Sets the verbosity of a particular logger.
  *
  * The verbosity of a logger acts as a filter. Only messages with a verbosity

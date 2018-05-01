@@ -23,6 +23,7 @@ class Logger : public api::ExposedObjectT<Logger, api::ObjectType::kLogger> {
   Logger(std::string component);
 
   const std::string& GetComponent() const { return component_; }
+  Verbosity GetVerbosity() const { return verbosity_; }
   void SetVerbosity(Verbosity verbosity) { verbosity_ = verbosity; }
   void Log(Verbosity severity, const char* file, int line, const char* msg);
 
