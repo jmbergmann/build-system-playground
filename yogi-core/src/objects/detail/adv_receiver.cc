@@ -5,6 +5,8 @@
 namespace objects {
 namespace detail {
 
+LoggerPtr AdvertisingReceiver::logger_ = Logger::CreateInternalLogger("Branch");
+
 AdvertisingReceiver::AdvertisingReceiver(
     ContextPtr context, const boost::asio::ip::udp::endpoint& adv_ep,
     std::size_t adv_msg_size, ObserverFn observer_fn)
@@ -12,7 +14,6 @@ AdvertisingReceiver::AdvertisingReceiver(
       adv_ep_(adv_ep),
       adv_msg_size_(adv_msg_size),
       observer_fn_(observer_fn),
-      logger_(Logger::CreateInternalLogger("Branch")),
       socket_(context->IoContext()),
       buffer_(adv_msg_size + 1) {
   SetupSocket();

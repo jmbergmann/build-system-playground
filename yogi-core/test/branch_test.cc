@@ -19,6 +19,10 @@ const auto kAdvInterval = 2ms;
 class BranchTest : public ::testing::Test {
  protected:
   virtual void SetUp() override {
+    YOGI_LogToConsole(YOGI_VB_TRACE, YOGI_ST_STDERR, YOGI_TRUE, nullptr,
+                      nullptr);
+    YOGI_LoggerSetComponentsVerbosity("Yogi\\..*", YOGI_VB_TRACE, nullptr);
+
     context_ = nullptr;
     int res = YOGI_ContextCreate(&context_);
     ASSERT_EQ(res, YOGI_OK);

@@ -29,11 +29,12 @@ class AdvertisingReceiver
   void ReceiveAdvertisement();
   void HandleReceivedAdvertisement();
 
+  static LoggerPtr logger_;
+
   const ContextPtr context_;
   const boost::asio::ip::udp::endpoint adv_ep_;
   const std::size_t adv_msg_size_;
   const ObserverFn observer_fn_;
-  const LoggerPtr logger_;
   boost::asio::ip::udp::socket socket_;
   boost::asio::ip::udp::endpoint sender_ep_;
   std::vector<char> buffer_;

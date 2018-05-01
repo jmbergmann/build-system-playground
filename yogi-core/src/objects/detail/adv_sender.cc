@@ -7,6 +7,8 @@
 namespace objects {
 namespace detail {
 
+LoggerPtr AdvertisingSender::logger_ = Logger::CreateInternalLogger("Branch");
+
 AdvertisingSender::AdvertisingSender(
     ContextPtr context, const boost::asio::ip::udp::endpoint& adv_ep,
     std::chrono::milliseconds adv_interval, const boost::uuids::uuid& uuid,
@@ -16,7 +18,6 @@ AdvertisingSender::AdvertisingSender(
       uuid_(uuid),
       tcp_acceptor_ep_(tcp_acceptor_ep),
       message_(MakeAdvMessage()),
-      logger_(Logger::CreateInternalLogger("Branch")),
       ep_(adv_ep),
       socket_(context->IoContext()),
       timer_(context->IoContext()) {

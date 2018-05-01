@@ -55,9 +55,10 @@ class Logger : public api::ExposedObjectT<Logger, api::ObjectType::kLogger> {
   static detail::log::SinkPtr console_sink_;
   static detail::log::SinkPtr hook_sink_;
   static detail::log::SinkPtr file_sink_;
-  static std::mutex internal_loggers_mutex_;
-  static std::vector<std::weak_ptr<Logger>> internal_loggers_;
   static std::shared_ptr<Logger> app_logger_;
+
+  static std::unique_lock<std::mutex> MakeInternalLoggersMutex();
+  static std::vector<std::weak_ptr<Logger>>& InternalLoggers();
 
   const std::string component_;
   std::atomic<Verbosity> verbosity_;
