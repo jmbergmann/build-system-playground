@@ -140,11 +140,12 @@ YOGI_API int YOGI_LogToHook(int verbosity,
   CATCH_AND_RETURN;
 }
 
-YOGI_API int YOGI_LogToFile(int verbosity, const char* filename,
-                            const char* timefmt, const char* fmt) {
+YOGI_API int YOGI_LogToFile(int verbosity, const char* filename, char* genfn,
+                            int genfnsize, const char* timefmt, const char* fmt) {
   if (verbosity != YOGI_VB_NONE) {
     CHECK_PARAM(YOGI_VB_FATAL <= verbosity && verbosity <= YOGI_VB_TRACE);
     CHECK_PARAM(filename == nullptr || IsTimeFormatValid(filename));
+    CHECK_PARAM(genfn == nullptr || genfnsize > 0);
     CHECK_PARAM(timefmt == nullptr || IsTimeFormatValid(timefmt));
     CHECK_PARAM(fmt == nullptr || IsLogFormatValid(fmt));
   }
@@ -153,10 +154,22 @@ YOGI_API int YOGI_LogToFile(int verbosity, const char* filename,
     // Remove existing sink first in order to close the old log file
     objects::Logger::SetSink(objects::detail::log::FileSinkPtr());
     if (filename != nullptr && verbosity != YOGI_VB_NONE) {
-      objects::Logger::SetSink(std::make_unique<objects::detail::log::FileSink>(
+      auto sink = std::make_unique<objects::detail::log::FileSink>(
           static_cast<objects::Logger::Verbosity>(verbosity), filename,
           timefmt ? timefmt : api::kDefaultLogTimeFormat,
-          fmt ? fmt : api::kDefaultLogFormat));
+          fmt ? fmt : api::kDefaultLogFormat);
+      auto gen_filename = sink->GetGeneratedFilename();
+      objects::Logger::SetSink(std::move(sink));
+
+      if (genfn) {
+        auto n =
+            std::min(gen_filename.size() + 1, static_cast<size_t>(genfnsize));
+        strncpy(genfn, gen_filename.c_str(), n);
+        if (gen_filename.size() + 1 > n) {
+          genfn[genfnsize - 1] = '\0';
+          return YOGI_ERR_BUFFER_TOO_SMALL;
+        }
+      }
     }
   }
   CATCH_AND_RETURN;

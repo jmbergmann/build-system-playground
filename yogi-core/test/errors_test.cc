@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 #include <yogi_core.h>
 
-static constexpr int kLastError = YOGI_ERR_INVALID_REGEX;
+static constexpr int kLastError = YOGI_ERR_OPEN_FILE_FAILED;
 
 TEST(ErrorsTest, GetErrorString) {
   EXPECT_STRNE(YOGI_GetErrorString(-2), YOGI_GetErrorString(-1));

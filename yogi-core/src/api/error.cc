@@ -55,6 +55,9 @@ const char* Error::what() const throw() {
 
     case YOGI_ERR_INVALID_REGEX:
       return "Invalid regular expression";
+
+    case YOGI_ERR_OPEN_FILE_FAILED:
+      return "Could not open file";
   }
 
   return "Invalid error code";

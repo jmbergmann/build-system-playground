@@ -4,6 +4,7 @@
 #include "../src/utils/system.h"
 
 #include <boost/algorithm/string.hpp>
+#include <boost/filesystem.hpp>
 #include <time.h>
 #include <regex>
 
@@ -42,11 +43,29 @@ class LoggerTest : public ::testing::Test {
 
     YOGI_LogToConsole(YOGI_VB_NONE, 0, 0, nullptr, nullptr);
     YOGI_LogToHook(YOGI_VB_NONE, nullptr, nullptr);
-    YOGI_LogToFile(YOGI_VB_NONE, nullptr, nullptr, nullptr);
+    YOGI_LogToFile(YOGI_VB_NONE, nullptr, nullptr, 0, nullptr, nullptr);
+  }
+
+  bool CheckLineMatchesCustomLogFormat(std::string line) {
+    std::string re = "^__####_##_##_####-##-##_##_##_##_##:##:##_###_###_###__";
+    boost::replace_all(re, "#", "\\d");
+    re += std::to_string(utils::GetProcessId()) + "_";
+    re += std::to_string(utils::GetCurrentThreadId()) + "_";
+    re += "ERR_Hello_myfile\\.cc_123_My\\.Component___\\$";
+    re += "$";
+
+    std::smatch m;
+
+    line = line.substr(0, line.find_first_of("\r\n"));
+    return std::regex_match(line, m, std::regex(re));
   }
 
   void* logger_;
   std::vector<Entry> entries_;
+  static constexpr const char* custom_time_fmt_ =
+      "_%Y_%m_%d_%F_%H_%M_%S_%T_%3_%6_%9_";
+  static constexpr const char* custom_fmt_ =
+      "_$t_$P_$T_$s_$m_$f_$l_$c_$<_$>_$$_";
 };
 
 TEST_F(LoggerTest, Colours) {
@@ -83,21 +102,9 @@ TEST_F(LoggerTest, Colours) {
 }
 
 TEST_F(LoggerTest, LogToConsole) {
-  const char* timefmt = "_%Y_%m_%d_%F_%H_%M_%S_%T_%3_%6_%9_";
-  const char* fmt = "_$t_$P_$T_$s_$m_$f_$l_$c_$<_$>_$$_";
-
-  std::string re = "^__####_##_##_####-##-##_##_##_##_##:##:##_###_###_###__";
-  boost::replace_all(re, "#", "\\d");
-  re += std::to_string(utils::GetProcessId()) + "_";
-  re += std::to_string(utils::GetCurrentThreadId()) + "_";
-  re += "ERR_Hello_myfile\\.cc_123_My\\.Component___\\$";
-  re += "$";
-
-  std::smatch m;
-
   // Test stdout
   int res = YOGI_LogToConsole(YOGI_VB_TRACE, YOGI_ST_STDOUT, YOGI_FALSE,
-                              timefmt, fmt);
+                              custom_time_fmt_, custom_fmt_);
   ASSERT_EQ(res, YOGI_OK);
 
   ::testing::internal::CaptureStdout();
@@ -105,13 +112,11 @@ TEST_F(LoggerTest, LogToConsole) {
   auto text = ::testing::internal::GetCapturedStdout();
 
   ASSERT_TRUE(text.back() == '\n');
-  text.pop_back();
-  if (text.back() == '\r') text.pop_back();
-  EXPECT_TRUE(std::regex_match(text, m, std::regex(re))) << text;
+  EXPECT_TRUE(CheckLineMatchesCustomLogFormat(text));
 
   // Test stderr
-  res = YOGI_LogToConsole(YOGI_VB_TRACE, YOGI_ST_STDERR, YOGI_FALSE, timefmt,
-                          fmt);
+  res = YOGI_LogToConsole(YOGI_VB_TRACE, YOGI_ST_STDERR, YOGI_FALSE,
+                          custom_time_fmt_, custom_fmt_);
   ASSERT_EQ(res, YOGI_OK);
 
   ::testing::internal::CaptureStderr();
@@ -119,9 +124,7 @@ TEST_F(LoggerTest, LogToConsole) {
   text = ::testing::internal::GetCapturedStderr();
 
   ASSERT_TRUE(text.back() == '\n');
-  text.pop_back();
-  if (text.back() == '\r') text.pop_back();
-  EXPECT_TRUE(std::regex_match(text, m, std::regex(re))) << text;
+  EXPECT_TRUE(CheckLineMatchesCustomLogFormat(text));
 }
 
 TEST_F(LoggerTest, FormatErrors) {
@@ -130,10 +133,10 @@ TEST_F(LoggerTest, FormatErrors) {
                                 time_fmt, nullptr);
     EXPECT_EQ(res, YOGI_ERR_INVALID_PARAM) << time_fmt;
 
-    res = YOGI_LogToFile(YOGI_VB_TRACE, "logfile.txt", time_fmt, nullptr);
+    res = YOGI_LogToFile(YOGI_VB_TRACE, "logfile.txt", nullptr, 0, time_fmt, nullptr);
     EXPECT_EQ(res, YOGI_ERR_INVALID_PARAM) << time_fmt;
 
-    res = YOGI_LogToFile(YOGI_VB_TRACE, time_fmt, nullptr, nullptr);
+    res = YOGI_LogToFile(YOGI_VB_TRACE, time_fmt, nullptr, 0, nullptr, nullptr);
     EXPECT_EQ(res, YOGI_ERR_INVALID_PARAM) << time_fmt;
   }
 
@@ -142,7 +145,7 @@ TEST_F(LoggerTest, FormatErrors) {
                                 nullptr, fmt);
     EXPECT_EQ(res, YOGI_ERR_INVALID_PARAM) << fmt;
 
-    res = YOGI_LogToFile(YOGI_VB_TRACE, "logfile.txt", nullptr, fmt);
+    res = YOGI_LogToFile(YOGI_VB_TRACE, "logfile.txt", nullptr, 0, nullptr, fmt);
     EXPECT_EQ(res, YOGI_ERR_INVALID_PARAM) << fmt;
   }
 }
@@ -161,7 +164,28 @@ TEST_F(LoggerTest, LogToHook) {
   EXPECT_EQ(entry.msg, "Hello");
 }
 
-TEST_F(LoggerTest, LogToFile) {}
+TEST_F(LoggerTest, LogToFile) {
+  char filename[100];
+  int res = YOGI_LogToFile(YOGI_VB_TRACE, "%F_%H%M%S.log", filename,
+                           sizeof(filename), custom_time_fmt_, custom_fmt_);
+  ASSERT_EQ(res, YOGI_OK);
+  ASSERT_TRUE(boost::filesystem::exists(filename));
+
+  YOGI_LoggerLog(logger_, YOGI_VB_ERROR, "myfile.cc", 123, "Hello");
+
+  // Check file content
+  std::ifstream file(filename);
+  std::string content((std::istreambuf_iterator<char>(file)),
+                      (std::istreambuf_iterator<char>()));
+  file.close();
+  EXPECT_TRUE(CheckLineMatchesCustomLogFormat(content)) << content;
+
+  // Close the logfile
+  res = YOGI_LogToFile(YOGI_VB_NONE, nullptr, nullptr, 0, nullptr, nullptr);
+  EXPECT_EQ(res, YOGI_OK);
+
+  boost::filesystem::remove(filename);
+}
 
 TEST_F(LoggerTest, SetVerbosity) {
   int res = YOGI_LoggerSetVerbosity(logger_, YOGI_VB_ERROR);
