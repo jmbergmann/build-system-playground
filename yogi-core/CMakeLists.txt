@@ -14,8 +14,8 @@ add_library (yogi-core-static STATIC
   src/api/constants.cc
   src/api/error.cc
   src/api/object.cc
-  src/objects/detail/adv_receiver.cc
-  src/objects/detail/adv_sender.cc
+  src/objects/detail/adv/adv_receiver.cc
+  src/objects/detail/adv/adv_sender.cc
   src/objects/detail/log/console_sink.cc
   src/objects/detail/log/file_sink.cc
   src/objects/detail/log/hook_sink.cc

@@ -95,10 +95,10 @@ void Branch::SetupAcceptor() {
 }
 
 void Branch::SetupAdvertising() {
-  adv_sender_ = std::make_shared<detail::AdvertisingSender>(
+  adv_sender_ = std::make_shared<detail::adv::AdvSender>(
       context_, adv_ep_, adv_interval_, uuid_, acceptor_.local_endpoint());
 
-  adv_receiver_ = std::make_shared<detail::AdvertisingReceiver>(
+  adv_receiver_ = std::make_shared<detail::adv::AdvReceiver>(
       context_, adv_ep_, adv_sender_->GetMessageSize(),
       [this](auto& uuid, auto& address, auto tcp_port) {
         this->OnAdvertisementReceived(uuid, address, tcp_port);

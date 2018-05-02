@@ -3,8 +3,8 @@
 #include "../config.h"
 #include "../utils/timestamp.h"
 #include "context.h"
-#include "detail/adv_receiver.h"
-#include "detail/adv_sender.h"
+#include "detail/adv/adv_receiver.h"
+#include "detail/adv/adv_sender.h"
 
 #include <chrono>
 #include <vector>
@@ -50,8 +50,8 @@ class Branch : public api::ExposedObjectT<Branch, api::ObjectType::kBranch> {
   const std::chrono::milliseconds adv_interval_;
   const utils::Timestamp start_time_;
 
-  detail::AdvertisingSenderPtr adv_sender_;
-  detail::AdvertisingReceiverPtr adv_receiver_;
+  detail::adv::AdvSenderPtr adv_sender_;
+  detail::adv::AdvReceiverPtr adv_receiver_;
 
   boost::asio::ip::tcp::acceptor acceptor_;
 };

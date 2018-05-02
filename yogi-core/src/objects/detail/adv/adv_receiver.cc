@@ -1,15 +1,19 @@
 #include "adv_receiver.h"
-#include "../../api/constants.h"
-#include "../../api/error.h"
+#include "../../../api/constants.h"
+#include "../../../api/error.h"
+
+#include <boost/endian/arithmetic.hpp>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace objects {
 namespace detail {
+namespace adv {
 
-LoggerPtr AdvertisingReceiver::logger_ = Logger::CreateInternalLogger("Branch");
+LoggerPtr AdvReceiver::logger_ = Logger::CreateStaticInternalLogger("Branch");
 
-AdvertisingReceiver::AdvertisingReceiver(
-    ContextPtr context, const boost::asio::ip::udp::endpoint& adv_ep,
-    std::size_t adv_msg_size, ObserverFn observer_fn)
+AdvReceiver::AdvReceiver(ContextPtr context,
+                         const boost::asio::ip::udp::endpoint& adv_ep,
+                         std::size_t adv_msg_size, ObserverFn observer_fn)
     : context_(context),
       adv_ep_(adv_ep),
       adv_msg_size_(adv_msg_size),
@@ -19,9 +23,9 @@ AdvertisingReceiver::AdvertisingReceiver(
   SetupSocket();
 }
 
-void AdvertisingReceiver::Start() { ReceiveAdvertisement(); }
+void AdvReceiver::Start() { ReceiveAdvertisement(); }
 
-void AdvertisingReceiver::SetupSocket() {
+void AdvReceiver::SetupSocket() {
   boost::system::error_code ec;
   socket_.open(adv_ep_.protocol(), ec);
   if (ec) throw api::Error(YOGI_ERR_OPEN_SOCKET_FAILED);
@@ -38,8 +42,8 @@ void AdvertisingReceiver::SetupSocket() {
   if (ec) throw api::Error(YOGI_ERR_SET_SOCKET_OPTION_FAILED);
 }
 
-void AdvertisingReceiver::ReceiveAdvertisement() {
-  auto weak_self = std::weak_ptr<AdvertisingReceiver>{shared_from_this()};
+void AdvReceiver::ReceiveAdvertisement() {
+  auto weak_self = std::weak_ptr<AdvReceiver>{shared_from_this()};
   socket_.async_receive_from(
       boost::asio::buffer(buffer_), sender_ep_,
       [weak_self](auto ec, auto size) {
@@ -63,7 +67,7 @@ void AdvertisingReceiver::ReceiveAdvertisement() {
       });
 }
 
-void AdvertisingReceiver::HandleReceivedAdvertisement() {
+void AdvReceiver::HandleReceivedAdvertisement() {
   if (std::memcmp(buffer_.data(), "YOGI", 5) != 0) {
     YOGI_LOG_WARNING(logger_,
                      "Received advertising message with invalid magic prefix");
@@ -72,8 +76,9 @@ void AdvertisingReceiver::HandleReceivedAdvertisement() {
   if (buffer_[5] != api::kVersionMajor || buffer_[6] != api::kVersionMinor) {
     YOGI_LOG_WARNING(logger_,
                      "Received advertising message with incompatible Yogi "
-                     "version (version " << static_cast<int>(buffer_[5])
-                         << "." << static_cast<int>(buffer_[6]) << ")");
+                     "version (version "
+                         << static_cast<int>(buffer_[5]) << "."
+                         << static_cast<int>(buffer_[6]) << ")");
   }
 
   boost::uuids::uuid uuid;
@@ -87,5 +92,6 @@ void AdvertisingReceiver::HandleReceivedAdvertisement() {
   observer_fn_(uuid, sender_ep_.address(), tcp_port);
 }
 
+}  // namespace adv
 }  // namespace detail
 }  // namespace objects

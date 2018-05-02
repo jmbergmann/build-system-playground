@@ -1,18 +1,20 @@
 #include "adv_sender.h"
-#include "../../api/constants.h"
-#include "../../api/error.h"
+#include "../../../api/constants.h"
+#include "../../../api/error.h"
 
 #include <boost/endian/arithmetic.hpp>
 
 namespace objects {
 namespace detail {
+namespace adv {
 
-LoggerPtr AdvertisingSender::logger_ = Logger::CreateInternalLogger("Branch");
+LoggerPtr AdvSender::logger_ = Logger::CreateStaticInternalLogger("Branch");
 
-AdvertisingSender::AdvertisingSender(
-    ContextPtr context, const boost::asio::ip::udp::endpoint& adv_ep,
-    std::chrono::milliseconds adv_interval, const boost::uuids::uuid& uuid,
-    const boost::asio::ip::tcp::endpoint& tcp_acceptor_ep)
+AdvSender::AdvSender(ContextPtr context,
+                     const boost::asio::ip::udp::endpoint& adv_ep,
+                     std::chrono::milliseconds adv_interval,
+                     const boost::uuids::uuid& uuid,
+                     const boost::asio::ip::tcp::endpoint& tcp_acceptor_ep)
     : context_(context),
       interval_(adv_interval),
       uuid_(uuid),
@@ -24,9 +26,9 @@ AdvertisingSender::AdvertisingSender(
   SetupSocket();
 }
 
-void AdvertisingSender::Start() { SendAdvertisement(); }
+void AdvSender::Start() { SendAdvertisement(); }
 
-void AdvertisingSender::SetupSocket() {
+void AdvSender::SetupSocket() {
   boost::system::error_code ec;
   socket_.open(ep_.protocol(), ec);
   if (ec) {
@@ -34,7 +36,7 @@ void AdvertisingSender::SetupSocket() {
   }
 }
 
-std::vector<char> AdvertisingSender::MakeAdvMessage() {
+std::vector<char> AdvSender::MakeAdvMessage() {
   std::vector<char> msg = {'Y', 'O', 'G', 'I', 0};
   msg.push_back(api::kVersionMajor);
   msg.push_back(api::kVersionMinor);
@@ -45,8 +47,8 @@ std::vector<char> AdvertisingSender::MakeAdvMessage() {
   return msg;
 }
 
-void AdvertisingSender::SendAdvertisement() {
-  auto weak_self = std::weak_ptr<AdvertisingSender>{shared_from_this()};
+void AdvSender::SendAdvertisement() {
+  auto weak_self = std::weak_ptr<AdvSender>{shared_from_this()};
   socket_.async_send_to(
       boost::asio::buffer(message_), ep_, [weak_self](auto ec, auto) {
         auto self = weak_self.lock();
@@ -61,10 +63,10 @@ void AdvertisingSender::SendAdvertisement() {
       });
 }
 
-void AdvertisingSender::StartTimer() {
+void AdvSender::StartTimer() {
   timer_.expires_after(interval_);
 
-  auto weak_self = std::weak_ptr<AdvertisingSender>(shared_from_this());
+  auto weak_self = std::weak_ptr<AdvSender>(shared_from_this());
   timer_.async_wait([weak_self](auto ec) {
     auto self = weak_self.lock();
     if (!self) return;
@@ -78,5 +80,6 @@ void AdvertisingSender::StartTimer() {
   });
 }
 
+}  // namespace adv
 }  // namespace detail
 }  // namespace objects

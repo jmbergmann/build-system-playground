@@ -38,12 +38,13 @@ class Logger : public api::ExposedObjectT<Logger, api::ObjectType::kLogger> {
   static void SetSink(detail::log::HookSinkPtr&& sink);
   static void SetSink(detail::log::FileSinkPtr&& sink);
   static std::shared_ptr<Logger> GetAppLogger() { return app_logger_; }
-  static std::shared_ptr<Logger> CreateInternalLogger(
-      const std::string& component);
-  static std::vector<std::weak_ptr<Logger>> GetInternalLoggers();
+  static std::shared_ptr<Logger> CreateStaticInternalLogger(
+      const std::string& component);  // internal loggers must be static!
+  static const std::vector<std::weak_ptr<Logger>>& GetInternalLoggers() {
+    return InternalLoggers();
+  }
 
   Logger(std::string component);
-  virtual ~Logger();
 
   const std::string& GetComponent() const { return component_; }
   Verbosity GetVerbosity() const { return verbosity_; }
@@ -57,7 +58,6 @@ class Logger : public api::ExposedObjectT<Logger, api::ObjectType::kLogger> {
   static detail::log::SinkPtr file_sink_;
   static std::shared_ptr<Logger> app_logger_;
 
-  static std::unique_lock<std::mutex> MakeInternalLoggersMutex();
   static std::vector<std::weak_ptr<Logger>>& InternalLoggers();
 
   const std::string component_;

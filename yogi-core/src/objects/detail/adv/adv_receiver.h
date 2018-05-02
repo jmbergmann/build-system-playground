@@ -1,8 +1,8 @@
 #pragma once
 
-#include "../../config.h"
-#include "../context.h"
-#include "../logger.h"
+#include "../../../config.h"
+#include "../../context.h"
+#include "../../logger.h"
 
 #include <boost/uuid/uuid.hpp>
 #include <boost/asio.hpp>
@@ -11,18 +11,17 @@
 
 namespace objects {
 namespace detail {
+namespace adv {
 
-class AdvertisingReceiver
-    : public std::enable_shared_from_this<AdvertisingReceiver> {
+class AdvReceiver : public std::enable_shared_from_this<AdvReceiver> {
  public:
   typedef std::function<void(const boost::uuids::uuid& uuid,
                              const boost::asio::ip::address& address,
                              unsigned short port)>
       ObserverFn;
 
-  AdvertisingReceiver(ContextPtr context,
-                      const boost::asio::ip::udp::endpoint& adv_ep,
-                      std::size_t adv_msg_size, ObserverFn observer_fn);
+  AdvReceiver(ContextPtr context, const boost::asio::ip::udp::endpoint& adv_ep,
+              std::size_t adv_msg_size, ObserverFn observer_fn);
   void Start();
 
  private:
@@ -41,7 +40,8 @@ class AdvertisingReceiver
   std::vector<char> buffer_;
 };
 
-typedef std::shared_ptr<AdvertisingReceiver> AdvertisingReceiverPtr;
+typedef std::shared_ptr<AdvReceiver> AdvReceiverPtr;
 
+}  // namespace adv
 }  // namespace detail
 }  // namespace objects

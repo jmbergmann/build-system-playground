@@ -27,29 +27,15 @@ void Logger::SetSink(detail::log::FileSinkPtr&& sink) {
   file_sink_ = std::move(sink);
 }
 
-LoggerPtr Logger::CreateInternalLogger(const std::string& component) {
+LoggerPtr Logger::CreateStaticInternalLogger(const std::string& component) {
   auto logger = std::make_shared<Logger>(std::string("Yogi.") + component);
-  auto lock = MakeInternalLoggersMutex();
   InternalLoggers().push_back(logger);
   return logger;
-}
-
-std::vector<std::weak_ptr<Logger>> Logger::GetInternalLoggers() {
-  auto lock = MakeInternalLoggersMutex();
-  return InternalLoggers();
 }
 
 Logger::Logger(std::string component)
     : component_(component),
       verbosity_(static_cast<Verbosity>(api::kDefaultLoggerVerbosity)) {}
-
-Logger::~Logger() {
-  auto lock = MakeInternalLoggersMutex();
-  InternalLoggers().erase(
-      std::remove_if(InternalLoggers().begin(), InternalLoggers().end(),
-                     [](auto& ptr) { return ptr.expired(); }),
-      InternalLoggers().end());
-}
 
 void Logger::Log(Verbosity severity, const char* file, int line,
                  const char* msg) {
@@ -67,11 +53,6 @@ void Logger::Log(Verbosity severity, const char* file, int line,
       (*sink)->Publish(severity, timestamp, tid, file, line, component_, msg);
     }
   }
-}
-
-std::unique_lock<std::mutex> Logger::MakeInternalLoggersMutex() {
-  static std::mutex mutex;
-  return std::unique_lock<std::mutex>(mutex);
 }
 
 std::vector<std::weak_ptr<Logger>>& Logger::InternalLoggers() {

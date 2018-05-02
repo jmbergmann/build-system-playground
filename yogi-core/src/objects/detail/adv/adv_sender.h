@@ -1,8 +1,8 @@
 #pragma once
 
-#include "../../config.h"
-#include "../context.h"
-#include "../logger.h"
+#include "../../../config.h"
+#include "../../context.h"
+#include "../../logger.h"
 
 #include <boost/uuid/uuid.hpp>
 #include <boost/asio.hpp>
@@ -12,15 +12,14 @@
 
 namespace objects {
 namespace detail {
+namespace adv {
 
-class AdvertisingSender
-    : public std::enable_shared_from_this<AdvertisingSender> {
+class AdvSender : public std::enable_shared_from_this<AdvSender> {
  public:
-  AdvertisingSender(ContextPtr context,
-                    const boost::asio::ip::udp::endpoint& adv_ep,
-                    std::chrono::milliseconds adv_interval,
-                    const boost::uuids::uuid& uuid,
-                    const boost::asio::ip::tcp::endpoint& tcp_acceptor_ep);
+  AdvSender(ContextPtr context, const boost::asio::ip::udp::endpoint& adv_ep,
+            std::chrono::milliseconds adv_interval,
+            const boost::uuids::uuid& uuid,
+            const boost::asio::ip::tcp::endpoint& tcp_acceptor_ep);
   void Start();
   std::size_t GetMessageSize() const { return message_.size(); }
 
@@ -42,7 +41,8 @@ class AdvertisingSender
   boost::asio::steady_timer timer_;
 };
 
-typedef std::shared_ptr<AdvertisingSender> AdvertisingSenderPtr;
+typedef std::shared_ptr<AdvSender> AdvSenderPtr;
 
+}  // namespace adv
 }  // namespace detail
 }  // namespace objects
