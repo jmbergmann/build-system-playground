@@ -2,11 +2,10 @@
 #include "../api/constants.h"
 #include "../api/error.h"
 #include "../utils/system.h"
+#include "../../../3rd_party/json/json.hpp"
 
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
-#include <boost/property_tree/ptree.hpp>
-#include <boost/property_tree/json_parser.hpp>
 #include <boost/endian/arithmetic.hpp>
 #include <sstream>
 
@@ -38,24 +37,23 @@ void Branch::Start() {
 }
 
 std::string Branch::MakeInfo() const {
-  boost::property_tree::ptree pt;
-  pt.put("uuid", boost::uuids::to_string(uuid_));
-  pt.put("name", name_);
-  pt.put("description", description_);
-  pt.put("net_name", net_name_);
-  pt.put("path", path_);
-  pt.put("hostname", utils::GetHostname());
-  pt.put("pid", utils::GetProcessId());
-  pt.put("advertising_address", adv_ep_.address().to_string());
-  pt.put("advertising_port", adv_ep_.port());
-  pt.put("advertising_interval", (float)adv_interval_.count() / 1000.0f);
-  pt.put("tcp_server_port", acceptor_.local_endpoint().port());
-  pt.put("start_time", start_time_.ToJavaScriptString());
-  pt.put("active_connections", 0);  // TODO
+  auto json = nlohmann::json{
+    {"uuid", boost::uuids::to_string(uuid_)},
+    {"name", name_},
+    {"description", description_},
+    {"net_name", net_name_},
+    {"path", path_},
+    {"hostname", utils::GetHostname()},
+    {"pid", utils::GetProcessId()},
+    {"advertising_address", adv_ep_.address().to_string()},
+    {"advertising_port", adv_ep_.port()},
+    {"advertising_interval", (float)adv_interval_.count() / 1000.0f},
+    {"tcp_server_port", acceptor_.local_endpoint().port()},
+    {"start_time", start_time_.ToJavaScriptString()},
+    {"active_connections", 0},  // TODO
+  };
 
-  std::stringstream oss;
-  boost::property_tree::json_parser::write_json(oss, pt);
-  return oss.str();
+  return json.dump();
 }
 
 void Branch::ForeachDiscoveredBranch(

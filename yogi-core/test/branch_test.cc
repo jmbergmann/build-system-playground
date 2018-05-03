@@ -2,8 +2,6 @@
 #include <yogi_core.h>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
-#include <boost/property_tree/ptree.hpp>
-#include <boost/property_tree/json_parser.hpp>
 #include <boost/asio.hpp>
 #include <algorithm>
 #include <sstream>
@@ -13,6 +11,7 @@ using namespace std::chrono_literals;
 
 #include "../src/utils/system.h"
 #include "../src/api/constants.h"
+#include "../../3rd_party/json/json.hpp"
 
 const auto kAdvInterval = 2ms;
 
@@ -65,36 +64,34 @@ TEST_F(BranchTest, GetInfoUuid) {
 
 TEST_F(BranchTest, GetInfoJson) {
   boost::uuids::uuid uuid;
-  char json[1000] = {0};
-  int res = YOGI_BranchGetInfo(branch_, &uuid, json, sizeof(json));
+  char json_str[1000] = {0};
+  int res = YOGI_BranchGetInfo(branch_, &uuid, json_str, sizeof(json_str));
   EXPECT_EQ(res, YOGI_OK);
-  EXPECT_NE(std::count(json, json + sizeof(json), '\0'), 0);
-  EXPECT_STRNE(json, "");
-
-  std::stringstream ss;
-  ss << json;
-  boost::property_tree::ptree pt;
-  boost::property_tree::read_json(ss, pt);
+  EXPECT_NE(std::count(json_str, json_str + sizeof(json_str), '\0'), 0);
+  EXPECT_STRNE(json_str, "");
+  auto json = nlohmann::json::parse(json_str);
 
   auto time_regex = std::regex(
       "^20\\d\\d-\\d\\d-\\d\\dT[0-2]\\d:[0-5]\\d:[0-5]\\d\\.\\d\\d\\dZ$");
   auto default_name =
       std::to_string(utils::GetProcessId()) + '@' + utils::GetHostname();
 
-  EXPECT_EQ(pt.get("uuid", "NOT FOUND"), boost::uuids::to_string(uuid));
-  EXPECT_EQ(pt.get("name", "NOT FOUND"), default_name);
-  EXPECT_EQ(pt.get("description", "NOT FOUND"), "");
-  EXPECT_EQ(pt.get("net_name", "NOT FOUND"), utils::GetHostname());
-  EXPECT_EQ(pt.get("path", "NOT FOUND"), std::string("/") + default_name);
-  EXPECT_EQ(pt.get("hostname", "NOT FOUND"), utils::GetHostname());
-  EXPECT_EQ(pt.get("pid", -1), utils::GetProcessId());
-  EXPECT_EQ(pt.get("advertising_address", "NOT FOUND"), api::kDefaultAdvAddress);
-  EXPECT_EQ(pt.get("advertising_port", -1), api::kDefaultAdvPort);
-  EXPECT_EQ(pt.get("advertising_interval", -1.0f),
+  EXPECT_EQ(json.value("uuid", "NOT FOUND"), boost::uuids::to_string(uuid));
+  EXPECT_EQ(json.value("name", "NOT FOUND"), default_name);
+  EXPECT_EQ(json.value("description", "NOT FOUND"), "");
+  EXPECT_EQ(json.value("net_name", "NOT FOUND"), utils::GetHostname());
+  EXPECT_EQ(json.value("path", "NOT FOUND"), std::string("/") + default_name);
+  EXPECT_EQ(json.value("hostname", "NOT FOUND"), utils::GetHostname());
+  EXPECT_EQ(json.value("pid", -1), utils::GetProcessId());
+  EXPECT_EQ(json.value("advertising_address", "NOT FOUND"),
+            api::kDefaultAdvAddress);
+  EXPECT_EQ(json.value("advertising_port", -1), api::kDefaultAdvPort);
+  EXPECT_EQ(json.value("advertising_interval", -1.0f),
             (float)kAdvInterval.count() / 1000.0f);
-  EXPECT_GT(pt.get("tcp_server_port", 0), 1024);
-  EXPECT_TRUE(std::regex_match(pt.get("start_time", "NOT FOUND"), time_regex));
-  EXPECT_GT(pt.get("active_connections", -1), -1);
+  EXPECT_GT(json.value("tcp_server_port", 0), 1024);
+  EXPECT_TRUE(
+      std::regex_match(json.value("start_time", "NOT FOUND"), time_regex));
+  EXPECT_GT(json.value("active_connections", -1), -1);
 }
 
 TEST_F(BranchTest, Advertising) {
