@@ -2,6 +2,7 @@
 #include "../include/yogi_core.h"
 #include "api/constants.h"
 #include "api/error.h"
+#include "licenses/licenses.h"
 #include "objects/context.h"
 #include "objects/branch.h"
 #include "objects/logger.h"
@@ -78,6 +79,14 @@ bool IsLogFormatValid(std::string fmt) {
 }  // anonymous namespace
 
 YOGI_API const char* YOGI_GetVersion() { return api::kVersionNumber; }
+
+YOGI_API const char* YOGI_GetLicense() {
+  return licenses::kYogiLicense.c_str();
+}
+
+YOGI_API const char* YOGI_Get3rdPartyLicenses() {
+  return licenses::k3rdPartyLicenses.c_str();
+}
 
 YOGI_API const char* YOGI_GetErrorString(int err) {
   return api::Error(err).what();

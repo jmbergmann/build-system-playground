@@ -1,3 +1,20 @@
+/*
+ * This file is part of the Yogi distribution https://github.com/yohummus/yogi.
+ * Copyright (c) 2018 Johannes Bergmann.
+ *
+ * This library is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, version 3.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this library. If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #ifndef YOGI_CORE_H
 #define YOGI_CORE_H
 
@@ -206,6 +223,25 @@ extern "C" {
  * \returns Library version
  ******************************************************************************/
 YOGI_API const char* YOGI_GetVersion();
+
+/***************************************************************************//**
+ * Get the license that Yogi is published under.
+ *
+ * Note: The returned string contains the complete description of the license
+ *       and is therefore very large.
+ *
+ * \returns License information
+ ******************************************************************************/
+YOGI_API const char* YOGI_GetLicense();
+
+/***************************************************************************//**
+ * Get the license information about the 3rd party libraries used in Yogi.
+ *
+ * Note: The returned string is very large.
+ *
+ * \returns License information
+ ******************************************************************************/
+YOGI_API const char* YOGI_Get3rdPartyLicenses();
 
 /***************************************************************************//**
  * Get a description of an error code.
@@ -844,6 +880,8 @@ YOGI_API int YOGI_BranchGetInfo(void* branch, void* uuid, char* json,
  *
  *    {
  *      "uuid":                 "123e4567-e89b-12d3-a456-426655440000",
+ *      "address":              "fe80::f086:b106:2c1b:c45",
+ *      "tcp_server_port":      43384,
  *      "name":                 "Pump Safety Logic",
  *      "description":          "Monitors the pump for safety",
  *      "net_name":             "Hardware Control",
@@ -851,12 +889,25 @@ YOGI_API int YOGI_BranchGetInfo(void* branch, void* uuid, char* json,
  *      "hostname":             "beaglebone",
  *      "pid":                  3321,
  *      "advertising_interval": 1.0,
- *      "tcp_server_port":      43384,
  *      "start_time":           "2018-04-23T18:25:43.511Z",
  *      "connected":            true,
  *      "last_connected":       "2018-04-23T18:28:12.333Z",
  *      "last_disconnected":    "2018-04-23T18:27:12.333Z",
- *      "last_error":           ""
+ *      "last_error":           null
+ *    }
+ *
+ * Branches that were discovered by receiving their advertising message but that
+ * were not queried for more information yet only have the following subset of
+ * information with the last four entries always being as shown:
+ *
+ *    {
+ *      "uuid":                 "123e4567-e89b-12d3-a456-426655440000",
+ *      "address":              "fe80::f086:b106:2c1b:c45",
+ *      "tcp_server_port":      43384,
+ *      "connected":            false,
+ *      "last_connected":       null,
+ *      "last_disconnected":    null,
+ *      "last_error":           null
  *    }
  *
  * \param[in]  branch   The branch handle

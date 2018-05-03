@@ -14,6 +14,8 @@ add_library (yogi-core-static STATIC
   src/api/constants.cc
   src/api/error.cc
   src/api/object.cc
+  src/licenses/3rd_party_licenses.cc
+  src/licenses/yogi_license.cc
   src/objects/detail/adv/adv_receiver.cc
   src/objects/detail/adv/adv_sender.cc
   src/objects/detail/log/console_sink.cc
@@ -82,6 +84,7 @@ add_executable (yogi-core-test
   test/constants_test.cc
   test/context_test.cc
   test/errors_test.cc
+  test/licenses_test.cc
   test/logger_test.cc
   test/object_test.cc
   test/timer_test.cc
