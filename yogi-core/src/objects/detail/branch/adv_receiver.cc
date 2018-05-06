@@ -7,7 +7,6 @@
 
 namespace objects {
 namespace detail {
-namespace branch {
 
 const LoggerPtr AdvReceiver::logger_ =
     Logger::CreateStaticInternalLogger("Branch");
@@ -94,6 +93,5 @@ void AdvReceiver::HandleReceivedAdvertisement() {
   observer_fn_(uuid, boost::asio::ip::tcp::endpoint(sender_ep_.address(), tcp_port));
 }
 
-}  // namespace branch
 }  // namespace detail
 }  // namespace objects

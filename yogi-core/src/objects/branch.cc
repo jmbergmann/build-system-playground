@@ -100,10 +100,10 @@ void Branch::SetupAcceptor() {
 }
 
 void Branch::SetupAdvertising() {
-  adv_sender_ = std::make_shared<detail::branch::AdvSender>(
+  adv_sender_ = std::make_shared<detail::AdvSender>(
       context_, adv_ep_, adv_interval_, uuid_, acceptor_.local_endpoint());
 
-  adv_receiver_ = std::make_shared<detail::branch::AdvReceiver>(
+  adv_receiver_ = std::make_shared<detail::AdvReceiver>(
       context_, adv_ep_, adv_sender_->GetMessageSize(),
       [this](auto& uuid, auto& ep) {
         this->OnAdvertisementReceived(uuid, ep);
@@ -112,19 +112,19 @@ void Branch::SetupAdvertising() {
 
 void Branch::SetupQuerier() {
   info_querier_ =
-      std::make_shared<detail::branch::InfoQuerier>(timeout_, retry_time_);
+      std::make_shared<detail::InfoQuerier>(timeout_, retry_time_);
 }
 
 void Branch::OnAdvertisementReceived(
     const boost::uuids::uuid& uuid,
     const boost::asio::ip::tcp::endpoint& tcp_ep) {
-  detail::branch::BranchInfoPtr info;
+  detail::BranchInfoPtr info;
   bool new_branch = false;
   {
     std::lock_guard<std::mutex> lock(branches_mutex_);
     auto& info_ref = branches_[uuid];
     if (!info_ref) {
-      info_ref = std::make_shared<detail::branch::BranchInfo>();
+      info_ref = std::make_shared<detail::BranchInfo>();
       info_ref->uuid = uuid;
       info_ref->tcp_ep = tcp_ep;
       new_branch = true;
@@ -148,7 +148,7 @@ void Branch::OnAdvertisementReceived(
   info->last_activity = utils::Timestamp::Now();
 }
 
-void Branch::OnQueryBranchSucceeded(const detail::branch::BranchInfoPtr& info,
+void Branch::OnQueryBranchSucceeded(const detail::BranchInfoPtr& info,
                             const utils::TimedTcpSocketPtr& socket) {
   std::lock_guard<std::mutex> lock(info->mutex);
   info->last_activity = utils::Timestamp::Now();

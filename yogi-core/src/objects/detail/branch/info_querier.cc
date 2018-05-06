@@ -2,7 +2,6 @@
 
 namespace objects {
 namespace detail {
-namespace branch {
 
 const LoggerPtr InfoQuerier::logger_ =
     Logger::CreateStaticInternalLogger("Branch");
@@ -16,6 +15,5 @@ void InfoQuerier::QueryBranch(
     std::function<void(const utils::TimedTcpSocketPtr& socket)>&&
         success_handler) {}
 
-}  // namespace branch
 }  // namespace detail
 }  // namespace objects
