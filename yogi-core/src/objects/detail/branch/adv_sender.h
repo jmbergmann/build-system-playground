@@ -12,7 +12,7 @@
 
 namespace objects {
 namespace detail {
-namespace adv {
+namespace branch {
 
 class AdvSender : public std::enable_shared_from_this<AdvSender> {
  public:
@@ -43,6 +43,6 @@ class AdvSender : public std::enable_shared_from_this<AdvSender> {
 
 typedef std::shared_ptr<AdvSender> AdvSenderPtr;
 
-}  // namespace adv
+}  // namespace branch
 }  // namespace detail
 }  // namespace objects

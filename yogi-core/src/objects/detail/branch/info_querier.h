@@ -11,7 +11,7 @@
 
 namespace objects {
 namespace detail {
-namespace adv {
+namespace branch {
 
 class InfoQuerier : public std::enable_shared_from_this<InfoQuerier> {
  public:
@@ -31,6 +31,6 @@ class InfoQuerier : public std::enable_shared_from_this<InfoQuerier> {
 
 typedef std::shared_ptr<InfoQuerier> InfoQuerierPtr;
 
-}  // namespace adv
+}  // namespace branch
 }  // namespace detail
 }  // namespace objects

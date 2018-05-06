@@ -4,9 +4,9 @@
 #include "../utils/timestamp.h"
 #include "../utils/socket.h"
 #include "context.h"
-#include "detail/adv/adv_receiver.h"
-#include "detail/adv/adv_sender.h"
-#include "detail/adv/info_querier.h"
+#include "detail/branch/adv_receiver.h"
+#include "detail/branch/adv_sender.h"
+#include "detail/branch/info_querier.h"
 
 #include <boost/functional/hash.hpp>
 #include <chrono>
@@ -38,7 +38,7 @@ class Branch : public api::ExposedObjectT<Branch, api::ObjectType::kBranch> {
       const;
 
  private:
-  typedef std::unordered_map<boost::uuids::uuid, detail::adv::BranchInfoPtr,
+  typedef std::unordered_map<boost::uuids::uuid, detail::branch::BranchInfoPtr,
                              boost::hash<boost::uuids::uuid>>
       BranchesMap;
 
@@ -47,7 +47,7 @@ class Branch : public api::ExposedObjectT<Branch, api::ObjectType::kBranch> {
   void SetupQuerier();
   void OnAdvertisementReceived(const boost::uuids::uuid& uuid,
                                const boost::asio::ip::tcp::endpoint& tcp_ep);
-  void OnQueryBranchSucceeded(const detail::adv::BranchInfoPtr& info,
+  void OnQueryBranchSucceeded(const detail::branch::BranchInfoPtr& info,
                               const utils::TimedTcpSocketPtr& socket);
 
   static const LoggerPtr logger_;
@@ -65,9 +65,9 @@ class Branch : public api::ExposedObjectT<Branch, api::ObjectType::kBranch> {
   const std::chrono::nanoseconds retry_time_;
   const utils::Timestamp start_time_;
 
-  detail::adv::AdvSenderPtr adv_sender_;
-  detail::adv::AdvReceiverPtr adv_receiver_;
-  detail::adv::InfoQuerierPtr info_querier_;
+  detail::branch::AdvSenderPtr adv_sender_;
+  detail::branch::AdvReceiverPtr adv_receiver_;
+  detail::branch::InfoQuerierPtr info_querier_;
 
   boost::asio::ip::tcp::acceptor acceptor_;
 

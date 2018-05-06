@@ -12,7 +12,7 @@
 
 namespace objects {
 namespace detail {
-namespace adv {
+namespace branch {
 
 struct BranchInfo {
   std::mutex mutex;
@@ -35,6 +35,6 @@ struct BranchInfo {
 
 typedef std::shared_ptr<BranchInfo> BranchInfoPtr;
 
-}  // namespace adv
+}  // namespace branch
 }  // namespace detail
 }  // namespace objects

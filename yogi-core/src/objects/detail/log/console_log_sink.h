@@ -1,16 +1,15 @@
 #pragma once
 
 #include "../../../config.h"
-#include "text_based_sink.h"
+#include "text_based_log_sink.h"
 
 namespace objects {
 namespace detail {
-namespace log {
 
-class ConsoleSink : public TextBasedSink {
+class ConsoleLogSink : public TextBasedLogSink {
  public:
-  ConsoleSink(Verbosity verbosity, FILE* stream, bool colour, std::string time_fmt,
-                 std::string fmt);
+  ConsoleLogSink(Verbosity verbosity, FILE* stream, bool colour,
+                 std::string time_fmt, std::string fmt);
 
  protected:
   virtual void WritePartialOutput(const std::string& str) override;
@@ -23,8 +22,7 @@ class ConsoleSink : public TextBasedSink {
   const bool colour_;
 };
 
-typedef std::unique_ptr<ConsoleSink> ConsoleSinkPtr;
+typedef std::unique_ptr<ConsoleLogSink> ConsoleLogSinkPtr;
 
-}  // namespace log
 }  // namespace detail
 }  // namespace objects

@@ -1,18 +1,17 @@
 #pragma once
 
 #include "../../../config.h"
-#include "sink.h"
+#include "log_sink.h"
 
 #include <string>
 
 namespace objects {
 namespace detail {
-namespace log {
 
-class TextBasedSink : public Sink {
+class TextBasedLogSink : public LogSink {
  public:
-  TextBasedSink(Verbosity verbosity, std::string time_fmt, std::string fmt,
-                bool ignore_colour);
+  TextBasedLogSink(Verbosity verbosity, std::string time_fmt, std::string fmt,
+                   bool ignore_colour);
 
  protected:
   virtual void WriteEntry(Verbosity severity, const utils::Timestamp& timestamp,
@@ -31,8 +30,5 @@ class TextBasedSink : public Sink {
   const bool ignore_colour_;
 };
 
-typedef std::unique_ptr<Sink> SinkPtr;
-
-}  // namespace log
 }  // namespace detail
 }  // namespace objects

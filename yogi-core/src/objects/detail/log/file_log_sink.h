@@ -1,22 +1,19 @@
 #pragma once
 
 #include "../../../config.h"
-#include "text_based_sink.h"
+#include "text_based_log_sink.h"
 
 #include <fstream>
 
 namespace objects {
 namespace detail {
-namespace log {
 
-class FileSink : public TextBasedSink {
+class FileLogSink : public TextBasedLogSink {
  public:
-  FileSink(Verbosity verbosity, std::string filename, std::string time_fmt,
-           std::string fmt);
+  FileLogSink(Verbosity verbosity, std::string filename, std::string time_fmt,
+              std::string fmt);
 
-  const std::string& GetGeneratedFilename() const {
-    return filename_;
-  }
+  const std::string& GetGeneratedFilename() const { return filename_; }
 
  protected:
   virtual void WritePartialOutput(const std::string& str) override;
@@ -27,8 +24,7 @@ class FileSink : public TextBasedSink {
   std::ofstream file_;
 };
 
-typedef std::unique_ptr<FileSink> FileSinkPtr;
+typedef std::unique_ptr<FileLogSink> FileLogSinkPtr;
 
-}  // namespace log
 }  // namespace detail
 }  // namespace objects

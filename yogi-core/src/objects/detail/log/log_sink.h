@@ -7,9 +7,8 @@
 
 namespace objects {
 namespace detail {
-namespace log {
 
-class Sink {
+class LogSink {
  public:
   enum Verbosity {
     kFatal   = YOGI_VB_FATAL,
@@ -20,8 +19,8 @@ class Sink {
     kTrace   = YOGI_VB_TRACE,
   };
 
-  Sink(Verbosity verbosity) : verbosity_(verbosity) {}
-  virtual ~Sink() {}
+  LogSink(Verbosity verbosity) : verbosity_(verbosity) {}
+  virtual ~LogSink() {}
 
   void Publish(Verbosity severity, const utils::Timestamp& timestamp, int tid,
                const char* file, int line, const std::string& component,
@@ -36,8 +35,7 @@ class Sink {
   const Verbosity verbosity_;
 };
 
-typedef std::unique_ptr<Sink> SinkPtr;
+typedef std::unique_ptr<LogSink> LogSinkPtr;
 
-}  // namespace log
 }  // namespace detail
 }  // namespace objects

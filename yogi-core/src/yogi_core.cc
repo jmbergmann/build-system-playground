@@ -113,10 +113,10 @@ YOGI_API int YOGI_LogToConsole(int verbosity, int stream, int colour,
 
   try {
     if (verbosity == YOGI_VB_NONE) {
-      objects::Logger::SetSink(objects::detail::log::ConsoleSinkPtr());
+      objects::Logger::SetSink(objects::detail::ConsoleLogSinkPtr());
     } else {
       objects::Logger::SetSink(
-          std::make_unique<objects::detail::log::ConsoleSink>(
+          std::make_unique<objects::detail::ConsoleLogSink>(
               static_cast<objects::Logger::Verbosity>(verbosity),
               stream == YOGI_ST_STDOUT ? stdout : stderr, !!colour,
               timefmt ? timefmt : api::kDefaultLogTimeFormat,
@@ -134,7 +134,7 @@ YOGI_API int YOGI_LogToHook(int verbosity,
 
   try {
     if (fn == nullptr || verbosity == YOGI_VB_NONE) {
-      objects::Logger::SetSink(objects::detail::log::HookSinkPtr());
+      objects::Logger::SetSink(objects::detail::HookLogSinkPtr());
     } else {
       auto hook_fn = [fn, userarg](auto severity, auto& time, int tid,
                                    auto file, int line, auto& component,
@@ -142,7 +142,7 @@ YOGI_API int YOGI_LogToHook(int verbosity,
         fn(severity, time.NanosecondsSinceEpoch(), tid, file, line,
            component.c_str(), msg, userarg);
       };
-      objects::Logger::SetSink(std::make_unique<objects::detail::log::HookSink>(
+      objects::Logger::SetSink(std::make_unique<objects::detail::HookLogSink>(
           static_cast<objects::Logger::Verbosity>(verbosity), hook_fn));
     }
   }
@@ -161,9 +161,9 @@ YOGI_API int YOGI_LogToFile(int verbosity, const char* filename, char* genfn,
 
   try {
     // Remove existing sink first in order to close the old log file
-    objects::Logger::SetSink(objects::detail::log::FileSinkPtr());
+    objects::Logger::SetSink(objects::detail::FileLogSinkPtr());
     if (filename != nullptr && verbosity != YOGI_VB_NONE) {
-      auto sink = std::make_unique<objects::detail::log::FileSink>(
+      auto sink = std::make_unique<objects::detail::FileLogSink>(
           static_cast<objects::Logger::Verbosity>(verbosity), filename,
           timefmt ? timefmt : api::kDefaultLogTimeFormat,
           fmt ? fmt : api::kDefaultLogFormat);

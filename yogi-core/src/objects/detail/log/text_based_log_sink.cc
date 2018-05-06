@@ -1,23 +1,23 @@
-#include "text_based_sink.h"
+#include "text_based_log_sink.h"
 #include "../../../utils/system.h"
 
 #include <sstream>
 
 namespace objects {
 namespace detail {
-namespace log {
 
-TextBasedSink::TextBasedSink(Verbosity verbosity, std::string time_fmt,
-                             std::string fmt, bool ignore_colour)
-    : Sink(verbosity),
+TextBasedLogSink::TextBasedLogSink(Verbosity verbosity, std::string time_fmt,
+                                   std::string fmt, bool ignore_colour)
+    : LogSink(verbosity),
       time_fmt_(time_fmt),
       fmt_(fmt),
       ignore_colour_(ignore_colour) {}
 
-void TextBasedSink::WriteEntry(Verbosity severity,
-                               const utils::Timestamp& timestamp, int tid,
-                               const char* file, int line,
-                               const std::string& component, const char* msg) {
+void TextBasedLogSink::WriteEntry(Verbosity severity,
+                                  const utils::Timestamp& timestamp, int tid,
+                                  const char* file, int line,
+                                  const std::string& component,
+                                  const char* msg) {
   std::stringstream ss;
   bool colour_cleared = true;
 
@@ -43,12 +43,24 @@ void TextBasedSink::WriteEntry(Verbosity severity,
 
       case 's':
         switch (severity) {
-          case kFatal:   ss << "FAT"; break;
-          case kError:   ss << "ERR"; break;
-          case kWarning: ss << "WRN"; break;
-          case kInfo:    ss << "IFO"; break;
-          case kDebug:   ss << "DBG"; break;
-          case kTrace:   ss << "TRC"; break;
+          case kFatal:
+            ss << "FAT";
+            break;
+          case kError:
+            ss << "ERR";
+            break;
+          case kWarning:
+            ss << "WRN";
+            break;
+          case kInfo:
+            ss << "IFO";
+            break;
+          case kDebug:
+            ss << "DBG";
+            break;
+          case kTrace:
+            ss << "TRC";
+            break;
         }
         break;
 
@@ -110,6 +122,5 @@ void TextBasedSink::WriteEntry(Verbosity severity,
   Flush();
 }
 
-}  // namespace log
 }  // namespace detail
 }  // namespace objects

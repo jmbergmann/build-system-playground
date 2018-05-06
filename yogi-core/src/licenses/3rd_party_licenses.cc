@@ -1,6 +1,7 @@
 #include "licenses.h"
 
 #include <string>
+#include <algorithm>
 
 namespace licenses {
 

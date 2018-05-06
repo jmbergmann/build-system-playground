@@ -6,7 +6,7 @@
 
 namespace objects {
 namespace detail {
-namespace adv {
+namespace branch {
 
 const LoggerPtr AdvSender::logger_ =
     Logger::CreateStaticInternalLogger("Branch");
@@ -81,6 +81,6 @@ void AdvSender::StartTimer() {
   });
 }
 
-}  // namespace adv
+}  // namespace branch
 }  // namespace detail
 }  // namespace objects

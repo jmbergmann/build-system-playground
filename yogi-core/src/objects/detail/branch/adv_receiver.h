@@ -11,7 +11,7 @@
 
 namespace objects {
 namespace detail {
-namespace adv {
+namespace branch {
 
 class AdvReceiver : public std::enable_shared_from_this<AdvReceiver> {
  public:
@@ -41,6 +41,6 @@ class AdvReceiver : public std::enable_shared_from_this<AdvReceiver> {
 
 typedef std::shared_ptr<AdvReceiver> AdvReceiverPtr;
 
-}  // namespace adv
+}  // namespace branch
 }  // namespace detail
 }  // namespace objects

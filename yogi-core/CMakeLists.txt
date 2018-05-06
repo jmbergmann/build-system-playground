@@ -16,14 +16,14 @@ add_library (yogi-core-static STATIC
   src/api/object.cc
   src/licenses/3rd_party_licenses.cc
   src/licenses/yogi_license.cc
-  src/objects/detail/adv/adv_receiver.cc
-  src/objects/detail/adv/adv_sender.cc
-  src/objects/detail/adv/info_querier.cc
-  src/objects/detail/log/console_sink.cc
-  src/objects/detail/log/file_sink.cc
-  src/objects/detail/log/hook_sink.cc
-  src/objects/detail/log/sink.cc
-  src/objects/detail/log/text_based_sink.cc
+  src/objects/detail/branch/adv_receiver.cc
+  src/objects/detail/branch/adv_sender.cc
+  src/objects/detail/branch/info_querier.cc
+  src/objects/detail/log/console_log_sink.cc
+  src/objects/detail/log/file_log_sink.cc
+  src/objects/detail/log/hook_log_sink.cc
+  src/objects/detail/log/log_sink.cc
+  src/objects/detail/log/text_based_log_sink.cc
   src/objects/branch.cc
   src/objects/context.cc
   src/objects/logger.cc

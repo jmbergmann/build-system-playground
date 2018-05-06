@@ -1,23 +1,22 @@
-#include "console_sink.h"
+#include "console_log_sink.h"
 #include "../../../utils/console.h"
 
 #include <stdio.h>
 
 namespace objects {
 namespace detail {
-namespace log {
 
-ConsoleSink::ConsoleSink(Verbosity verbosity, FILE* stream, bool colour,
-                         std::string time_fmt, std::string fmt)
-    : TextBasedSink(verbosity, time_fmt, fmt, !colour),
+ConsoleLogSink::ConsoleLogSink(Verbosity verbosity, FILE* stream, bool colour,
+                               std::string time_fmt, std::string fmt)
+    : TextBasedLogSink(verbosity, time_fmt, fmt, !colour),
       stream_(stream),
       colour_(colour) {}
 
-void ConsoleSink::WritePartialOutput(const std::string& str) {
+void ConsoleLogSink::WritePartialOutput(const std::string& str) {
   fputs(str.c_str(), stream_);
 }
 
-void ConsoleSink::SetOutputColours(Verbosity severity) {
+void ConsoleLogSink::SetOutputColours(Verbosity severity) {
   switch (severity) {
     case Verbosity::kFatal:
       utils::SetConsoleColour(stream_, utils::ForegroundColour::kWhite);
@@ -46,14 +45,11 @@ void ConsoleSink::SetOutputColours(Verbosity severity) {
   }
 }
 
-void ConsoleSink::ResetOutputColours() {
+void ConsoleLogSink::ResetOutputColours() {
   utils::ResetConsoleColours(stream_);
 }
 
-void ConsoleSink::Flush() {
-  fflush(stream_);
-}
+void ConsoleLogSink::Flush() { fflush(stream_); }
 
-}  // namespace log
 }  // namespace detail
 }  // namespace objects

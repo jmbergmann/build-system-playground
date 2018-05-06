@@ -2,9 +2,9 @@
 
 #include "../config.h"
 #include "../api/object.h"
-#include "detail/log/console_sink.h"
-#include "detail/log/hook_sink.h"
-#include "detail/log/file_sink.h"
+#include "detail/log/console_log_sink.h"
+#include "detail/log/hook_log_sink.h"
+#include "detail/log/file_log_sink.h"
 
 #include <atomic>
 #include <mutex>
@@ -32,11 +32,11 @@ namespace objects {
 
 class Logger : public api::ExposedObjectT<Logger, api::ObjectType::kLogger> {
  public:
-  typedef detail::log::Sink::Verbosity Verbosity;
+  typedef detail::LogSink::Verbosity Verbosity;
 
-  static void SetSink(detail::log::ConsoleSinkPtr&& sink);
-  static void SetSink(detail::log::HookSinkPtr&& sink);
-  static void SetSink(detail::log::FileSinkPtr&& sink);
+  static void SetSink(detail::ConsoleLogSinkPtr&& sink);
+  static void SetSink(detail::HookLogSinkPtr&& sink);
+  static void SetSink(detail::FileLogSinkPtr&& sink);
   static std::shared_ptr<Logger> GetAppLogger() { return app_logger_; }
   static std::shared_ptr<Logger> CreateStaticInternalLogger(
       const std::string& component);  // internal loggers must be static!
@@ -53,9 +53,9 @@ class Logger : public api::ExposedObjectT<Logger, api::ObjectType::kLogger> {
 
  private:
   static std::mutex sinks_mutex_;
-  static detail::log::SinkPtr console_sink_;
-  static detail::log::SinkPtr hook_sink_;
-  static detail::log::SinkPtr file_sink_;
+  static detail::LogSinkPtr console_sink_;
+  static detail::LogSinkPtr hook_sink_;
+  static detail::LogSinkPtr file_sink_;
   static std::shared_ptr<Logger> app_logger_;
 
   static std::vector<std::weak_ptr<Logger>>& InternalLoggers();
