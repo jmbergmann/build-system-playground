@@ -16,12 +16,11 @@ namespace adv {
 class AdvReceiver : public std::enable_shared_from_this<AdvReceiver> {
  public:
   typedef std::function<void(const boost::uuids::uuid& uuid,
-                             const boost::asio::ip::address& address,
-                             unsigned short port)>
+                             const boost::asio::ip::tcp::endpoint& ep)>
       ObserverFn;
 
   AdvReceiver(ContextPtr context, const boost::asio::ip::udp::endpoint& adv_ep,
-              std::size_t adv_msg_size, ObserverFn observer_fn);
+              std::size_t adv_msg_size, ObserverFn&& observer_fn);
   void Start();
 
  private:
@@ -29,7 +28,7 @@ class AdvReceiver : public std::enable_shared_from_this<AdvReceiver> {
   void ReceiveAdvertisement();
   void HandleReceivedAdvertisement();
 
-  static LoggerPtr logger_;
+  static const LoggerPtr logger_;
 
   const ContextPtr context_;
   const boost::asio::ip::udp::endpoint adv_ep_;

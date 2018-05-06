@@ -1,16 +1,22 @@
 #include <gtest/gtest.h>
 #include "../src/api/constants.h"
 
-void check_constant(int constant, int value) {
+void check(int constant, int value) {
   int x;
   YOGI_GetConstant(&x, constant);
   EXPECT_EQ(x, value) << "Constant (int): ";
 }
 
-void check_constant(int constant, const char* value) {
+void check(int constant, long long value) {
+  long long x;
+  YOGI_GetConstant(&x, constant);
+  EXPECT_EQ(x, value) << "Constant (long long): ";
+}
+
+void check(int constant, const char* value) {
   const char* x;
   YOGI_GetConstant(&x, constant);
-  EXPECT_STREQ(x, value) << "Constant (string): ";
+  EXPECT_STREQ(x, value) << "Constant (const char*): ";
 }
 
 TEST(ConstantsTest, GetConstant) {
@@ -27,14 +33,16 @@ TEST(ConstantsTest, GetConstant) {
 TEST(ConstantsTest, GetEachConstant) {
   using namespace api;
 
-  check_constant(YOGI_CONST_VERSION_NUMBER,           kVersionNumber);
-  check_constant(YOGI_CONST_VERSION_MAJOR,            kVersionMajor);
-  check_constant(YOGI_CONST_VERSION_MINOR,            kVersionMinor);
-  check_constant(YOGI_CONST_VERSION_PATCH,            kVersionPatch);
-  check_constant(YOGI_CONST_DEFAULT_ADV_ADDRESS,      kDefaultAdvAddress);
-  check_constant(YOGI_CONST_DEFAULT_ADV_PORT,         kDefaultAdvPort);
-  check_constant(YOGI_CONST_DEFAULT_ADV_INTERVAL,     kDefaultAdvInterval);
-  check_constant(YOGI_CONST_DEFAULT_LOGGER_VERBOSITY, kDefaultLoggerVerbosity);
-  check_constant(YOGI_CONST_DEFAULT_LOG_TIME_FORMAT,  kDefaultLogTimeFormat);
-  check_constant(YOGI_CONST_DEFAULT_LOG_FORMAT,       kDefaultLogFormat);
+  check(YOGI_CONST_VERSION_NUMBER,             kVersionNumber);
+  check(YOGI_CONST_VERSION_MAJOR,              kVersionMajor);
+  check(YOGI_CONST_VERSION_MINOR,              kVersionMinor);
+  check(YOGI_CONST_VERSION_PATCH,              kVersionPatch);
+  check(YOGI_CONST_DEFAULT_ADV_ADDRESS,        kDefaultAdvAddress);
+  check(YOGI_CONST_DEFAULT_ADV_PORT,           kDefaultAdvPort);
+  check(YOGI_CONST_DEFAULT_ADV_INTERVAL,       kDefaultAdvInterval);
+  check(YOGI_CONST_DEFAULT_CONNECTION_TIMEOUT, kDefaultConnectionTimeout);
+  check(YOGI_CONST_DEFAULT_RETRY_TIME,         kDefaultRetryTime);
+  check(YOGI_CONST_DEFAULT_LOGGER_VERBOSITY,   kDefaultLoggerVerbosity);
+  check(YOGI_CONST_DEFAULT_LOG_TIME_FORMAT,    kDefaultLogTimeFormat);
+  check(YOGI_CONST_DEFAULT_LOG_FORMAT,         kDefaultLogFormat);
 }

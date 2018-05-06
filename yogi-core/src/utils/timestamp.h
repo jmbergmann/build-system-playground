@@ -10,6 +10,8 @@ class Timestamp {
  public:
   static Timestamp Now();
 
+  Timestamp() {}
+
   long long NanosecondsSinceEpoch() const {
     return static_cast<long long>(time_.time_since_epoch().count());
   }
@@ -36,7 +38,7 @@ class Timestamp {
 
   Timestamp(const TimePoint& time) : time_(time) {}
 
-  const TimePoint time_;
+  TimePoint time_;
 };
 
 }  // namespace utils

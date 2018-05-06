@@ -43,35 +43,41 @@
 //!
 //! @{
 
-//! Whole version number of the library (string)
+//! Whole version number of the library (const char*)
 #define YOGI_CONST_VERSION_NUMBER 1
 
-//! Major version number of the library (integer)
+//! Major version number of the library (int)
 #define YOGI_CONST_VERSION_MAJOR 2
 
-//! Major version number of the library (integer)
+//! Major version number of the library (int)
 #define YOGI_CONST_VERSION_MINOR 3
 
-//! Major version number of the library (integer)
+//! Major version number of the library (int)
 #define YOGI_CONST_VERSION_PATCH 4
 
-//! Default multicast addresses to use for advertising (string)
+//! Default multicast addresses to use for advertising (const char*)
 #define YOGI_CONST_DEFAULT_ADV_ADDRESS 5
 
-//! Default port to use for advertising via UDP IPv6 multicasts (integer)
+//! Default port to use for advertising via UDP IPv6 multicasts (int)
 #define YOGI_CONST_DEFAULT_ADV_PORT 6
 
-//! Default advertising interval in milliseconds (integer)
+//! Default advertising interval in nanoseconds (long long)
 #define YOGI_CONST_DEFAULT_ADV_INTERVAL 7
 
-//! Default logging verbosity
-#define YOGI_CONST_DEFAULT_LOGGER_VERBOSITY 8
+//! Default connection timeout in nanoseconds (long long)
+#define YOGI_CONST_DEFAULT_CONNECTION_TIMEOUT 8
 
-//! Default textual format for timestamps in log entries
-#define YOGI_CONST_DEFAULT_LOG_TIME_FORMAT 9
+//! Default retry time in nanoseconds (long long)
+#define YOGI_CONST_DEFAULT_RETRY_TIME 9
 
-//! Default textual format for log entries
-#define YOGI_CONST_DEFAULT_LOG_FORMAT 10
+//! Default logging verbosity (int)
+#define YOGI_CONST_DEFAULT_LOGGER_VERBOSITY 10
+
+//! Default textual format for timestamps in log entries (const char*)
+#define YOGI_CONST_DEFAULT_LOG_TIME_FORMAT 11
+
+//! Default textual format for log entries (const char*)
+#define YOGI_CONST_DEFAULT_LOG_FORMAT 12
 
 //! @}
 //!
@@ -135,6 +141,9 @@
 
 //! Could not open file
 #define YOGI_ERR_OPEN_FILE_FAILED -17
+
+//! Could not read from or write to socket
+#define YOGI_ERR_RW_SOCKET_FAILED -18
 
 //! @}
 //!
@@ -806,8 +815,15 @@ YOGI_API int YOGI_TimerCancel(void* timer);
  * \param[in]  advaddr     Multicast address to use; e.g. 239.255.0.1 for IPv4
  *                         or ff31::8000:1234 for IPv6 (set to NULL for default)
  * \param[in]  advport     Advertising port (set to 0 for default)
- * \param[in]  advint      Advertising interval in ms (set to 0 for default;
- *                         set to -1 for no advertising and no joining networks)
+ * \param[in]  advint      Advertising interval in nanoseconds (set to 0 for
+ *                         default; set to -1 for no advertising and no joining
+ *                         networks; must be at least 1 millisecond)
+ * \param[in]  timeout     Maximum time of inactivity before a remote branch is
+ *                         considered to be dead (set to 0 for default; set to
+ *                         -1 for infinity; must be at least 1 millisecond)
+ * \param[in]  retrytime   Amount of time to wait after a connection failure
+ *                         before trying to connect again (set to 0 for default;
+ *                         must be at least 1 millisecond)
  *
  * \returns [=0] #YOGI_OK if successful
  * \returns [<0] An error code in case of a failure (see \ref EC)
@@ -815,7 +831,9 @@ YOGI_API int YOGI_TimerCancel(void* timer);
 YOGI_API int YOGI_BranchCreate(void** branch, void* context, const char* name,
                                const char* description, const char* netname,
                                const char* password, const char* path,
-                               const char* advaddr, int advport, int advint);
+                               const char* advaddr, int advport,
+                               long long advint, long long timeout,
+                               long long retrytime);
 
 /***************************************************************************//**
  * Retrieves information about a local branch.

@@ -58,6 +58,9 @@ const char* Error::what() const throw() {
 
     case YOGI_ERR_OPEN_FILE_FAILED:
       return "Could not open file";
+
+    case YOGI_ERR_RW_SOCKET_FAILED:
+      return "Could not read from or write to socket";
   }
 
   return "Invalid error code";

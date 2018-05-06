@@ -18,6 +18,7 @@ add_library (yogi-core-static STATIC
   src/licenses/yogi_license.cc
   src/objects/detail/adv/adv_receiver.cc
   src/objects/detail/adv/adv_sender.cc
+  src/objects/detail/adv/info_querier.cc
   src/objects/detail/log/console_sink.cc
   src/objects/detail/log/file_sink.cc
   src/objects/detail/log/hook_sink.cc
@@ -28,6 +29,7 @@ add_library (yogi-core-static STATIC
   src/objects/logger.cc
   src/objects/timer.cc
   src/utils/console.cc
+  src/utils/socket.cc
   src/utils/system.cc
   src/utils/timestamp.cc
 )

@@ -9,15 +9,16 @@ namespace objects {
 namespace detail {
 namespace adv {
 
-LoggerPtr AdvReceiver::logger_ = Logger::CreateStaticInternalLogger("Branch");
+const LoggerPtr AdvReceiver::logger_ =
+    Logger::CreateStaticInternalLogger("Branch");
 
 AdvReceiver::AdvReceiver(ContextPtr context,
                          const boost::asio::ip::udp::endpoint& adv_ep,
-                         std::size_t adv_msg_size, ObserverFn observer_fn)
+                         std::size_t adv_msg_size, ObserverFn&& observer_fn)
     : context_(context),
       adv_ep_(adv_ep),
       adv_msg_size_(adv_msg_size),
-      observer_fn_(observer_fn),
+      observer_fn_(std::move(observer_fn)),
       socket_(context->IoContext()),
       buffer_(adv_msg_size + 1) {
   SetupSocket();
@@ -89,7 +90,8 @@ void AdvReceiver::HandleReceivedAdvertisement() {
 
   YOGI_LOG_TRACE(logger_, "Received advertising message for "
                               << uuid << " from " << sender_ep_.address());
-  observer_fn_(uuid, sender_ep_.address(), tcp_port);
+
+  observer_fn_(uuid, boost::asio::ip::tcp::endpoint(sender_ep_.address(), tcp_port));
 }
 
 }  // namespace adv

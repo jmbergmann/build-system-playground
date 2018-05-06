@@ -8,11 +8,12 @@ namespace objects {
 namespace detail {
 namespace adv {
 
-LoggerPtr AdvSender::logger_ = Logger::CreateStaticInternalLogger("Branch");
+const LoggerPtr AdvSender::logger_ =
+    Logger::CreateStaticInternalLogger("Branch");
 
 AdvSender::AdvSender(ContextPtr context,
                      const boost::asio::ip::udp::endpoint& adv_ep,
-                     std::chrono::milliseconds adv_interval,
+                     std::chrono::nanoseconds adv_interval,
                      const boost::uuids::uuid& uuid,
                      const boost::asio::ip::tcp::endpoint& tcp_acceptor_ep)
     : context_(context),

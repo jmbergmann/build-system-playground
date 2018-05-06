@@ -11,10 +11,14 @@
 
 namespace objects {
 
+const LoggerPtr Branch::logger_ = Logger::CreateStaticInternalLogger("Branch");
+
 Branch::Branch(ContextPtr context, std::string name, std::string description,
                std::string net_name, std::string password, std::string path,
                std::string adv_address, int adv_port,
-               std::chrono::milliseconds adv_interval)
+               std::chrono::nanoseconds adv_interval,
+               std::chrono::nanoseconds timeout,
+               std::chrono::nanoseconds retry_time)
     : context_(context),
       uuid_(boost::uuids::random_generator()()),
       name_(name),
@@ -25,10 +29,13 @@ Branch::Branch(ContextPtr context, std::string name, std::string description,
       adv_ep_(boost::asio::ip::address::from_string(adv_address),
               static_cast<unsigned short>(adv_port)),
       adv_interval_(adv_interval),
+      timeout_(timeout),
+      retry_time_(retry_time),
       start_time_(utils::Timestamp::Now()),
       acceptor_(context_->IoContext()) {
   SetupAcceptor();
   SetupAdvertising();
+  SetupQuerier();
 }
 
 void Branch::Start() {
@@ -38,19 +45,19 @@ void Branch::Start() {
 
 std::string Branch::MakeInfo() const {
   auto json = nlohmann::json{
-    {"uuid", boost::uuids::to_string(uuid_)},
-    {"name", name_},
-    {"description", description_},
-    {"net_name", net_name_},
-    {"path", path_},
-    {"hostname", utils::GetHostname()},
-    {"pid", utils::GetProcessId()},
-    {"advertising_address", adv_ep_.address().to_string()},
-    {"advertising_port", adv_ep_.port()},
-    {"advertising_interval", (float)adv_interval_.count() / 1000.0f},
-    {"tcp_server_port", acceptor_.local_endpoint().port()},
-    {"start_time", start_time_.ToJavaScriptString()},
-    {"active_connections", 0},  // TODO
+      {"uuid", boost::uuids::to_string(uuid_)},
+      {"name", name_},
+      {"description", description_},
+      {"net_name", net_name_},
+      {"path", path_},
+      {"hostname", utils::GetHostname()},
+      {"pid", utils::GetProcessId()},
+      {"advertising_address", adv_ep_.address().to_string()},
+      {"advertising_port", adv_ep_.port()},
+      {"advertising_interval", (float)adv_interval_.count() / 1000'000'000.0f},
+      {"tcp_server_port", acceptor_.local_endpoint().port()},
+      {"start_time", start_time_.ToJavaScriptString()},
+      {"active_connections", 0},  // TODO
   };
 
   return json.dump();
@@ -98,15 +105,53 @@ void Branch::SetupAdvertising() {
 
   adv_receiver_ = std::make_shared<detail::adv::AdvReceiver>(
       context_, adv_ep_, adv_sender_->GetMessageSize(),
-      [this](auto& uuid, auto& address, auto tcp_port) {
-        this->OnAdvertisementReceived(uuid, address, tcp_port);
+      [this](auto& uuid, auto& ep) {
+        this->OnAdvertisementReceived(uuid, ep);
       });
 }
 
-void Branch::OnAdvertisementReceived(const boost::uuids::uuid& uuid,
-                                     const boost::asio::ip::address& address,
-                                     unsigned short tcp_port) {
-  printf("ADV RECEIVED\n");
+void Branch::SetupQuerier() {
+  info_querier_ =
+      std::make_shared<detail::adv::InfoQuerier>(timeout_, retry_time_);
+}
+
+void Branch::OnAdvertisementReceived(
+    const boost::uuids::uuid& uuid,
+    const boost::asio::ip::tcp::endpoint& tcp_ep) {
+  detail::adv::BranchInfoPtr info;
+  bool new_branch = false;
+  {
+    std::lock_guard<std::mutex> lock(branches_mutex_);
+    auto& info_ref = branches_[uuid];
+    if (!info_ref) {
+      info_ref = std::make_shared<detail::adv::BranchInfo>();
+      info_ref->uuid = uuid;
+      info_ref->tcp_ep = tcp_ep;
+      new_branch = true;
+    }
+
+    info = info_ref;
+  }
+
+  if (new_branch) {
+    YOGI_LOG_INFO(logger_, "New branch " << uuid << " discovered on "
+                                         << tcp_ep.address());
+  }
+
+  std::lock_guard<std::mutex> lock(info->mutex);
+  if (new_branch) {
+    info_querier_->QueryBranch(info, [this, info](auto& socket) {
+      this->OnQueryBranchSucceeded(info, socket);
+    });
+  }
+
+  info->last_activity = utils::Timestamp::Now();
+}
+
+void Branch::OnQueryBranchSucceeded(const detail::adv::BranchInfoPtr& info,
+                            const utils::TimedTcpSocketPtr& socket) {
+  std::lock_guard<std::mutex> lock(info->mutex);
+  info->last_activity = utils::Timestamp::Now();
 }
 
 }  // namespace objects

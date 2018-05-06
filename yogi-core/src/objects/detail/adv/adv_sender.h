@@ -17,7 +17,7 @@ namespace adv {
 class AdvSender : public std::enable_shared_from_this<AdvSender> {
  public:
   AdvSender(ContextPtr context, const boost::asio::ip::udp::endpoint& adv_ep,
-            std::chrono::milliseconds adv_interval,
+            std::chrono::nanoseconds adv_interval,
             const boost::uuids::uuid& uuid,
             const boost::asio::ip::tcp::endpoint& tcp_acceptor_ep);
   void Start();
@@ -29,10 +29,10 @@ class AdvSender : public std::enable_shared_from_this<AdvSender> {
   void SendAdvertisement();
   void StartTimer();
 
-  static LoggerPtr logger_;
+  static const LoggerPtr logger_;
 
   const ContextPtr context_;
-  const std::chrono::milliseconds interval_;
+  const std::chrono::nanoseconds interval_;
   const boost::uuids::uuid uuid_;
   const boost::asio::ip::tcp::endpoint tcp_acceptor_ep_;
   const std::vector<char> message_;

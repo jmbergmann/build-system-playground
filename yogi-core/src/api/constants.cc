@@ -30,7 +30,15 @@ void GetConstant(void* dest, int constant) {
       break;
 
     case YOGI_CONST_DEFAULT_ADV_INTERVAL:
-      *static_cast<int*>(dest) = kDefaultAdvInterval;
+      *static_cast<long long*>(dest) = kDefaultAdvInterval;
+      break;
+
+    case YOGI_CONST_DEFAULT_CONNECTION_TIMEOUT:
+      *static_cast<long long*>(dest) = kDefaultConnectionTimeout;
+      break;
+
+    case YOGI_CONST_DEFAULT_RETRY_TIME:
+      *static_cast<long long*>(dest) = kDefaultRetryTime;
       break;
 
     case YOGI_CONST_DEFAULT_LOGGER_VERBOSITY:
