@@ -18,6 +18,7 @@ add_library (yogi-core-static STATIC
   src/licenses/yogi_license.cc
   src/objects/detail/branch/adv_receiver.cc
   src/objects/detail/branch/adv_sender.cc
+  src/objects/detail/branch/branch_info.cc
   src/objects/detail/branch/info_querier.cc
   src/objects/detail/log/console_log_sink.cc
   src/objects/detail/log/file_log_sink.cc

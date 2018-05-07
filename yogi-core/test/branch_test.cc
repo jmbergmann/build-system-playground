@@ -15,7 +15,7 @@ using namespace std::chrono_literals;
 
 const std::chrono::nanoseconds kAdvInterval = 1ms;
 const std::chrono::nanoseconds kConnTimeout = 5ms;
-const std::chrono::nanoseconds kRetryTime   = 1ms;
+const std::chrono::nanoseconds kRetryTime = 1ms;
 
 class BranchTest : public ::testing::Test {
  protected:
@@ -86,15 +86,18 @@ TEST_F(BranchTest, GetInfoJson) {
   EXPECT_EQ(json.value("path", "NOT FOUND"), std::string("/") + default_name);
   EXPECT_EQ(json.value("hostname", "NOT FOUND"), utils::GetHostname());
   EXPECT_EQ(json.value("pid", -1), utils::GetProcessId());
+  EXPECT_EQ(json.value("tcp_server_address", "NOT FOUND"), "::");
+  EXPECT_GT(json.value("tcp_server_port", 0), 1024);
+  EXPECT_TRUE(
+      std::regex_match(json.value("start_time", "NOT FOUND"), time_regex));
+  EXPECT_EQ(json.value("timeout", -1.0f), (float)kConnTimeout.count() / 1e9f);
+  EXPECT_EQ(json.value("retry_time", -1.0f), (float)kRetryTime.count() / 1e9f);
+  EXPECT_GT(json.value("active_connections", -1), -1);
   EXPECT_EQ(json.value("advertising_address", "NOT FOUND"),
             api::kDefaultAdvAddress);
   EXPECT_EQ(json.value("advertising_port", -1), api::kDefaultAdvPort);
   EXPECT_EQ(json.value("advertising_interval", -1.0f),
             (float)kAdvInterval.count() / 1e9f);
-  EXPECT_GT(json.value("tcp_server_port", 0), 1024);
-  EXPECT_TRUE(
-      std::regex_match(json.value("start_time", "NOT FOUND"), time_regex));
-  EXPECT_GT(json.value("active_connections", -1), -1);
 }
 
 TEST_F(BranchTest, Advertising) {

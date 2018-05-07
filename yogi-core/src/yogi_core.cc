@@ -490,9 +490,9 @@ YOGI_API int YOGI_BranchCreate(void** branch, void* context, const char* name,
         advport ? advport : api::kDefaultAdvPort,
         advint ? ConvertDuration(advint)
                : std::chrono::nanoseconds(api::kDefaultAdvInterval),
-        advint ? ConvertDuration(advint)
+        timeout ? ConvertDuration(timeout)
                : std::chrono::nanoseconds(api::kDefaultConnectionTimeout),
-        advint ? ConvertDuration(advint)
+        retrytime ? ConvertDuration(retrytime)
                : std::chrono::nanoseconds(api::kDefaultRetryTime));
     brn->Start();
 

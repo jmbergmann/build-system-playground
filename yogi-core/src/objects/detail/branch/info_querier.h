@@ -17,7 +17,7 @@ class InfoQuerier : public std::enable_shared_from_this<InfoQuerier> {
   InfoQuerier(std::chrono::nanoseconds timeout,
               std::chrono::nanoseconds retry_time);
 
-  void QueryBranch(const BranchInfoPtr& info,
+  void QueryBranch(const RemoteBranchInfoPtr& info,
                    std::function<void(const utils::TimedTcpSocketPtr& socket)>&&
                        success_handler);
 

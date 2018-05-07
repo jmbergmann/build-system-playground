@@ -11,7 +11,7 @@ InfoQuerier::InfoQuerier(std::chrono::nanoseconds timeout,
     : timeout_(timeout), retry_time_(retry_time) {}
 
 void InfoQuerier::QueryBranch(
-    const BranchInfoPtr& info,
+    const RemoteBranchInfoPtr& info,
     std::function<void(const utils::TimedTcpSocketPtr& socket)>&&
         success_handler) {}
 
