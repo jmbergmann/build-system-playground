@@ -41,9 +41,9 @@ class TimedTcpSocket : std::enable_shared_from_this<TimedTcpSocket> {
           auto self = weak_self.lock();
           if (!self) return;
 
-          self->timer_->cancel();
+          self->timer_.cancel();
 
-          if (timed_out_) {
+          if (self->timed_out_) {
             handler(YOGI_ERR_TIMEOUT);
           } else if (!ec) {
             handler(api::kSuccess);
