@@ -34,7 +34,7 @@ TEST_F(TimerTest, Start) {
   auto start_time = std::chrono::steady_clock::now();
   int res = YOGI_TimerStart(
       timer_, 1000000,  // 1ms timeout
-      [](int res, void* handler_res) { *static_cast<int*>(handler_res) = res; },
+      [](int res_, void* handler_res_) { *static_cast<int*>(handler_res_) = res_; },
       &handler_res);
   EXPECT_EQ(res, YOGI_OK);
 
@@ -50,13 +50,13 @@ TEST_F(TimerTest, StartWhileRunning) {
   int handler_res = 1;
   int res = YOGI_TimerStart(
       timer_, -1,  // Infinite timeout
-      [](int res, void* handler_res) { *static_cast<int*>(handler_res) = res; },
+      [](int res_, void* handler_res_) { *static_cast<int*>(handler_res_) = res_; },
       &handler_res);
   EXPECT_EQ(res, YOGI_OK);
 
   res = YOGI_TimerStart(
       timer_, 0,  // Immediate timeout
-      [](int res, void* handler_res) { *static_cast<int*>(handler_res) = res; },
+      [](int res_, void* handler_res_) { *static_cast<int*>(handler_res_) = res_; },
       &handler_res);
   EXPECT_EQ(res, YOGI_OK);
 
@@ -74,7 +74,7 @@ TEST_F(TimerTest, Cancel) {
   int handler_res = 1;
   res = YOGI_TimerStart(
       timer_, -1,  // Infinite timeout
-      [](int res, void* handler_res) { *static_cast<int*>(handler_res) = res; },
+      [](int res_, void* handler_res_) { *static_cast<int*>(handler_res_) = res_; },
       &handler_res);
 
   res = YOGI_TimerCancel(timer_);

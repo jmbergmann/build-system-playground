@@ -24,7 +24,7 @@
     if (!(x)) {                                                \
       fprintf(stderr, "ASSERTION \"" #x "\" in %s:%d FAILED.", \
         __FILE__, __LINE__);                                   \
-        *(char*)1 = 0;                                         \
+        *reinterpret_cast<char*>(1) = 0;                       \
     }                                                          \
   }
 #else

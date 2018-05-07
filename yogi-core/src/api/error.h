@@ -13,7 +13,7 @@ class Error : public std::exception {
   explicit operator bool() const { return err_ != YOGI_OK; }
   bool operator!() const { return err_ == YOGI_OK; }
 
-  const int error_code() const noexcept { return err_; }
+  int error_code() const noexcept { return err_; }
 
   virtual const char* what() const throw();
 

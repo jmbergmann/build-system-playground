@@ -84,8 +84,8 @@ TEST_F(ContextTest, Run) {
   YOGI_ContextWaitForRunning(context_, -1);
 
   std::atomic<int> n(0);
-  YOGI_ContextPost(context_, [](void* n) { ++*static_cast<int*>(n); }, &n);
-  YOGI_ContextPost(context_, [](void* n) { ++*static_cast<int*>(n); }, &n);
+  YOGI_ContextPost(context_, [](void* n_) { ++*static_cast<int*>(n_); }, &n);
+  YOGI_ContextPost(context_, [](void* n_) { ++*static_cast<int*>(n_); }, &n);
 
   while (n < 2)
     ;
@@ -115,8 +115,8 @@ TEST_F(ContextTest, RunOne) {
   YOGI_ContextWaitForRunning(context_, -1);
 
   std::atomic<int> n(0);
-  YOGI_ContextPost(context_, [](void* n) { ++*static_cast<int*>(n); }, &n);
-  YOGI_ContextPost(context_, [](void* n) { ++*static_cast<int*>(n); }, &n);
+  YOGI_ContextPost(context_, [](void* n_) { ++*static_cast<int*>(n_); }, &n);
+  YOGI_ContextPost(context_, [](void* n_) { ++*static_cast<int*>(n_); }, &n);
 
   while (n < 1)
     ;
@@ -133,8 +133,8 @@ TEST_F(ContextTest, RunFor) {
   EXPECT_EQ(res, YOGI_OK);
 
   int n = 0;
-  YOGI_ContextPost(context_, [](void* n) { ++*static_cast<int*>(n); }, &n);
-  YOGI_ContextPost(context_, [](void* n) { ++*static_cast<int*>(n); }, &n);
+  YOGI_ContextPost(context_, [](void* n_) { ++*static_cast<int*>(n_); }, &n);
+  YOGI_ContextPost(context_, [](void* n_) { ++*static_cast<int*>(n_); }, &n);
 
   int count = -1;
   auto start_time = std::chrono::steady_clock::now();
@@ -153,7 +153,7 @@ TEST_F(ContextTest, RunOneFor) {
   EXPECT_EQ(res, YOGI_OK);
 
   int n = 0;
-  YOGI_ContextPost(context_, [](void* n) { ++*static_cast<int*>(n); }, &n);
+  YOGI_ContextPost(context_, [](void* n_) { ++*static_cast<int*>(n_); }, &n);
 
   int count = -1;
   auto start_time = std::chrono::steady_clock::now();
@@ -178,12 +178,12 @@ TEST_F(ContextTest, RunOneFor) {
 
 TEST_F(ContextTest, RunInBackground) {
   std::atomic<int> n(0);
-  YOGI_ContextPost(context_, [](void* n) { ++*static_cast<int*>(n); }, &n);
+  YOGI_ContextPost(context_, [](void* n_) { ++*static_cast<int*>(n_); }, &n);
 
   int res = YOGI_ContextRunInBackground(context_);
   EXPECT_EQ(res, YOGI_OK);
 
-  YOGI_ContextPost(context_, [](void* n) { ++*static_cast<int*>(n); }, &n);
+  YOGI_ContextPost(context_, [](void* n_) { ++*static_cast<int*>(n_); }, &n);
 
   while (n != 2)
     ;

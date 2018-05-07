@@ -23,6 +23,7 @@ Branch::Branch(ContextPtr context, std::string name, std::string description,
     : context_(context),
       info_(std::make_shared<detail::LocalBranchInfo>(
           boost::uuids::random_generator()())),
+      password_(password),
       acceptor_(context_->IoContext()) {
   info_->name = name;
   info_->description = description;
@@ -145,8 +146,8 @@ void Branch::OnQueryBranchSucceeded(const detail::RemoteBranchInfoPtr& branch) {
 
 int Branch::GetNumActiveConnections() const {
   std::lock_guard<std::mutex> lock(branches_mutex_);
-  return std::count_if(branches_.begin(), branches_.end(),
-                       [](auto& branch) { return branch.second->connected; });
+  return static_cast<int>(std::count_if(branches_.begin(), branches_.end(),
+                       [](auto& branch) { return branch.second->connected; }));
 }
 
 }  // namespace objects

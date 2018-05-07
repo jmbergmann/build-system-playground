@@ -25,7 +25,8 @@ void TextBasedLogSink::WriteEntry(Verbosity severity,
   std::string::size_type pos = fmt_.find('$');
   while (pos != std::string::npos) {
     if (pos > old_pos) {
-      ss.write(fmt_.c_str() + old_pos, pos - old_pos);
+      ss.write(fmt_.c_str() + old_pos,
+	           static_cast<std::streamsize>(pos - old_pos));
     }
 
     switch (fmt_[pos + 1]) {
