@@ -10,10 +10,8 @@ InfoQuerier::InfoQuerier(std::chrono::nanoseconds timeout,
                          std::chrono::nanoseconds retry_time)
     : timeout_(timeout), retry_time_(retry_time) {}
 
-void InfoQuerier::QueryBranch(
-    const RemoteBranchInfoPtr& info,
-    std::function<void(const utils::TimedTcpSocketPtr& socket)>&&
-        success_handler) {}
+void InfoQuerier::QueryBranch(const RemoteBranchInfoPtr& info,
+                              std::function<void()>&& success_handler) {}
 
 }  // namespace detail
 }  // namespace objects

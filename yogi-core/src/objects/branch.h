@@ -48,8 +48,7 @@ class Branch : public api::ExposedObjectT<Branch, api::ObjectType::kBranch> {
   void SetupQuerier();
   void OnAdvertisementReceived(const boost::uuids::uuid& uuid,
                                const boost::asio::ip::tcp::endpoint& tcp_ep);
-  void OnQueryBranchSucceeded(const detail::RemoteBranchInfoPtr& info,
-                              const utils::TimedTcpSocketPtr& socket);
+  void OnQueryBranchSucceeded(const detail::RemoteBranchInfoPtr& info);
   int GetNumActiveConnections() const;
 
   static const LoggerPtr logger_;

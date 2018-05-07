@@ -18,8 +18,7 @@ class InfoQuerier : public std::enable_shared_from_this<InfoQuerier> {
               std::chrono::nanoseconds retry_time);
 
   void QueryBranch(const RemoteBranchInfoPtr& info,
-                   std::function<void(const utils::TimedTcpSocketPtr& socket)>&&
-                       success_handler);
+                   std::function<void()>&& success_handler);
 
  private:
   static const LoggerPtr logger_;

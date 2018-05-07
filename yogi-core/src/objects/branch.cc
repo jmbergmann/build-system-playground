@@ -130,16 +130,15 @@ void Branch::OnAdvertisementReceived(
 
   std::lock_guard<std::mutex> lock(branch->mutex);
   if (new_branch) {
-    info_querier_->QueryBranch(branch, [this, branch](auto& socket) {
-      this->OnQueryBranchSucceeded(branch, socket);
+    info_querier_->QueryBranch(branch, [this, branch]() {
+      this->OnQueryBranchSucceeded(branch);
     });
   }
 
   branch->last_activity = utils::Timestamp::Now();
 }
 
-void Branch::OnQueryBranchSucceeded(const detail::RemoteBranchInfoPtr& branch,
-                                    const utils::TimedTcpSocketPtr& socket) {
+void Branch::OnQueryBranchSucceeded(const detail::RemoteBranchInfoPtr& branch) {
   std::lock_guard<std::mutex> lock(branch->mutex);
   branch->last_activity = utils::Timestamp::Now();
 }

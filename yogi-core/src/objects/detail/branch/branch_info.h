@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../../../config.h"
+#include "../../../utils/socket.h"
 #include "../../../utils/timestamp.h"
 #include "../../../../../3rd_party/json/json.hpp"
 
@@ -58,6 +59,7 @@ class RemoteBranchInfo : public BranchInfo {
   utils::Timestamp last_disconnected;
   utils::Timestamp last_activity;
   std::string last_error;
+  utils::TimedTcpSocketPtr socket;
 };
 
 typedef std::shared_ptr<RemoteBranchInfo> RemoteBranchInfoPtr;
