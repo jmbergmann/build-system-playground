@@ -1,7 +1,7 @@
 #include "licenses.h"
 
-#include <string>
 #include <algorithm>
+#include <string>
 
 namespace licenses {
 
@@ -61,13 +61,14 @@ SOFTWARE.
 )raw"
 };
 
+// NOLINTNEXTLINE(cert-err58-cpp)
 const std::string k3rdPartyLicenses = ([] {
   std::string s;
-  for (std::string license : licenses) {
-    license.erase(0, license.find('\n') + 1);
-    license.erase(std::remove(license.begin(), license.end(), '\r'),
-                  license.end());
-    s += license;
+  for (const char* license : licenses) {
+    auto tmp = std::string(license);
+    tmp.erase(0, tmp.find('\n') + 1);
+    tmp.erase(std::remove(tmp.begin(), tmp.end(), '\r'), tmp.end());
+    s += tmp;
     s += "\n\n";
   }
 

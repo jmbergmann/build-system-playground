@@ -5,9 +5,10 @@
 namespace api {
 
 std::mutex ObjectRegister::mutex_;
+// NOLINTNEXTLINE(cert-err58-cpp)
 ObjectRegister::ObjectsMap ObjectRegister::objects_;
 
-ObjectHandle ObjectRegister::Register(ObjectPtr obj) {
+ObjectHandle ObjectRegister::Register(const ObjectPtr& obj) {
   std::lock_guard<std::mutex> lock(mutex_);
 
   auto handle = obj->Handle();

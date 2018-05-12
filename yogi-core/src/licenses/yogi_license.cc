@@ -1,7 +1,7 @@
 #include "licenses.h"
 
-#include <string>
 #include <algorithm>
+#include <string>
 
 namespace licenses {
 
@@ -684,9 +684,10 @@ Public License instead of this License.  But first, please read
 )raw"
 };
 
+// NOLINTNEXTLINE(cert-err58-cpp)
 const std::string kYogiLicense = ([] {
   std::string s;
-  for (auto part : parts) {
+  for (const char* part : parts) {
     s += part;
   }
 

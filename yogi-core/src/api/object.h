@@ -100,7 +100,7 @@ class ObjectRegister {
     return vec;
   }
 
-  static ObjectHandle Register(ObjectPtr obj);
+  static ObjectHandle Register(const ObjectPtr& obj);
   static void Destroy(ObjectHandle handle);
   static void DestroyAll();
 

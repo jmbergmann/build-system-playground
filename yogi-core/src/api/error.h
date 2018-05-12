@@ -15,7 +15,7 @@ class Error : public std::exception {
 
   int error_code() const noexcept { return err_; }
 
-  virtual const char* what() const throw();
+  virtual const char* what() const noexcept;
 
  private:
   const int err_;

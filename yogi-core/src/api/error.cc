@@ -2,7 +2,7 @@
 
 namespace api {
 
-const char* Error::what() const throw() {
+const char* Error::what() const noexcept {
   if (err_ >= 0) {
     return "Success";
   }

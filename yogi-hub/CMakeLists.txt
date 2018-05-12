@@ -15,6 +15,7 @@ target_link_libraries (yogi-hub
 )
 
 cotire (yogi-hub)
+run_clang_tidy (yogi-hub)
 
 # Tests
 add_executable (yogi-hub-test
@@ -28,6 +29,7 @@ target_link_libraries (yogi-hub-test
 )
 
 cotire (yogi-hub-test)
+run_clang_tidy (yogi-hub-test)
 
 add_test (
   NAME yogi-hub-test

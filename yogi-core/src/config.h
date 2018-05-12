@@ -17,15 +17,23 @@
 #include "../include/yogi_core.h"
 
 // Debug & development
+#ifdef _MSC_VER
+# define YOGI_DEBUG_BRAKE __debugbreak();
+#else
+# include <assert.h>
+# define YOGI_DEBUG_BRAKE assert(false);
+#endif
+
 #ifndef NDEBUG
-# include <stdio.h>
-# define YOGI_TRACE printf("%s: %d\n", __FILE__, __LINE__);
-# define YOGI_ASSERT(x) {                                      \
-    if (!(x)) {                                                \
-      fprintf(stderr, "ASSERTION \"" #x "\" in %s:%d FAILED.", \
-        __FILE__, __LINE__);                                   \
-        *reinterpret_cast<char*>(1) = 0;                       \
-    }                                                          \
+# include <iostream>
+# define YOGI_TRACE std::cerr << __FILE__ << ":" << __LINE__ << std::endl;
+# define YOGI_ASSERT(x)                                                      \
+  {                                                                          \
+    if (!(x)) {                                                              \
+      std::cerr << "ASSERTION \"" #x "\" in " << __FILE__ << ":" << __LINE__ \
+                << " FAILED." << std::endl;                                  \
+      YOGI_DEBUG_BRAKE;                                                      \
+    }                                                                        \
   }
 #else
 # define YOGI_ASSERT(x)

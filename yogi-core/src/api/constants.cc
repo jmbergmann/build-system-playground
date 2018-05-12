@@ -30,14 +30,17 @@ void GetConstant(void* dest, int constant) {
       break;
 
     case YOGI_CONST_DEFAULT_ADV_INTERVAL:
+      // NOLINTNEXTLINE(google-runtime-int)
       *static_cast<long long*>(dest) = kDefaultAdvInterval;
       break;
 
     case YOGI_CONST_DEFAULT_CONNECTION_TIMEOUT:
+      // NOLINTNEXTLINE(google-runtime-int)
       *static_cast<long long*>(dest) = kDefaultConnectionTimeout;
       break;
 
     case YOGI_CONST_DEFAULT_RETRY_TIME:
+      // NOLINTNEXTLINE(google-runtime-int)
       *static_cast<long long*>(dest) = kDefaultRetryTime;
       break;
 
