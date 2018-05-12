@@ -23,8 +23,7 @@ Branch::Branch(ContextPtr context, std::string name, std::string description,
     : context_(context),
       info_(std::make_shared<detail::LocalBranchInfo>(
           boost::uuids::random_generator()())),
-      password_(password),
-      acceptor_(context_->IoContext()) {
+      password_(password) {
   info_->name = name;
   info_->description = description;
   info_->net_name = net_name;
@@ -36,9 +35,8 @@ Branch::Branch(ContextPtr context, std::string name, std::string description,
       static_cast<unsigned short>(adv_port));
   info_->adv_interval = adv_interval;
 
-  SetupAcceptor();
+  SetupTcp();
   SetupAdvertising();
-  SetupQuerier();
 }
 
 void Branch::Start() {
@@ -59,52 +57,21 @@ void Branch::ForeachDiscoveredBranch(
     const std::function<void(const boost::uuids::uuid&, std::string)>& fn)
     const {}
 
-void Branch::SetupAcceptor() {
-  boost::system::error_code ec;
-
-  auto protocol = info_->adv_ep.protocol() == boost::asio::ip::udp::v4()
-                      ? boost::asio::ip::tcp::v4()
-                      : boost::asio::ip::tcp::v6();
-  auto ep = boost::asio::ip::tcp::endpoint(protocol, 0);
-
-  acceptor_.open(ep.protocol(), ec);
-  if (ec) {
-    throw api::Error(YOGI_ERR_OPEN_SOCKET_FAILED);
-  }
-
-  acceptor_.set_option(boost::asio::ip::tcp::acceptor::reuse_address(true), ec);
-  if (ec) {
-    throw api::Error(YOGI_ERR_SET_SOCKET_OPTION_FAILED);
-  }
-
-  acceptor_.bind(ep, ec);
-  if (ec) {
-    throw api::Error(YOGI_ERR_BIND_SOCKET_FAILED);
-  }
-
-  info_->tcp_ep = acceptor_.local_endpoint();
-
-  acceptor_.listen(acceptor_.max_listen_connections, ec);
-  if (ec) {
-    throw api::Error(YOGI_ERR_LISTEN_SOCKET_FAILED);
-  }
+void Branch::SetupTcp() {
+  tcp_client_ = std::make_shared<detail::TcpClient>(context_, info_);
+  tcp_server_ = std::make_shared<detail::TcpServer>(context_, info_);
 }
 
 void Branch::SetupAdvertising() {
   adv_sender_ = std::make_shared<detail::AdvSender>(
       context_, info_->adv_ep, info_->adv_interval, info_->uuid,
-      acceptor_.local_endpoint());
+      info_->tcp_ep);
 
   adv_receiver_ = std::make_shared<detail::AdvReceiver>(
       context_, info_->adv_ep, adv_sender_->GetMessageSize(),
       [this](auto& uuid, auto& ep) {
         this->OnAdvertisementReceived(uuid, ep);
       });
-}
-
-void Branch::SetupQuerier() {
-  info_querier_ =
-      std::make_shared<detail::InfoQuerier>(info_->timeout, info_->retry_time);
 }
 
 void Branch::OnAdvertisementReceived(
@@ -131,23 +98,24 @@ void Branch::OnAdvertisementReceived(
 
   std::lock_guard<std::mutex> lock(branch->mutex);
   if (new_branch) {
-    info_querier_->QueryBranch(branch, [this, branch]() {
-      this->OnQueryBranchSucceeded(branch);
-    });
+    tcp_client_->Connect(
+        branch, [this, branch]() { this->OnConnectSucceeded(branch); });
   }
 
   branch->last_activity = utils::Timestamp::Now();
 }
 
-void Branch::OnQueryBranchSucceeded(const detail::RemoteBranchInfoPtr& branch) {
+void Branch::OnConnectSucceeded(const detail::RemoteBranchInfoPtr& branch) {
   std::lock_guard<std::mutex> lock(branch->mutex);
   branch->last_activity = utils::Timestamp::Now();
+  YOGI_LOG_FATAL(logger_, "Connect succeeded");
 }
 
 int Branch::GetNumActiveConnections() const {
   std::lock_guard<std::mutex> lock(branches_mutex_);
-  return static_cast<int>(std::count_if(branches_.begin(), branches_.end(),
-                       [](auto& branch) { return branch.second->connected; }));
+  return static_cast<int>(
+      std::count_if(branches_.begin(), branches_.end(),
+                    [](auto& branch) { return branch.second->connected; }));
 }
 
 }  // namespace objects

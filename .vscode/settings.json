@@ -37,7 +37,19 @@
         "xhash": "cpp",
         "list": "cpp",
         "vector": "cpp",
-        "algorithm": "cpp"
+        "algorithm": "cpp",
+        "mutex": "cpp",
+        "functional": "cpp",
+        "chrono": "cpp",
+        "condition_variable": "cpp",
+        "memory": "cpp",
+        "ratio": "cpp",
+        "sstream": "cpp",
+        "thread": "cpp",
+        "tuple": "cpp",
+        "unordered_map": "cpp",
+        "xfunctional": "cpp",
+        "xmemory": "cpp"
     },
     "files.exclude": {
       "**/.git": true,

@@ -7,7 +7,8 @@
 #include "detail/branch/adv_receiver.h"
 #include "detail/branch/adv_sender.h"
 #include "detail/branch/branch_info.h"
-#include "detail/branch/info_querier.h"
+#include "detail/branch/tcp_client.h"
+#include "detail/branch/tcp_server.h"
 
 #include <boost/functional/hash.hpp>
 #include <chrono>
@@ -43,12 +44,11 @@ class Branch : public api::ExposedObjectT<Branch, api::ObjectType::kBranch> {
                              boost::hash<boost::uuids::uuid>>
       BranchesMap;
 
-  void SetupAcceptor();
+  void SetupTcp();
   void SetupAdvertising();
-  void SetupQuerier();
   void OnAdvertisementReceived(const boost::uuids::uuid& uuid,
                                const boost::asio::ip::tcp::endpoint& tcp_ep);
-  void OnQueryBranchSucceeded(const detail::RemoteBranchInfoPtr& info);
+  void OnConnectSucceeded(const detail::RemoteBranchInfoPtr& info);
   int GetNumActiveConnections() const;
 
   static const LoggerPtr logger_;
@@ -59,9 +59,8 @@ class Branch : public api::ExposedObjectT<Branch, api::ObjectType::kBranch> {
 
   detail::AdvSenderPtr adv_sender_;
   detail::AdvReceiverPtr adv_receiver_;
-  detail::InfoQuerierPtr info_querier_;
-
-  boost::asio::ip::tcp::acceptor acceptor_;
+  detail::TcpClientPtr tcp_client_;
+  detail::TcpServerPtr tcp_server_;
 
   BranchesMap branches_;
   mutable std::mutex branches_mutex_;

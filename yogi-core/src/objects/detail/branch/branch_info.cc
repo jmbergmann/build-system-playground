@@ -1,6 +1,8 @@
 #include "branch_info.h"
 #include "../../../utils/system.h"
 
+#include <boost/uuid/uuid_io.hpp>
+
 namespace objects {
 namespace detail {
 

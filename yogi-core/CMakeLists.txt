@@ -22,7 +22,8 @@ add_library (yogi-core-static STATIC
   src/objects/detail/branch/adv_receiver.cc
   src/objects/detail/branch/adv_sender.cc
   src/objects/detail/branch/branch_info.cc
-  src/objects/detail/branch/info_querier.cc
+  src/objects/detail/branch/tcp_client.cc
+  src/objects/detail/branch/tcp_server.cc
   src/objects/detail/log/console_log_sink.cc
   src/objects/detail/log/file_log_sink.cc
   src/objects/detail/log/hook_log_sink.cc
