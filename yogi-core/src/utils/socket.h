@@ -10,10 +10,13 @@
 
 namespace utils {
 
-class TimedTcpSocket : std::enable_shared_from_this<TimedTcpSocket> {
+class TimedTcpSocket : public std::enable_shared_from_this<TimedTcpSocket> {
  public:
-  TimedTcpSocket(objects::ContextPtr context, std::chrono::nanoseconds timeout,
-                 boost::asio::ip::tcp::socket&& socket);
+  TimedTcpSocket(objects::ContextPtr context, std::chrono::nanoseconds timeout);
+
+  boost::asio::ip::tcp::socket& Socket() {
+    return socket_;
+  }
 
   template <typename ConstBufferSequence, typename SendHandler>
   void Send(const ConstBufferSequence& buffers, SendHandler&& handler) {

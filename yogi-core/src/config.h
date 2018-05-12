@@ -26,7 +26,8 @@
 
 #ifndef NDEBUG
 # include <iostream>
-# define YOGI_TRACE std::cerr << __FILE__ << ":" << __LINE__ << std::endl;
+# define YOGI_TRACE std::cerr << __FILE__ << ":" << __LINE__ << ": " \
+                              << __FUNCTION__ << std::endl;
 # define YOGI_ASSERT(x)                                                      \
   {                                                                          \
     if (!(x)) {                                                              \

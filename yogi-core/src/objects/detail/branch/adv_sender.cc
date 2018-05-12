@@ -56,7 +56,7 @@ void AdvSender::SendAdvertisement() {
 
         if (!ec) {
           self->StartTimer();
-        } else if (ec != boost::asio::error::operation_aborted) {
+        } else {
           YOGI_LOG_ERROR(self->logger_,
                          "Sending advertisement failed: " << ec.message());
         }
@@ -73,7 +73,7 @@ void AdvSender::StartTimer() {
 
     if (!ec) {
       self->SendAdvertisement();
-    } else if (ec != boost::asio::error::operation_aborted) {
+    } else {
       YOGI_LOG_ERROR(self->logger_, "Awaiting advertising timer expiry failed: "
                                         << ec.message());
     }

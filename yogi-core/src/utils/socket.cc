@@ -3,10 +3,9 @@
 namespace utils {
 
 TimedTcpSocket::TimedTcpSocket(objects::ContextPtr context,
-                               std::chrono::nanoseconds timeout,
-                               boost::asio::ip::tcp::socket&& socket)
+                               std::chrono::nanoseconds timeout)
     : timeout_(timeout),
-      socket_(std::move(socket)),
+      socket_(context->IoContext()),
       timer_(context->IoContext()),
       timed_out_(false) {}
 

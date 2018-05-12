@@ -40,6 +40,7 @@ Branch::Branch(ContextPtr context, std::string name, std::string description,
 }
 
 void Branch::Start() {
+  tcp_server_->Start();
   adv_sender_->Start();
   adv_receiver_->Start();
 }
@@ -64,8 +65,7 @@ void Branch::SetupTcp() {
 
 void Branch::SetupAdvertising() {
   adv_sender_ = std::make_shared<detail::AdvSender>(
-      context_, info_->adv_ep, info_->adv_interval, info_->uuid,
-      info_->tcp_ep);
+      context_, info_->adv_ep, info_->adv_interval, info_->uuid, info_->tcp_ep);
 
   adv_receiver_ = std::make_shared<detail::AdvReceiver>(
       context_, info_->adv_ep, adv_sender_->GetMessageSize(),
@@ -108,7 +108,7 @@ void Branch::OnAdvertisementReceived(
 void Branch::OnConnectSucceeded(const detail::RemoteBranchInfoPtr& branch) {
   std::lock_guard<std::mutex> lock(branch->mutex);
   branch->last_activity = utils::Timestamp::Now();
-  YOGI_LOG_FATAL(logger_, "Connect succeeded");
+  YOGI_TRACE;
 }
 
 int Branch::GetNumActiveConnections() const {

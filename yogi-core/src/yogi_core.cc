@@ -24,16 +24,8 @@
     CHECK_PARAM(size >= 0);                      \
   }
 
-#define CATCH_AND_RETURN                                               \
-  catch (const api::Error& err) {                                      \
-    return err.error_code();                                           \
-  }                                                                    \
-  catch (const std::bad_alloc&) {                                      \
-    return YOGI_ERR_BAD_ALLOC;                                         \
-  }                                                                    \
-  catch (const std::regex_error&) {                                    \
-    return YOGI_ERR_INVALID_REGEX;                                     \
-  }                                                                    \
+#ifdef NDEBUG
+# define CATCH_AND_RETURN_INTERNAL_ERRORS                              \
   catch (const std::exception& e) {                                    \
     fprintf(stderr, "%s:%i: INTERNAL ERROR: %s\n", __FILE__, __LINE__, \
             e.what());                                                 \
@@ -43,7 +35,22 @@
     fprintf(stderr, "%s:%i: INTERNAL ERROR: %s\n", __FILE__, __LINE__, \
             "Unknown error");                                          \
     return YOGI_ERR_UNKNOWN;                                           \
-  }                                                                    \
+  }
+#else
+# define CATCH_AND_RETURN_INTERNAL_ERRORS
+#endif
+
+#define CATCH_AND_RETURN            \
+  catch (const api::Error& err) {   \
+    return err.error_code();        \
+  }                                 \
+  catch (const std::bad_alloc&) {   \
+    return YOGI_ERR_BAD_ALLOC;      \
+  }                                 \
+  catch (const std::regex_error&) { \
+    return YOGI_ERR_INVALID_REGEX;  \
+  }                                 \
+  CATCH_AND_RETURN_INTERNAL_ERRORS  \
   return YOGI_OK;
 
 namespace {
