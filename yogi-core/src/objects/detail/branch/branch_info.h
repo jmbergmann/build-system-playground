@@ -17,12 +17,11 @@ namespace detail {
 
 class BranchInfo {
  public:
-  BranchInfo(const boost::uuids::uuid& uuid);
   virtual ~BranchInfo() = default;
 
   virtual nlohmann::json ToJson() const;
 
-  const boost::uuids::uuid uuid;
+  boost::uuids::uuid uuid;
   std::mutex mutex;
   std::string name;
   std::string description;
@@ -38,7 +37,7 @@ class BranchInfo {
 
 class LocalBranchInfo : public BranchInfo {
  public:
-  LocalBranchInfo(const boost::uuids::uuid& uuid);
+  LocalBranchInfo();
 
   virtual nlohmann::json ToJson() const override;
 
@@ -50,8 +49,6 @@ typedef std::shared_ptr<LocalBranchInfo> LocalBranchInfoPtr;
 
 class RemoteBranchInfo : public BranchInfo {
  public:
-  using BranchInfo::BranchInfo;
-
   virtual nlohmann::json ToJson() const override;
 
   bool connected = false;

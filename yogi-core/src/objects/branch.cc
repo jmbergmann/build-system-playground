@@ -21,9 +21,9 @@ Branch::Branch(ContextPtr context, std::string name, std::string description,
                std::chrono::nanoseconds timeout,
                std::chrono::nanoseconds retry_time)
     : context_(context),
-      info_(std::make_shared<detail::LocalBranchInfo>(
-          boost::uuids::random_generator()())),
+      info_(std::make_shared<detail::LocalBranchInfo>()),
       password_(password) {
+  info_->uuid = boost::uuids::random_generator()();
   info_->name = name;
   info_->description = description;
   info_->net_name = net_name;
@@ -83,7 +83,8 @@ void Branch::OnAdvertisementReceived(
     std::lock_guard<std::mutex> lock(branches_mutex_);
     auto& branch_ref = branches_[uuid];
     if (!branch_ref) {
-      branch_ref = std::make_shared<detail::RemoteBranchInfo>(uuid);
+      branch_ref = std::make_shared<detail::RemoteBranchInfo>();
+      branch_ref->uuid = uuid;
       branch_ref->tcp_ep = tcp_ep;
       new_branch = true;
     }
@@ -97,15 +98,21 @@ void Branch::OnAdvertisementReceived(
   }
 
   std::lock_guard<std::mutex> lock(branch->mutex);
-  if (new_branch) {
-    tcp_client_->Connect(
-        branch, [this, branch]() { this->OnConnectSucceeded(branch); });
-  }
-
   branch->last_activity = utils::Timestamp::Now();
+
+  if (new_branch) {
+    auto weak_self = MakeWeakPtr();
+    tcp_client_->Connect(branch->tcp_ep, [weak_self, branch](auto& err) {
+      auto self = weak_self.lock();
+      if (!self) return;
+
+      self->OnConnectFinished(err, branch);
+    });
+  }
 }
 
-void Branch::OnConnectSucceeded(const detail::RemoteBranchInfoPtr& branch) {
+void Branch::OnConnectFinished(const api::Error& err,
+                               const detail::RemoteBranchInfoPtr& branch) {
   std::lock_guard<std::mutex> lock(branch->mutex);
   branch->last_activity = utils::Timestamp::Now();
   YOGI_TRACE;

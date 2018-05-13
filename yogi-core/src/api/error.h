@@ -3,6 +3,7 @@
 #include "../config.h"
 
 #include <stdexcept>
+#include <sstream>
 
 namespace api {
 
@@ -27,3 +28,5 @@ const auto kSuccess = Error(YOGI_OK);
 
 }  // anonymous namespace
 }  // namespace api
+
+std::ostream& operator<< (std::ostream& os, const api::Error& err);

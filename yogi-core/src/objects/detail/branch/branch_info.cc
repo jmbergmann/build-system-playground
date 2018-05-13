@@ -6,8 +6,6 @@
 namespace objects {
 namespace detail {
 
-BranchInfo::BranchInfo(const boost::uuids::uuid& uuid_) : uuid(uuid_), pid(0) {}
-
 nlohmann::json BranchInfo::ToJson() const {
   return {
       {"uuid", boost::uuids::to_string(uuid)},
@@ -25,8 +23,7 @@ nlohmann::json BranchInfo::ToJson() const {
   };
 }
 
-LocalBranchInfo::LocalBranchInfo(const boost::uuids::uuid& uuid_)
-    : BranchInfo(uuid_) {
+LocalBranchInfo::LocalBranchInfo() {
   pid = utils::GetProcessId();
   hostname = utils::GetHostname();
   start_time = utils::Timestamp::Now();

@@ -52,7 +52,14 @@
     "unordered_map": "cpp",
     "xfunctional": "cpp",
     "xmemory": "cpp",
-    "regex": "cpp"
+    "regex": "cpp",
+    "ctime": "cpp",
+    "iterator": "cpp",
+    "locale": "cpp",
+    "xlocbuf": "cpp",
+    "xlocmes": "cpp",
+    "xlocmon": "cpp",
+    "xloctime": "cpp"
   },
   "files.exclude": {
     "**/.git": true,

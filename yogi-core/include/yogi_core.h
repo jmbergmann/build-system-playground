@@ -145,6 +145,9 @@
 //! Could not read from or write to socket
 #define YOGI_ERR_RW_SOCKET_FAILED -18
 
+//! Could not connect a socket
+#define YOGI_ERR_CONNECT_SOCKET_FAILED -19
+
 //! @}
 //!
 //! @defgroup VB Log verbosity/severity

@@ -61,9 +61,17 @@ const char* Error::what() const noexcept {
 
     case YOGI_ERR_RW_SOCKET_FAILED:
       return "Could not read from or write to socket";
+
+    case YOGI_ERR_CONNECT_SOCKET_FAILED:
+      return "Could not connect a socket";
   }
 
   return "Invalid error code";
 }
 
 } // namespace api
+
+std::ostream& operator<< (std::ostream& os, const api::Error& err) {
+  os << err.what();
+  return os;
+}

@@ -14,15 +14,34 @@ class TimedTcpSocket : public std::enable_shared_from_this<TimedTcpSocket> {
  public:
   TimedTcpSocket(objects::ContextPtr context, std::chrono::nanoseconds timeout);
 
-  boost::asio::ip::tcp::socket& Socket() {
-    return socket_;
+  boost::asio::ip::tcp::socket& Socket() { return socket_; }
+
+  template <typename ConnectHandler>
+  void Connect(const boost::asio::ip::tcp::endpoint& ep,
+               ConnectHandler&& handler) {
+    auto weak_self = std::weak_ptr<TimedTcpSocket>{shared_from_this()};
+    socket_.async_connect(ep,
+                          [weak_self, handler = std::move(handler)](auto& ec) {
+                            auto self = weak_self.lock();
+                            if (!self) return;
+
+                            if (self->timed_out_) {
+                              handler(api::Error(YOGI_ERR_TIMEOUT));
+                            } else if (!ec) {
+                              handler(api::kSuccess);
+                            } else {
+                              handler(api::Error(YOGI_ERR_CONNECT_SOCKET_FAILED));
+                            }
+                          });
+
+    StartTimeout(weak_self);
   }
 
   template <typename ConstBufferSequence, typename SendHandler>
   void Send(const ConstBufferSequence& buffers, SendHandler&& handler) {
     auto weak_self = std::weak_ptr<TimedTcpSocket>{shared_from_this()};
     boost::asio::async_write(socket_, buffers,
-                             [ weak_self, handler = std::move(handler) ](
+                             [weak_self, handler = std::move(handler)](
                                  auto& ec, auto bytes_written) {
                                auto self = weak_self.lock();
                                if (!self) return;
@@ -30,7 +49,7 @@ class TimedTcpSocket : public std::enable_shared_from_this<TimedTcpSocket> {
                                if (!ec) {
                                  handler(api::kSuccess);
                                } else {
-                                 handler(YOGI_ERR_RW_SOCKET_FAILED);
+                                 handler(api::Error(YOGI_ERR_RW_SOCKET_FAILED));
                                }
                              });
   }
@@ -40,18 +59,18 @@ class TimedTcpSocket : public std::enable_shared_from_this<TimedTcpSocket> {
     auto weak_self = std::weak_ptr<TimedTcpSocket>{shared_from_this()};
     boost::asio::async_read(
         socket_, buffers,
-        [ weak_self, handler = std::move(handler) ](auto& ec, auto bytes_read) {
+        [weak_self, handler = std::move(handler)](auto& ec, auto bytes_read) {
           auto self = weak_self.lock();
           if (!self) return;
 
           self->timer_.cancel();
 
           if (self->timed_out_) {
-            handler(YOGI_ERR_TIMEOUT);
+            handler(api::Error(YOGI_ERR_TIMEOUT));
           } else if (!ec) {
             handler(api::kSuccess);
           } else {
-            handler(YOGI_ERR_RW_SOCKET_FAILED);
+            handler(api::Error(YOGI_ERR_RW_SOCKET_FAILED));
           }
         });
 
