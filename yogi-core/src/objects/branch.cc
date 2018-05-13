@@ -64,12 +64,11 @@ void Branch::SetupTcp() {
 }
 
 void Branch::SetupAdvertising() {
-  adv_sender_ = std::make_shared<detail::AdvSender>(
-      context_, info_->adv_ep, info_->adv_interval, info_->uuid, info_->tcp_ep);
+  adv_sender_ =
+      std::make_shared<detail::AdvSender>(context_, info_);
 
   adv_receiver_ = std::make_shared<detail::AdvReceiver>(
-      context_, info_->adv_ep, adv_sender_->GetMessageSize(),
-      [this](auto& uuid, auto& ep) {
+      context_, info_, [this](auto& uuid, auto& ep) {
         this->OnAdvertisementReceived(uuid, ep);
       });
 }

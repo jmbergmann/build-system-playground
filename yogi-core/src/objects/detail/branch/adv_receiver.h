@@ -3,6 +3,7 @@
 #include "../../../config.h"
 #include "../../context.h"
 #include "../../logger.h"
+#include "branch_info.h"
 
 #include <boost/uuid/uuid.hpp>
 #include <boost/asio.hpp>
@@ -18,8 +19,8 @@ class AdvReceiver : public std::enable_shared_from_this<AdvReceiver> {
                              const boost::asio::ip::tcp::endpoint& ep)>
       ObserverFn;
 
-  AdvReceiver(ContextPtr context, const boost::asio::ip::udp::endpoint& adv_ep,
-              std::size_t adv_msg_size, ObserverFn&& observer_fn);
+  AdvReceiver(ContextPtr context, LocalBranchInfoPtr info,
+              ObserverFn&& observer_fn);
   void Start();
 
  private:
@@ -30,7 +31,7 @@ class AdvReceiver : public std::enable_shared_from_this<AdvReceiver> {
   static const LoggerPtr logger_;
 
   const ContextPtr context_;
-  const boost::asio::ip::udp::endpoint adv_ep_;
+  const LocalBranchInfoPtr info_;
   const std::size_t adv_msg_size_;
   const ObserverFn observer_fn_;
   boost::asio::ip::udp::socket socket_;

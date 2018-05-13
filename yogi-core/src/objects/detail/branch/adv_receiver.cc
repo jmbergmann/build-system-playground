@@ -11,15 +11,14 @@ namespace detail {
 const LoggerPtr AdvReceiver::logger_ =
     Logger::CreateStaticInternalLogger("Branch");
 
-AdvReceiver::AdvReceiver(ContextPtr context,
-                         const boost::asio::ip::udp::endpoint& adv_ep,
-                         std::size_t adv_msg_size, ObserverFn&& observer_fn)
+AdvReceiver::AdvReceiver(ContextPtr context, LocalBranchInfoPtr info,
+                         ObserverFn&& observer_fn)
     : context_(context),
-      adv_ep_(adv_ep),
-      adv_msg_size_(adv_msg_size),
-      observer_fn_(std::move(observer_fn)),
+      info_(info),
+      adv_msg_size_(info->MakeAdvertisingMessage().size()),
+      observer_fn_(observer_fn),
       socket_(context->IoContext()),
-      buffer_(adv_msg_size + 1) {
+      buffer_(adv_msg_size_ + 1) {
   SetupSocket();
 }
 
@@ -27,18 +26,19 @@ void AdvReceiver::Start() { ReceiveAdvertisement(); }
 
 void AdvReceiver::SetupSocket() {
   boost::system::error_code ec;
-  socket_.open(adv_ep_.protocol(), ec);
+  socket_.open(info_->adv_ep.protocol(), ec);
   if (ec) throw api::Error(YOGI_ERR_OPEN_SOCKET_FAILED);
 
   socket_.set_option(boost::asio::ip::udp::socket::reuse_address(true), ec);
   if (ec) throw api::Error(YOGI_ERR_SET_SOCKET_OPTION_FAILED);
 
-  socket_.bind(
-      boost::asio::ip::udp::endpoint(adv_ep_.protocol(), adv_ep_.port()), ec);
+  socket_.bind(boost::asio::ip::udp::endpoint(info_->adv_ep.protocol(),
+                                              info_->adv_ep.port()),
+               ec);
   if (ec) throw api::Error(YOGI_ERR_BIND_SOCKET_FAILED);
 
-  socket_.set_option(boost::asio::ip::multicast::join_group(adv_ep_.address()),
-                     ec);
+  socket_.set_option(
+      boost::asio::ip::multicast::join_group(info_->adv_ep.address()), ec);
   if (ec) throw api::Error(YOGI_ERR_SET_SOCKET_OPTION_FAILED);
 }
 
@@ -90,7 +90,8 @@ void AdvReceiver::HandleReceivedAdvertisement() {
   YOGI_LOG_TRACE(logger_, "Received advertising message for "
                               << uuid << " from " << sender_ep_.address());
 
-  observer_fn_(uuid, boost::asio::ip::tcp::endpoint(sender_ep_.address(), tcp_port));
+  observer_fn_(uuid,
+               boost::asio::ip::tcp::endpoint(sender_ep_.address(), tcp_port));
 }
 
 }  // namespace detail

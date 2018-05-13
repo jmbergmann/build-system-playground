@@ -11,6 +11,7 @@
 #include <string>
 #include <chrono>
 #include <memory>
+#include <vector>
 
 namespace objects {
 namespace detail {
@@ -40,6 +41,8 @@ class LocalBranchInfo : public BranchInfo {
   LocalBranchInfo();
 
   virtual nlohmann::json ToJson() const override;
+  std::vector<char> MakeAdvertisingMessage() const;
+  std::vector<char> MakeInfoMessage() const;
 
   boost::asio::ip::udp::endpoint adv_ep;
   std::chrono::nanoseconds adv_interval;
