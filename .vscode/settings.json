@@ -59,7 +59,8 @@
     "xlocbuf": "cpp",
     "xlocmes": "cpp",
     "xlocmon": "cpp",
-    "xloctime": "cpp"
+    "xloctime": "cpp",
+    "iomanip": "cpp"
   },
   "files.exclude": {
     "**/.git": true,

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../../../config.h"
+#include "../../logger.h"
 #include "../../../utils/socket.h"
 #include "../../../utils/timestamp.h"
 #include "../../../../../3rd_party/json/json.hpp"
@@ -18,6 +19,11 @@ namespace detail {
 
 class BranchInfo {
  public:
+  static constexpr std::size_t GetAdvertisingMessageHeaderSize() { return 7; }
+  static std::size_t GetAdvertisingMessageSize();
+  static std::size_t GetInfoMessageHeaderSize();
+  static bool CheckAdvertisingMessageValidity(const std::vector<char>& msg);
+
   virtual ~BranchInfo() = default;
 
   virtual nlohmann::json ToJson() const;
@@ -34,6 +40,10 @@ class BranchInfo {
   utils::Timestamp start_time;
   std::chrono::nanoseconds timeout;
   std::chrono::nanoseconds retry_time;
+  std::chrono::nanoseconds adv_interval;
+
+ protected:
+  static const LoggerPtr logger_;
 };
 
 class LocalBranchInfo : public BranchInfo {
@@ -45,13 +55,19 @@ class LocalBranchInfo : public BranchInfo {
   std::vector<char> MakeInfoMessage() const;
 
   boost::asio::ip::udp::endpoint adv_ep;
-  std::chrono::nanoseconds adv_interval;
 };
 
 typedef std::shared_ptr<LocalBranchInfo> LocalBranchInfoPtr;
 
 class RemoteBranchInfo : public BranchInfo {
  public:
+  static std::shared_ptr<RemoteBranchInfo> CreateFromAdvertisingMessage(
+      const std::vector<char>& msg,
+      const boost::asio::ip::address& remote_addr);
+
+  bool DeserializeInfoMessageBody(const std::vector<char>& msg,
+                                  const boost::asio::ip::address& remote_addr);
+
   virtual nlohmann::json ToJson() const override;
 
   bool connected = false;
@@ -60,6 +76,19 @@ class RemoteBranchInfo : public BranchInfo {
   utils::Timestamp last_activity;
   std::string last_error;
   utils::TimedTcpSocketPtr socket;
+
+ private:
+  template <typename Field>
+  static inline bool DeserializeField(Field* field,
+                                      const std::vector<char>& msg,
+                                      std::vector<char>::const_iterator* it) {
+    if (!utils::Deserialize<Field>(field, msg, it)) {
+      YOGI_LOG_ERROR(logger_, "Invalid advertising or branch info message");
+      return false;
+    }
+
+    return true;
+  }
 };
 
 typedef std::shared_ptr<RemoteBranchInfo> RemoteBranchInfoPtr;

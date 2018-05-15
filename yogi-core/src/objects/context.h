@@ -2,6 +2,7 @@
 
 #include "../config.h"
 #include "../api/object.h"
+#include "logger.h"
 
 #include <boost/asio/io_context.hpp>
 #include <chrono>
@@ -35,6 +36,8 @@ class Context : public api::ExposedObjectT<Context, api::ObjectType::kContext> {
 
   template <typename Fn>
   int RunImpl(Fn fn);
+
+  static const LoggerPtr logger_;
 
   boost::asio::io_context ioc_;
   boost::asio::io_context::work work_;

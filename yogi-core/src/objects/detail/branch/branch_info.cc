@@ -1,12 +1,39 @@
 #include "branch_info.h"
 #include "../../../api/constants.h"
+#include "../../../utils/serialize.h"
 #include "../../../utils/system.h"
 
 #include <boost/uuid/uuid_io.hpp>
-#include <boost/endian/arithmetic.hpp>
 
 namespace objects {
 namespace detail {
+
+std::size_t BranchInfo::GetAdvertisingMessageSize() {
+  static auto size = LocalBranchInfo().MakeAdvertisingMessage().size();
+  return size;
+}
+
+std::size_t BranchInfo::GetInfoMessageHeaderSize() {
+  return GetAdvertisingMessageSize() + 4;
+}
+
+bool BranchInfo::CheckAdvertisingMessageValidity(const std::vector<char>& msg) {
+  if (std::memcmp(msg.data(), "YOGI", 5) != 0) {
+    YOGI_LOG_ERROR(
+        logger_, "Invalid magic prefix in advertising or branch info message");
+    return false;
+  }
+
+  if (msg[5] != api::kVersionMajor || msg[6] != api::kVersionMinor) {
+    YOGI_LOG_WARNING(logger_, "Incompatible Yogi version ("
+                                  << static_cast<int>(msg[5]) << "."
+                                  << static_cast<int>(msg[6])
+                                  << ") in advertising or branch info message");
+    return false;
+  }
+
+  return true;
+}
 
 nlohmann::json BranchInfo::ToJson() const {
   return {
@@ -25,6 +52,9 @@ nlohmann::json BranchInfo::ToJson() const {
   };
 }
 
+const LoggerPtr RemoteBranchInfo::logger_ =
+    Logger::CreateStaticInternalLogger("Branch");
+
 LocalBranchInfo::LocalBranchInfo() {
   pid = utils::GetProcessId();
   hostname = utils::GetHostname();
@@ -35,7 +65,8 @@ nlohmann::json LocalBranchInfo::ToJson() const {
   auto json = BranchInfo::ToJson();
   json["advertising_address"] = adv_ep.address().to_string();
   json["advertising_port"] = adv_ep.port();
-  json["advertising_interval"] = static_cast<float>(adv_interval.count()) / 1000'000'000.0f;
+  json["advertising_interval"] =
+      static_cast<float>(adv_interval.count()) / 1000'000'000.0f;
   return json;
 }
 
@@ -43,15 +74,64 @@ std::vector<char> LocalBranchInfo::MakeAdvertisingMessage() const {
   std::vector<char> msg = {'Y', 'O', 'G', 'I', 0};
   msg.push_back(api::kVersionMajor);
   msg.push_back(api::kVersionMinor);
-  msg.insert(msg.end(), uuid.begin(), uuid.end());
-  boost::endian::big_uint16_t port = tcp_ep.port();
-  msg.resize(msg.size() + 2);
-  std::memcpy(msg.data() + msg.size() - 2, &port, 2);
+  utils::Serialize(&msg, uuid);
+  utils::Serialize(&msg, tcp_ep.port());
   return msg;
 }
 
 std::vector<char> LocalBranchInfo::MakeInfoMessage() const {
-  return {}; // TODO
+  std::vector<char> buffer;
+  utils::Serialize(&buffer, name);
+  utils::Serialize(&buffer, description);
+  utils::Serialize(&buffer, net_name);
+  utils::Serialize(&buffer, path);
+  utils::Serialize(&buffer, hostname);
+  utils::Serialize(&buffer, pid);
+  utils::Serialize(&buffer, start_time);
+  utils::Serialize(&buffer, timeout);
+  utils::Serialize(&buffer, retry_time);
+  utils::Serialize(&buffer, adv_interval);
+
+  auto msg = MakeAdvertisingMessage();
+  utils::Serialize(&msg, buffer.size());
+  msg.insert(msg.end(), buffer.begin(), buffer.end());
+
+  return msg;
+}
+
+std::shared_ptr<RemoteBranchInfo>
+RemoteBranchInfo::CreateFromAdvertisingMessage(
+    const std::vector<char>& msg, const boost::asio::ip::address& remote_addr) {
+  if (!CheckAdvertisingMessageValidity(msg)) {
+    return {};
+  }
+
+  auto it = msg.cbegin() + GetAdvertisingMessageHeaderSize();
+
+  auto info = std::make_shared<RemoteBranchInfo>();
+  if (!DeserializeField(&info->uuid, msg, &it)) return {};
+  unsigned short port;
+  if (!DeserializeField(&port, msg, &it)) return {};
+  info->tcp_ep = boost::asio::ip::tcp::endpoint(remote_addr, port);
+
+  return info;
+}
+
+bool RemoteBranchInfo::DeserializeInfoMessageBody(
+    const std::vector<char>& msg, const boost::asio::ip::address& remote_addr) {
+  auto it = msg.begin() + GetInfoMessageHeaderSize();
+  if (!DeserializeField(&name, msg, &it)) return false;
+  if (!DeserializeField(&description, msg, &it)) return false;
+  if (!DeserializeField(&net_name, msg, &it)) return false;
+  if (!DeserializeField(&path, msg, &it)) return false;
+  if (!DeserializeField(&hostname, msg, &it)) return false;
+  if (!DeserializeField(&pid, msg, &it)) return false;
+  if (!DeserializeField(&start_time, msg, &it)) return false;
+  if (!DeserializeField(&timeout, msg, &it)) return false;
+  if (!DeserializeField(&retry_time, msg, &it)) return false;
+  if (!DeserializeField(&this->adv_interval, msg, &it)) return false;
+
+  return true;
 }
 
 nlohmann::json RemoteBranchInfo::ToJson() const {

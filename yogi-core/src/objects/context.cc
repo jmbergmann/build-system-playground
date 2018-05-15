@@ -5,6 +5,9 @@
 
 namespace objects {
 
+const LoggerPtr Context::logger_ =
+    Logger::CreateStaticInternalLogger("Context");
+
 Context::Context() : work_(ioc_), running_(false) {
 }
 
@@ -44,7 +47,16 @@ int Context::RunOne(std::chrono::nanoseconds dur) {
 void Context::RunInBackground() {
   SetRunningFlagAndReset();
   thread_ = std::thread([&] {
-    ioc_.run();
+    try {
+      ioc_.run();
+    }
+    catch (const std::exception& e) {
+      YOGI_LOG_FATAL(logger_, "Exception caught in context background thread: " << e.what());
+    }
+    catch (...) {
+      YOGI_LOG_FATAL(logger_, "Unknown Exception caught in context background thread");
+    }
+
     ClearRunningFlag();
   });
 }

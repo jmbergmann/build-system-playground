@@ -32,7 +32,6 @@ class AdvReceiver : public std::enable_shared_from_this<AdvReceiver> {
 
   const ContextPtr context_;
   const LocalBranchInfoPtr info_;
-  const std::size_t adv_msg_size_;
   const ObserverFn observer_fn_;
   boost::asio::ip::udp::socket socket_;
   boost::asio::ip::udp::endpoint sender_ep_;

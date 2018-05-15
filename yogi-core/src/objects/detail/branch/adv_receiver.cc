@@ -1,6 +1,7 @@
 #include "adv_receiver.h"
 #include "../../../api/constants.h"
 #include "../../../api/error.h"
+#include "../../../utils/serialize.h"
 
 #include <boost/endian/arithmetic.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -15,10 +16,9 @@ AdvReceiver::AdvReceiver(ContextPtr context, LocalBranchInfoPtr info,
                          ObserverFn&& observer_fn)
     : context_(context),
       info_(info),
-      adv_msg_size_(info->MakeAdvertisingMessage().size()),
       observer_fn_(observer_fn),
       socket_(context->IoContext()),
-      buffer_(adv_msg_size_ + 1) {
+      buffer_(BranchInfo::GetAdvertisingMessageSize() + 1) {
   SetupSocket();
 }
 
@@ -51,7 +51,7 @@ void AdvReceiver::ReceiveAdvertisement() {
         if (!self) return;
 
         if (!ec) {
-          if (size == self->adv_msg_size_) {
+          if (size == BranchInfo::GetAdvertisingMessageSize()) {
             self->HandleReceivedAdvertisement();
             self->ReceiveAdvertisement();
           } else {
@@ -68,24 +68,17 @@ void AdvReceiver::ReceiveAdvertisement() {
 }
 
 void AdvReceiver::HandleReceivedAdvertisement() {
-  if (std::memcmp(buffer_.data(), "YOGI", 5) != 0) {
-    YOGI_LOG_WARNING(logger_,
-                     "Received advertising message with invalid magic prefix");
+  if (!RemoteBranchInfo::CheckAdvertisingMessageValidity(buffer_)) {
+    return;
   }
 
-  if (buffer_[5] != api::kVersionMajor || buffer_[6] != api::kVersionMinor) {
-    YOGI_LOG_WARNING(logger_,
-                     "Received advertising message with incompatible Yogi "
-                     "version (version "
-                         << static_cast<int>(buffer_[5]) << "."
-                         << static_cast<int>(buffer_[6]) << ")");
-  }
+  auto it =
+      buffer_.cbegin() + BranchInfo::GetAdvertisingMessageHeaderSize();
 
   boost::uuids::uuid uuid;
-  std::copy_n(buffer_.begin() + 7, 16, uuid.begin());
-
-  boost::endian::big_uint16_t tcp_port;
-  std::memcpy(&tcp_port, buffer_.data() + 23, 2);
+  utils::Deserialize(&uuid, buffer_, &it);
+  unsigned short tcp_port;
+  utils::Deserialize(&tcp_port, buffer_, &it);
 
   YOGI_LOG_TRACE(logger_, "Received advertising message for "
                               << uuid << " from " << sender_ep_.address());

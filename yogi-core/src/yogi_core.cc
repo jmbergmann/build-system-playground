@@ -146,7 +146,7 @@ YOGI_API int YOGI_LogToHook(int verbosity,
       auto hook_fn = [fn, userarg](auto severity, auto& time, int tid,
                                    auto file, int line, auto& component,
                                    auto msg) {
-        fn(severity, time.NanosecondsSinceEpoch(), tid, file, line,
+        fn(severity, time.NanosecondsSinceEpoch().count(), tid, file, line,
            component.c_str(), msg, userarg);
       };
       objects::Logger::SetSink(std::make_unique<objects::detail::HookLogSink>(
