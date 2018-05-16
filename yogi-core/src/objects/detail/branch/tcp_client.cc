@@ -3,37 +3,32 @@
 namespace objects {
 namespace detail {
 
-const LoggerPtr TcpClient::logger_ =
-    Logger::CreateStaticInternalLogger("Branch");
-
-TcpClient::TcpClient(ContextPtr context, LocalBranchInfoPtr info,
-                     ObserverFn&& observer_fn)
-    : context_(context), info_(info), observer_fn_(observer_fn) {}
-
 void TcpClient::Connect(const boost::asio::ip::tcp::endpoint& ep,
                         std::function<void(const api::Error&)>&& handler) {
-  auto peer = std::make_shared<RemoteBranchInfo>();
-  peer->tcp_ep = ep;
-  peer->socket =
-      std::make_shared<utils::TimedTcpSocket>(context_, info_->timeout);
+  auto branch = std::make_shared<RemoteBranchInfo>();
+  branch->tcp_ep = ep;
+  branch->socket =
+      std::make_shared<utils::TimedTcpSocket>(GetContext(), GetInfo()->timeout);
 
-  auto weak_self = std::weak_ptr<TcpClient>{shared_from_this()};
-  peer->socket->Connect(ep, [weak_self, peer](const auto& err) {
+  auto weak_self = MakeWeakPtr<TcpClient>();
+  branch->socket->Connect(ep, [weak_self, branch](const auto& err) {
     auto self = weak_self.lock();
     if (!self) return;
 
     if (!err) {
-      self->OnConnected(peer);
+      self->OnConnected(branch);
     } else {
-      YOGI_LOG_ERROR(self->logger_, "Connecting to "
-                                        << peer->tcp_ep.address().to_string()
-                                        << ':' << peer->tcp_ep.port()
-                                        << " failed: " << err);
+      YOGI_LOG_ERROR(self->GetLogger(),
+                     "Connecting to " << branch->tcp_ep.address().to_string()
+                                      << ':' << branch->tcp_ep.port()
+                                      << " failed: " << err);
     }
   });
 }
 
-void TcpClient::OnConnected(RemoteBranchInfoPtr peer) { YOGI_TRACE; }
+void TcpClient::OnConnected(RemoteBranchInfoPtr branch) {
+  StartInfoExchange(branch);
+}
 
 }  // namespace detail
 }  // namespace objects
