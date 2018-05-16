@@ -6,8 +6,9 @@ namespace detail {
 const LoggerPtr TcpClient::logger_ =
     Logger::CreateStaticInternalLogger("Branch");
 
-TcpClient::TcpClient(ContextPtr context, LocalBranchInfoPtr info)
-    : context_(context), info_(info) {}
+TcpClient::TcpClient(ContextPtr context, LocalBranchInfoPtr info,
+                     ObserverFn&& observer_fn)
+    : context_(context), info_(info), observer_fn_(observer_fn) {}
 
 void TcpClient::Connect(const boost::asio::ip::tcp::endpoint& ep,
                         std::function<void(const api::Error&)>&& handler) {
@@ -25,8 +26,8 @@ void TcpClient::Connect(const boost::asio::ip::tcp::endpoint& ep,
       self->OnConnected(peer);
     } else {
       YOGI_LOG_ERROR(self->logger_, "Connecting to "
-                                        << peer->tcp_ep.address().to_string() << ':'
-                                        << peer->tcp_ep.port()
+                                        << peer->tcp_ep.address().to_string()
+                                        << ':' << peer->tcp_ep.port()
                                         << " failed: " << err);
     }
   });

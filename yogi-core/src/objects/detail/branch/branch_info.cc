@@ -101,7 +101,7 @@ std::vector<char> LocalBranchInfo::MakeInfoMessage() const {
 
 std::shared_ptr<RemoteBranchInfo>
 RemoteBranchInfo::CreateFromAdvertisingMessage(
-    const std::vector<char>& msg, const boost::asio::ip::address& remote_addr) {
+    const std::vector<char>& msg, utils::TimedTcpSocketPtr socket) {
   if (!CheckAdvertisingMessageValidity(msg)) {
     return {};
   }
@@ -112,14 +112,15 @@ RemoteBranchInfo::CreateFromAdvertisingMessage(
   if (!DeserializeField(&info->uuid, msg, &it)) return {};
   unsigned short port;
   if (!DeserializeField(&port, msg, &it)) return {};
-  info->tcp_ep = boost::asio::ip::tcp::endpoint(remote_addr, port);
+  info->tcp_ep = socket->GetRemoteEndpoint();
+  info->socket = socket;
 
   return info;
 }
 
 bool RemoteBranchInfo::DeserializeInfoMessageBody(
-    const std::vector<char>& msg, const boost::asio::ip::address& remote_addr) {
-  auto it = msg.begin() + GetInfoMessageHeaderSize();
+    const std::vector<char>& msg) {
+  auto it = msg.begin();
   if (!DeserializeField(&name, msg, &it)) return false;
   if (!DeserializeField(&description, msg, &it)) return false;
   if (!DeserializeField(&net_name, msg, &it)) return false;

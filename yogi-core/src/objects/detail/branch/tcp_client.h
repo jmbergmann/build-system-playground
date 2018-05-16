@@ -16,7 +16,9 @@ namespace detail {
 
 class TcpClient : public std::enable_shared_from_this<TcpClient> {
  public:
-  TcpClient(ContextPtr context, LocalBranchInfoPtr info);
+  typedef std::function<void(RemoteBranchInfoPtr&&)> ObserverFn;
+
+  TcpClient(ContextPtr context, LocalBranchInfoPtr info, ObserverFn&& observer_fn);
 
   void Connect(const boost::asio::ip::tcp::endpoint& ep,
                std::function<void(const api::Error&)>&& handler);
@@ -28,6 +30,7 @@ class TcpClient : public std::enable_shared_from_this<TcpClient> {
 
   const ContextPtr context_;
   const LocalBranchInfoPtr info_;
+  const ObserverFn observer_fn_;
 };
 
 typedef std::shared_ptr<TcpClient> TcpClientPtr;

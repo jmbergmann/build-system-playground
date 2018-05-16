@@ -50,6 +50,7 @@ class Branch : public api::ExposedObjectT<Branch, api::ObjectType::kBranch> {
                                const boost::asio::ip::tcp::endpoint& tcp_ep);
   void OnConnectFinished(const api::Error& err,
                          const detail::RemoteBranchInfoPtr& info);
+  void OnNewTcpConnection(const detail::RemoteBranchInfoPtr& branch);
   int GetNumActiveConnections() const;
 
   static const LoggerPtr logger_;

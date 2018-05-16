@@ -59,8 +59,13 @@ void Branch::ForeachDiscoveredBranch(
     const {}
 
 void Branch::SetupTcp() {
-  tcp_client_ = std::make_shared<detail::TcpClient>(context_, info_);
-  tcp_server_ = std::make_shared<detail::TcpServer>(context_, info_);
+  tcp_client_ = std::make_shared<detail::TcpClient>(context_, info_, [&](auto&& branch) {
+    OnNewTcpConnection(std::move(branch));
+  });
+
+  tcp_server_ = std::make_shared<detail::TcpServer>(context_, info_, [&](auto&& branch) {
+    OnNewTcpConnection(std::move(branch));
+  });
 }
 
 void Branch::SetupAdvertising() {
@@ -114,6 +119,10 @@ void Branch::OnConnectFinished(const api::Error& err,
                                const detail::RemoteBranchInfoPtr& branch) {
   std::lock_guard<std::mutex> lock(branch->mutex);
   branch->last_activity = utils::Timestamp::Now();
+  YOGI_TRACE;
+}
+
+void Branch::OnNewTcpConnection(const detail::RemoteBranchInfoPtr& branch) {
   YOGI_TRACE;
 }
 

@@ -62,11 +62,9 @@ typedef std::shared_ptr<LocalBranchInfo> LocalBranchInfoPtr;
 class RemoteBranchInfo : public BranchInfo {
  public:
   static std::shared_ptr<RemoteBranchInfo> CreateFromAdvertisingMessage(
-      const std::vector<char>& msg,
-      const boost::asio::ip::address& remote_addr);
+      const std::vector<char>& msg, utils::TimedTcpSocketPtr socket);
 
-  bool DeserializeInfoMessageBody(const std::vector<char>& msg,
-                                  const boost::asio::ip::address& remote_addr);
+  bool DeserializeInfoMessageBody(const std::vector<char>& msg);
 
   virtual nlohmann::json ToJson() const override;
 
