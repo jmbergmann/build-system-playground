@@ -15,7 +15,6 @@ using namespace std::chrono_literals;
 
 const std::chrono::nanoseconds kAdvInterval = 1ms;
 const std::chrono::nanoseconds kConnTimeout = 5ms;
-const std::chrono::nanoseconds kRetryTime = 1ms;
 
 class BranchTest : public ::testing::Test {
  protected:
@@ -32,7 +31,7 @@ class BranchTest : public ::testing::Test {
     branch_ = nullptr;
     res = YOGI_BranchCreate(&branch_, context_, nullptr, nullptr, nullptr,
                             nullptr, nullptr, nullptr, 0, kAdvInterval.count(),
-                            kConnTimeout.count(), kRetryTime.count());
+                            kConnTimeout.count());
     ASSERT_EQ(res, YOGI_OK);
     ASSERT_NE(branch_, nullptr);
   }
@@ -91,7 +90,6 @@ TEST_F(BranchTest, GetInfoJson) {
   EXPECT_TRUE(
       std::regex_match(json.value("start_time", "NOT FOUND"), time_regex));
   EXPECT_EQ(json.value("timeout", -1.0f), static_cast<float>(kConnTimeout.count()) / 1e9f);
-  EXPECT_EQ(json.value("retry_time", -1.0f), static_cast<float>(kRetryTime.count()) / 1e9f);
   EXPECT_GT(json.value("active_connections", -1), -1);
   EXPECT_EQ(json.value("advertising_address", "NOT FOUND"),
             api::kDefaultAdvAddress);

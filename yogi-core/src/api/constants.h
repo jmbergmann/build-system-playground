@@ -13,7 +13,6 @@ SCC char*     kDefaultAdvAddress        = "ff31::8000:2439";
 SCC int       kDefaultAdvPort           = 13531;
 SCC long long kDefaultAdvInterval       = 1'000'000'000;
 SCC long long kDefaultConnectionTimeout = 3'000'000'000;
-SCC long long kDefaultRetryTime         = 1'000'000'000;
 SCC int       kDefaultLoggerVerbosity   = YOGI_VB_INFO;
 SCC char*     kDefaultLogTimeFormat     = "%F %T.%3";
 SCC char*     kDefaultLogFormat         = "$t [T$T] $<$s $c: $m$>";

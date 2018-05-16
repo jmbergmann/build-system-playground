@@ -25,7 +25,7 @@ class Branch : public api::ExposedObjectT<Branch, api::ObjectType::kBranch> {
          std::string net_name, std::string password, std::string path,
          std::string adv_address, int adv_port,
          std::chrono::nanoseconds adv_interval,
-         std::chrono::nanoseconds timeout, std::chrono::nanoseconds retry_time);
+         std::chrono::nanoseconds timeout);
 
   void Start();
 

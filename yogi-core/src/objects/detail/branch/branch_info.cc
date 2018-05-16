@@ -48,7 +48,6 @@ nlohmann::json BranchInfo::ToJson() const {
       {"tcp_server_port", tcp_ep.port()},
       {"start_time", start_time.ToJavaScriptString()},
       {"timeout", static_cast<float>(timeout.count()) / 1000'000'000.0f},
-      {"retry_time", static_cast<float>(retry_time.count()) / 1000'000'000.0f},
   };
 }
 
@@ -89,7 +88,6 @@ std::vector<char> LocalBranchInfo::MakeInfoMessage() const {
   utils::Serialize(&buffer, pid);
   utils::Serialize(&buffer, start_time);
   utils::Serialize(&buffer, timeout);
-  utils::Serialize(&buffer, retry_time);
   utils::Serialize(&buffer, adv_interval);
 
   auto msg = MakeAdvertisingMessage();
@@ -129,7 +127,6 @@ bool RemoteBranchInfo::DeserializeInfoMessageBody(
   if (!DeserializeField(&pid, msg, &it)) return false;
   if (!DeserializeField(&start_time, msg, &it)) return false;
   if (!DeserializeField(&timeout, msg, &it)) return false;
-  if (!DeserializeField(&retry_time, msg, &it)) return false;
   if (!DeserializeField(&this->adv_interval, msg, &it)) return false;
 
   return true;

@@ -18,8 +18,7 @@ Branch::Branch(ContextPtr context, std::string name, std::string description,
                std::string net_name, std::string password, std::string path,
                std::string adv_address, int adv_port,
                std::chrono::nanoseconds adv_interval,
-               std::chrono::nanoseconds timeout,
-               std::chrono::nanoseconds retry_time)
+               std::chrono::nanoseconds timeout)
     : context_(context),
       info_(std::make_shared<detail::LocalBranchInfo>()),
       password_(password) {
@@ -29,7 +28,6 @@ Branch::Branch(ContextPtr context, std::string name, std::string description,
   info_->net_name = net_name;
   info_->path = path;
   info_->timeout = timeout;
-  info_->retry_time = retry_time;
   info_->adv_ep = boost::asio::ip::udp::endpoint(
       boost::asio::ip::address::from_string(adv_address),
       static_cast<unsigned short>(adv_port));

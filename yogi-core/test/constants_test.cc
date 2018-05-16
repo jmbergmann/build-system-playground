@@ -41,7 +41,6 @@ TEST(ConstantsTest, GetEachConstant) {
   check(YOGI_CONST_DEFAULT_ADV_PORT,           kDefaultAdvPort);
   check(YOGI_CONST_DEFAULT_ADV_INTERVAL,       kDefaultAdvInterval);
   check(YOGI_CONST_DEFAULT_CONNECTION_TIMEOUT, kDefaultConnectionTimeout);
-  check(YOGI_CONST_DEFAULT_RETRY_TIME,         kDefaultRetryTime);
   check(YOGI_CONST_DEFAULT_LOGGER_VERBOSITY,   kDefaultLoggerVerbosity);
   check(YOGI_CONST_DEFAULT_LOG_TIME_FORMAT,    kDefaultLogTimeFormat);
   check(YOGI_CONST_DEFAULT_LOG_FORMAT,         kDefaultLogFormat);

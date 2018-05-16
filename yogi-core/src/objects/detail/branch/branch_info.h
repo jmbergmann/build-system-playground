@@ -39,7 +39,6 @@ class BranchInfo {
   boost::asio::ip::tcp::endpoint tcp_ep;
   utils::Timestamp start_time;
   std::chrono::nanoseconds timeout;
-  std::chrono::nanoseconds retry_time;
   std::chrono::nanoseconds adv_interval;
 
  protected:

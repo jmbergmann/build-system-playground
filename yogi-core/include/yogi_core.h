@@ -67,17 +67,14 @@
 //! Default connection timeout in nanoseconds (long long)
 #define YOGI_CONST_DEFAULT_CONNECTION_TIMEOUT 8
 
-//! Default retry time in nanoseconds (long long)
-#define YOGI_CONST_DEFAULT_RETRY_TIME 9
-
 //! Default logging verbosity (int)
-#define YOGI_CONST_DEFAULT_LOGGER_VERBOSITY 10
+#define YOGI_CONST_DEFAULT_LOGGER_VERBOSITY 9
 
 //! Default textual format for timestamps in log entries (const char*)
-#define YOGI_CONST_DEFAULT_LOG_TIME_FORMAT 11
+#define YOGI_CONST_DEFAULT_LOG_TIME_FORMAT 10
 
 //! Default textual format for log entries (const char*)
-#define YOGI_CONST_DEFAULT_LOG_FORMAT 12
+#define YOGI_CONST_DEFAULT_LOG_FORMAT 11
 
 //! @}
 //!
@@ -824,9 +821,6 @@ YOGI_API int YOGI_TimerCancel(void* timer);
  * \param[in]  timeout     Maximum time of inactivity before a remote branch is
  *                         considered to be dead (set to 0 for default; set to
  *                         -1 for infinity; must be at least 1 millisecond)
- * \param[in]  retrytime   Amount of time to wait after a connection failure
- *                         before trying to connect again (set to 0 for default;
- *                         must be at least 1 millisecond)
  *
  * \returns [=0] #YOGI_OK if successful
  * \returns [<0] An error code in case of a failure (see \ref EC)
@@ -835,8 +829,7 @@ YOGI_API int YOGI_BranchCreate(void** branch, void* context, const char* name,
                                const char* description, const char* netname,
                                const char* password, const char* path,
                                const char* advaddr, int advport,
-                               long long advint, long long timeout,
-                               long long retrytime);
+                               long long advint, long long timeout);
 
 /***************************************************************************//**
  * Retrieves information about a local branch.
