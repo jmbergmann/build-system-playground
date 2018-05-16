@@ -14,7 +14,7 @@ class TcpClient : public TcpBase {
                std::function<void(const api::Error&)>&& handler);
 
  private:
-  void OnConnected(RemoteBranchInfoPtr peer);
+  void OnConnected(utils::TimedTcpSocketPtr socket);
 };
 
 typedef std::shared_ptr<TcpClient> TcpClientPtr;
