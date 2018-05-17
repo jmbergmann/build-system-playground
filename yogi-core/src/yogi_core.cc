@@ -468,7 +468,8 @@ YOGI_API int YOGI_BranchCreate(void** branch, void* context, const char* name,
                                const char* description, const char* netname,
                                const char* password, const char* path,
                                const char* advaddr, int advport,
-                               long long advint, long long timeout) {
+                               long long advint, long long timeout,
+                               long long brcleanint) {
   CHECK_PARAM(branch != nullptr);
   CHECK_PARAM(context != nullptr);
   CHECK_PARAM(name == nullptr || *name != '\0');
@@ -479,6 +480,7 @@ YOGI_API int YOGI_BranchCreate(void** branch, void* context, const char* name,
   CHECK_PARAM(advport >= 0);
   CHECK_PARAM(advint == -1 || advint == 0 || advint >= 1000000);
   CHECK_PARAM(timeout == -1 || timeout == 0 || timeout >= 1000000);
+  CHECK_PARAM(brcleanint == -1 || brcleanint >= 0);
 
   try {
     auto ctx = api::ObjectRegister::Get<objects::Context>(context);
@@ -496,7 +498,9 @@ YOGI_API int YOGI_BranchCreate(void** branch, void* context, const char* name,
         advint ? ConvertDuration(advint)
                : std::chrono::nanoseconds(api::kDefaultAdvInterval),
         timeout ? ConvertDuration(timeout)
-               : std::chrono::nanoseconds(api::kDefaultConnectionTimeout));
+               : std::chrono::nanoseconds(api::kDefaultConnectionTimeout),
+        brcleanint ? ConvertDuration(brcleanint)
+               : std::chrono::nanoseconds(api::kDefaultBranchesCleanupInterval));
     brn->Start();
 
     *branch = api::ObjectRegister::Register(brn);

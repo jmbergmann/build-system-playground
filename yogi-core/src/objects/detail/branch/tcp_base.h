@@ -15,7 +15,7 @@ namespace detail {
 
 class TcpBase : public std::enable_shared_from_this<TcpBase> {
  public:
-  typedef std::function<void(RemoteBranchInfoPtr&&)> ObserverFn;
+  typedef std::function<void(const api::Error&, RemoteBranchInfoPtr)> ObserverFn;
 
   TcpBase(ContextPtr context, LocalBranchInfoPtr info,
           ObserverFn&& observer_fn);

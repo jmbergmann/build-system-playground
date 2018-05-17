@@ -64,6 +64,12 @@ const char* Error::what() const noexcept {
 
     case YOGI_ERR_CONNECT_SOCKET_FAILED:
       return "Could not connect a socket";
+
+    case YOGI_ERR_INVALID_MAGIC_PREFIX:
+      return "The magic prefix sent when establishing a connection is wrong";
+
+    case YOGI_ERR_INCOMPATIBLE_VERSION:
+      return "The local and remote branches use incompatible Yogi versions";
   }
 
   return "Invalid error code";

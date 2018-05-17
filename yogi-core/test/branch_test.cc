@@ -15,6 +15,7 @@ using namespace std::chrono_literals;
 
 const std::chrono::nanoseconds kAdvInterval = 1ms;
 const std::chrono::nanoseconds kConnTimeout = 5ms;
+const std::chrono::nanoseconds kBrCleanupInterval = 5ms;
 
 class BranchTest : public ::testing::Test {
  protected:
@@ -31,7 +32,7 @@ class BranchTest : public ::testing::Test {
     branch_ = nullptr;
     res = YOGI_BranchCreate(&branch_, context_, nullptr, nullptr, nullptr,
                             nullptr, nullptr, nullptr, 0, kAdvInterval.count(),
-                            kConnTimeout.count());
+                            kConnTimeout.count(), kBrCleanupInterval.count());
     ASSERT_EQ(res, YOGI_OK);
     ASSERT_NE(branch_, nullptr);
   }

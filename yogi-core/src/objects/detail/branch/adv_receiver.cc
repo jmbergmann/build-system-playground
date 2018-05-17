@@ -68,12 +68,13 @@ void AdvReceiver::ReceiveAdvertisement() {
 }
 
 void AdvReceiver::HandleReceivedAdvertisement() {
-  if (!RemoteBranchInfo::CheckAdvertisingMessageValidity(buffer_)) {
+  if (auto err = BranchInfo::CheckAdvertisingMessageValidity(buffer_)) {
+    YOGI_LOG_WARNING(logger_, "Invalid advertising message received from "
+                                  << sender_ep_.address() << " :" << err);
     return;
   }
 
-  auto it =
-      buffer_.cbegin() + BranchInfo::GetAdvertisingMessageHeaderSize();
+  auto it = buffer_.cbegin() + BranchInfo::GetAdvertisingMessageHeaderSize();
 
   boost::uuids::uuid uuid;
   utils::Deserialize(&uuid, buffer_, &it);

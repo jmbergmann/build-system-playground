@@ -67,14 +67,18 @@
 //! Default connection timeout in nanoseconds (long long)
 #define YOGI_CONST_DEFAULT_CONNECTION_TIMEOUT 8
 
+//! Default time until a discovered but unconnected remote branch will be
+//! removed from the list of discovered branches
+#define YOGI_CONST_DEFAULT_BRANCHES_CLEANUP_INTERVAL 9
+
 //! Default logging verbosity (int)
-#define YOGI_CONST_DEFAULT_LOGGER_VERBOSITY 9
+#define YOGI_CONST_DEFAULT_LOGGER_VERBOSITY 10
 
 //! Default textual format for timestamps in log entries (const char*)
-#define YOGI_CONST_DEFAULT_LOG_TIME_FORMAT 10
+#define YOGI_CONST_DEFAULT_LOG_TIME_FORMAT 11
 
 //! Default textual format for log entries (const char*)
-#define YOGI_CONST_DEFAULT_LOG_FORMAT 11
+#define YOGI_CONST_DEFAULT_LOG_FORMAT 12
 
 //! @}
 //!
@@ -144,6 +148,12 @@
 
 //! Could not connect a socket
 #define YOGI_ERR_CONNECT_SOCKET_FAILED -19
+
+//! The magic prefix sent when establishing a connection is wrong
+#define YOGI_ERR_INVALID_MAGIC_PREFIX -20
+
+//! The local and remote branches use incompatible Yogi versions
+#define YOGI_ERR_INCOMPATIBLE_VERSION -21
 
 //! @}
 //!
@@ -821,6 +831,10 @@ YOGI_API int YOGI_TimerCancel(void* timer);
  * \param[in]  timeout     Maximum time of inactivity before a remote branch is
  *                         considered to be dead (set to 0 for default; set to
  *                         -1 for infinity; must be at least 1 millisecond)
+ * \param[in]  brcleanint  Branch cleanup interval; time until a discovered but
+ *                         unconnected remote branch will be removed from the
+ *                         list of discovered branches (set to 0 for default;
+ *                         set to -1 for infinity)
  *
  * \returns [=0] #YOGI_OK if successful
  * \returns [<0] An error code in case of a failure (see \ref EC)
@@ -829,7 +843,8 @@ YOGI_API int YOGI_BranchCreate(void** branch, void* context, const char* name,
                                const char* description, const char* netname,
                                const char* password, const char* path,
                                const char* advaddr, int advport,
-                               long long advint, long long timeout);
+                               long long advint, long long timeout,
+                               long long brcleanint);
 
 /***************************************************************************//**
  * Retrieves information about a local branch.
@@ -907,7 +922,7 @@ YOGI_API int YOGI_BranchGetInfo(void* branch, void* uuid, char* json,
  *      "connected":            true,
  *      "last_connected":       "2018-04-23T18:28:12.333Z",
  *      "last_disconnected":    "2018-04-23T18:27:12.333Z",
- *      "last_error":           null
+ *      "last_error":           -9
  *    }
  *
  * Branches that were discovered by receiving their advertising message but that
@@ -921,8 +936,12 @@ YOGI_API int YOGI_BranchGetInfo(void* branch, void* uuid, char* json,
  *      "connected":            false,
  *      "last_connected":       null,
  *      "last_disconnected":    null,
- *      "last_error":           null
+ *      "last_error":           0
  *    }
+ *
+ * Note: The list of discovered branches will be cleaned periodically such that
+ *       unconnected branches are removed after the branch cleanup time as
+ *       specified when creating the local branch.
  *
  * \param[in]  branch   The branch handle
  * \param[out] uuid     Pointer to 16 byte array for storing the UUID (can be

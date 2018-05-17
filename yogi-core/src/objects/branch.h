@@ -25,7 +25,8 @@ class Branch : public api::ExposedObjectT<Branch, api::ObjectType::kBranch> {
          std::string net_name, std::string password, std::string path,
          std::string adv_address, int adv_port,
          std::chrono::nanoseconds adv_interval,
-         std::chrono::nanoseconds timeout);
+         std::chrono::nanoseconds timeout,
+         std::chrono::nanoseconds branches_cleanup_interval);
 
   void Start();
 
@@ -50,7 +51,8 @@ class Branch : public api::ExposedObjectT<Branch, api::ObjectType::kBranch> {
                                const boost::asio::ip::tcp::endpoint& tcp_ep);
   void OnConnectFinished(const api::Error& err,
                          const detail::RemoteBranchInfoPtr& info);
-  void OnNewTcpConnection(const detail::RemoteBranchInfoPtr& branch);
+  void OnNewTcpConnection(const api::Error& err,
+                          detail::RemoteBranchInfoPtr branch);
   int GetNumActiveConnections() const;
 
   static const LoggerPtr logger_;
@@ -58,6 +60,7 @@ class Branch : public api::ExposedObjectT<Branch, api::ObjectType::kBranch> {
   const ContextPtr context_;
   const detail::LocalBranchInfoPtr info_;
   const std::string password_;
+  const std::chrono::nanoseconds branches_cleanup_interval_;
 
   detail::AdvSenderPtr adv_sender_;
   detail::AdvReceiverPtr adv_receiver_;

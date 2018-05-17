@@ -17,22 +17,16 @@ std::size_t BranchInfo::GetInfoMessageHeaderSize() {
   return GetAdvertisingMessageSize() + 4;
 }
 
-bool BranchInfo::CheckAdvertisingMessageValidity(const std::vector<char>& msg) {
+api::Error BranchInfo::CheckAdvertisingMessageValidity(const std::vector<char>& msg) {
   if (std::memcmp(msg.data(), "YOGI", 5) != 0) {
-    YOGI_LOG_ERROR(
-        logger_, "Invalid magic prefix in advertising or branch info message");
-    return false;
+    return api::Error(YOGI_ERR_INVALID_MAGIC_PREFIX);
   }
 
   if (msg[5] != api::kVersionMajor || msg[6] != api::kVersionMinor) {
-    YOGI_LOG_WARNING(logger_, "Incompatible Yogi version ("
-                                  << static_cast<int>(msg[5]) << "."
-                                  << static_cast<int>(msg[6])
-                                  << ") in advertising or branch info message");
-    return false;
+    return api::Error(YOGI_ERR_INCOMPATIBLE_VERSION);
   }
 
-  return true;
+  return api::kSuccess;
 }
 
 nlohmann::json BranchInfo::ToJson() const {
@@ -100,17 +94,24 @@ std::vector<char> LocalBranchInfo::MakeInfoMessage() const {
 std::shared_ptr<RemoteBranchInfo>
 RemoteBranchInfo::CreateFromAdvertisingMessage(
     const std::vector<char>& msg, utils::TimedTcpSocketPtr socket) {
-  if (!CheckAdvertisingMessageValidity(msg)) {
-    return {};
-  }
+  YOGI_ASSERT(!CheckAdvertisingMessageValidity(msg));
 
   auto it = msg.cbegin() + GetAdvertisingMessageHeaderSize();
 
   auto info = std::make_shared<RemoteBranchInfo>();
-  if (!DeserializeField(&info->uuid, msg, &it)) return {};
+  if (!DeserializeField(&info->uuid, msg, &it)) {
+    YOGI_ASSERT(false);
+    return {};
+  }
+
   unsigned short port;
-  if (!DeserializeField(&port, msg, &it)) return {};
-  info->tcp_ep = socket->GetRemoteEndpoint();
+  if (!DeserializeField(&port, msg, &it)) {
+    YOGI_ASSERT(false);
+    return {};
+  }
+
+  info->tcp_ep.port(port);
+  info->tcp_ep.address(socket->GetRemoteEndpoint().address());
   info->socket = socket;
 
   return info;
@@ -138,7 +139,7 @@ nlohmann::json RemoteBranchInfo::ToJson() const {
   json["last_connected"] = last_connected.ToJavaScriptString();
   json["last_disconnected"] = last_disconnected.ToJavaScriptString();
   json["last_activity"] = last_activity.ToJavaScriptString();
-  json["last_error"] = last_error;
+  json["last_error"] = last_error.error_code();
   return json;
 }
 

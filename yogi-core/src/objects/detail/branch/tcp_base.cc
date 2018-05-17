@@ -20,22 +20,20 @@ void TcpBase::StartInfoExchange(utils::TimedTcpSocketPtr socket) {
 
 void TcpBase::SendInfo(utils::TimedTcpSocketPtr socket) {
   auto weak_self = std::weak_ptr<TcpBase>{shared_from_this()};
-  socket->Send(boost::asio::buffer(serialized_info_), [weak_self, socket](
-                                                          const auto& err) {
-    auto self = weak_self.lock();
-    if (!self) return;
+  socket->Send(boost::asio::buffer(serialized_info_),
+               [weak_self, socket](const auto& err) {
+                 auto self = weak_self.lock();
+                 if (!self) return;
 
-    if (err) {
-      YOGI_LOG_ERROR(self->logger_, "Could not send branch info to "
-                                        << *socket << ": " << err);
-    } else {
-      self->OnInfoSent(socket);
-    }
-  });
+                 if (err) {
+                   self->observer_fn_(api::Error(err), {});
+                 } else {
+                   self->OnInfoSent(socket);
+                 }
+               });
 }
 
 void TcpBase::OnInfoSent(utils::TimedTcpSocketPtr socket) {
-  YOGI_LOG_TRACE(logger_, "Local branch info sent to " << *socket);
   StartReceiveInfoHeader(socket);
 }
 
@@ -48,9 +46,7 @@ void TcpBase::StartReceiveInfoHeader(utils::TimedTcpSocketPtr socket) {
         if (!self) return;
 
         if (err) {
-          YOGI_LOG_ERROR(self->logger_,
-                         "Could not receive branch info header from "
-                             << *socket << ": " << err);
+          self->observer_fn_(api::Error(err), {});
         } else {
           self->OnInfoHeaderReceived(socket, buffer);
         }
@@ -59,6 +55,11 @@ void TcpBase::StartReceiveInfoHeader(utils::TimedTcpSocketPtr socket) {
 
 void TcpBase::OnInfoHeaderReceived(utils::TimedTcpSocketPtr socket,
                                    const std::vector<char>& buffer) {
+  if (auto err = BranchInfo::CheckAdvertisingMessageValidity(buffer)) {
+    observer_fn_(err, {});
+    return;
+  }
+
   auto branch = RemoteBranchInfo::CreateFromAdvertisingMessage(buffer, socket);
 
   auto it = buffer.begin() + BranchInfo::GetAdvertisingMessageSize();
@@ -77,9 +78,7 @@ void TcpBase::StartReceiveInfoBody(RemoteBranchInfoPtr branch,
         if (!self) return;
 
         if (err) {
-          YOGI_LOG_ERROR(self->logger_,
-                         "Could not receive branch info body from "
-                             << *branch->socket << ": " << err);
+          self->observer_fn_(api::Error(err), std::move(branch));
         } else {
           self->OnInfoBodyReceived(branch, buffer);
         }
@@ -92,10 +91,7 @@ void TcpBase::OnInfoBodyReceived(RemoteBranchInfoPtr branch,
     return;
   }
 
-  YOGI_LOG_INFO(logger_, "Received branch info for " << branch->uuid << " from "
-                                                     << *branch->socket);
-
-  observer_fn_(std::move(branch));
+  observer_fn_(api::kSuccess, std::move(branch));
 }
 
 }  // namespace detail

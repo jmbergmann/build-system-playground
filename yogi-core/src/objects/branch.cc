@@ -18,10 +18,12 @@ Branch::Branch(ContextPtr context, std::string name, std::string description,
                std::string net_name, std::string password, std::string path,
                std::string adv_address, int adv_port,
                std::chrono::nanoseconds adv_interval,
-               std::chrono::nanoseconds timeout)
+               std::chrono::nanoseconds timeout,
+               std::chrono::nanoseconds branches_cleanup_interval)
     : context_(context),
       info_(std::make_shared<detail::LocalBranchInfo>()),
-      password_(password) {
+      password_(password),
+      branches_cleanup_interval_(branches_cleanup_interval) {
   info_->uuid = boost::uuids::random_generator()();
   info_->name = name;
   info_->description = description;
@@ -57,18 +59,17 @@ void Branch::ForeachDiscoveredBranch(
     const {}
 
 void Branch::SetupTcp() {
-  tcp_client_ = std::make_shared<detail::TcpClient>(context_, info_, [&](auto&& branch) {
-    OnNewTcpConnection(std::move(branch));
-  });
+  tcp_client_ = std::make_shared<detail::TcpClient>(
+      context_, info_,
+      [&](auto& err, auto branch) { OnNewTcpConnection(err, branch); });
 
-  tcp_server_ = std::make_shared<detail::TcpServer>(context_, info_, [&](auto&& branch) {
-    OnNewTcpConnection(std::move(branch));
-  });
+  tcp_server_ = std::make_shared<detail::TcpServer>(
+      context_, info_,
+      [&](auto& err, auto branch) { OnNewTcpConnection(err, branch); });
 }
 
 void Branch::SetupAdvertising() {
-  adv_sender_ =
-      std::make_shared<detail::AdvSender>(context_, info_);
+  adv_sender_ = std::make_shared<detail::AdvSender>(context_, info_);
 
   adv_receiver_ = std::make_shared<detail::AdvReceiver>(
       context_, info_, [this](auto& uuid, auto& ep) {
@@ -120,7 +121,8 @@ void Branch::OnConnectFinished(const api::Error& err,
   YOGI_TRACE;
 }
 
-void Branch::OnNewTcpConnection(const detail::RemoteBranchInfoPtr& branch) {
+void Branch::OnNewTcpConnection(const api::Error& err,
+                                detail::RemoteBranchInfoPtr branch) {
   YOGI_TRACE;
 }
 

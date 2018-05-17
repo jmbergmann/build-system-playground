@@ -2,6 +2,7 @@
 
 #include "../../../config.h"
 #include "../../logger.h"
+#include "../../../api/error.h"
 #include "../../../utils/socket.h"
 #include "../../../utils/timestamp.h"
 #include "../../../../../3rd_party/json/json.hpp"
@@ -22,7 +23,7 @@ class BranchInfo {
   static constexpr std::size_t GetAdvertisingMessageHeaderSize() { return 7; }
   static std::size_t GetAdvertisingMessageSize();
   static std::size_t GetInfoMessageHeaderSize();
-  static bool CheckAdvertisingMessageValidity(const std::vector<char>& msg);
+  static api::Error CheckAdvertisingMessageValidity(const std::vector<char>& msg);
 
   virtual ~BranchInfo() = default;
 
@@ -71,7 +72,7 @@ class RemoteBranchInfo : public BranchInfo {
   utils::Timestamp last_connected;
   utils::Timestamp last_disconnected;
   utils::Timestamp last_activity;
-  std::string last_error;
+  api::Error last_error = api::kSuccess;
   utils::TimedTcpSocketPtr socket;
 
  private:
