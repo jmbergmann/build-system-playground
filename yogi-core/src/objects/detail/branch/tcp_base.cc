@@ -9,13 +9,20 @@ namespace detail {
 const LoggerPtr TcpBase::logger_ = Logger::CreateStaticInternalLogger("Branch");
 
 TcpBase::TcpBase(ContextPtr context, LocalBranchInfoPtr info,
-                 ObserverFn&& observer_fn)
-    : context_(context), info_(info), observer_fn_(observer_fn) {}
+                 SuccessHandler&& success_handler, ErrorHandler&& error_handler)
+    : context_(context),
+      info_(info),
+      success_handler_(success_handler),
+      error_handler_(error_handler) {}
 
 void TcpBase::Start() { serialized_info_ = info_->MakeInfoMessage(); }
 
 void TcpBase::StartInfoExchange(utils::TimedTcpSocketPtr socket) {
   SendInfo(socket);
+}
+
+void TcpBase::CallErrorHandler(const api::Error& err, utils::TimedTcpSocketPtr socket) {
+  error_handler_(err, socket);
 }
 
 void TcpBase::SendInfo(utils::TimedTcpSocketPtr socket) {
@@ -26,7 +33,7 @@ void TcpBase::SendInfo(utils::TimedTcpSocketPtr socket) {
                  if (!self) return;
 
                  if (err) {
-                   self->observer_fn_(api::Error(err), {});
+                   self->error_handler_(err, socket);
                  } else {
                    self->OnInfoSent(socket);
                  }
@@ -46,7 +53,7 @@ void TcpBase::StartReceiveInfoHeader(utils::TimedTcpSocketPtr socket) {
         if (!self) return;
 
         if (err) {
-          self->observer_fn_(api::Error(err), {});
+          self->error_handler_(err, socket);
         } else {
           self->OnInfoHeaderReceived(socket, buffer);
         }
@@ -56,7 +63,7 @@ void TcpBase::StartReceiveInfoHeader(utils::TimedTcpSocketPtr socket) {
 void TcpBase::OnInfoHeaderReceived(utils::TimedTcpSocketPtr socket,
                                    const std::vector<char>& buffer) {
   if (auto err = BranchInfo::CheckAdvertisingMessageValidity(buffer)) {
-    observer_fn_(err, {});
+    error_handler_(err, socket);
     return;
   }
 
@@ -78,7 +85,7 @@ void TcpBase::StartReceiveInfoBody(RemoteBranchInfoPtr branch,
         if (!self) return;
 
         if (err) {
-          self->observer_fn_(api::Error(err), std::move(branch));
+          self->error_handler_(err, branch->socket);
         } else {
           self->OnInfoBodyReceived(branch, buffer);
         }
@@ -88,10 +95,11 @@ void TcpBase::StartReceiveInfoBody(RemoteBranchInfoPtr branch,
 void TcpBase::OnInfoBodyReceived(RemoteBranchInfoPtr branch,
                                  const std::vector<char>& buffer) {
   if (!branch->DeserializeInfoMessageBody(buffer)) {
+    error_handler_(api::Error(YOGI_ERR_DESERIALIZE_MSG_FAILED), branch->socket);
     return;
   }
 
-  observer_fn_(api::kSuccess, std::move(branch));
+  success_handler_(branch);
 }
 
 }  // namespace detail

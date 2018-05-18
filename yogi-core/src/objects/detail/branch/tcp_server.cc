@@ -4,8 +4,8 @@ namespace objects {
 namespace detail {
 
 TcpServer::TcpServer(ContextPtr context, LocalBranchInfoPtr info,
-                     ObserverFn&& observer_fn)
-    : TcpBase(context, info, std::move(observer_fn)),
+                     SuccessHandler&& success_handler, ErrorHandler&& error_handler)
+    : TcpBase(context, info, std::move(success_handler), std::move(error_handler)),
       acceptor_(context->IoContext()) {
   SetupAcceptor();
 }

@@ -15,10 +15,11 @@ namespace detail {
 
 class TcpBase : public std::enable_shared_from_this<TcpBase> {
  public:
-  typedef std::function<void(const api::Error&, RemoteBranchInfoPtr)> ObserverFn;
+  typedef std::function<void(RemoteBranchInfoPtr)> SuccessHandler;
+  typedef std::function<void(const api::Error&, utils::TimedTcpSocketPtr)> ErrorHandler;
 
   TcpBase(ContextPtr context, LocalBranchInfoPtr info,
-          ObserverFn&& observer_fn);
+          SuccessHandler&& success_handler, ErrorHandler&& error_handler);
   virtual ~TcpBase() {}
 
   virtual void Start();
@@ -34,6 +35,7 @@ class TcpBase : public std::enable_shared_from_this<TcpBase> {
   const LocalBranchInfoPtr& GetInfo() const { return info_; }
 
   void StartInfoExchange(utils::TimedTcpSocketPtr socket);
+  void CallErrorHandler(const api::Error& err, utils::TimedTcpSocketPtr socket);
 
  private:
   void SendInfo(utils::TimedTcpSocketPtr socket);
@@ -49,7 +51,8 @@ class TcpBase : public std::enable_shared_from_this<TcpBase> {
 
   const ContextPtr context_;
   const LocalBranchInfoPtr info_;
-  const ObserverFn observer_fn_;
+  const SuccessHandler success_handler_;
+  const ErrorHandler error_handler_;
   std::vector<char> serialized_info_;
 };
 

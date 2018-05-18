@@ -10,8 +10,7 @@ class TcpClient : public TcpBase {
  public:
   using TcpBase::TcpBase;
 
-  void Connect(const boost::asio::ip::tcp::endpoint& ep,
-               std::function<void(const api::Error&)>&& handler);
+  void Connect(const boost::asio::ip::tcp::endpoint& ep);
 
  private:
   void OnConnected(utils::TimedTcpSocketPtr socket);

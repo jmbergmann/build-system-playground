@@ -70,6 +70,9 @@ const char* Error::what() const noexcept {
 
     case YOGI_ERR_INCOMPATIBLE_VERSION:
       return "The local and remote branches use incompatible Yogi versions";
+
+    case YOGI_ERR_DESERIALIZE_MSG_FAILED:
+      return "Could not deserialize a message";
   }
 
   return "Invalid error code";

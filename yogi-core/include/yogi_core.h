@@ -155,6 +155,9 @@
 //! The local and remote branches use incompatible Yogi versions
 #define YOGI_ERR_INCOMPATIBLE_VERSION -21
 
+//! Could not deserialize a message
+#define YOGI_ERR_DESERIALIZE_MSG_FAILED -22
+
 //! @}
 //!
 //! @defgroup VB Log verbosity/severity

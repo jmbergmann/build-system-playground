@@ -49,10 +49,9 @@ class Branch : public api::ExposedObjectT<Branch, api::ObjectType::kBranch> {
   void SetupAdvertising();
   void OnAdvertisementReceived(const boost::uuids::uuid& uuid,
                                const boost::asio::ip::tcp::endpoint& tcp_ep);
-  void OnConnectFinished(const api::Error& err,
-                         const detail::RemoteBranchInfoPtr& info);
-  void OnNewTcpConnection(const api::Error& err,
-                          detail::RemoteBranchInfoPtr branch);
+  void OnNewConnection(detail::RemoteBranchInfoPtr branch);
+  void OnEstablishingConnectionFailed(const api::Error& err,
+                                      utils::TimedTcpSocketPtr socket);
   int GetNumActiveConnections() const;
 
   static const LoggerPtr logger_;

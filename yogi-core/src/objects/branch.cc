@@ -60,12 +60,16 @@ void Branch::ForeachDiscoveredBranch(
 
 void Branch::SetupTcp() {
   tcp_client_ = std::make_shared<detail::TcpClient>(
-      context_, info_,
-      [&](auto& err, auto branch) { OnNewTcpConnection(err, branch); });
+      context_, info_, [&](auto branch) { OnNewConnection(branch); },
+      [&](const auto& err, auto branch) {
+        OnEstablishingConnectionFailed(err, branch);
+      });
 
   tcp_server_ = std::make_shared<detail::TcpServer>(
-      context_, info_,
-      [&](auto& err, auto branch) { OnNewTcpConnection(err, branch); });
+      context_, info_, [&](auto branch) { OnNewConnection(branch); },
+      [&](const auto& err, auto branch) {
+        OnEstablishingConnectionFailed(err, branch);
+      });
 }
 
 void Branch::SetupAdvertising() {
@@ -104,26 +108,17 @@ void Branch::OnAdvertisementReceived(
   branch->last_activity = utils::Timestamp::Now();
 
   if (new_branch) {
-    auto weak_self = MakeWeakPtr();
-    tcp_client_->Connect(branch->tcp_ep, [weak_self, branch](auto& err) {
-      auto self = weak_self.lock();
-      if (!self) return;
-
-      self->OnConnectFinished(err, branch);
-    });
+    tcp_client_->Connect(branch->tcp_ep);
   }
 }
 
-void Branch::OnConnectFinished(const api::Error& err,
-                               const detail::RemoteBranchInfoPtr& branch) {
-  std::lock_guard<std::mutex> lock(branch->mutex);
-  branch->last_activity = utils::Timestamp::Now();
-  YOGI_TRACE;
+void Branch::OnNewConnection(detail::RemoteBranchInfoPtr branch) {
+  YOGI_TRACE;  //
 }
 
-void Branch::OnNewTcpConnection(const api::Error& err,
-                                detail::RemoteBranchInfoPtr branch) {
-  YOGI_TRACE;
+void Branch::OnEstablishingConnectionFailed(const api::Error& err,
+                                            utils::TimedTcpSocketPtr socket) {
+  YOGI_TRACE;  //
 }
 
 int Branch::GetNumActiveConnections() const {

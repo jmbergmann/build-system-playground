@@ -8,7 +8,8 @@ namespace detail {
 
 class TcpServer : public TcpBase {
  public:
-  TcpServer(ContextPtr context, LocalBranchInfoPtr info, ObserverFn&& observer_fn);
+  TcpServer(ContextPtr context, LocalBranchInfoPtr info,
+            SuccessHandler&& success_handler, ErrorHandler&& error_handler);
 
   virtual void Start() override;
 
