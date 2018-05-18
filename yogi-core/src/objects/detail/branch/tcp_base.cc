@@ -21,7 +21,8 @@ void TcpBase::StartInfoExchange(utils::TimedTcpSocketPtr socket) {
   SendInfo(socket);
 }
 
-void TcpBase::CallErrorHandler(const api::Error& err, utils::TimedTcpSocketPtr socket) {
+void TcpBase::CallErrorHandler(const api::Error& err,
+                               utils::TimedTcpSocketPtr socket) {
   error_handler_(err, socket);
 }
 
@@ -67,7 +68,8 @@ void TcpBase::OnInfoHeaderReceived(utils::TimedTcpSocketPtr socket,
     return;
   }
 
-  auto branch = RemoteBranchInfo::CreateFromAdvertisingMessage(buffer, socket);
+  auto branch =
+      RemoteBranchInfo::CreateFromAdvertisingMessage(context_, buffer, socket);
 
   auto it = buffer.begin() + BranchInfo::GetAdvertisingMessageSize();
   std::size_t body_size;

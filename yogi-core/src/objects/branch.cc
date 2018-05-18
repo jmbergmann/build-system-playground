@@ -127,7 +127,7 @@ void Branch::OnAdvertisementReceived(
     std::lock_guard<std::mutex> lock(branches_mutex_);
     auto& branch_ref = branches_[uuid];
     if (!branch_ref) {
-      branch_ref = detail::RemoteBranchInfo::Create(uuid, tcp_ep);
+      branch_ref = detail::RemoteBranchInfo::Create(context_, uuid, tcp_ep);
       new_branch = true;
     }
 

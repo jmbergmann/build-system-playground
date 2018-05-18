@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../../../config.h"
+#include "../../context.h"
 #include "../../logger.h"
 #include "../../../api/error.h"
 #include "../../../utils/socket.h"
@@ -9,6 +10,7 @@
 
 #include <boost/uuid/uuid.hpp>
 #include <boost/asio/ip/tcp.hpp>
+#include <boost/asio/steady_timer.hpp>
 #include <mutex>
 #include <string>
 #include <chrono>
@@ -63,14 +65,19 @@ typedef std::shared_ptr<LocalBranchInfo> LocalBranchInfoPtr;
 class RemoteBranchInfo : public BranchInfo {
  public:
   static std::shared_ptr<RemoteBranchInfo> Create(
-      const boost::uuids::uuid& uuid,
+      ContextPtr context, const boost::uuids::uuid& uuid,
       const boost::asio::ip::tcp::endpoint& tcp_ep);
   static std::shared_ptr<RemoteBranchInfo> CreateFromAdvertisingMessage(
-      const std::vector<char>& msg, utils::TimedTcpSocketPtr socket);
+      ContextPtr context, const std::vector<char>& msg,
+      utils::TimedTcpSocketPtr socket);
+
+  RemoteBranchInfo(ContextPtr context);
 
   bool DeserializeInfoMessageBody(const std::vector<char>& msg);
 
   virtual nlohmann::json ToJson() const override;
+
+  const ContextPtr context;
 
   bool connected = false;
   utils::Timestamp last_connected;
@@ -78,6 +85,7 @@ class RemoteBranchInfo : public BranchInfo {
   utils::Timestamp last_activity;
   api::Error last_error = api::kSuccess;
   utils::TimedTcpSocketPtr socket;
+  boost::asio::steady_timer heartbeat_timer;
 
  private:
   template <typename Field>

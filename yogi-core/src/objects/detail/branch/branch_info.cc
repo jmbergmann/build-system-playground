@@ -93,9 +93,9 @@ std::vector<char> LocalBranchInfo::MakeInfoMessage() const {
 }
 
 std::shared_ptr<RemoteBranchInfo> RemoteBranchInfo::Create(
-    const boost::uuids::uuid& uuid,
+    ContextPtr context, const boost::uuids::uuid& uuid,
     const boost::asio::ip::tcp::endpoint& tcp_ep) {
-  auto info = std::make_shared<RemoteBranchInfo>();
+  auto info = std::make_shared<RemoteBranchInfo>(context);
   info->uuid = uuid;
   info->tcp_ep = tcp_ep;
 
@@ -104,12 +104,13 @@ std::shared_ptr<RemoteBranchInfo> RemoteBranchInfo::Create(
 
 std::shared_ptr<RemoteBranchInfo>
 RemoteBranchInfo::CreateFromAdvertisingMessage(
-    const std::vector<char>& msg, utils::TimedTcpSocketPtr socket) {
+    ContextPtr context, const std::vector<char>& msg,
+    utils::TimedTcpSocketPtr socket) {
   YOGI_ASSERT(!CheckAdvertisingMessageValidity(msg));
 
   auto it = msg.cbegin() + GetAdvertisingMessageHeaderSize();
 
-  auto info = std::make_shared<RemoteBranchInfo>();
+  auto info = std::make_shared<RemoteBranchInfo>(context);
   if (!DeserializeField(&info->uuid, msg, &it)) {
     YOGI_ASSERT(false);
     return {};
@@ -127,6 +128,9 @@ RemoteBranchInfo::CreateFromAdvertisingMessage(
 
   return info;
 }
+
+RemoteBranchInfo::RemoteBranchInfo(ContextPtr context)
+    : context(context), heartbeat_timer(context->IoContext()) {}
 
 bool RemoteBranchInfo::DeserializeInfoMessageBody(
     const std::vector<char>& msg) {
