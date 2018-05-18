@@ -130,7 +130,9 @@ RemoteBranchInfo::CreateFromAdvertisingMessage(
 }
 
 RemoteBranchInfo::RemoteBranchInfo(ContextPtr context)
-    : context(context), heartbeat_timer(context->IoContext()) {}
+    : context(context),
+      last_activity(utils::Timestamp::Now()),
+      heartbeat_timer(context->IoContext()) {}
 
 bool RemoteBranchInfo::DeserializeInfoMessageBody(
     const std::vector<char>& msg) {

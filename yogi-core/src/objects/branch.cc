@@ -97,8 +97,7 @@ void Branch::StartBranchesCleanupTimer() {
 }
 
 void Branch::OnBranchesCleanupTimerExpired() {
-  auto time_cutoff =
-      utils::Timestamp::Now() - info_->timeout - branches_cleanup_interval_;
+  auto time_cutoff = utils::Timestamp::Now() - branches_cleanup_interval_;
 
   {
     std::lock_guard<std::mutex> lock(branches_mutex_);
@@ -151,12 +150,14 @@ void Branch::OnNewConnection(detail::RemoteBranchInfoPtr branch) {
   std::lock_guard<std::mutex> lock(branch->mutex);
   branch->last_activity = utils::Timestamp::Now();
 
-  YOGI_TRACE;  //
+  YOGI_LOG_INFO(logger_,
+                "Successfully established connection with " << branch->uuid);
 }
 
 void Branch::OnEstablishingConnectionFailed(const api::Error& err,
                                             utils::TimedTcpSocketPtr socket) {
-  YOGI_TRACE;  //
+  YOGI_LOG_ERROR(
+      logger_, "Could not establish connection to " << *socket << ": " << err);
 }
 
 }  // namespace objects
