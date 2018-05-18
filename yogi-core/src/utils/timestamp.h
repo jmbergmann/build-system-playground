@@ -33,6 +33,22 @@ class Timestamp {
   std::string ToFormattedString(std::string fmt) const;
   std::string ToJavaScriptString() const;
 
+  Timestamp operator+ (const std::chrono::nanoseconds& ns) const {
+    return Timestamp(NanosecondsSinceEpoch() + ns);
+  }
+
+  Timestamp operator- (const std::chrono::nanoseconds& ns) const {
+    return Timestamp(NanosecondsSinceEpoch() - ns);
+  }
+
+  bool operator< (const Timestamp& rhs) const {
+    return NanosecondsSinceEpoch() < rhs.NanosecondsSinceEpoch();
+  }
+
+  bool operator> (const Timestamp& rhs) const {
+    return NanosecondsSinceEpoch() > rhs.NanosecondsSinceEpoch();
+  }
+
  private:
   typedef std::chrono::time_point<std::chrono::system_clock,
                                   std::chrono::nanoseconds>

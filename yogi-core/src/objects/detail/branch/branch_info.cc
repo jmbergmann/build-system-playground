@@ -17,7 +17,8 @@ std::size_t BranchInfo::GetInfoMessageHeaderSize() {
   return GetAdvertisingMessageSize() + 4;
 }
 
-api::Error BranchInfo::CheckAdvertisingMessageValidity(const std::vector<char>& msg) {
+api::Error BranchInfo::CheckAdvertisingMessageValidity(
+    const std::vector<char>& msg) {
   if (std::memcmp(msg.data(), "YOGI", 5) != 0) {
     return api::Error(YOGI_ERR_INVALID_MAGIC_PREFIX);
   }
@@ -89,6 +90,16 @@ std::vector<char> LocalBranchInfo::MakeInfoMessage() const {
   msg.insert(msg.end(), buffer.begin(), buffer.end());
 
   return msg;
+}
+
+std::shared_ptr<RemoteBranchInfo> RemoteBranchInfo::Create(
+    const boost::uuids::uuid& uuid,
+    const boost::asio::ip::tcp::endpoint& tcp_ep) {
+  auto info = std::make_shared<RemoteBranchInfo>();
+  info->uuid = uuid;
+  info->tcp_ep = tcp_ep;
+
+  return info;
 }
 
 std::shared_ptr<RemoteBranchInfo>

@@ -47,12 +47,13 @@ class Branch : public api::ExposedObjectT<Branch, api::ObjectType::kBranch> {
 
   void SetupTcp();
   void SetupAdvertising();
+  void StartBranchesCleanupTimer();
+  void OnBranchesCleanupTimerExpired();
   void OnAdvertisementReceived(const boost::uuids::uuid& uuid,
                                const boost::asio::ip::tcp::endpoint& tcp_ep);
   void OnNewConnection(detail::RemoteBranchInfoPtr branch);
   void OnEstablishingConnectionFailed(const api::Error& err,
                                       utils::TimedTcpSocketPtr socket);
-  int GetNumActiveConnections() const;
 
   static const LoggerPtr logger_;
 
@@ -68,6 +69,7 @@ class Branch : public api::ExposedObjectT<Branch, api::ObjectType::kBranch> {
 
   BranchesMap branches_;
   mutable std::mutex branches_mutex_;
+  boost::asio::steady_timer branches_cleanup_timer_;
 };
 
 typedef std::shared_ptr<Branch> BranchPtr;

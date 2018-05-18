@@ -23,7 +23,8 @@ class BranchInfo {
   static constexpr std::size_t GetAdvertisingMessageHeaderSize() { return 7; }
   static std::size_t GetAdvertisingMessageSize();
   static std::size_t GetInfoMessageHeaderSize();
-  static api::Error CheckAdvertisingMessageValidity(const std::vector<char>& msg);
+  static api::Error CheckAdvertisingMessageValidity(
+      const std::vector<char>& msg);
 
   virtual ~BranchInfo() = default;
 
@@ -61,6 +62,9 @@ typedef std::shared_ptr<LocalBranchInfo> LocalBranchInfoPtr;
 
 class RemoteBranchInfo : public BranchInfo {
  public:
+  static std::shared_ptr<RemoteBranchInfo> Create(
+      const boost::uuids::uuid& uuid,
+      const boost::asio::ip::tcp::endpoint& tcp_ep);
   static std::shared_ptr<RemoteBranchInfo> CreateFromAdvertisingMessage(
       const std::vector<char>& msg, utils::TimedTcpSocketPtr socket);
 

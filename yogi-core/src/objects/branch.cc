@@ -23,7 +23,8 @@ Branch::Branch(ContextPtr context, std::string name, std::string description,
     : context_(context),
       info_(std::make_shared<detail::LocalBranchInfo>()),
       password_(password),
-      branches_cleanup_interval_(branches_cleanup_interval) {
+      branches_cleanup_interval_(branches_cleanup_interval),
+      branches_cleanup_timer_(context->IoContext()) {
   info_->uuid = boost::uuids::random_generator()();
   info_->name = name;
   info_->description = description;
@@ -43,13 +44,13 @@ void Branch::Start() {
   tcp_server_->Start();
   adv_sender_->Start();
   adv_receiver_->Start();
+
+  if (branches_cleanup_interval_ != branches_cleanup_interval_.max()) {
+    StartBranchesCleanupTimer();
+  }
 }
 
-std::string Branch::MakeInfo() const {
-  auto json = info_->ToJson();
-  json["active_connections"] = GetNumActiveConnections();
-  return json.dump();
-}
+std::string Branch::MakeInfo() const { return info_->ToJson().dump(); }
 
 void Branch::ForeachDiscoveredBranch(
     const std::function<void(const boost::uuids::uuid&)>& fn) const {}
@@ -81,6 +82,42 @@ void Branch::SetupAdvertising() {
       });
 }
 
+void Branch::StartBranchesCleanupTimer() {
+  branches_cleanup_timer_.expires_from_now(branches_cleanup_interval_);
+
+  auto weak_self = MakeWeakPtr();
+  branches_cleanup_timer_.async_wait([weak_self](auto& ec) {
+    auto self = weak_self.lock();
+    if (!self) return;
+
+    if (!ec) {
+      self->OnBranchesCleanupTimerExpired();
+    }
+  });
+}
+
+void Branch::OnBranchesCleanupTimerExpired() {
+  auto time_cutoff =
+      utils::Timestamp::Now() - info_->timeout - branches_cleanup_interval_;
+
+  {
+    std::lock_guard<std::mutex> lock(branches_mutex_);
+    auto it = branches_.begin();
+    while (it != branches_.end()) {
+      auto& branch = it->second;
+      if (branch->last_activity < time_cutoff) {
+        YOGI_ASSERT(!branch->connected);
+        YOGI_ASSERT(branch->last_error);
+        it = branches_.erase(it);
+      } else {
+        ++it;
+      }
+    }
+  }
+
+  StartBranchesCleanupTimer();
+}
+
 void Branch::OnAdvertisementReceived(
     const boost::uuids::uuid& uuid,
     const boost::asio::ip::tcp::endpoint& tcp_ep) {
@@ -90,9 +127,7 @@ void Branch::OnAdvertisementReceived(
     std::lock_guard<std::mutex> lock(branches_mutex_);
     auto& branch_ref = branches_[uuid];
     if (!branch_ref) {
-      branch_ref = std::make_shared<detail::RemoteBranchInfo>();
-      branch_ref->uuid = uuid;
-      branch_ref->tcp_ep = tcp_ep;
+      branch_ref = detail::RemoteBranchInfo::Create(uuid, tcp_ep);
       new_branch = true;
     }
 
@@ -113,19 +148,15 @@ void Branch::OnAdvertisementReceived(
 }
 
 void Branch::OnNewConnection(detail::RemoteBranchInfoPtr branch) {
+  std::lock_guard<std::mutex> lock(branch->mutex);
+  branch->last_activity = utils::Timestamp::Now();
+
   YOGI_TRACE;  //
 }
 
 void Branch::OnEstablishingConnectionFailed(const api::Error& err,
                                             utils::TimedTcpSocketPtr socket) {
   YOGI_TRACE;  //
-}
-
-int Branch::GetNumActiveConnections() const {
-  std::lock_guard<std::mutex> lock(branches_mutex_);
-  return static_cast<int>(
-      std::count_if(branches_.begin(), branches_.end(),
-                    [](auto& branch) { return branch.second->connected; }));
 }
 
 }  // namespace objects

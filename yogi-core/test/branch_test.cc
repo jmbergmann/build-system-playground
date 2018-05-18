@@ -91,7 +91,6 @@ TEST_F(BranchTest, GetInfoJson) {
   EXPECT_TRUE(
       std::regex_match(json.value("start_time", "NOT FOUND"), time_regex));
   EXPECT_EQ(json.value("timeout", -1.0f), static_cast<float>(kConnTimeout.count()) / 1e9f);
-  EXPECT_GT(json.value("active_connections", -1), -1);
   EXPECT_EQ(json.value("advertising_address", "NOT FOUND"),
             api::kDefaultAdvAddress);
   EXPECT_EQ(json.value("advertising_port", -1), api::kDefaultAdvPort);

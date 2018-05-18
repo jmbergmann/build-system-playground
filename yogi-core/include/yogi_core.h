@@ -835,9 +835,9 @@ YOGI_API int YOGI_TimerCancel(void* timer);
  *                         considered to be dead (set to 0 for default; set to
  *                         -1 for infinity; must be at least 1 millisecond)
  * \param[in]  brcleanint  Branch cleanup interval; time until a discovered but
- *                         unconnected remote branch will be removed from the
- *                         list of discovered branches (set to 0 for default;
- *                         set to -1 for infinity)
+ *                         inactive remote branch will be removed from the list
+ *                         of discovered branches (set to 0 for default; set to
+ *                         -1 for infinity)
  *
  * \returns [=0] #YOGI_OK if successful
  * \returns [<0] An error code in case of a failure (see \ref EC)
@@ -873,8 +873,7 @@ YOGI_API int YOGI_BranchCreate(void** branch, void* context, const char* name,
  *      "advertising_port":     13531,
  *      "advertising_interval": 1.0,
  *      "tcp_server_port":      53332,
- *      "start_time":           "2018-04-23T18:25:43.511Z",
- *      "active_connections":   3
+ *      "start_time":           "2018-04-23T18:25:43.511Z"
  *    }
  *
  * \param[in]  branch   The branch handle
@@ -943,7 +942,7 @@ YOGI_API int YOGI_BranchGetInfo(void* branch, void* uuid, char* json,
  *    }
  *
  * Note: The list of discovered branches will be cleaned periodically such that
- *       unconnected branches are removed after the branch cleanup time as
+ *       inactive branches are removed after the branch cleanup time as
  *       specified when creating the local branch.
  *
  * \param[in]  branch   The branch handle
