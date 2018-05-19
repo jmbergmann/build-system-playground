@@ -10,10 +10,6 @@ TimedTcpSocket::TimedTcpSocket(objects::ContextPtr context,
       timed_out_(false),
       rcv_buffer_(std::make_shared<std::vector<char>>()) {}
 
-boost::asio::ip::tcp::endpoint TimedTcpSocket::GetRemoteEndpoint() const {
-  return socket_.remote_endpoint();
-}
-
 void TimedTcpSocket::StartTimeout(std::weak_ptr<TimedTcpSocket> weak_self) {
   timer_.expires_from_now(timeout_);
   timer_.async_wait([weak_self](auto& ec) {
@@ -39,6 +35,7 @@ void TimedTcpSocket::OnTimeout() {
 
 std::ostream& operator<<(std::ostream& os,
                          const utils::TimedTcpSocket& socket) {
-  os << socket.GetRemoteEndpoint().address().to_string();
+  auto& ep = socket.GetRemoteEndpoint();
+  os << ep.address().to_string() << ":" << ep.port();
   return os;
 }

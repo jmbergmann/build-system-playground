@@ -53,11 +53,21 @@ void Branch::Start() {
 std::string Branch::MakeInfo() const { return info_->ToJson().dump(); }
 
 void Branch::ForeachDiscoveredBranch(
-    const std::function<void(const boost::uuids::uuid&)>& fn) const {}
+    const std::function<void(const boost::uuids::uuid&)>& fn) const {
+  std::lock_guard<std::mutex> lock(branches_mutex_);
+  for (auto& entry : branches_) {
+    fn(entry.first);
+  }
+}
 
 void Branch::ForeachDiscoveredBranch(
-    const std::function<void(const boost::uuids::uuid&, std::string)>& fn)
-    const {}
+    const std::function<void(const boost::uuids::uuid&, nlohmann::json)>& fn)
+    const {
+  std::lock_guard<std::mutex> lock(branches_mutex_);
+  for (auto& entry : branches_) {
+    fn(entry.first, entry.second->ToJson());
+  }
+}
 
 void Branch::SetupTcp() {
   tcp_client_ = std::make_shared<detail::TcpClient>(
@@ -104,9 +114,8 @@ void Branch::OnBranchesCleanupTimerExpired() {
     auto it = branches_.begin();
     while (it != branches_.end()) {
       auto& branch = it->second;
-      if (branch->last_activity < time_cutoff) {
+      if (branch->last_error && branch->last_activity < time_cutoff) {
         YOGI_ASSERT(!branch->connected);
-        YOGI_ASSERT(branch->last_error);
         it = branches_.erase(it);
       } else {
         ++it;
@@ -150,8 +159,8 @@ void Branch::OnNewConnection(detail::RemoteBranchInfoPtr branch) {
   std::lock_guard<std::mutex> lock(branch->mutex);
   branch->last_activity = utils::Timestamp::Now();
 
-  YOGI_LOG_INFO(logger_,
-                "Successfully established connection with " << branch->uuid);
+  YOGI_LOG_INFO(logger_, "Successfully established connection with branch "
+                             << branch->uuid);
 }
 
 void Branch::OnEstablishingConnectionFailed(const api::Error& err,

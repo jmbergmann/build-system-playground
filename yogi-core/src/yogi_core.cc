@@ -552,9 +552,11 @@ YOGI_API int YOGI_BranchGetDiscoveredBranches(void* branch, void* uuid,
           memcpy(uuid, &tmp_uuid, tmp_uuid.size());
         }
 
-        auto n = std::min(tmp_json.size() + 1, static_cast<size_t>(jsonsize));
-        std::strncpy(json, tmp_json.c_str(), n);
-        if (tmp_json.size() + 1 > n) {
+        auto tmp_json_str = tmp_json.dump();
+        auto n =
+            std::min(tmp_json_str.size() + 1, static_cast<size_t>(jsonsize));
+        std::strncpy(json, tmp_json_str.c_str(), n);
+        if (tmp_json_str.size() + 1 > n) {
           json[jsonsize - 1] = '\0';
           fn(YOGI_ERR_BUFFER_TOO_SMALL, userarg);
           buffer_too_small = true;

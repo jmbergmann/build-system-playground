@@ -158,6 +158,9 @@
 //! Could not deserialize a message
 #define YOGI_ERR_DESERIALIZE_MSG_FAILED -22
 
+//! Could not accept a socket
+#define YOGI_ERR_ACCEPT_SOCKET_FAILED -23
+
 //! @}
 //!
 //! @defgroup VB Log verbosity/severity

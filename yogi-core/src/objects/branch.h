@@ -37,7 +37,7 @@ class Branch : public api::ExposedObjectT<Branch, api::ObjectType::kBranch> {
       const std::function<void(const boost::uuids::uuid&)>& fn) const;
 
   void ForeachDiscoveredBranch(
-      const std::function<void(const boost::uuids::uuid&, std::string)>& fn)
+      const std::function<void(const boost::uuids::uuid&, nlohmann::json)>& fn)
       const;
 
  private:

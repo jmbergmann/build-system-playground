@@ -18,9 +18,29 @@ class TimedTcpSocket : public std::enable_shared_from_this<TimedTcpSocket> {
 
   boost::asio::ip::tcp::socket& Socket() { return socket_; }
 
+  template <typename AcceptHandler>
+  void Accept(boost::asio::ip::tcp::acceptor* acceptor,
+              AcceptHandler&& handler) {
+    remote_ep_ = {};
+    auto weak_self = std::weak_ptr<TimedTcpSocket>{shared_from_this()};
+    acceptor->async_accept(
+        socket_, [weak_self, handler = std::move(handler)](auto& ec) {
+          auto self = weak_self.lock();
+          if (!self) return;
+
+          if (!ec) {
+            self->remote_ep_ = self->socket_.remote_endpoint();
+            handler(api::kSuccess);
+          } else {
+            handler(api::Error(YOGI_ERR_ACCEPT_SOCKET_FAILED));
+          }
+        });
+  }
+
   template <typename ConnectHandler>
   void Connect(const boost::asio::ip::tcp::endpoint& ep,
                ConnectHandler&& handler) {
+    remote_ep_ = ep;
     auto weak_self = std::weak_ptr<TimedTcpSocket>{shared_from_this()};
     socket_.async_connect(
         ep, [weak_self, handler = std::move(handler)](auto& ec) {
@@ -83,7 +103,9 @@ class TimedTcpSocket : public std::enable_shared_from_this<TimedTcpSocket> {
     StartTimeout(weak_self);
   }
 
-  boost::asio::ip::tcp::endpoint GetRemoteEndpoint() const;
+  const boost::asio::ip::tcp::endpoint& GetRemoteEndpoint() const {
+    return remote_ep_;
+  }
 
  private:
   void StartTimeout(std::weak_ptr<TimedTcpSocket> weak_self);
@@ -91,6 +113,7 @@ class TimedTcpSocket : public std::enable_shared_from_this<TimedTcpSocket> {
 
   const std::chrono::nanoseconds timeout_;
   boost::asio::ip::tcp::socket socket_;
+  boost::asio::ip::tcp::endpoint remote_ep_;
   boost::asio::steady_timer timer_;
   bool timed_out_;
   std::shared_ptr<std::vector<char>> rcv_buffer_;

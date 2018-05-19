@@ -50,15 +50,14 @@ void TcpServer::StartAccept() {
   auto socket =
       std::make_shared<utils::TimedTcpSocket>(GetContext(), GetInfo()->timeout);
   auto weak_self = MakeWeakPtr<TcpServer>();
-  acceptor_.async_accept(socket->Socket(), [weak_self, socket](auto& ec) {
+  socket->Accept(&acceptor_, [weak_self, socket](const auto& err) {
     auto self = weak_self.lock();
     if (!self) return;
 
-    if (!ec) {
+    if (!err) {
       self->OnAccepted(socket);
     } else {
-      YOGI_LOG_ERROR(self->GetLogger(),
-                     "Accepting incoming connection failed: " << ec.message());
+      self->CallErrorHandler(err, socket);
     }
   });
 }

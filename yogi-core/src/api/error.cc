@@ -73,6 +73,9 @@ const char* Error::what() const noexcept {
 
     case YOGI_ERR_DESERIALIZE_MSG_FAILED:
       return "Could not deserialize a message";
+
+    case YOGI_ERR_ACCEPT_SOCKET_FAILED:
+      return "Could not accept a socket";
   }
 
   return "Invalid error code";
