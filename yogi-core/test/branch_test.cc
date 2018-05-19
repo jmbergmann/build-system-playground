@@ -17,8 +17,8 @@ using namespace std::chrono_literals;
 
 const int kAdvPort = 44442;
 const char* kAdvAddress = api::kDefaultAdvAddress;
-const std::chrono::nanoseconds kAdvInterval = 2ms;
-const std::chrono::nanoseconds kConnTimeout = 100ms;
+const std::chrono::nanoseconds kAdvInterval = 1000ms;
+const std::chrono::nanoseconds kConnTimeout = 3000ms;
 const std::chrono::nanoseconds kBrCleanupInterval = 100ms;
 
 class BranchTest : public ::testing::Test {
