@@ -97,6 +97,7 @@ add_executable (yogi-core-test
   test/licenses_test.cc
   test/logger_test.cc
   test/object_test.cc
+  test/serialize_test.cc
   test/timer_test.cc
   test/version_test.cc
 )

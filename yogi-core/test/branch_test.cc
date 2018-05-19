@@ -2,7 +2,6 @@
 #include <yogi_core.h>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
-#include <boost/uuid/uuid_generators.hpp>
 #include <boost/asio.hpp>
 #include <algorithm>
 #include <sstream>
@@ -17,14 +16,14 @@ using namespace std::chrono_literals;
 
 const int kAdvPort = 44442;
 const char* kAdvAddress = api::kDefaultAdvAddress;
-const std::chrono::nanoseconds kAdvInterval = 1000ms;
+const std::chrono::nanoseconds kAdvInterval = 100ms;
 const std::chrono::nanoseconds kConnTimeout = 3000ms;
 const std::chrono::nanoseconds kBrCleanupInterval = 100ms;
 
 class BranchTest : public ::testing::Test {
  protected:
   virtual void SetUp() override {
-    YOGI_LogToConsole(YOGI_VB_TRACE, YOGI_ST_STDERR, YOGI_TRUE, nullptr,
+    YOGI_LogToConsole(YOGI_VB_INFO, YOGI_ST_STDERR, YOGI_TRUE, nullptr,
                       nullptr);
     YOGI_LoggerSetComponentsVerbosity("Yogi\\..*", YOGI_VB_TRACE, nullptr);
 
@@ -186,7 +185,7 @@ TEST_F(BranchTest, Connections) {
   RunContextInBackground();
 
   auto start_time = std::chrono::steady_clock::now();
-  while (std::chrono::steady_clock::now() - start_time < 1s) {
+  while (std::chrono::steady_clock::now() - start_time < 1000000s) {
     auto branches = GetDiscoveredBranches();
 
     auto num_queried =

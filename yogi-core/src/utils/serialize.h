@@ -135,7 +135,7 @@ inline bool Deserialize<Timestamp>(Timestamp* time,
 template <>
 inline void Serialize<std::string>(std::vector<char>* buffer,
                                    const std::string& str) {
-  buffer->insert(buffer->end(), str.c_str(), str.c_str() + buffer->size() + 1);
+  buffer->insert(buffer->end(), str.c_str(), str.c_str() + str.size() + 1);
 }
 
 template <>
@@ -148,7 +148,7 @@ inline bool Deserialize<std::string>(std::string* str,
   }
 
   *str = std::string(*it, end);
-  *it = end;
+  *it = end + 1;
   return true;
 }
 
@@ -168,7 +168,7 @@ inline bool Deserialize<boost::uuids::uuid>(
   }
 
   std::copy_n(*it, sizeof(*uuid), uuid->begin());
-  *it += sizeof(uuid);
+  *it += sizeof(*uuid);
   return true;
 }
 

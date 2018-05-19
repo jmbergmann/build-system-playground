@@ -41,6 +41,14 @@ class Timestamp {
     return Timestamp(NanosecondsSinceEpoch() - ns);
   }
 
+  bool operator== (const Timestamp& rhs) const {
+    return NanosecondsSinceEpoch() == rhs.NanosecondsSinceEpoch();
+  }
+
+  bool operator!= (const Timestamp& rhs) const {
+    return NanosecondsSinceEpoch() != rhs.NanosecondsSinceEpoch();
+  }
+
   bool operator< (const Timestamp& rhs) const {
     return NanosecondsSinceEpoch() < rhs.NanosecondsSinceEpoch();
   }
