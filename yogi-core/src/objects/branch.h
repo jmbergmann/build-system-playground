@@ -8,6 +8,8 @@ namespace objects {
 
 class Branch : public api::ExposedObjectT<Branch, api::ObjectType::kBranch> {
  public:
+  typedef detail::ConnectionManager::BranchEvents BranchEvents;
+  typedef detail::ConnectionManager::BranchEventHandler BranchEventHandler;
   typedef detail::ConnectionManager::BranchInfoStringsList
       BranchInfoStringsList;
 
@@ -22,6 +24,11 @@ class Branch : public api::ExposedObjectT<Branch, api::ObjectType::kBranch> {
   const boost::uuids::uuid& GetUuid() const { return info_->GetUuid(); }
   std::string MakeInfoString() const;
   BranchInfoStringsList MakeConnectedBranchesInfoStrings() const;
+
+  void AwaitEvent(BranchEvents events, BranchEventHandler handler) {
+    connection_manager_->AwaitEvent(events, handler);
+  }
+  void CancelAwaitEvent() { connection_manager_->CancelAwaitEvent(); }
 
  private:
   void OnConnectionChanged(const api::Error& err,

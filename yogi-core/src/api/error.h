@@ -13,6 +13,8 @@ class Error : public std::exception {
 
   explicit operator bool() const { return err_ != YOGI_OK; }
   bool operator!() const { return err_ == YOGI_OK; }
+  bool operator==(const Error& rhs) const { return err_ == rhs.err_; }
+  bool operator!=(const Error& rhs) const { return err_ != rhs.err_; }
 
   int error_code() const noexcept { return err_; }
 

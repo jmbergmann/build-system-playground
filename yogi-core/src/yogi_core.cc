@@ -63,23 +63,42 @@ std::chrono::nanoseconds ConvertDuration(long long duration) {
   }
 }
 
+objects::Branch::BranchEvents ConvertBranchEvents(int events) {
+  return static_cast<objects::Branch::BranchEvents>(events);
+}
+
 bool IsTimeFormatValid(const std::string& fmt) {
-  if (fmt.empty()) {
-    return false;
-  }
+  if (fmt.empty()) return false;
 
   std::regex re("%([^YmdFHMST369]|$)");
   return !std::regex_search(fmt, re);
 }
 
 bool IsLogFormatValid(std::string fmt) {
-  if (fmt.empty()) {
-    return false;
-  }
+  if (fmt.empty()) return false;
 
   boost::replace_all(fmt, "$$", "");
   std::regex re("\\$([^tPTsmflc<>]|$)");
   return !std::regex_search(fmt, re);
+}
+
+void CopyUuidToUserBuffer(const boost::uuids::uuid& uuid, void* buffer) {
+  if (buffer == nullptr) return;
+  std::memcpy(buffer, &uuid, uuid.size());
+}
+
+bool CopyStringToUserBuffer(const std::string& str, char* buffer,
+                            int buffer_size) {
+  if (buffer == nullptr) return true;
+
+  auto n = std::min(str.size() + 1, static_cast<std::size_t>(buffer_size));
+  std::strncpy(buffer, str.c_str(), n);
+  if (str.size() + 1 > n) {
+    buffer[buffer_size - 1] = '\0';
+    return false;
+  }
+
+  return true;
 }
 
 }  // anonymous namespace
@@ -516,20 +535,10 @@ YOGI_API int YOGI_BranchGetInfo(void* branch, void* uuid, char* json,
 
   try {
     auto brn = api::ObjectRegister::Get<objects::Branch>(branch);
+    CopyUuidToUserBuffer(brn->GetUuid(), uuid);
 
-    if (uuid) {
-      auto& tmp = brn->GetUuid();
-      std::memcpy(uuid, &tmp, tmp.size());
-    }
-
-    if (json) {
-      auto tmp = brn->MakeInfoString();
-      auto n = std::min(tmp.size() + 1, static_cast<size_t>(jsonsize));
-      strncpy(json, tmp.c_str(), n);
-      if (tmp.size() + 1 > n) {
-        json[jsonsize - 1] = '\0';
-        return YOGI_ERR_BUFFER_TOO_SMALL;
-      }
+    if (!CopyStringToUserBuffer(brn->MakeInfoString(), json, jsonsize)) {
+      return YOGI_ERR_BUFFER_TOO_SMALL;
     }
   }
   CATCH_AND_RETURN;
@@ -548,21 +557,13 @@ YOGI_API int YOGI_BranchGetConnectedBranches(void* branch, void* uuid,
 
     auto buffer_too_small = false;
     for (auto& entry : brn->MakeConnectedBranchesInfoStrings()) {
-      if (uuid) {
-        memcpy(uuid, &entry.first, entry.first.size());
-      }
+      CopyUuidToUserBuffer(entry.first, uuid);
 
-      if (json) {
-        auto n = std::min(entry.second.size() + 1,
-                          static_cast<std::size_t>(jsonsize));
-        std::strncpy(json, entry.second.c_str(), n);
-        if (entry.second.size() + 1 > n) {
-          json[jsonsize - 1] = '\0';
-          fn(YOGI_ERR_BUFFER_TOO_SMALL, userarg);
-          buffer_too_small = true;
-        } else {
-          fn(YOGI_OK, userarg);
-        }
+      if (CopyStringToUserBuffer(entry.second, json, jsonsize)) {
+        fn(YOGI_OK, userarg);
+      } else {
+        fn(YOGI_ERR_BUFFER_TOO_SMALL, userarg);
+        buffer_too_small = true;
       }
     }
 
@@ -582,6 +583,23 @@ YOGI_API int YOGI_BranchAwaitEvent(void* branch, int events, void* uuid,
   CHECK_PARAM(fn != nullptr);
 
   try {
+    auto brn = api::ObjectRegister::Get<objects::Branch>(branch);
+
+    brn->AwaitEvent(
+        ConvertBranchEvents(events), [=](auto& res, auto event, auto& evres,
+                                         auto& tmp_uuid, auto& tmp_json) {
+          if (res != api::kSuccess) {
+            fn(res.error_code(), event, evres.error_code(), userarg);
+            return;
+          }
+
+          CopyUuidToUserBuffer(tmp_uuid, uuid);
+          if (CopyStringToUserBuffer(tmp_json, json, jsonsize)) {
+            fn(res.error_code(), event, evres.error_code(), userarg);
+          } else {
+            fn(YOGI_ERR_BUFFER_TOO_SMALL, event, evres.error_code(), userarg);
+          }
+        });
   }
   CATCH_AND_RETURN;
 }
@@ -590,6 +608,8 @@ YOGI_API int YOGI_BranchCancelAwaitEvent(void* branch) {
   CHECK_PARAM(branch != nullptr);
 
   try {
+    auto brn = api::ObjectRegister::Get<objects::Branch>(branch);
+    brn->CancelAwaitEvent();
   }
   CATCH_AND_RETURN;
 }

@@ -17,6 +17,17 @@ namespace detail {
 class ConnectionManager final
     : public std::enable_shared_from_this<ConnectionManager> {
  public:
+  enum BranchEvents {
+    kNoEvent = 0,
+    kBranchDiscoveredEvent = YOGI_BEV_BRANCH_DISCOVERED,
+    kBranchQueriedEvent = YOGI_BEV_BRANCH_QUERIED,
+    kConnectFinishedEvent = YOGI_BEV_CONNECT_FINISHED,
+    kConnectionLostEvent = YOGI_BEV_CONNECTION_LOST,
+  };
+
+  typedef std::function<void(const api::Error&, BranchEvents, const api::Error&,
+                             const boost::uuids::uuid&, const std::string&)>
+      BranchEventHandler;
   typedef std::function<void(const api::Error&, BranchConnectionPtr)>
       ConnectionChangedHandler;
   typedef std::vector<std::pair<boost::uuids::uuid, std::string>>
@@ -26,6 +37,8 @@ class ConnectionManager final
                     const boost::asio::ip::udp::endpoint& adv_ep,
                     ConnectionChangedHandler connection_changed_handler);
 
+  void Start(BranchInfoPtr info);
+
   const boost::asio::ip::udp::endpoint& GetAdvertisingEndpoint() const {
     return adv_sender_->GetEndpoint();
   }
@@ -34,9 +47,10 @@ class ConnectionManager final
     return acceptor_.local_endpoint();
   }
 
-  void Start(BranchInfoPtr info);
-
   BranchInfoStringsList MakeConnectedBranchesInfoStrings() const;
+
+  void AwaitEvent(BranchEvents events, BranchEventHandler handler);
+  void CancelAwaitEvent();
 
  private:
   typedef std::unordered_set<boost::uuids::uuid,
@@ -69,15 +83,25 @@ class ConnectionManager final
   const ConnectionChangedHandler connection_changed_handler_;
   const detail::AdvertisingSenderPtr adv_sender_;
   const detail::AdvertisingReceiverPtr adv_receiver_;
-
   boost::asio::ip::tcp::acceptor acceptor_;
   BranchInfoPtr info_;
+
+  UuidSet blacklisted_uuids_;
   ConnectionsMap connections_;
   mutable std::mutex connections_mutex_;
-  UuidSet blacklisted_uuids_;
+
+  BranchEventHandler event_handler_;
+  std::recursive_mutex event_handler_mutex_;
 };
 
 typedef std::shared_ptr<ConnectionManager> ConnectionManagerPtr;
 
 }  // namespace detail
 }  // namespace objects
+
+inline objects::detail::ConnectionManager::BranchEvents operator|(
+    objects::detail::ConnectionManager::BranchEvents a,
+    objects::detail::ConnectionManager::BranchEvents b) {
+  return static_cast<objects::detail::ConnectionManager::BranchEvents>(
+      static_cast<int>(a) | static_cast<int>(b));
+}

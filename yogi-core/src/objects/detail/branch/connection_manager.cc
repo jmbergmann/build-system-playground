@@ -39,6 +39,22 @@ ConnectionManager::MakeConnectedBranchesInfoStrings() const {
   return branches;
 }
 
+void ConnectionManager::AwaitEvent(BranchEvents events,
+                                   BranchEventHandler handler) {
+  std::lock_guard<std::recursive_mutex> lock(event_handler_mutex_);
+  CancelAwaitEvent();
+  event_handler_ = handler;
+}
+
+void ConnectionManager::CancelAwaitEvent() {
+  std::lock_guard<std::recursive_mutex> lock(event_handler_mutex_);
+  if (event_handler_) {
+    event_handler_(api::Error(YOGI_ERR_CANCELED), kNoEvent, api::kSuccess, {},
+                   {});
+    event_handler_ = {};
+  }
+}
+
 void ConnectionManager::SetupAcceptor(const boost::asio::ip::tcp& protocol) {
   boost::system::error_code ec;
   acceptor_.open(protocol, ec);
@@ -81,11 +97,14 @@ void ConnectionManager::OnAcceptFinished(const api::Error& err,
 
 void ConnectionManager::OnAdvertisementReceived(
     const boost::uuids::uuid& uuid, const boost::asio::ip::tcp::endpoint& ep) {
-  if (blacklisted_uuids_.count(uuid) || connections_.count(uuid)) {
-    return;
-  }
+  {
+    std::lock_guard<std::mutex> lock(connections_mutex_);
+    if (blacklisted_uuids_.count(uuid) || connections_.count(uuid)) {
+      return;
+    }
 
-  connections_[uuid] = {};
+    connections_[uuid] = {};
+  }
 
   YOGI_LOG_INFO(logger_, info_ << " New branch " << uuid << " discovered on "
                                << ep.address().to_string() << ':' << ep.port())
@@ -104,6 +123,7 @@ void ConnectionManager::OnConnectFinished(
                                   << " on " << ep.address().to_string() << ':'
                                   << ep.port() << ": " << err);
 
+    std::lock_guard<std::mutex> lock(connections_mutex_);
     auto it = connections_.find(uuid);
     bool accepted_by_tcp_server = it != connections_.end() && it->second;
     if (!accepted_by_tcp_server) {
