@@ -19,12 +19,11 @@ add_library (yogi-core-static STATIC
   src/api/object.cc
   src/licenses/3rd_party_licenses.cc
   src/licenses/yogi_license.cc
-  src/objects/detail/branch/adv_receiver.cc
-  src/objects/detail/branch/adv_sender.cc
+  src/objects/detail/branch/advertising_receiver.cc
+  src/objects/detail/branch/advertising_sender.cc
+  src/objects/detail/branch/branch_connection.cc
   src/objects/detail/branch/branch_info.cc
-  src/objects/detail/branch/tcp_base.cc
-  src/objects/detail/branch/tcp_client.cc
-  src/objects/detail/branch/tcp_server.cc
+  src/objects/detail/branch/connection_manager.cc
   src/objects/detail/log/console_log_sink.cc
   src/objects/detail/log/file_log_sink.cc
   src/objects/detail/log/hook_log_sink.cc

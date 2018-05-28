@@ -4,161 +4,169 @@
 #include "../../../utils/system.h"
 
 #include <boost/uuid/uuid_io.hpp>
+#include <boost/uuid/uuid_generators.hpp>
 
 namespace objects {
 namespace detail {
+namespace {
 
-std::size_t BranchInfo::GetAdvertisingMessageSize() {
-  static auto size = LocalBranchInfo().MakeAdvertisingMessage().size();
-  return size;
+template <typename Field>
+void DeserializeField(Field* field, const std::vector<char>& msg,
+                      std::vector<char>::const_iterator* it) {
+  if (!utils::Deserialize<Field>(field, msg, it)) {
+    throw api::Error(YOGI_ERR_DESERIALIZE_MSG_FAILED);
+  }
 }
 
-std::size_t BranchInfo::GetInfoMessageHeaderSize() {
-  return GetAdvertisingMessageSize() + 4;
+}  // anonymous namespace
+
+BranchInfoPtr BranchInfo::CreateLocal(
+    std::string name, std::string description, std::string net_name,
+    std::string path, const boost::asio::ip::tcp::endpoint& tcp_ep,
+    const std::chrono::nanoseconds& timeout,
+    const std::chrono::nanoseconds& adv_interval) {
+  auto info = std::make_shared<BranchInfo>();
+  info->uuid_ = boost::uuids::random_generator()();
+  info->name_ = name;
+  info->description_ = description;
+  info->net_name_ = net_name;
+  info->path_ = path;
+  info->hostname_ = utils::GetHostname();
+  info->pid_ = utils::GetProcessId();
+  info->tcp_ep_ = tcp_ep;
+  info->start_time_ = utils::Timestamp::Now();
+  info->timeout_ = timeout;
+  info->adv_interval_ = adv_interval;
+
+  info->PopulateMessages();
+  info->PopulateJson();
+
+  return info;
 }
 
-api::Error BranchInfo::CheckAdvertisingMessageValidity(
-    const std::vector<char>& msg) {
-  if (std::memcmp(msg.data(), "YOGI", 5) != 0) {
+BranchInfoPtr BranchInfo::CreateFromInfoMessage(
+    const std::vector<char> info_msg, const boost::asio::ip::address& addr) {
+  auto info = std::make_shared<BranchInfo>();
+
+  unsigned short port;
+  if (auto err = DeserializeAdvertisingMessage(&info->uuid_, &port, info_msg)) {
+    throw err;
+  }
+
+  info->tcp_ep_.port(port);
+  info->tcp_ep_.address(addr);
+
+  auto it = info_msg.cbegin() + kInfoMessageHeaderSize;
+  DeserializeField(&info->name_, info_msg, &it);
+  DeserializeField(&info->description_, info_msg, &it);
+  DeserializeField(&info->net_name_, info_msg, &it);
+  DeserializeField(&info->path_, info_msg, &it);
+  DeserializeField(&info->hostname_, info_msg, &it);
+  DeserializeField(&info->pid_, info_msg, &it);
+  DeserializeField(&info->start_time_, info_msg, &it);
+  DeserializeField(&info->timeout_, info_msg, &it);
+  DeserializeField(&info->adv_interval_, info_msg, &it);
+
+  info->PopulateJson();
+
+  return info;
+}
+
+api::Error BranchInfo::DeserializeAdvertisingMessage(
+    boost::uuids::uuid* uuid, unsigned short* tcp_port,
+    const std::vector<char>& adv_msg) {
+  YOGI_ASSERT(adv_msg.size() >= kAdvertisingMessageSize);
+  if (auto err = CheckMagicPrefixAndVersion(adv_msg)) {
+    return err;
+  }
+
+  auto it = adv_msg.cbegin() + 7;
+  utils::Deserialize(uuid, adv_msg, &it);
+  utils::Deserialize(tcp_port, adv_msg, &it);
+
+  return api::kSuccess;
+}
+
+api::Error BranchInfo::DeserializeInfoMessageBodySize(
+    std::size_t* body_size, const std::vector<char>& info_msg_hdr) {
+  YOGI_ASSERT(info_msg_hdr.size() >= kInfoMessageHeaderSize);
+  if (auto err = CheckMagicPrefixAndVersion(info_msg_hdr)) {
+    return err;
+  }
+
+  auto it = info_msg_hdr.cbegin() + kAdvertisingMessageSize;
+  utils::Deserialize(body_size, info_msg_hdr, &it);
+
+  return api::kSuccess;
+}
+
+api::Error BranchInfo::CheckMagicPrefixAndVersion(
+    const std::vector<char>& adv_msg) {
+  YOGI_ASSERT(adv_msg.size() >= kAdvertisingMessageSize);
+  if (std::memcmp(adv_msg.data(), "YOGI", 5)) {
     return api::Error(YOGI_ERR_INVALID_MAGIC_PREFIX);
   }
 
-  if (msg[5] != api::kVersionMajor || msg[6] != api::kVersionMinor) {
+  if (adv_msg[5] != api::kVersionMajor || adv_msg[6] != api::kVersionMinor) {
     return api::Error(YOGI_ERR_INCOMPATIBLE_VERSION);
   }
 
   return api::kSuccess;
 }
 
-nlohmann::json BranchInfo::ToJson() const {
-  return {
-      {"uuid", boost::uuids::to_string(uuid)},
-      {"name", name},
-      {"description", description},
-      {"net_name", net_name},
-      {"path", path},
-      {"hostname", hostname},
-      {"pid", pid},
-      {"tcp_server_address", tcp_ep.address().to_string()},
-      {"tcp_server_port", tcp_ep.port()},
-      {"start_time", start_time.ToJavaScriptString()},
-      {"timeout", static_cast<float>(timeout.count()) / 1000'000'000.0f},
-  };
-}
+void BranchInfo::PopulateMessages() {
+  adv_msg_ = {'Y', 'O', 'G', 'I', 0};
+  adv_msg_.push_back(api::kVersionMajor);
+  adv_msg_.push_back(api::kVersionMinor);
+  utils::Serialize(&adv_msg_, uuid_);
+  utils::Serialize(&adv_msg_, tcp_ep_.port());
+  YOGI_ASSERT(adv_msg_.size() == kAdvertisingMessageSize);
 
-const LoggerPtr RemoteBranchInfo::logger_ =
-    Logger::CreateStaticInternalLogger("Branch");
-
-LocalBranchInfo::LocalBranchInfo() {
-  pid = utils::GetProcessId();
-  hostname = utils::GetHostname();
-  start_time = utils::Timestamp::Now();
-}
-
-nlohmann::json LocalBranchInfo::ToJson() const {
-  auto json = BranchInfo::ToJson();
-  json["advertising_address"] = adv_ep.address().to_string();
-  json["advertising_port"] = adv_ep.port();
-  json["advertising_interval"] =
-      static_cast<float>(adv_interval.count()) / 1000'000'000.0f;
-  return json;
-}
-
-std::vector<char> LocalBranchInfo::MakeAdvertisingMessage() const {
-  std::vector<char> msg = {'Y', 'O', 'G', 'I', 0};
-  msg.push_back(api::kVersionMajor);
-  msg.push_back(api::kVersionMinor);
-  utils::Serialize(&msg, uuid);
-  utils::Serialize(&msg, tcp_ep.port());
-  return msg;
-}
-
-std::vector<char> LocalBranchInfo::MakeInfoMessage() const {
   std::vector<char> buffer;
-  utils::Serialize(&buffer, name);
-  utils::Serialize(&buffer, description);
-  utils::Serialize(&buffer, net_name);
-  utils::Serialize(&buffer, path);
-  utils::Serialize(&buffer, hostname);
-  utils::Serialize(&buffer, pid);
-  utils::Serialize(&buffer, start_time);
-  utils::Serialize(&buffer, timeout);
-  utils::Serialize(&buffer, adv_interval);
+  utils::Serialize(&buffer, name_);
+  utils::Serialize(&buffer, description_);
+  utils::Serialize(&buffer, net_name_);
+  utils::Serialize(&buffer, path_);
+  utils::Serialize(&buffer, hostname_);
+  utils::Serialize(&buffer, pid_);
+  utils::Serialize(&buffer, start_time_);
+  utils::Serialize(&buffer, timeout_);
+  utils::Serialize(&buffer, adv_interval_);
 
-  auto msg = MakeAdvertisingMessage();
-  utils::Serialize(&msg, buffer.size());
-  msg.insert(msg.end(), buffer.begin(), buffer.end());
-
-  return msg;
+  info_msg_ = adv_msg_;
+  utils::Serialize(&info_msg_, buffer.size());
+  YOGI_ASSERT(info_msg_.size() == kInfoMessageHeaderSize);
+  info_msg_.insert(info_msg_.end(), buffer.begin(), buffer.end());
 }
 
-std::shared_ptr<RemoteBranchInfo> RemoteBranchInfo::Create(
-    ContextPtr context, const boost::uuids::uuid& uuid,
-    const boost::asio::ip::tcp::endpoint& tcp_ep) {
-  auto info = std::make_shared<RemoteBranchInfo>(context);
-  info->uuid = uuid;
-  info->tcp_ep = tcp_ep;
-
-  return info;
-}
-
-std::shared_ptr<RemoteBranchInfo>
-RemoteBranchInfo::CreateFromAdvertisingMessage(
-    ContextPtr context, const std::vector<char>& msg,
-    utils::TimedTcpSocketPtr socket) {
-  YOGI_ASSERT(!CheckAdvertisingMessageValidity(msg));
-
-  auto it = msg.cbegin() + GetAdvertisingMessageHeaderSize();
-
-  auto info = std::make_shared<RemoteBranchInfo>(context);
-  if (!DeserializeField(&info->uuid, msg, &it)) {
-    YOGI_ASSERT(false);
-    return {};
-  }
-
-  unsigned short port;
-  if (!DeserializeField(&port, msg, &it)) {
-    YOGI_ASSERT(false);
-    return {};
-  }
-
-  info->tcp_ep.port(port);
-  info->tcp_ep.address(socket->GetRemoteEndpoint().address());
-  info->socket = socket;
-
-  return info;
-}
-
-RemoteBranchInfo::RemoteBranchInfo(ContextPtr context)
-    : context(context),
-      last_activity(utils::Timestamp::Now()),
-      heartbeat_timer(context->IoContext()) {}
-
-bool RemoteBranchInfo::DeserializeInfoMessageBody(
-    const std::vector<char>& msg) {
-  auto it = msg.begin();
-  if (!DeserializeField(&name, msg, &it)) return false;
-  if (!DeserializeField(&description, msg, &it)) return false;
-  if (!DeserializeField(&net_name, msg, &it)) return false;
-  if (!DeserializeField(&path, msg, &it)) return false;
-  if (!DeserializeField(&hostname, msg, &it)) return false;
-  if (!DeserializeField(&pid, msg, &it)) return false;
-  if (!DeserializeField(&start_time, msg, &it)) return false;
-  if (!DeserializeField(&timeout, msg, &it)) return false;
-  if (!DeserializeField(&this->adv_interval, msg, &it)) return false;
-
-  return true;
-}
-
-nlohmann::json RemoteBranchInfo::ToJson() const {
-  auto json = BranchInfo::ToJson();
-  json["connected"] = connected;
-  json["last_connected"] = last_connected.ToJavaScriptString();
-  json["last_disconnected"] = last_disconnected.ToJavaScriptString();
-  json["last_activity"] = last_activity.ToJavaScriptString();
-  json["last_error"] = last_error.error_code();
-  return json;
+void BranchInfo::PopulateJson() {
+  json_ = {
+      {"uuid", boost::uuids::to_string(uuid_)},
+      {"name", name_},
+      {"description", description_},
+      {"net_name", net_name_},
+      {"path", path_},
+      {"hostname", hostname_},
+      {"pid", pid_},
+      {"tcp_server_address", tcp_ep_.address().to_string()},
+      {"tcp_server_port", tcp_ep_.port()},
+      {"start_time", start_time_.ToJavaScriptString()},
+      {"timeout", static_cast<float>(timeout_.count()) / 1000'000'000.0f},
+      {"advertising_interval",
+       static_cast<float>(adv_interval_.count()) / 1000'000'000.0f},
+  };
 }
 
 }  // namespace detail
 }  // namespace objects
+
+std::ostream& operator<<(std::ostream& os,
+                         const objects::detail::BranchInfoPtr& info) {
+  if (info) {
+    os << '[' << info->GetUuid() << ']';
+  } else {
+    os << "[????????-????-????-????-????????????]";
+  }
+
+  return os;
+}

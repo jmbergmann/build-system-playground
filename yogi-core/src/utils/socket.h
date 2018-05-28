@@ -9,103 +9,31 @@
 #include <chrono>
 #include <sstream>
 #include <vector>
+#include <functional>
 
 namespace utils {
 
 class TimedTcpSocket : public std::enable_shared_from_this<TimedTcpSocket> {
  public:
+  typedef std::function<void(const api::Error&)> CompletionHandler;
+  typedef std::function<void(const api::Error&, const std::vector<char>&)>
+      ReceiveHandler;
+
   TimedTcpSocket(objects::ContextPtr context, std::chrono::nanoseconds timeout);
+  virtual ~TimedTcpSocket() {}
 
-  boost::asio::ip::tcp::socket& Socket() { return socket_; }
-
-  template <typename AcceptHandler>
-  void Accept(boost::asio::ip::tcp::acceptor* acceptor,
-              AcceptHandler&& handler) {
-    remote_ep_ = {};
-    auto weak_self = std::weak_ptr<TimedTcpSocket>{shared_from_this()};
-    acceptor->async_accept(
-        socket_, [weak_self, handler = std::move(handler)](auto& ec) {
-          auto self = weak_self.lock();
-          if (!self) return;
-
-          if (!ec) {
-            self->remote_ep_ = self->socket_.remote_endpoint();
-            handler(api::kSuccess);
-          } else {
-            handler(api::Error(YOGI_ERR_ACCEPT_SOCKET_FAILED));
-          }
-        });
-  }
-
-  template <typename ConnectHandler>
-  void Connect(const boost::asio::ip::tcp::endpoint& ep,
-               ConnectHandler&& handler) {
-    remote_ep_ = ep;
-    auto weak_self = std::weak_ptr<TimedTcpSocket>{shared_from_this()};
-    socket_.async_connect(
-        ep, [weak_self, handler = std::move(handler)](auto& ec) {
-          auto self = weak_self.lock();
-          if (!self) return;
-
-          if (self->timed_out_) {
-            handler(api::Error(YOGI_ERR_TIMEOUT));
-          } else if (!ec) {
-            handler(api::kSuccess);
-          } else {
-            handler(api::Error(YOGI_ERR_CONNECT_SOCKET_FAILED));
-          }
-        });
-
-    StartTimeout(weak_self);
-  }
-
-  template <typename ConstBufferSequence, typename SendHandler>
-  void Send(const ConstBufferSequence& buffers, SendHandler&& handler) {
-    auto weak_self = std::weak_ptr<TimedTcpSocket>{shared_from_this()};
-    boost::asio::async_write(socket_, buffers,
-                             [weak_self, handler = std::move(handler)](
-                                 auto& ec, auto bytes_written) {
-                               auto self = weak_self.lock();
-                               if (!self) return;
-
-                               if (!ec) {
-                                 handler(api::kSuccess);
-                               } else {
-                                 handler(api::Error(YOGI_ERR_RW_SOCKET_FAILED));
-                               }
-                             });
-  }
-
-  template <typename ReceiveHandler>
-  void ReceiveExactly(std::size_t num_bytes, ReceiveHandler&& handler) {
-    auto buffer = rcv_buffer_;
-    buffer->resize(num_bytes);
-    auto weak_self = std::weak_ptr<TimedTcpSocket>{shared_from_this()};
-    boost::asio::async_read(
-        socket_, boost::asio::buffer(*buffer),
-        [weak_self, buffer, handler = std::move(handler)](auto& ec,
-                                                          auto bytes_read) {
-          auto self = weak_self.lock();
-          if (!self) return;
-
-          self->timer_.cancel();
-
-          const auto& buffer_ref = *buffer;
-          if (self->timed_out_) {
-            handler(api::Error(YOGI_ERR_TIMEOUT), buffer_ref);
-          } else if (!ec) {
-            handler(api::kSuccess, buffer_ref);
-          } else {
-            handler(api::Error(YOGI_ERR_RW_SOCKET_FAILED), buffer_ref);
-          }
-        });
-
-    StartTimeout(weak_self);
-  }
+  std::weak_ptr<TimedTcpSocket> MakeWeakPtr() { return shared_from_this(); }
 
   const boost::asio::ip::tcp::endpoint& GetRemoteEndpoint() const {
     return remote_ep_;
   }
+
+  void Accept(boost::asio::ip::tcp::acceptor* acceptor,
+              CompletionHandler handler);
+  void Connect(const boost::asio::ip::tcp::endpoint& ep,
+               CompletionHandler handler);
+  void Send(const boost::asio::const_buffer& buffer, CompletionHandler handler);
+  void ReceiveExactly(std::size_t num_bytes, ReceiveHandler handler);
 
  private:
   void StartTimeout(std::weak_ptr<TimedTcpSocket> weak_self);

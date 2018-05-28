@@ -25,7 +25,7 @@
   }
 
 #ifdef NDEBUG
-# define CATCH_AND_RETURN_INTERNAL_ERRORS                              \
+#define CATCH_AND_RETURN_INTERNAL_ERRORS                               \
   catch (const std::exception& e) {                                    \
     fprintf(stderr, "%s:%i: INTERNAL ERROR: %s\n", __FILE__, __LINE__, \
             e.what());                                                 \
@@ -37,7 +37,7 @@
     return YOGI_ERR_UNKNOWN;                                           \
   }
 #else
-# define CATCH_AND_RETURN_INTERNAL_ERRORS
+#define CATCH_AND_RETURN_INTERNAL_ERRORS
 #endif
 
 #define CATCH_AND_RETURN            \
@@ -58,8 +58,7 @@ namespace {
 std::chrono::nanoseconds ConvertDuration(long long duration) {
   if (duration == -1) {
     return std::chrono::nanoseconds::max();
-  }
-  else {
+  } else {
     return std::chrono::nanoseconds(duration);
   }
 }
@@ -157,7 +156,8 @@ YOGI_API int YOGI_LogToHook(int verbosity,
 }
 
 YOGI_API int YOGI_LogToFile(int verbosity, const char* filename, char* genfn,
-                            int genfnsize, const char* timefmt, const char* fmt) {
+                            int genfnsize, const char* timefmt,
+                            const char* fmt) {
   if (verbosity != YOGI_VB_NONE) {
     CHECK_PARAM(YOGI_VB_FATAL <= verbosity && verbosity <= YOGI_VB_TRACE);
     CHECK_PARAM(filename == nullptr || IsTimeFormatValid(filename));
@@ -468,8 +468,7 @@ YOGI_API int YOGI_BranchCreate(void** branch, void* context, const char* name,
                                const char* description, const char* netname,
                                const char* password, const char* path,
                                const char* advaddr, int advport,
-                               long long advint, long long timeout,
-                               long long brcleanint) {
+                               long long advint, long long timeout) {
   CHECK_PARAM(branch != nullptr);
   CHECK_PARAM(context != nullptr);
   CHECK_PARAM(name == nullptr || *name != '\0');
@@ -480,7 +479,6 @@ YOGI_API int YOGI_BranchCreate(void** branch, void* context, const char* name,
   CHECK_PARAM(advport >= 0);
   CHECK_PARAM(advint == -1 || advint == 0 || advint >= 1000000);
   CHECK_PARAM(timeout == -1 || timeout == 0 || timeout >= 1000000);
-  CHECK_PARAM(brcleanint == -1 || brcleanint >= 0);
 
   try {
     auto ctx = api::ObjectRegister::Get<objects::Context>(context);
@@ -488,19 +486,22 @@ YOGI_API int YOGI_BranchCreate(void** branch, void* context, const char* name,
                            : std::to_string(utils::GetProcessId()) + '@' +
                                  utils::GetHostname();
 
+    boost::system::error_code ec;
+    auto adv_ep = boost::asio::ip::udp::endpoint(
+        boost::asio::ip::make_address(
+            advaddr ? advaddr : api::kDefaultAdvAddress, ec),
+        static_cast<unsigned short>(advport ? advport : api::kDefaultAdvPort));
+    if (ec) return YOGI_ERR_INVALID_PARAM;
+
     auto brn = objects::Branch::Create(
         ctx, final_name, description ? description : "",
         netname ? std::string(netname) : utils::GetHostname(),
         password ? password : "",
-        path ? std::string(path) : (std::string("/") + final_name),
-        advaddr ? advaddr : api::kDefaultAdvAddress,
-        advport ? advport : api::kDefaultAdvPort,
+        path ? std::string(path) : (std::string("/") + final_name), adv_ep,
         advint ? ConvertDuration(advint)
                : std::chrono::nanoseconds(api::kDefaultAdvInterval),
         timeout ? ConvertDuration(timeout)
-               : std::chrono::nanoseconds(api::kDefaultConnectionTimeout),
-        brcleanint ? ConvertDuration(brcleanint)
-               : std::chrono::nanoseconds(api::kDefaultBranchesCleanupInterval));
+                : std::chrono::nanoseconds(api::kDefaultConnectionTimeout));
     brn->Start();
 
     *branch = api::ObjectRegister::Register(brn);
@@ -522,7 +523,7 @@ YOGI_API int YOGI_BranchGetInfo(void* branch, void* uuid, char* json,
     }
 
     if (json) {
-      auto tmp = brn->MakeInfo();
+      auto tmp = brn->MakeInfoString();
       auto n = std::min(tmp.size() + 1, static_cast<size_t>(jsonsize));
       strncpy(json, tmp.c_str(), n);
       if (tmp.size() + 1 > n) {
@@ -534,10 +535,10 @@ YOGI_API int YOGI_BranchGetInfo(void* branch, void* uuid, char* json,
   CATCH_AND_RETURN;
 }
 
-YOGI_API int YOGI_BranchGetDiscoveredBranches(void* branch, void* uuid,
-                                              char* json, int jsonsize,
-                                              void (*fn)(int, void*),
-                                              void* userarg) {
+YOGI_API int YOGI_BranchGetConnectedBranches(void* branch, void* uuid,
+                                             char* json, int jsonsize,
+                                             void (*fn)(int, void*),
+                                             void* userarg) {
   CHECK_PARAM(branch != nullptr);
   CHECK_PARAM(json == nullptr || jsonsize > 0);
   CHECK_PARAM(fn != nullptr);
@@ -546,34 +547,23 @@ YOGI_API int YOGI_BranchGetDiscoveredBranches(void* branch, void* uuid,
     auto brn = api::ObjectRegister::Get<objects::Branch>(branch);
 
     auto buffer_too_small = false;
-    if (json) {
-      brn->ForeachDiscoveredBranch([&](auto& tmp_uuid, auto tmp_json) {
-        if (uuid) {
-          memcpy(uuid, &tmp_uuid, tmp_uuid.size());
-        }
+    for (auto& entry : brn->MakeConnectedBranchesInfoStrings()) {
+      if (uuid) {
+        memcpy(uuid, &entry.first, entry.first.size());
+      }
 
-        auto tmp_json_str = tmp_json.dump();
-        auto n =
-            std::min(tmp_json_str.size() + 1, static_cast<size_t>(jsonsize));
-        std::strncpy(json, tmp_json_str.c_str(), n);
-        if (tmp_json_str.size() + 1 > n) {
+      if (json) {
+        auto n = std::min(entry.second.size() + 1,
+                          static_cast<std::size_t>(jsonsize));
+        std::strncpy(json, entry.second.c_str(), n);
+        if (entry.second.size() + 1 > n) {
           json[jsonsize - 1] = '\0';
           fn(YOGI_ERR_BUFFER_TOO_SMALL, userarg);
           buffer_too_small = true;
-        }
-        else {
+        } else {
           fn(YOGI_OK, userarg);
         }
-      });
-    }
-    else {
-      brn->ForeachDiscoveredBranch([&](auto& tmp_uuid) {
-        if (uuid) {
-          memcpy(uuid, &tmp_uuid, tmp_uuid.size());
-        }
-
-        fn(YOGI_OK, userarg);
-      });
+      }
     }
 
     if (buffer_too_small) {
@@ -583,10 +573,10 @@ YOGI_API int YOGI_BranchGetDiscoveredBranches(void* branch, void* uuid,
   CATCH_AND_RETURN;
 }
 
-YOGI_API int YOGI_BranchAwaitDiscoveredBranchesChange(void* branch, void* uuid,
-                                                      char* json, int jsonsize,
-                                                      void (*fn)(int, void*),
-                                                      void* userarg) {
+YOGI_API int YOGI_BranchAwaitEvent(void* branch, int events, void* uuid,
+                                   char* json, int jsonsize,
+                                   void (*fn)(int, int, int, void*),
+                                   void* userarg) {
   CHECK_PARAM(branch != nullptr);
   CHECK_PARAM(json == nullptr || jsonsize > 0);
   CHECK_PARAM(fn != nullptr);
@@ -596,7 +586,7 @@ YOGI_API int YOGI_BranchAwaitDiscoveredBranchesChange(void* branch, void* uuid,
   CATCH_AND_RETURN;
 }
 
-YOGI_API int YOGI_BranchCancelAwaitDiscoveredBranchesChange(void* branch) {
+YOGI_API int YOGI_BranchCancelAwaitEvent(void* branch) {
   CHECK_PARAM(branch != nullptr);
 
   try {

@@ -219,6 +219,64 @@
 #define YOGI_ST_STDERR 1
 
 //! @}
+//!
+//! @defgroup BEV Branch Events
+//!
+//! Definitions of various events that can be observed on a branch.
+//!
+//! @{
+
+//! A new branch has been discovered (previously unknown UUID)
+//!
+//! Associated event information:
+//!
+//!   {
+//!     "uuid":               "123e4567-e89b-12d3-a456-426655440000",
+//!     "tcp_server_address": "fe80::f086:b106:2c1b:c45",
+//!     "tcp_server_port":    43384
+//!   }
+#define YOGI_BEV_BRANCH_DISCOVERED (1<<0)
+
+//! Querying new branch for information finished (successfully or not)
+//!
+//! Associated event information:
+//!
+//!   {
+//!     "uuid":                 "123e4567-e89b-12d3-a456-426655440000",
+//!     "name":                 "Pump Safety Logic",
+//!     "description":          "Monitors the pump for safety",
+//!     "net_name":             "Hardware Control",
+//!     "path":                 "/Cooling System/Pump/Safety",
+//!     "hostname":             "beaglebone",
+//!     "pid":                  3321,
+//!     "tcp_server_address":   "fe80::f086:b106:2c1b:c45",
+//!     "tcp_server_port":      43384,
+//!     "start_time":           "2018-04-23T18:25:43.511Z",
+//!     "timeout":              3.0,
+//!     "advertising_interval": 1.0
+//!   }
+#define YOGI_BEV_BRANCH_QUERIED (1<<1)
+
+//! Connecting to a branch finished (successfully or not)
+//!
+//! Associated event information:
+//!
+//!   {
+//!     "uuid": "123e4567-e89b-12d3-a456-426655440000"
+//!   }
+#define YOGI_BEV_CONNECT_FINISHED (1<<2)
+
+//! The connection to a branch was lost
+//!
+//! Associated event information:
+//!
+//!   {
+//!     "uuid": "123e4567-e89b-12d3-a456-426655440000"
+//!   }
+#define YOGI_BEV_CONNECTION_LOST (1<<3)
+
+//! @}
+
 #ifndef YOGI_API
 # ifdef _MSC_VER
 #   define YOGI_API __declspec(dllimport)
@@ -837,10 +895,6 @@ YOGI_API int YOGI_TimerCancel(void* timer);
  * \param[in]  timeout     Maximum time of inactivity before a remote branch is
  *                         considered to be dead (set to 0 for default; set to
  *                         -1 for infinity; must be at least 1 millisecond)
- * \param[in]  brcleanint  Branch cleanup interval; time until a discovered but
- *                         inactive remote branch will be removed from the list
- *                         of discovered branches (set to 0 for default; set to
- *                         -1 for infinity)
  *
  * \returns [=0] #YOGI_OK if successful
  * \returns [<0] An error code in case of a failure (see \ref EC)
@@ -849,8 +903,7 @@ YOGI_API int YOGI_BranchCreate(void** branch, void* context, const char* name,
                                const char* description, const char* netname,
                                const char* password, const char* path,
                                const char* advaddr, int advport,
-                               long long advint, long long timeout,
-                               long long brcleanint);
+                               long long advint, long long timeout);
 
 /***************************************************************************//**
  * Retrieves information about a local branch.
@@ -875,8 +928,10 @@ YOGI_API int YOGI_BranchCreate(void** branch, void* context, const char* name,
  *      "advertising_address":  "ff31::8000:2439",
  *      "advertising_port":     13531,
  *      "advertising_interval": 1.0,
+ *      "tcp_server_address":   "::",
  *      "tcp_server_port":      53332,
- *      "start_time":           "2018-04-23T18:25:43.511Z"
+ *      "start_time":           "2018-04-23T18:25:43.511Z",
+ *      "timeout":              3.0
  *    }
  *
  * \param[in]  branch   The branch handle
@@ -893,9 +948,9 @@ YOGI_API int YOGI_BranchGetInfo(void* branch, void* uuid, char* json,
                                 int jsonsize);
 
 /***************************************************************************//**
- * Retrieves information about all remote branches that were discovered.
+ * Retrieves information about all connected remote branches.
  *
- * For each of the discovered remote branches, this function will:
+ * For each of the connected remote branches, this function will:
  * -# Write the branch's UUID (16 bytes) in binary form to \p uuid.
  * -# Generate a JSON string containing further information to \p json.
  * -# Execute the handler \p fn with YOGI_OK as first argument if \p jsonsize
@@ -914,39 +969,18 @@ YOGI_API int YOGI_BranchGetInfo(void* branch, void* uuid, char* json,
  *
  *    {
  *      "uuid":                 "123e4567-e89b-12d3-a456-426655440000",
- *      "address":              "fe80::f086:b106:2c1b:c45",
- *      "tcp_server_port":      43384,
  *      "name":                 "Pump Safety Logic",
  *      "description":          "Monitors the pump for safety",
  *      "net_name":             "Hardware Control",
  *      "path":                 "/Cooling System/Pump/Safety",
  *      "hostname":             "beaglebone",
  *      "pid":                  3321,
- *      "advertising_interval": 1.0,
- *      "start_time":           "2018-04-23T18:25:43.511Z",
- *      "connected":            true,
- *      "last_connected":       "2018-04-23T18:28:12.333Z",
- *      "last_disconnected":    "2018-04-23T18:27:12.333Z",
- *      "last_error":           -9
- *    }
- *
- * Branches that were discovered by receiving their advertising message but that
- * were not queried for more information yet only have the following subset of
- * information with the last four entries always being as shown:
- *
- *    {
- *      "uuid":                 "123e4567-e89b-12d3-a456-426655440000",
- *      "address":              "fe80::f086:b106:2c1b:c45",
+ *      "tcp_server_address":   "fe80::f086:b106:2c1b:c45",
  *      "tcp_server_port":      43384,
- *      "connected":            false,
- *      "last_connected":       null,
- *      "last_disconnected":    null,
- *      "last_error":           0
+ *      "start_time":           "2018-04-23T18:25:43.511Z",
+ *      "timeout":              3.0,
+ *      "advertising_interval": 1.0
  *    }
- *
- * Note: The list of discovered branches will be cleaned periodically such that
- *       inactive branches are removed after the branch cleanup time as
- *       specified when creating the local branch.
  *
  * \param[in]  branch   The branch handle
  * \param[out] uuid     Pointer to 16 byte array for storing the UUID (can be
@@ -954,64 +988,74 @@ YOGI_API int YOGI_BranchGetInfo(void* branch, void* uuid, char* json,
  * \param[out] json     Pointer to a char array for storing the information (can
  *                      be set to NULL)
  * \param[in]  jsonsize Maximum number of bytes to write to \p json
- * \param[in]  fn       Handler to call for each discovered branch
+ * \param[in]  fn       Handler to call for each connected branch
  * \param[in]  userarg  User-specified argument to be passed to \p fn
  *
  * \returns [=0] #YOGI_OK if successful
  * \returns [<0] An error code in case of a failure (see \ref EC)
  ******************************************************************************/
-YOGI_API int YOGI_BranchGetDiscoveredBranches(void* branch, void* uuid,
-                                              char* json, int jsonsize,
-                                              void (*fn)(int, void* userarg),
-                                              void* userarg);
+YOGI_API int YOGI_BranchGetConnectedBranches(void* branch, void* uuid,
+                                             char* json, int jsonsize,
+                                             void (*fn)(int, void* userarg),
+                                             void* userarg);
 
 /***************************************************************************//**
- * Asynchronously waits for the list of discovered branches to change.
+ * Asynchronously waits for a branch event to occur.
  *
- * This function will register \p fn to be called once the list of discovered
- * branches changes. The first parameter passed to \p fn is set to YOGI_OK on
- * success and an error code (see \ref EC) in case of a failure.
+ * This function will register \p fn to be called once a branch event occurs on
+ * the given \p branch. The parameters passed to \p fn are:
+ *  -# *res*: YOGI_OK or error code associated with the wait operation
+ *  -# *event*: The branch event that occurred (see \ref BEV)
+ *  -# *evres*: YOGI_OK or error code assitiated with the event
+ *  -# *userarg*: Value of the user-specified \p userarg parameter
  *
- * Note: Make sure that the two supplied buffers \p uuid and \p json remain
- *       valid until \p fn has been executed.
+ * The \p uuid parameter will be populated with the UUID of the branch that
+ * caused the event, i.e. if the remote branch B gets discovered, causing the
+ * YOGI_BEV_BRANCH_DISCOVERED event to be generated, then \p uuid will be
+ * populated with B's UUID.
+ *
+ * The \p json parameter will be populated with a string in JSON format
+ * containing additional event information such as branch information See
+ * \ref BEV for event-specific details.
  *
  * If the produced JSON string for the branch does not fit into \p json, i.e. if
  * \p jsonsize is too small, then \p json will be filled with the first
  * \p jsonsize - 1 characters and a trailing zero and \p fn will be called with
  * the YOGI_ERR_BUFFER_TOO_SMALL error for that particular branch.
  *
- * The produced JSON string is as described in the
- * YOGI_BranchGetDiscoveredBranches() function.
+ * Note: Make sure that the two supplied buffers \p uuid and \p json remain
+ *       valid until \p fn has been executed.
  *
  * \param[in]  branch   The branch handle
- * \param[out] uuid     Pointer to 16 byte array for storing the UUID (can be
- *                      set to NULL)
- * \param[out] json     Pointer to a char array for storing the information (can
- *                      be set to NULL)
+ * \param[in]  events   Events to observe (see \ref BEV); set to 0 to observe
+ *                      all events
+ * \param[out] uuid     Pointer to 16 byte array for storing the UUID
+ *                      (can be set to NULL)
+ * \param[out] json     Pointer to a char array for storing event information
+ *                      (can be set to NULL)
  * \param[in]  jsonsize Maximum number of bytes to write to \p json
- * \param[in]  fn       Handler to call for each discovered branch
+ * \param[in]  fn       Handler to call
  * \param[in]  userarg  User-specified argument to be passed to \p fn
  *
  * \returns [=0] #YOGI_OK if successful
  * \returns [<0] An error code in case of a failure (see \ref EC)
  ******************************************************************************/
-YOGI_API int YOGI_BranchAwaitDiscoveredBranchesChange(
-    void* branch, void* uuid, char* json, int jsonsize,
-    void (*fn)(int res, void* userarg), void* userarg);
+YOGI_API int YOGI_BranchAwaitEvent(
+    void* branch, int events, void* uuid, char* json, int jsonsize,
+    void (*fn)(int res, int event, int evres, void* userarg), void* userarg);
 
 /***************************************************************************//**
- * Cancels waiting for the list of discovered branches to change.
+ * Cancels waiting for a branch event.
  *
  * Calling this function will cause the handler registered via
- * YOGI_BranchAwaitDiscoveredBranchesChange() to be called with the
- * YOGI_ERR_CANCELED error.
+ * YOGI_BranchAwaitEvent() to be called with the YOGI_ERR_CANCELED error.
  *
  * \param[in] branch The branch handle
  *
  * \returns [=0] #YOGI_OK if successful
  * \returns [<0] An error code in case of a failure (see \ref EC)
  ******************************************************************************/
-YOGI_API int YOGI_BranchCancelAwaitDiscoveredBranchesChange(void* branch);
+YOGI_API int YOGI_BranchCancelAwaitEvent(void* branch);
 
 //! @}
 

@@ -1,17 +1,12 @@
 #pragma once
 
 #include "../../../config.h"
-#include "../../context.h"
-#include "../../logger.h"
 #include "../../../api/error.h"
-#include "../../../utils/socket.h"
 #include "../../../utils/timestamp.h"
 #include "../../../../../3rd_party/json/json.hpp"
 
 #include <boost/uuid/uuid.hpp>
 #include <boost/asio/ip/tcp.hpp>
-#include <boost/asio/steady_timer.hpp>
-#include <mutex>
 #include <string>
 #include <chrono>
 #include <memory>
@@ -22,86 +17,89 @@ namespace detail {
 
 class BranchInfo {
  public:
-  static constexpr std::size_t GetAdvertisingMessageHeaderSize() { return 7; }
-  static std::size_t GetAdvertisingMessageSize();
-  static std::size_t GetInfoMessageHeaderSize();
-  static api::Error CheckAdvertisingMessageValidity(
-      const std::vector<char>& msg);
+  enum {
+    kAdvertisingMessageSize = 25,
+    kInfoMessageHeaderSize = kAdvertisingMessageSize + 4,
+  };
 
-  virtual ~BranchInfo() = default;
+  static std::shared_ptr<BranchInfo> CreateLocal(
+      std::string name, std::string description, std::string net_name,
+      std::string path, const boost::asio::ip::tcp::endpoint& tcp_ep,
+      const std::chrono::nanoseconds& timeout,
+      const std::chrono::nanoseconds& adv_interval);
 
-  virtual nlohmann::json ToJson() const;
+  static std::shared_ptr<BranchInfo> CreateFromInfoMessage(
+      const std::vector<char> info_msg, const boost::asio::ip::address& addr);
 
-  boost::uuids::uuid uuid;
-  std::mutex mutex;
-  std::string name;
-  std::string description;
-  std::string net_name;
-  std::string path;
-  std::string hostname;
-  int pid = 0;
-  boost::asio::ip::tcp::endpoint tcp_ep;
-  utils::Timestamp start_time;
-  std::chrono::nanoseconds timeout;
-  std::chrono::nanoseconds adv_interval;
+  static api::Error DeserializeAdvertisingMessage(
+      boost::uuids::uuid* uuid, unsigned short* tcp_port,
+      const std::vector<char>& adv_msg);
 
- protected:
-  static const LoggerPtr logger_;
-};
+  static api::Error DeserializeInfoMessageBodySize(
+      std::size_t* body_size, const std::vector<char>& info_msg_hdr);
 
-class LocalBranchInfo : public BranchInfo {
- public:
-  LocalBranchInfo();
+  const boost::uuids::uuid& GetUuid() const { return uuid_; }
 
-  virtual nlohmann::json ToJson() const override;
-  std::vector<char> MakeAdvertisingMessage() const;
-  std::vector<char> MakeInfoMessage() const;
+  const std::string& GetName() const { return name_; }
+  const std::string& GetDescription() const { return description_; }
+  const std::string& GetNetName() const { return net_name_; }
+  const std::string& GetPath() const { return path_; }
+  const std::string& GetHostname() const { return hostname_; }
 
-  boost::asio::ip::udp::endpoint adv_ep;
-};
+  int GetPid() const { return pid_; }
 
-typedef std::shared_ptr<LocalBranchInfo> LocalBranchInfoPtr;
+  const boost::asio::ip::tcp::endpoint& GetTcpEndpoint() const {
+    return tcp_ep_;
+  }
 
-class RemoteBranchInfo : public BranchInfo {
- public:
-  static std::shared_ptr<RemoteBranchInfo> Create(
-      ContextPtr context, const boost::uuids::uuid& uuid,
-      const boost::asio::ip::tcp::endpoint& tcp_ep);
-  static std::shared_ptr<RemoteBranchInfo> CreateFromAdvertisingMessage(
-      ContextPtr context, const std::vector<char>& msg,
-      utils::TimedTcpSocketPtr socket);
+  const utils::Timestamp& GetStartTime() const { return start_time_; }
+  const std::chrono::nanoseconds& GetTimeout() const { return timeout_; }
 
-  RemoteBranchInfo(ContextPtr context);
+  const std::chrono::nanoseconds& GetAdvertisingInterval() const {
+    return adv_interval_;
+  }
 
-  bool DeserializeInfoMessageBody(const std::vector<char>& msg);
+  const std::vector<char>& MakeAdvertisingMessage() const {
+    YOGI_ASSERT(!adv_msg_.empty());
+    return adv_msg_;
+  }
 
-  virtual nlohmann::json ToJson() const override;
+  const std::vector<char>& MakeInfoMessage() const {
+    YOGI_ASSERT(!adv_msg_.empty());
+    return info_msg_;
+  };
 
-  const ContextPtr context;
-
-  bool connected = false;
-  utils::Timestamp last_connected;
-  utils::Timestamp last_disconnected;
-  utils::Timestamp last_activity;
-  api::Error last_error = api::kSuccess;
-  utils::TimedTcpSocketPtr socket;
-  boost::asio::steady_timer heartbeat_timer;
+  const nlohmann::json& ToJson() const { return json_; }
 
  private:
-  template <typename Field>
-  static inline bool DeserializeField(Field* field,
-                                      const std::vector<char>& msg,
-                                      std::vector<char>::const_iterator* it) {
-    if (!utils::Deserialize<Field>(field, msg, it)) {
-      YOGI_LOG_ERROR(logger_, "Invalid advertising or branch info message");
-      return false;
-    }
+  static api::Error CheckMagicPrefixAndVersion(
+      const std::vector<char>& adv_msg);
 
-    return true;
-  }
+  void PopulateMessages();
+  void PopulateJson();
+
+  boost::uuids::uuid uuid_;
+  std::string name_;
+  std::string description_;
+  std::string net_name_;
+  std::string path_;
+  std::string hostname_;
+  int pid_;
+  boost::asio::ip::tcp::endpoint tcp_ep_;
+  utils::Timestamp start_time_;
+  std::chrono::nanoseconds timeout_;
+  std::chrono::nanoseconds adv_interval_;
+
+  std::vector<char> adv_msg_;
+  std::vector<char> info_msg_;
+  nlohmann::json json_;
 };
 
-typedef std::shared_ptr<RemoteBranchInfo> RemoteBranchInfoPtr;
+typedef std::shared_ptr<BranchInfo> BranchInfoPtr;
 
 }  // namespace detail
 }  // namespace objects
+
+// format like this: [6ba7b810-9dad-11d1-80b4-00c04fd430c8]
+std::ostream& operator<<(std::ostream& os,
+                         const objects::detail::BranchInfoPtr& info);
