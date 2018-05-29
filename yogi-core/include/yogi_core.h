@@ -229,7 +229,7 @@
 //! No event (passed to event handler function if wait operation failed)
 #define YOGI_BEV_NONE 0
 
-//! A new branch has been discovered (previously unknown UUID)
+//! A new branch has been discovered
 //!
 //! Associated event information:
 //!
@@ -1015,6 +1015,10 @@ YOGI_API int YOGI_BranchGetConnectedBranches(void* branch, void* uuid,
  * If this function is called while a previous wait operation is still active
  * then the previous operation will be canceled, i.e. \p fn for the previous
  * operation will be called with the YOGI_ERR_CANCELED error.
+ *
+ * Note: If \p fn gets called with the YOGI_ERR_CANCELED error then starting
+ *       another wait operation from within \p fn will fail with with the
+ *       YOGI_ERR_BUSY error;
  *
  * The \p uuid parameter will be populated with the UUID of the branch that
  * caused the event, i.e. if the remote branch B gets discovered, causing the

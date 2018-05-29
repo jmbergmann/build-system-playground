@@ -70,11 +70,17 @@ class ConnectionManager final
                          const boost::asio::ip::tcp::endpoint& ep,
                          utils::TimedTcpSocketPtr socket);
   void StartExchangeBranchInfo(utils::TimedTcpSocketPtr socket,
+                               const boost::uuids::uuid& uuid,
                                bool origin_is_tcp_server);
   void OnExchangeBranchInfoFinished(const api::Error& err,
                                     BranchConnectionPtr connection,
+                                    const boost::uuids::uuid& uuid,
                                     bool origin_is_tcp_server);
   utils::TimedTcpSocketPtr MakeSocket();
+
+  template <typename Fn>
+  void EmitBranchEvent(BranchEvents event, const api::Error& ev_res,
+                       const boost::uuids::uuid& uuid, Fn make_json_fn);
 
   static const LoggerPtr logger_;
 
@@ -91,17 +97,24 @@ class ConnectionManager final
   mutable std::mutex connections_mutex_;
 
   BranchEventHandler event_handler_;
-  std::recursive_mutex event_handler_mutex_;
+  BranchEvents observed_events_;
+  bool cancel_await_event_running_;
+  std::recursive_mutex event_mutex_;
 };
 
 typedef std::shared_ptr<ConnectionManager> ConnectionManagerPtr;
 
+inline ConnectionManager::BranchEvents operator|(
+    ConnectionManager::BranchEvents a, ConnectionManager::BranchEvents b) {
+  return static_cast<ConnectionManager::BranchEvents>(static_cast<int>(a) |
+                                                      static_cast<int>(b));
+}
+
+inline ConnectionManager::BranchEvents operator&(
+    ConnectionManager::BranchEvents a, ConnectionManager::BranchEvents b) {
+  return static_cast<ConnectionManager::BranchEvents>(static_cast<int>(a) &
+                                                      static_cast<int>(b));
+}
+
 }  // namespace detail
 }  // namespace objects
-
-inline objects::detail::ConnectionManager::BranchEvents operator|(
-    objects::detail::ConnectionManager::BranchEvents a,
-    objects::detail::ConnectionManager::BranchEvents b) {
-  return static_cast<objects::detail::ConnectionManager::BranchEvents>(
-      static_cast<int>(a) | static_cast<int>(b));
-}

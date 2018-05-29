@@ -14,7 +14,9 @@ ConnectionManager::ConnectionManager(
       adv_sender_(std::make_shared<AdvertisingSender>(context, adv_ep)),
       adv_receiver_(std::make_shared<AdvertisingReceiver>(
           context, adv_ep,
-          [&](auto& uuid, auto& ep) { OnAdvertisementReceived(uuid, ep); })) {
+          [&](auto& uuid, auto& ep) { OnAdvertisementReceived(uuid, ep); })),
+      observed_events_(kNoEvent),
+      cancel_await_event_running_(false) {
   using namespace boost::asio::ip;
   SetupAcceptor(adv_ep.protocol() == udp::v4() ? tcp::v4() : tcp::v6());
 }
@@ -41,18 +43,34 @@ ConnectionManager::MakeConnectedBranchesInfoStrings() const {
 
 void ConnectionManager::AwaitEvent(BranchEvents events,
                                    BranchEventHandler handler) {
-  std::lock_guard<std::recursive_mutex> lock(event_handler_mutex_);
-  CancelAwaitEvent();
+  std::lock_guard<std::recursive_mutex> lock(event_mutex_);
+
+  if (cancel_await_event_running_) {
+    throw api::Error(YOGI_ERR_BUSY);
+  }
+
+  if (event_handler_) {
+    CancelAwaitEvent();
+  }
+
+  observed_events_ = events;
   event_handler_ = handler;
 }
 
 void ConnectionManager::CancelAwaitEvent() {
-  std::lock_guard<std::recursive_mutex> lock(event_handler_mutex_);
-  if (event_handler_) {
-    event_handler_(api::Error(YOGI_ERR_CANCELED), kNoEvent, api::kSuccess, {},
-                   {});
-    event_handler_ = {};
+  std::lock_guard<std::recursive_mutex> lock(event_mutex_);
+
+  if (cancel_await_event_running_) {
+    throw api::Error(YOGI_ERR_BUSY);
   }
+
+  cancel_await_event_running_ = true;
+
+  event_handler_(api::Error(YOGI_ERR_CANCELED), kNoEvent, api::kSuccess, {},
+                 {});
+
+  event_handler_ = {};
+  cancel_await_event_running_ = false;
 }
 
 void ConnectionManager::SetupAcceptor(const boost::asio::ip::tcp& protocol) {
@@ -91,7 +109,7 @@ void ConnectionManager::OnAcceptFinished(const api::Error& err,
     return;
   }
 
-  StartExchangeBranchInfo(socket, true);
+  StartExchangeBranchInfo(socket, {}, true);
   StartAccept();
 }
 
@@ -107,11 +125,17 @@ void ConnectionManager::OnAdvertisementReceived(
   }
 
   YOGI_LOG_INFO(logger_, info_ << " New branch " << uuid << " discovered on "
-                               << ep.address().to_string() << ':' << ep.port())
+                               << ep.address().to_string() << ':' << ep.port());
 
   auto socket = MakeSocket();
   socket->Connect(ep, [this, uuid, ep, socket](auto& err) {
     this->OnConnectFinished(err, uuid, ep, socket);
+  });
+
+  EmitBranchEvent(kBranchDiscoveredEvent, api::kSuccess, uuid, [&] {
+    return nlohmann::json{{"uuid", boost::uuids::to_string(uuid)},
+                          {"tcp_server_address", ep.address().to_string()},
+                          {"tcp_server_port", ep.port()}};
   });
 }
 
@@ -130,29 +154,60 @@ void ConnectionManager::OnConnectFinished(
       connections_.erase(it);
     }
 
+    EmitBranchEvent(kBranchQueriedEvent, err, uuid, [&] {
+      return nlohmann::json{{"uuid", boost::uuids::to_string(uuid)}}.dump();
+    });
+
     return;
   }
 
-  StartExchangeBranchInfo(socket, false);
+  StartExchangeBranchInfo(socket, uuid, false);
 }
 
 void ConnectionManager::StartExchangeBranchInfo(utils::TimedTcpSocketPtr socket,
+                                                const boost::uuids::uuid& uuid,
                                                 bool origin_is_tcp_server) {
   auto connection = std::make_shared<BranchConnection>(socket, info_);
-  connection->ExchangeBranchInfo([this, connection,
-                                  origin_is_tcp_server](auto& err) {
-    this->OnExchangeBranchInfoFinished(err, connection, origin_is_tcp_server);
-  });
+  connection->ExchangeBranchInfo(
+      [this, connection, origin_is_tcp_server, uuid](auto& err) {
+        this->OnExchangeBranchInfoFinished(err, connection, uuid,
+                                           origin_is_tcp_server);
+      });
 }
 
 void ConnectionManager::OnExchangeBranchInfoFinished(
     const api::Error& err, BranchConnectionPtr connection,
-    bool origin_is_tcp_server) {
-  // TODO
+    const boost::uuids::uuid& uuid, bool origin_is_tcp_server) {
+  if (!origin_is_tcp_server) return;
+
+  if (connection->GetRemoteBranchInfo()) {
+    EmitBranchEvent(
+        kBranchQueriedEvent, err, connection->GetRemoteBranchInfo()->GetUuid(),
+        [&] { return connection->GetRemoteBranchInfo()->ToJson().dump(); });
+  } else {
+    EmitBranchEvent(kBranchQueriedEvent, err, uuid, [&] {
+      return nlohmann::json{{"uuid", boost::uuids::to_string(uuid)}}.dump();
+    });
+  }
 }
 
 utils::TimedTcpSocketPtr ConnectionManager::MakeSocket() {
   return std::make_shared<utils::TimedTcpSocket>(context_, info_->GetTimeout());
+}
+
+template <typename Fn>
+void ConnectionManager::EmitBranchEvent(BranchEvents event,
+                                        const api::Error& ev_res,
+                                        const boost::uuids::uuid& uuid,
+                                        Fn make_json_fn) {
+  std::lock_guard<std::recursive_mutex> lock(event_mutex_);
+
+  if (!event_handler_) return;
+  if (!(observed_events_ & event)) return;
+
+  auto handler = event_handler_;
+  event_handler_ = {};
+  handler(api::kSuccess, event, ev_res, uuid, make_json_fn());
 }
 
 const LoggerPtr ConnectionManager::logger_ =
