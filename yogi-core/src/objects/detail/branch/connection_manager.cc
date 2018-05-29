@@ -152,7 +152,7 @@ void ConnectionManager::OnConnectFinished(
     }
 
     EmitBranchEvent(kBranchQueriedEvent, err, uuid, [&] {
-      return nlohmann::json{{"uuid", boost::uuids::to_string(uuid)}}.dump();
+      return nlohmann::json{{"uuid", boost::uuids::to_string(uuid)}};
     });
 
     return;
@@ -182,10 +182,10 @@ void ConnectionManager::OnExchangeBranchInfoFinished(
   if (connection->GetRemoteBranchInfo()) {
     EmitBranchEvent(
         kBranchQueriedEvent, err, connection->GetRemoteBranchInfo()->GetUuid(),
-        [&] { return connection->GetRemoteBranchInfo()->ToJson().dump(); });
+        [&] { return connection->GetRemoteBranchInfo()->ToJson(); });
   } else {
     EmitBranchEvent(kBranchQueriedEvent, err, uuid, [&] {
-      return nlohmann::json{{"uuid", boost::uuids::to_string(uuid)}}.dump();
+      return nlohmann::json{{"uuid", boost::uuids::to_string(uuid)}};
     });
   }
 }
@@ -220,29 +220,25 @@ void ConnectionManager::LogBranchEvent(BranchEvents event,
     case kBranchDiscoveredEvent:
       YOGI_LOG_DEBUG(logger_,
                      info_ << " Event: YOGI_BEV_BRANCH_DISCOVERED; ev_res=\""
-                           << ev_res << "\"; uuid=" << uuid << "; json=\""
-                           << make_json_fn() << "\"");
+                           << ev_res << "; json=\"" << make_json_fn() << "\"");
       break;
 
     case kBranchQueriedEvent:
-      YOGI_LOG_INFO(logger_, info_
-                                 << " Event: YOGI_BEV_BRANCH_QUERIED; ev_res=\""
-                                 << ev_res << "\"; uuid=" << uuid << "; json=\""
-                                 << make_json_fn() << "\"");
+      YOGI_LOG_INFO(logger_,
+                    info_ << " Event: YOGI_BEV_BRANCH_QUERIED; ev_res=\""
+                          << ev_res << "; json=\"" << make_json_fn() << "\"");
       break;
 
     case kConnectFinishedEvent:
       YOGI_LOG_INFO(logger_,
                     info_ << " Event: YOGI_BEV_CONNECT_FINISHED; ev_res=\""
-                          << ev_res << "\"; uuid=" << uuid << "; json=\""
-                          << make_json_fn() << "\"");
+                          << ev_res << "; json=\"" << make_json_fn() << "\"");
       break;
 
     case kConnectionLostEvent:
-      YOGI_LOG_WARNING(logger_,
-                       info_ << " Event: YOGI_BEV_CONNECTION_LOST; ev_res=\""
-                             << ev_res << "\"; uuid=" << uuid << "; json=\""
-                             << make_json_fn() << "\"");
+      YOGI_LOG_WARNING(
+          logger_, info_ << " Event: YOGI_BEV_CONNECTION_LOST; ev_res=\""
+                         << ev_res << "; json=\"" << make_json_fn() << "\"");
       break;
   }
 }

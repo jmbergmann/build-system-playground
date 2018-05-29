@@ -22,7 +22,7 @@ const std::chrono::nanoseconds kConnTimeout = 3000ms;
 class BranchTest : public ::testing::Test {
  protected:
   virtual void SetUp() override {
-    YOGI_LogToConsole(YOGI_VB_INFO, YOGI_ST_STDERR, YOGI_TRUE, nullptr,
+    YOGI_LogToConsole(YOGI_VB_TRACE, YOGI_ST_STDERR, YOGI_TRUE, nullptr,
                       nullptr);
     YOGI_LoggerSetComponentsVerbosity("Yogi\\..*", YOGI_VB_TRACE, nullptr);
 
