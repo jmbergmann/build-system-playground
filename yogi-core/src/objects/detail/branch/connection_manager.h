@@ -82,6 +82,10 @@ class ConnectionManager final
   void EmitBranchEvent(BranchEvents event, const api::Error& ev_res,
                        const boost::uuids::uuid& uuid, Fn make_json_fn);
 
+  template <typename Fn>
+  void LogBranchEvent(BranchEvents event, const api::Error& ev_res,
+                      const boost::uuids::uuid& uuid, Fn make_json_fn);
+
   static const LoggerPtr logger_;
 
   const ContextPtr context_;

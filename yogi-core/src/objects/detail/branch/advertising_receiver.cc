@@ -83,8 +83,11 @@ void AdvertisingReceiver::OnReceivedAdvertisementFinished(
     return;
   }
 
-  auto tcp_ep = boost::asio::ip::tcp::endpoint(sender_ep_.address(), tcp_port);
-  observer_fn_(uuid, tcp_ep);
+  // Ignore advertising messages that we sent ourself
+  if (uuid != info_->GetUuid()) {
+    auto tcp_ep = boost::asio::ip::tcp::endpoint(sender_ep_.address(), tcp_port);
+    observer_fn_(uuid, tcp_ep);
+  }
 
   StartReceiveAdvertisement();
 }

@@ -161,6 +161,9 @@
 //! Could not accept a socket
 #define YOGI_ERR_ACCEPT_SOCKET_FAILED -23
 
+//! Attempting to connect branch to itself
+#define YOGI_ERR_LOOPBACK_CONNECTION -24
+
 //! @}
 //!
 //! @defgroup VB Log verbosity/severity

@@ -80,6 +80,10 @@ void BranchConnection::OnInfoBodyReceived(
     info_msg.insert(info_msg.end(), info_msg_body.begin(), info_msg_body.end());
     remote_info_ = BranchInfo::CreateFromInfoMessage(
         info_msg, socket_->GetRemoteEndpoint().address());
+
+    if (remote_info_->GetUuid() == local_info_->GetUuid()) {
+      throw api::Error(YOGI_ERR_LOOPBACK_CONNECTION);
+    }
   } catch (const api::Error& err) {
     handler(err);
   }

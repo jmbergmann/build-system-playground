@@ -76,6 +76,9 @@ const char* Error::what() const noexcept {
 
     case YOGI_ERR_ACCEPT_SOCKET_FAILED:
       return "Could not accept a socket";
+
+    case YOGI_ERR_LOOPBACK_CONNECTION:
+      return "Attempting to connect branch to itself";
   }
 
   return "Invalid error code";
