@@ -234,6 +234,12 @@
 
 //! A new branch has been discovered
 //!
+//! A remote branch is considered to be a _new branch_ if it is neither already
+//! connected nor in the process of being connected to. This means if we
+//! discover a branch and connect to it but connecting to it fails and the
+//! remote branch itself has not connected to us, then the next time an
+//! we receive an advertisement message we consider the branch new again.
+//!
 //! Associated event information:
 //!
 //!   {

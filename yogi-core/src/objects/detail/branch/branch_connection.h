@@ -22,6 +22,9 @@ class BranchConnection final
 
   BranchInfoPtr GetRemoteBranchInfo() const { return remote_info_; }
   std::string MakeInfoString() const;
+  const boost::asio::ip::tcp::endpoint& GetRemoteEndpoint() const {
+    return socket_->GetRemoteEndpoint();
+  }
 
   void ExchangeBranchInfo(CompletionHandler handler);
   void Authenticate(CompletionHandler handler);

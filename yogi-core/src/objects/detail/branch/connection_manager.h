@@ -60,22 +60,31 @@ class ConnectionManager final
   typedef std::unordered_map<boost::uuids::uuid, detail::BranchConnectionPtr,
                              boost::hash<boost::uuids::uuid>>
       ConnectionsMap;
+  typedef ConnectionsMap::value_type ConnectionsMapEntry;
 
   void SetupAcceptor(const boost::asio::ip::tcp& protocol);
   void StartAccept();
   void OnAcceptFinished(const api::Error& err, utils::TimedTcpSocketPtr socket);
-  void OnAdvertisementReceived(const boost::uuids::uuid& uuid,
+  void OnAdvertisementReceived(const boost::uuids::uuid& adv_uuid,
                                const boost::asio::ip::tcp::endpoint& ep);
-  void OnConnectFinished(const api::Error& err, const boost::uuids::uuid& uuid,
+  void OnConnectFinished(const api::Error& err, ConnectionsMapEntry* entry,
                          const boost::asio::ip::tcp::endpoint& ep,
                          utils::TimedTcpSocketPtr socket);
   void StartExchangeBranchInfo(utils::TimedTcpSocketPtr socket,
-                               const boost::uuids::uuid& uuid,
-                               bool origin_is_tcp_server);
+                               ConnectionsMapEntry* entry);
   void OnExchangeBranchInfoFinished(const api::Error& err,
-                                    BranchConnectionPtr connection,
-                                    const boost::uuids::uuid& uuid,
-                                    bool origin_is_tcp_server);
+                                    BranchConnectionPtr conn,
+                                    ConnectionsMapEntry* entry);
+  void PublishExchangeBranchInfoError(const api::Error& err,
+                                      BranchConnectionPtr conn,
+                                      ConnectionsMapEntry* entry);
+  void EraseConnectionIfNotAlreadyEstablished(ConnectionsMapEntry* entry);
+  void CheckAndFixUuidMismatch(const boost::uuids::uuid& uuid,
+                               ConnectionsMapEntry** entry);
+  bool DoesHigherPriorityConnectionExist(
+      const ConnectionsMapEntry& entry) const;
+  void StartAuthenticate(BranchConnectionPtr conn);
+  void OnAuthenticateFinished(const api::Error& err, BranchConnectionPtr conn);
   utils::TimedTcpSocketPtr MakeSocket();
 
   template <typename Fn>

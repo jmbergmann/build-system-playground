@@ -34,8 +34,10 @@ ConnectionManager::MakeConnectedBranchesInfoStrings() const {
 
   std::lock_guard<std::mutex> lock(connections_mutex_);
   for (auto& entry : connections_) {
-    branches.push_back(
-        std::make_pair(entry.first, entry.second->MakeInfoString()));
+    if (entry.second) {
+      branches.push_back(
+          std::make_pair(entry.first, entry.second->MakeInfoString()));
+    }
   }
 
   return branches;
@@ -109,85 +111,144 @@ void ConnectionManager::OnAcceptFinished(const api::Error& err,
     return;
   }
 
-  StartExchangeBranchInfo(socket, {}, true);
+  StartExchangeBranchInfo(socket, {});
   StartAccept();
 }
 
 void ConnectionManager::OnAdvertisementReceived(
-    const boost::uuids::uuid& uuid, const boost::asio::ip::tcp::endpoint& ep) {
-  {
-    std::lock_guard<std::mutex> lock(connections_mutex_);
-    if (blacklisted_uuids_.count(uuid) || connections_.count(uuid)) {
-      return;
-    }
+    const boost::uuids::uuid& adv_uuid,
+    const boost::asio::ip::tcp::endpoint& ep) {
+  std::lock_guard<std::mutex> lock(connections_mutex_);
+  if (blacklisted_uuids_.count(adv_uuid)) return;
 
-    connections_[uuid] = {};
-  }
+  auto res =
+      connections_.insert(std::make_pair(adv_uuid, BranchConnectionPtr{}));
+  if (!res.second) return;
+  auto entry = &*res.first;
 
   auto socket = MakeSocket();
-  socket->Connect(ep, [this, uuid, ep, socket](auto& err) {
-    this->OnConnectFinished(err, uuid, ep, socket);
+  socket->Connect(ep, [this, entry, ep, socket](auto& err) {
+    this->OnConnectFinished(err, entry, ep, socket);
   });
 
-  EmitBranchEvent(kBranchDiscoveredEvent, api::kSuccess, uuid, [&] {
-    return nlohmann::json{{"uuid", boost::uuids::to_string(uuid)},
+  EmitBranchEvent(kBranchDiscoveredEvent, api::kSuccess, adv_uuid, [&] {
+    return nlohmann::json{{"uuid", boost::uuids::to_string(adv_uuid)},
                           {"tcp_server_address", ep.address().to_string()},
                           {"tcp_server_port", ep.port()}};
   });
 }
 
 void ConnectionManager::OnConnectFinished(
-    const api::Error& err, const boost::uuids::uuid& uuid,
+    const api::Error& err, ConnectionsMapEntry* entry,
     const boost::asio::ip::tcp::endpoint& ep, utils::TimedTcpSocketPtr socket) {
-  if (err) {
-    YOGI_LOG_ERROR(logger_, info_ << " Could not connect to branch " << uuid
-                                  << " on " << ep.address().to_string() << ':'
-                                  << ep.port() << ": " << err);
+  YOGI_ASSERT(entry != nullptr && entry->first != boost::uuids::uuid{});
 
-    std::lock_guard<std::mutex> lock(connections_mutex_);
-    auto it = connections_.find(uuid);
-    bool accepted_by_tcp_server = it != connections_.end() && it->second;
-    if (!accepted_by_tcp_server) {
-      connections_.erase(it);
-    }
+  std::lock_guard<std::mutex> lock(connections_mutex_);
 
-    EmitBranchEvent(kBranchQueriedEvent, err, uuid, [&] {
-      return nlohmann::json{{"uuid", boost::uuids::to_string(uuid)}};
+  if (err && !entry->second) {
+    auto& adv_uuid = entry->first;
+    EmitBranchEvent(kBranchQueriedEvent, err, adv_uuid, [&] {
+      return nlohmann::json{{"uuid", boost::uuids::to_string(adv_uuid)}};
     });
+
+    connections_.erase(adv_uuid);  // pointer "entry" is invalid after this
 
     return;
   }
 
-  StartExchangeBranchInfo(socket, uuid, false);
+  StartExchangeBranchInfo(socket, entry);
 }
 
 void ConnectionManager::StartExchangeBranchInfo(utils::TimedTcpSocketPtr socket,
-                                                const boost::uuids::uuid& uuid,
-                                                bool origin_is_tcp_server) {
-  auto connection = std::make_shared<BranchConnection>(socket, info_);
-  connection->ExchangeBranchInfo(
-      [this, connection, origin_is_tcp_server, uuid](auto& err) {
-        this->OnExchangeBranchInfoFinished(err, connection, uuid,
-                                           origin_is_tcp_server);
-      });
+                                                ConnectionsMapEntry* entry) {
+  auto conn = std::make_shared<BranchConnection>(socket, info_);
+  conn->ExchangeBranchInfo([this, conn, entry](auto& err) {
+    this->OnExchangeBranchInfoFinished(err, conn, entry);
+  });
 }
 
 void ConnectionManager::OnExchangeBranchInfoFinished(
-    const api::Error& err, BranchConnectionPtr connection,
-    const boost::uuids::uuid& uuid, bool origin_is_tcp_server) {
-  // TODO: authenticate
+    const api::Error& err, BranchConnectionPtr conn,
+    ConnectionsMapEntry* entry) {
+  std::lock_guard<std::mutex> lock(connections_mutex_);
 
-  if (!origin_is_tcp_server) return;
-
-  if (connection->GetRemoteBranchInfo()) {
-    EmitBranchEvent(
-        kBranchQueriedEvent, err, connection->GetRemoteBranchInfo()->GetUuid(),
-        [&] { return connection->GetRemoteBranchInfo()->ToJson(); });
-  } else {
-    EmitBranchEvent(kBranchQueriedEvent, err, uuid, [&] {
-      return nlohmann::json{{"uuid", boost::uuids::to_string(uuid)}};
-    });
+  if (err) {
+    PublishExchangeBranchInfoError(err, conn, entry);
+    EraseConnectionIfNotAlreadyEstablished(entry);
+    return;
   }
+
+  // UUIDs from advertising message and info message don't match
+  CheckAndFixUuidMismatch(conn->GetRemoteBranchInfo()->GetUuid(), &entry);
+  YOGI_ASSERT(entry != nullptr);
+
+  if (DoesHigherPriorityConnectionExist(*entry)) {
+    return;
+  }
+
+  entry->second = conn;
+
+  EmitBranchEvent(kBranchQueriedEvent, api::kSuccess, entry->first,
+                  [&] { return conn->GetRemoteBranchInfo()->ToJson(); });
+
+  StartAuthenticate(conn);
+}
+
+void ConnectionManager::PublishExchangeBranchInfoError(
+    const api::Error& err, BranchConnectionPtr conn,
+    ConnectionsMapEntry* entry) {
+  if (entry) {  // Connect operation failed
+    EmitBranchEvent(kBranchQueriedEvent, err, entry->first, [&] {
+      return nlohmann::json{{"uuid", boost::uuids::to_string(entry->first)}};
+    });
+  } else {
+    YOGI_LOG_WARNING(logger_,
+                     info_ << " Exchanging branch info with "
+                           << conn->GetRemoteEndpoint().address().to_string()
+                           << " failed: " << err);
+  }
+}
+
+void ConnectionManager::EraseConnectionIfNotAlreadyEstablished(
+    ConnectionsMapEntry* entry) {
+  bool origin_is_tcp_server = entry == nullptr;
+  if (origin_is_tcp_server) return;
+
+  bool conn_already_exists = !!entry->second;
+  if (conn_already_exists) return;
+
+  connections_.erase(entry->first);
+}
+
+void ConnectionManager::CheckAndFixUuidMismatch(const boost::uuids::uuid& uuid,
+                                                ConnectionsMapEntry** entry) {
+  if (*entry) {
+    if ((*entry)->first == uuid) return;
+    YOGI_LOG_INFO(logger_, info_ << "Tried to connect to {" << (*entry)->first
+                                 << "} but ended up connecting to {" << uuid
+                                 << "} instead");
+  }
+
+  EraseConnectionIfNotAlreadyEstablished(*entry);
+
+  auto res = connections_.insert(std::make_pair(uuid, BranchConnectionPtr{}));
+  *entry = &*res.first;
+}
+
+bool ConnectionManager::DoesHigherPriorityConnectionExist(
+    const ConnectionsMapEntry& entry) const {
+  return entry.second && entry.first < info_->GetUuid();
+}
+
+void ConnectionManager::StartAuthenticate(BranchConnectionPtr connection) {
+  connection->Authenticate([this, connection](auto& err) {
+    this->OnAuthenticateFinished(err, connection);
+  });
+}
+
+void ConnectionManager::OnAuthenticateFinished(const api::Error& err,
+                                               BranchConnectionPtr connection) {
+  // TODO
 }
 
 utils::TimedTcpSocketPtr ConnectionManager::MakeSocket() {
