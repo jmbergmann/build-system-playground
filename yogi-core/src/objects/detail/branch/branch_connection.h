@@ -38,6 +38,21 @@ class BranchConnection final
   void OnInfoBodyReceived(const utils::ByteVector& info_msg_hdr,
                           const utils::ByteVector& info_msg_body,
                           CompletionHandler handler);
+  void OnChallengeSent(utils::SharedByteVector my_challenge,
+                       utils::SharedByteVector password_hash,
+                       CompletionHandler handler);
+  void OnChallengeReceived(const utils::ByteVector& remote_challenge,
+                           utils::SharedByteVector my_challenge,
+                           utils::SharedByteVector password_hash,
+                           CompletionHandler handler);
+  utils::SharedByteVector SolveChallenge(
+      const utils::ByteVector& challenge,
+      const utils::ByteVector& password_hash) const;
+  void OnSolutionSent(utils::SharedByteVector my_solution,
+                      CompletionHandler handler);
+  void OnSolutionReceived(const utils::ByteVector& received_solution,
+                          utils::SharedByteVector my_solution,
+                          CompletionHandler handler);
 
   static const LoggerPtr logger_;
 

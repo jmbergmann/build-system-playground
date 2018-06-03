@@ -1,4 +1,5 @@
 #include "branch_connection.h"
+#include "../../../utils/crypto.h"
 #include "../../../utils/serialize.h"
 
 namespace objects {
@@ -36,9 +37,16 @@ void BranchConnection::Authenticate(utils::SharedByteVector password_hash,
                                     CompletionHandler handler) {
   YOGI_ASSERT(remote_info_);
 
-  auto buffer = std::make_shared<utils::ByteVector>();
-
-  handler(api::kSuccess);
+  auto my_challenge =
+      utils::MakeSharedByteVector(utils::GenerateRandomBytes(8));
+  socket_->Send(my_challenge,
+                [this, my_challenge, password_hash, handler](const auto& err) {
+                  if (err) {
+                    handler(err);
+                  } else {
+                    this->OnChallengeSent(my_challenge, password_hash, handler);
+                  }
+                });
 }
 
 void BranchConnection::RunSession(CompletionHandler handler) {
@@ -94,6 +102,67 @@ void BranchConnection::OnInfoBodyReceived(
   }
 
   handler(api::kSuccess);
+}
+
+void BranchConnection::OnChallengeSent(utils::SharedByteVector my_challenge,
+                                       utils::SharedByteVector password_hash,
+                                       CompletionHandler handler) {
+  socket_->ReceiveExactly(
+      my_challenge->size(), [this, my_challenge, password_hash, handler](
+                                const auto& err, const auto& remote_challenge) {
+        if (err) {
+          handler(err);
+        } else {
+          this->OnChallengeReceived(remote_challenge, my_challenge,
+                                    password_hash, handler);
+        }
+      });
+}
+
+void BranchConnection::OnChallengeReceived(
+    const utils::ByteVector& remote_challenge,
+    utils::SharedByteVector my_challenge, utils::SharedByteVector password_hash,
+    CompletionHandler handler) {
+  auto my_solution = SolveChallenge(*my_challenge, *password_hash);
+  auto remote_solution = SolveChallenge(remote_challenge, *password_hash);
+  socket_->Send(remote_solution, [this, my_solution, handler](auto& err) {
+    if (err) {
+      handler(err);
+    } else {
+      this->OnSolutionSent(my_solution, handler);
+    }
+  });
+}
+
+utils::SharedByteVector BranchConnection::SolveChallenge(
+    const utils::ByteVector& challenge,
+    const utils::ByteVector& password_hash) const {
+  auto data = challenge;
+  data.insert(data.end(), password_hash.begin(), password_hash.end());
+  return utils::MakeSharedByteVector(utils::MakeSha256(data));
+}
+
+void BranchConnection::OnSolutionSent(utils::SharedByteVector my_solution,
+                                      CompletionHandler handler) {
+  socket_->ReceiveExactly(
+      my_solution->size(), [this, my_solution, handler](
+                               const auto& err, const auto& received_solution) {
+        if (err) {
+          handler(err);
+        } else {
+          this->OnSolutionReceived(received_solution, my_solution, handler);
+        }
+      });
+}
+
+void BranchConnection::OnSolutionReceived(
+    const utils::ByteVector& received_solution,
+    utils::SharedByteVector my_solution, CompletionHandler handler) {
+  if (received_solution == *my_solution) {
+    handler(api::kSuccess);
+  } else {
+    handler(api::Error(YOGI_ERR_PASSWORD_MISMATCH));
+  }
 }
 
 }  // namespace detail

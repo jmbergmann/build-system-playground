@@ -164,6 +164,9 @@
 //! Attempting to connect branch to itself
 #define YOGI_ERR_LOOPBACK_CONNECTION -24
 
+//! The passwords of the local and remote branch don't match
+#define YOGI_ERR_PASSWORD_MISMATCH -25
+
 //! @}
 //!
 //! @defgroup VB Log verbosity/severity

@@ -79,6 +79,9 @@ const char* Error::what() const noexcept {
 
     case YOGI_ERR_LOOPBACK_CONNECTION:
       return "Attempting to connect branch to itself";
+
+    case YOGI_ERR_PASSWORD_MISMATCH:
+      return "The passwords of the local and remote branch don't match";
   }
 
   return "Invalid error code";

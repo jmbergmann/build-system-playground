@@ -22,7 +22,7 @@ ByteVector MakeSha256(const ByteVector& data) {
   return hash;
 }
 
-ByteVector MakeRandomBytes(std::size_t n) {
+ByteVector GenerateRandomBytes(std::size_t n) {
   ByteVector bytes(n);
 
   auto res = RAND_bytes(bytes.data(), static_cast<int>(bytes.size()));
