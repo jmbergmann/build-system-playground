@@ -11,8 +11,8 @@ namespace detail {
 namespace {
 
 template <typename Field>
-void DeserializeField(Field* field, const std::vector<char>& msg,
-                      std::vector<char>::const_iterator* it) {
+void DeserializeField(Field* field, const utils::ByteVector& msg,
+                      utils::ByteVector::const_iterator* it) {
   if (!utils::Deserialize<Field>(field, msg, it)) {
     throw api::Error(YOGI_ERR_DESERIALIZE_MSG_FAILED);
   }
@@ -45,7 +45,7 @@ BranchInfoPtr BranchInfo::CreateLocal(
 }
 
 BranchInfoPtr BranchInfo::CreateFromInfoMessage(
-    const std::vector<char> info_msg, const boost::asio::ip::address& addr) {
+    const utils::ByteVector& info_msg, const boost::asio::ip::address& addr) {
   auto info = std::make_shared<BranchInfo>();
 
   unsigned short port;
@@ -74,7 +74,7 @@ BranchInfoPtr BranchInfo::CreateFromInfoMessage(
 
 api::Error BranchInfo::DeserializeAdvertisingMessage(
     boost::uuids::uuid* uuid, unsigned short* tcp_port,
-    const std::vector<char>& adv_msg) {
+    const utils::ByteVector& adv_msg) {
   YOGI_ASSERT(adv_msg.size() >= kAdvertisingMessageSize);
   if (auto err = CheckMagicPrefixAndVersion(adv_msg)) {
     return err;
@@ -88,7 +88,7 @@ api::Error BranchInfo::DeserializeAdvertisingMessage(
 }
 
 api::Error BranchInfo::DeserializeInfoMessageBodySize(
-    std::size_t* body_size, const std::vector<char>& info_msg_hdr) {
+    std::size_t* body_size, const utils::ByteVector& info_msg_hdr) {
   YOGI_ASSERT(info_msg_hdr.size() >= kInfoMessageHeaderSize);
   if (auto err = CheckMagicPrefixAndVersion(info_msg_hdr)) {
     return err;
@@ -101,7 +101,7 @@ api::Error BranchInfo::DeserializeInfoMessageBodySize(
 }
 
 api::Error BranchInfo::CheckMagicPrefixAndVersion(
-    const std::vector<char>& adv_msg) {
+    const utils::ByteVector& adv_msg) {
   YOGI_ASSERT(adv_msg.size() >= kAdvertisingMessageSize);
   if (std::memcmp(adv_msg.data(), "YOGI", 5)) {
     return api::Error(YOGI_ERR_INVALID_MAGIC_PREFIX);
@@ -115,14 +115,18 @@ api::Error BranchInfo::CheckMagicPrefixAndVersion(
 }
 
 void BranchInfo::PopulateMessages() {
-  adv_msg_ = {'Y', 'O', 'G', 'I', 0};
-  adv_msg_.push_back(api::kVersionMajor);
-  adv_msg_.push_back(api::kVersionMinor);
-  utils::Serialize(&adv_msg_, uuid_);
-  utils::Serialize(&adv_msg_, tcp_ep_.port());
-  YOGI_ASSERT(adv_msg_.size() == kAdvertisingMessageSize);
+  utils::ByteVector buffer{'Y', 'O', 'G', 'I', 0};
+  buffer.push_back(api::kVersionMajor);
+  buffer.push_back(api::kVersionMinor);
+  utils::Serialize(&buffer, uuid_);
+  utils::Serialize(&buffer, tcp_ep_.port());
 
-  std::vector<char> buffer;
+  YOGI_ASSERT(buffer.size() == kAdvertisingMessageSize);
+  adv_msg_ = utils::MakeSharedByteVector(buffer);
+
+  info_msg_ = utils::MakeSharedByteVector(buffer);
+
+  buffer.clear();
   utils::Serialize(&buffer, name_);
   utils::Serialize(&buffer, description_);
   utils::Serialize(&buffer, net_name_);
@@ -133,10 +137,9 @@ void BranchInfo::PopulateMessages() {
   utils::Serialize(&buffer, timeout_);
   utils::Serialize(&buffer, adv_interval_);
 
-  info_msg_ = adv_msg_;
-  utils::Serialize(&info_msg_, buffer.size());
-  YOGI_ASSERT(info_msg_.size() == kInfoMessageHeaderSize);
-  info_msg_.insert(info_msg_.end(), buffer.begin(), buffer.end());
+  utils::Serialize(&*info_msg_, buffer.size());
+  YOGI_ASSERT(info_msg_->size() == kInfoMessageHeaderSize);
+  info_msg_->insert(info_msg_->end(), buffer.begin(), buffer.end());
 }
 
 void BranchInfo::PopulateJson() {

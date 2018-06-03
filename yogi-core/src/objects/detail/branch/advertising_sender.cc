@@ -29,9 +29,9 @@ void AdvertisingSender::SetupSocket() {
 
 void AdvertisingSender::SendAdvertisement() {
   auto weak_self = std::weak_ptr<AdvertisingSender>{shared_from_this()};
+  auto msg = info_->MakeAdvertisingMessage();
   socket_.async_send_to(
-      boost::asio::buffer(info_->MakeAdvertisingMessage()), adv_ep_,
-      [weak_self](auto ec, auto) {
+      boost::asio::buffer(*msg), adv_ep_, [weak_self, msg](auto ec, auto) {
         auto self = weak_self.lock();
         if (!self) return;
 

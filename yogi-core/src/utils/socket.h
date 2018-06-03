@@ -3,6 +3,7 @@
 #include "../config.h"
 #include "../objects/context.h"
 #include "../api/error.h"
+#include "types.h"
 
 #include <boost/asio.hpp>
 #include <memory>
@@ -16,7 +17,7 @@ namespace utils {
 class TimedTcpSocket : public std::enable_shared_from_this<TimedTcpSocket> {
  public:
   typedef std::function<void(const api::Error&)> CompletionHandler;
-  typedef std::function<void(const api::Error&, const std::vector<char>&)>
+  typedef std::function<void(const api::Error&, const ByteVector&)>
       ReceiveHandler;
 
   TimedTcpSocket(objects::ContextPtr context, std::chrono::nanoseconds timeout);
@@ -32,7 +33,7 @@ class TimedTcpSocket : public std::enable_shared_from_this<TimedTcpSocket> {
               CompletionHandler handler);
   void Connect(const boost::asio::ip::tcp::endpoint& ep,
                CompletionHandler handler);
-  void Send(const boost::asio::const_buffer& buffer, CompletionHandler handler);
+  void Send(SharedByteVector data, CompletionHandler handler);
   void ReceiveExactly(std::size_t num_bytes, ReceiveHandler handler);
 
  private:
@@ -40,11 +41,11 @@ class TimedTcpSocket : public std::enable_shared_from_this<TimedTcpSocket> {
   void OnTimeout();
 
   const std::chrono::nanoseconds timeout_;
+  const SharedByteVector rcv_buffer_;
   boost::asio::ip::tcp::socket socket_;
   boost::asio::ip::tcp::endpoint remote_ep_;
   boost::asio::steady_timer timer_;
   bool timed_out_;
-  std::shared_ptr<std::vector<char>> rcv_buffer_;
 };
 
 typedef std::shared_ptr<TimedTcpSocket> TimedTcpSocketPtr;

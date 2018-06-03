@@ -3,6 +3,7 @@
 #include "../../../config.h"
 #include "../../../api/error.h"
 #include "../../../utils/timestamp.h"
+#include "../../../utils/types.h"
 #include "../../../../../3rd_party/json/json.hpp"
 
 #include <boost/uuid/uuid.hpp>
@@ -10,7 +11,6 @@
 #include <string>
 #include <chrono>
 #include <memory>
-#include <vector>
 
 namespace objects {
 namespace detail {
@@ -29,14 +29,14 @@ class BranchInfo {
       const std::chrono::nanoseconds& adv_interval);
 
   static std::shared_ptr<BranchInfo> CreateFromInfoMessage(
-      const std::vector<char> info_msg, const boost::asio::ip::address& addr);
+      const utils::ByteVector& info_msg, const boost::asio::ip::address& addr);
 
   static api::Error DeserializeAdvertisingMessage(
       boost::uuids::uuid* uuid, unsigned short* tcp_port,
-      const std::vector<char>& adv_msg);
+      const utils::ByteVector& adv_msg);
 
   static api::Error DeserializeInfoMessageBodySize(
-      std::size_t* body_size, const std::vector<char>& info_msg_hdr);
+      std::size_t* body_size, const utils::ByteVector& info_msg_hdr);
 
   const boost::uuids::uuid& GetUuid() const { return uuid_; }
 
@@ -59,13 +59,13 @@ class BranchInfo {
     return adv_interval_;
   }
 
-  const std::vector<char>& MakeAdvertisingMessage() const {
-    YOGI_ASSERT(!adv_msg_.empty());
+  utils::SharedByteVector MakeAdvertisingMessage() const {
+    YOGI_ASSERT(adv_msg_);
     return adv_msg_;
   }
 
-  const std::vector<char>& MakeInfoMessage() const {
-    YOGI_ASSERT(!adv_msg_.empty());
+  utils::SharedByteVector MakeInfoMessage() const {
+    YOGI_ASSERT(info_msg_);
     return info_msg_;
   };
 
@@ -73,7 +73,7 @@ class BranchInfo {
 
  private:
   static api::Error CheckMagicPrefixAndVersion(
-      const std::vector<char>& adv_msg);
+      const utils::ByteVector& adv_msg);
 
   void PopulateMessages();
   void PopulateJson();
@@ -90,8 +90,8 @@ class BranchInfo {
   std::chrono::nanoseconds timeout_;
   std::chrono::nanoseconds adv_interval_;
 
-  std::vector<char> adv_msg_;
-  std::vector<char> info_msg_;
+  utils::SharedByteVector adv_msg_;
+  utils::SharedByteVector info_msg_;
   nlohmann::json json_;
 };
 

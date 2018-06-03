@@ -9,7 +9,7 @@ Branch::Branch(ContextPtr context, std::string name, std::string description,
                std::chrono::nanoseconds timeout)
     : context_(context),
       connection_manager_(std::make_shared<detail::ConnectionManager>(
-          context, adv_ep,
+          context, password, adv_ep,
           [&](auto& err, auto connection) {
             OnConnectionChanged(err, connection);
           })),

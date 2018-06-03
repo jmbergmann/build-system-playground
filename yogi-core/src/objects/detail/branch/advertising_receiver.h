@@ -38,7 +38,7 @@ class AdvertisingReceiver
   const ContextPtr context_;
   const boost::asio::ip::udp::endpoint adv_ep_;
   const ObserverFn observer_fn_;
-  const std::shared_ptr<std::vector<char>> buffer_;
+  const utils::SharedByteVector buffer_;
   BranchInfoPtr info_;
   boost::asio::ip::udp::socket socket_;
   boost::asio::ip::udp::endpoint sender_ep_;

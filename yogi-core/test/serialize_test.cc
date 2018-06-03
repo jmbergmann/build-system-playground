@@ -9,7 +9,7 @@ class SerializeTest : public ::testing::Test {
  protected:
   template <typename T>
   void Check(T val) {
-    std::vector<char> buffer;
+    utils::ByteVector buffer;
     utils::Serialize(&buffer, val);
 
     T des_val;

@@ -12,8 +12,8 @@ AdvertisingReceiver::AdvertisingReceiver(
     : context_(context),
       adv_ep_(adv_ep),
       observer_fn_(observer_fn),
-      buffer_(std::make_shared<std::vector<char>>(
-          BranchInfo::kAdvertisingMessageSize + 1)),
+      buffer_(
+          utils::MakeSharedByteVector(BranchInfo::kAdvertisingMessageSize + 1)),
       socket_(context->IoContext()) {
   SetupSocket();
 }
@@ -85,7 +85,8 @@ void AdvertisingReceiver::OnReceivedAdvertisementFinished(
 
   // Ignore advertising messages that we sent ourself
   if (uuid != info_->GetUuid()) {
-    auto tcp_ep = boost::asio::ip::tcp::endpoint(sender_ep_.address(), tcp_port);
+    auto tcp_ep =
+        boost::asio::ip::tcp::endpoint(sender_ep_.address(), tcp_port);
     observer_fn_(uuid, tcp_ep);
   }
 

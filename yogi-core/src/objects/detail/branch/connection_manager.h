@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../../../config.h"
+#include "../../../utils/types.h"
 #include "advertising_receiver.h"
 #include "advertising_sender.h"
 #include "branch_connection.h"
@@ -25,6 +26,7 @@ class ConnectionManager final
     kConnectionLostEvent = YOGI_BEV_CONNECTION_LOST,
   };
 
+  typedef utils::ByteVector ByteVector;
   typedef std::function<void(const api::Error&, BranchEvents, const api::Error&,
                              const boost::uuids::uuid&, const std::string&)>
       BranchEventHandler;
@@ -33,7 +35,7 @@ class ConnectionManager final
   typedef std::vector<std::pair<boost::uuids::uuid, std::string>>
       BranchInfoStringsList;
 
-  ConnectionManager(ContextPtr context,
+  ConnectionManager(ContextPtr context, const std::string& password,
                     const boost::asio::ip::udp::endpoint& adv_ep,
                     ConnectionChangedHandler connection_changed_handler);
 
@@ -98,7 +100,7 @@ class ConnectionManager final
   static const LoggerPtr logger_;
 
   const ContextPtr context_;
-  const std::string password_;
+  const utils::SharedByteVector password_hash_;
   const ConnectionChangedHandler connection_changed_handler_;
   const detail::AdvertisingSenderPtr adv_sender_;
   const detail::AdvertisingReceiverPtr adv_receiver_;

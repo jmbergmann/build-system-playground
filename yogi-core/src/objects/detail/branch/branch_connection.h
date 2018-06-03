@@ -27,15 +27,16 @@ class BranchConnection final
   }
 
   void ExchangeBranchInfo(CompletionHandler handler);
-  void Authenticate(CompletionHandler handler);
+  void Authenticate(utils::SharedByteVector password_hash,
+                    CompletionHandler handler);
   void RunSession(CompletionHandler handler);
 
  private:
   void OnInfoSent(CompletionHandler handler);
-  void OnInfoHeaderReceived(const std::vector<char>& info_msg_hdr,
+  void OnInfoHeaderReceived(const utils::ByteVector& info_msg_hdr,
                             CompletionHandler handler);
-  void OnInfoBodyReceived(const std::vector<char>& info_msg_hdr,
-                          const std::vector<char>& info_msg_body,
+  void OnInfoBodyReceived(const utils::ByteVector& info_msg_hdr,
+                          const utils::ByteVector& info_msg_body,
                           CompletionHandler handler);
 
   static const LoggerPtr logger_;

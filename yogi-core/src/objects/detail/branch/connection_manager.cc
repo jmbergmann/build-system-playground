@@ -1,4 +1,5 @@
 #include "connection_manager.h"
+#include "../../../utils/crypto.h"
 
 #include <boost/uuid/uuid_io.hpp>
 
@@ -6,9 +7,12 @@ namespace objects {
 namespace detail {
 
 ConnectionManager::ConnectionManager(
-    ContextPtr context, const boost::asio::ip::udp::endpoint& adv_ep,
+    ContextPtr context, const std::string& password,
+    const boost::asio::ip::udp::endpoint& adv_ep,
     ConnectionChangedHandler connection_changed_handler)
     : context_(context),
+      password_hash_(utils::MakeSharedByteVector(
+          utils::MakeSha256({password.cbegin(), password.cend()}))),
       connection_changed_handler_(connection_changed_handler),
       acceptor_(context->IoContext()),
       adv_sender_(std::make_shared<AdvertisingSender>(context, adv_ep)),
@@ -191,6 +195,7 @@ void ConnectionManager::OnExchangeBranchInfoFinished(
   EmitBranchEvent(kBranchQueriedEvent, api::kSuccess, entry->first,
                   [&] { return conn->GetRemoteBranchInfo()->ToJson(); });
 
+  // TODO: check name, path, net_name, etc...
   StartAuthenticate(conn);
 }
 
@@ -241,14 +246,14 @@ bool ConnectionManager::DoesHigherPriorityConnectionExist(
 }
 
 void ConnectionManager::StartAuthenticate(BranchConnectionPtr connection) {
-  connection->Authenticate([this, connection](auto& err) {
+  connection->Authenticate(password_hash_, [this, connection](auto& err) {
     this->OnAuthenticateFinished(err, connection);
   });
 }
 
 void ConnectionManager::OnAuthenticateFinished(const api::Error& err,
                                                BranchConnectionPtr connection) {
-  // TODO
+  YOGI_LOG_FATAL(logger_, info_ << " Authentication: " << err);
 }
 
 utils::TimedTcpSocketPtr ConnectionManager::MakeSocket() {

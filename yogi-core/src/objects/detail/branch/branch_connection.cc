@@ -22,7 +22,7 @@ std::string BranchConnection::MakeInfoString() const {
 void BranchConnection::ExchangeBranchInfo(CompletionHandler handler) {
   YOGI_ASSERT(!remote_info_);
 
-  socket_->Send(boost::asio::buffer(local_info_->MakeInfoMessage()),
+  socket_->Send(local_info_->MakeInfoMessage(),
                 [this, handler](const auto& err) {
                   if (err) {
                     handler(err);
@@ -32,8 +32,13 @@ void BranchConnection::ExchangeBranchInfo(CompletionHandler handler) {
                 });
 }
 
-void BranchConnection::Authenticate(CompletionHandler handler) {
+void BranchConnection::Authenticate(utils::SharedByteVector password_hash,
+                                    CompletionHandler handler) {
   YOGI_ASSERT(remote_info_);
+
+  auto buffer = std::make_shared<utils::ByteVector>();
+
+  handler(api::kSuccess);
 }
 
 void BranchConnection::RunSession(CompletionHandler handler) {
@@ -53,7 +58,7 @@ void BranchConnection::OnInfoSent(CompletionHandler handler) {
 }
 
 void BranchConnection::OnInfoHeaderReceived(
-    const std::vector<char>& info_msg_hdr, CompletionHandler handler) {
+    const utils::ByteVector& info_msg_hdr, CompletionHandler handler) {
   std::size_t body_size;
   if (auto err = BranchInfo::DeserializeInfoMessageBodySize(&body_size,
                                                             info_msg_hdr)) {
@@ -73,8 +78,8 @@ void BranchConnection::OnInfoHeaderReceived(
 }
 
 void BranchConnection::OnInfoBodyReceived(
-    const std::vector<char>& info_msg_hdr,
-    const std::vector<char>& info_msg_body, CompletionHandler handler) {
+    const utils::ByteVector& info_msg_hdr,
+    const utils::ByteVector& info_msg_body, CompletionHandler handler) {
   try {
     auto info_msg = info_msg_hdr;
     info_msg.insert(info_msg.end(), info_msg_body.begin(), info_msg_body.end());

@@ -5,10 +5,10 @@ namespace utils {
 TimedTcpSocket::TimedTcpSocket(objects::ContextPtr context,
                                std::chrono::nanoseconds timeout)
     : timeout_(timeout),
+      rcv_buffer_(MakeSharedByteVector()),
       socket_(context->IoContext()),
       timer_(context->IoContext()),
-      timed_out_(false),
-      rcv_buffer_(std::make_shared<std::vector<char>>()) {}
+      timed_out_(false) {}
 
 void TimedTcpSocket::Accept(boost::asio::ip::tcp::acceptor* acceptor,
                             CompletionHandler handler) {
@@ -49,12 +49,11 @@ void TimedTcpSocket::Connect(const boost::asio::ip::tcp::endpoint& ep,
   StartTimeout(weak_self);
 }
 
-void TimedTcpSocket::Send(const boost::asio::const_buffer& buffer,
-                          CompletionHandler handler) {
+void TimedTcpSocket::Send(SharedByteVector data, CompletionHandler handler) {
   auto weak_self = std::weak_ptr<TimedTcpSocket>{shared_from_this()};
   boost::asio::async_write(
-      socket_, buffer,
-      [weak_self, handler = std::move(handler)](auto& ec, auto) {
+      socket_, boost::asio::buffer(*data),
+      [weak_self, data, handler = std::move(handler)](auto& ec, auto) {
         auto self = weak_self.lock();
         if (!self) return;
 
