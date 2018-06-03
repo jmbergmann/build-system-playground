@@ -182,16 +182,18 @@ void ConnectionManager::OnExchangeBranchInfoFinished(
     return;
   }
 
-  // UUIDs from advertising message and info message don't match
   auto remote_info = conn->GetRemoteBranchInfo();
+  if (blacklisted_uuids_.count(remote_info->GetUuid())) {
+    return;
+  }
+
+  // UUIDs from advertising message and info message don't match
   CheckAndFixUuidMismatch(remote_info->GetUuid(), &entry);
   YOGI_ASSERT(entry != nullptr);
 
   if (DoesHigherPriorityConnectionExist(*entry)) {
     return;
   }
-
-  entry->second = conn;
 
   EmitBranchEvent(kBranchQueriedEvent, api::kSuccess, entry->first,
                   [&] { return remote_info->ToJson(); });
@@ -202,9 +204,12 @@ void ConnectionManager::OnExchangeBranchInfoFinished(
       return nlohmann::json{{"uuid", boost::uuids::to_string(entry->first)}};
     });
 
+    blacklisted_uuids_.insert(entry->first);
+    connections_.erase(entry->first);
     return;
   }
 
+  entry->second = conn;
   StartAuthenticate(conn);
 }
 
@@ -277,15 +282,23 @@ api::Error ConnectionManager::CheckRemoteBranchInfo(
   return api::kSuccess;
 }
 
-void ConnectionManager::StartAuthenticate(BranchConnectionPtr connection) {
-  connection->Authenticate(password_hash_, [this, connection](auto& err) {
-    this->OnAuthenticateFinished(err, connection);
+void ConnectionManager::StartAuthenticate(BranchConnectionPtr conn) {
+  conn->Authenticate(password_hash_, [this, conn](auto& err) {
+    this->OnAuthenticateFinished(err, conn);
   });
 }
 
 void ConnectionManager::OnAuthenticateFinished(const api::Error& err,
-                                               BranchConnectionPtr connection) {
-  auto& uuid = connection->GetRemoteBranchInfo()->GetUuid();
+                                               BranchConnectionPtr conn) {
+  auto& uuid = conn->GetRemoteBranchInfo()->GetUuid();
+
+  if (err == api::Error(YOGI_ERR_PASSWORD_MISMATCH)) {
+    blacklisted_uuids_.insert(uuid);
+
+    std::lock_guard<std::mutex> lock(connections_mutex_);
+    connections_.erase(uuid);
+  }
+
   EmitBranchEvent(kConnectFinishedEvent, err, uuid, [&] {
     return nlohmann::json{{"uuid", boost::uuids::to_string(uuid)}};
   });
