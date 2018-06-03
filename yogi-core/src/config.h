@@ -26,15 +26,20 @@
 
 #ifndef NDEBUG
 # include <iostream>
-# define YOGI_TRACE std::cerr << __FILE__ << ":" << __LINE__ << ": " \
-                              << __FUNCTION__ << std::endl;
-# define YOGI_ASSERT(x)                                                      \
-  {                                                                          \
-    if (!(x)) {                                                              \
-      std::cerr << "ASSERTION \"" #x "\" in " << __FILE__ << ":" << __LINE__ \
-                << " FAILED." << std::endl;                                  \
-      YOGI_DEBUG_BRAKE;                                                      \
-    }                                                                        \
+# include <string>
+#define YOGI_TRACE                                                             \
+  {                                                                            \
+    std::string file(__FILE__);                                                \
+    file = file.substr(file.find_last_of("\\/") + 1);                          \
+    std::cerr << file << ":" << __LINE__ << ": " << __FUNCTION__ << std::endl; \
+  }
+# define YOGI_ASSERT(x)                                                        \
+  {                                                                            \
+    if (!(x)) {                                                                \
+      std::cerr << "ASSERTION \"" #x "\" in " << __FILE__ << ":" << __LINE__   \
+                << " FAILED." << std::endl;                                    \
+      YOGI_DEBUG_BRAKE;                                                        \
+    }                                                                          \
   }
 #else
 # define YOGI_ASSERT(x)

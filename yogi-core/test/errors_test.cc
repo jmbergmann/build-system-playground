@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 #include <yogi_core.h>
 
-static constexpr int kLastError = YOGI_ERR_PASSWORD_MISMATCH;
+static constexpr int kLastError = YOGI_ERR_DUPLICATE_BRANCH_PATH;
 
 TEST(ErrorsTest, GetErrorString) {
   EXPECT_STRNE(YOGI_GetErrorString(-2), YOGI_GetErrorString(-1));

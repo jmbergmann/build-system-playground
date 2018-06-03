@@ -183,7 +183,8 @@ void ConnectionManager::OnExchangeBranchInfoFinished(
   }
 
   // UUIDs from advertising message and info message don't match
-  CheckAndFixUuidMismatch(conn->GetRemoteBranchInfo()->GetUuid(), &entry);
+  auto remote_info = conn->GetRemoteBranchInfo();
+  CheckAndFixUuidMismatch(remote_info->GetUuid(), &entry);
   YOGI_ASSERT(entry != nullptr);
 
   if (DoesHigherPriorityConnectionExist(*entry)) {
@@ -193,9 +194,17 @@ void ConnectionManager::OnExchangeBranchInfoFinished(
   entry->second = conn;
 
   EmitBranchEvent(kBranchQueriedEvent, api::kSuccess, entry->first,
-                  [&] { return conn->GetRemoteBranchInfo()->ToJson(); });
+                  [&] { return remote_info->ToJson(); });
 
-  // TODO: check name, path, net_name, etc...
+  auto res = CheckRemoteBranchInfo(remote_info);
+  if (res != api::kSuccess) {
+    EmitBranchEvent(kConnectFinishedEvent, res, entry->first, [&] {
+      return nlohmann::json{{"uuid", boost::uuids::to_string(entry->first)}};
+    });
+
+    return;
+  }
+
   StartAuthenticate(conn);
 }
 
@@ -245,6 +254,29 @@ bool ConnectionManager::DoesHigherPriorityConnectionExist(
   return entry.second && entry.first < info_->GetUuid();
 }
 
+api::Error ConnectionManager::CheckRemoteBranchInfo(
+    const BranchInfoPtr& remote_info) {
+  if (remote_info->GetNetName() != info_->GetNetName()) {
+    return api::Error(YOGI_ERR_NET_NAME_MISMATCH);
+  }
+
+  for (auto& entry : connections_) {
+    if (!entry.second) continue;
+    auto branch_info = entry.second->GetRemoteBranchInfo();
+    if (branch_info == remote_info) continue;
+
+    if (remote_info->GetName() == branch_info->GetName()) {
+      return api::Error(YOGI_ERR_DUPLICATE_BRANCH_NAME);
+    }
+
+    if (remote_info->GetPath() == branch_info->GetPath()) {
+      return api::Error(YOGI_ERR_DUPLICATE_BRANCH_PATH);
+    }
+  }
+
+  return api::kSuccess;
+}
+
 void ConnectionManager::StartAuthenticate(BranchConnectionPtr connection) {
   connection->Authenticate(password_hash_, [this, connection](auto& err) {
     this->OnAuthenticateFinished(err, connection);
@@ -253,7 +285,10 @@ void ConnectionManager::StartAuthenticate(BranchConnectionPtr connection) {
 
 void ConnectionManager::OnAuthenticateFinished(const api::Error& err,
                                                BranchConnectionPtr connection) {
-  YOGI_LOG_FATAL(logger_, info_ << " Authentication: " << err);
+  auto& uuid = connection->GetRemoteBranchInfo()->GetUuid();
+  EmitBranchEvent(kConnectFinishedEvent, err, uuid, [&] {
+    return nlohmann::json{{"uuid", boost::uuids::to_string(uuid)}};
+  });
 }
 
 utils::TimedTcpSocketPtr ConnectionManager::MakeSocket() {
@@ -274,7 +309,11 @@ void ConnectionManager::EmitBranchEvent(BranchEvents event,
 
   auto handler = event_handler_;
   event_handler_ = {};
-  handler(api::kSuccess, event, ev_res, uuid, make_json_fn());
+
+  auto json = make_json_fn();
+  context_->Post([=, json = std::move(json)] {
+    handler(api::kSuccess, event, ev_res, uuid, json);
+  });
 }
 
 template <typename Fn>

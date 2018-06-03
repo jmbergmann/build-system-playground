@@ -85,6 +85,7 @@ class ConnectionManager final
                                ConnectionsMapEntry** entry);
   bool DoesHigherPriorityConnectionExist(
       const ConnectionsMapEntry& entry) const;
+  api::Error CheckRemoteBranchInfo(const BranchInfoPtr& remote_info);
   void StartAuthenticate(BranchConnectionPtr conn);
   void OnAuthenticateFinished(const api::Error& err, BranchConnectionPtr conn);
   utils::TimedTcpSocketPtr MakeSocket();

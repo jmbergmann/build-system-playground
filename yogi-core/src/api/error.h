@@ -21,7 +21,7 @@ class Error : public std::exception {
   virtual const char* what() const noexcept;
 
  private:
-  const int err_;
+  int err_;
 };
 
 namespace {

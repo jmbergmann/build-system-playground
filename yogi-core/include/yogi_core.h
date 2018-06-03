@@ -167,6 +167,15 @@
 //! The passwords of the local and remote branch don't match
 #define YOGI_ERR_PASSWORD_MISMATCH -25
 
+//! The net names of the local and remote branch don't match
+#define YOGI_ERR_NET_NAME_MISMATCH -26
+
+//! A branch with the same name is already active
+#define YOGI_ERR_DUPLICATE_BRANCH_NAME -27
+
+//! A branch with the same path is already active
+#define YOGI_ERR_DUPLICATE_BRANCH_PATH -28
+
 //! @}
 //!
 //! @defgroup VB Log verbosity/severity

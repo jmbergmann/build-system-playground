@@ -82,6 +82,15 @@ const char* Error::what() const noexcept {
 
     case YOGI_ERR_PASSWORD_MISMATCH:
       return "The passwords of the local and remote branch don't match";
+
+    case YOGI_ERR_NET_NAME_MISMATCH:
+      return "The net names of the local and remote branch don't match";
+
+    case YOGI_ERR_DUPLICATE_BRANCH_NAME:
+      return "A branch with the same name is already active";
+
+    case YOGI_ERR_DUPLICATE_BRANCH_PATH:
+      return "A branch with the same path is already active";
   }
 
   return "Invalid error code";
