@@ -159,7 +159,7 @@ TEST_F(BranchTest, Advertising) {
 
 TEST_F(BranchTest, Connections) {
   CreateBranch("A", nullptr, nullptr);
-  CreateBranch("A", nullptr, nullptr);
+  // CreateBranch("B", nullptr, nullptr);
   RunContextInBackground();
   getchar();
 }

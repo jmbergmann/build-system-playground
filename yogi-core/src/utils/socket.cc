@@ -4,7 +4,8 @@ namespace utils {
 
 TimedTcpSocket::TimedTcpSocket(objects::ContextPtr context,
                                std::chrono::nanoseconds timeout)
-    : timeout_(timeout),
+    : context_(context),
+      timeout_(timeout),
       rcv_buffer_(MakeSharedByteVector()),
       socket_(context->IoContext()),
       timer_(context->IoContext()),

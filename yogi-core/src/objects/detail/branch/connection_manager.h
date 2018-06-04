@@ -8,6 +8,7 @@
 
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/functional/hash.hpp>
+#include <set>
 #include <unordered_set>
 #include <unordered_map>
 #include <mutex>
@@ -63,6 +64,8 @@ class ConnectionManager final
                              boost::hash<boost::uuids::uuid>>
       ConnectionsMap;
   typedef ConnectionsMap::value_type ConnectionsMapEntry;
+  typedef std::set<utils::TimedTcpSocketPtr> SocketSet;
+  typedef std::set<BranchConnectionPtr> ConnectionSet;
 
   void SetupAcceptor(const boost::asio::ip::tcp& protocol);
   void StartAccept();
@@ -88,11 +91,21 @@ class ConnectionManager final
   api::Error CheckRemoteBranchInfo(const BranchInfoPtr& remote_info);
   void StartAuthenticate(BranchConnectionPtr conn);
   void OnAuthenticateFinished(const api::Error& err, BranchConnectionPtr conn);
-  utils::TimedTcpSocketPtr MakeSocket();
+  void StartSession(BranchConnectionPtr conn);
+  void OnSessionTerminated(const api::Error& err, BranchConnectionPtr conn);
+  utils::TimedTcpSocketPtr MakeSocketAndKeepItAlive();
+  utils::TimedTcpSocketPtr StopKeepingSocketAlive(
+      const utils::TimedTcpSocketWeakPtr& weak_socket);
+  BranchConnectionPtr MakeConnectionAndKeepItAlive(
+      utils::TimedTcpSocketPtr socket);
+  BranchConnectionPtr StopKeepingConnectionAlive(
+      const BranchConnectionWeakPtr& weak_conn);
 
   template <typename Fn>
   void EmitBranchEvent(BranchEvents event, const api::Error& ev_res,
                        const boost::uuids::uuid& uuid, Fn make_json_fn);
+  void EmitBranchEvent(BranchEvents event, const api::Error& ev_res,
+                       const boost::uuids::uuid& uuid);
 
   template <typename Fn>
   void LogBranchEvent(BranchEvents event, const api::Error& ev_res,
@@ -106,6 +119,8 @@ class ConnectionManager final
   const detail::AdvertisingSenderPtr adv_sender_;
   const detail::AdvertisingReceiverPtr adv_receiver_;
   boost::asio::ip::tcp::acceptor acceptor_;
+  SocketSet sockets_kept_alive_;
+  ConnectionSet connections_kept_alive_;
   BranchInfoPtr info_;
 
   UuidSet blacklisted_uuids_;
@@ -115,7 +130,7 @@ class ConnectionManager final
   BranchEventHandler event_handler_;
   BranchEvents observed_events_;
   bool cancel_await_event_running_;
-  std::recursive_mutex event_mutex_;
+  std::mutex event_mutex_;
 };
 
 typedef std::shared_ptr<ConnectionManager> ConnectionManagerPtr;

@@ -29,6 +29,8 @@ class TimedTcpSocket : public std::enable_shared_from_this<TimedTcpSocket> {
     return remote_ep_;
   }
 
+  objects::ContextPtr GetContext() const { return context_; }
+
   void Accept(boost::asio::ip::tcp::acceptor* acceptor,
               CompletionHandler handler);
   void Connect(const boost::asio::ip::tcp::endpoint& ep,
@@ -40,6 +42,7 @@ class TimedTcpSocket : public std::enable_shared_from_this<TimedTcpSocket> {
   void StartTimeout(std::weak_ptr<TimedTcpSocket> weak_self);
   void OnTimeout();
 
+  const objects::ContextPtr context_;
   const std::chrono::nanoseconds timeout_;
   const SharedByteVector rcv_buffer_;
   boost::asio::ip::tcp::socket socket_;
@@ -49,6 +52,7 @@ class TimedTcpSocket : public std::enable_shared_from_this<TimedTcpSocket> {
 };
 
 typedef std::shared_ptr<TimedTcpSocket> TimedTcpSocketPtr;
+typedef std::weak_ptr<TimedTcpSocket> TimedTcpSocketWeakPtr;
 
 }  // namespace utils
 

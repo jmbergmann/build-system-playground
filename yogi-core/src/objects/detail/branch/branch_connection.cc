@@ -11,8 +11,12 @@ const LoggerPtr BranchConnection::logger_ =
 BranchConnection::BranchConnection(utils::TimedTcpSocketPtr socket,
                                    BranchInfoPtr local_info)
     : socket_(socket),
+      context_(socket->GetContext()),
       local_info_(local_info),
-      connected_since_(utils::Timestamp::Now()) {}
+      connected_since_(utils::Timestamp::Now()),
+      heartbeat_msg_(utils::MakeSharedByteVector(utils::ByteVector{0})),
+      session_started_(false),
+      heartbeat_timer_(context_->IoContext()) {}
 
 std::string BranchConnection::MakeInfoString() const {
   auto json = remote_info_->ToJson();
@@ -51,6 +55,11 @@ void BranchConnection::Authenticate(utils::SharedByteVector password_hash,
 
 void BranchConnection::RunSession(CompletionHandler handler) {
   YOGI_ASSERT(remote_info_);
+  YOGI_ASSERT(!session_started_);
+
+  RestartHeartbeatTimer();
+  session_started_ = true;
+  session_completion_handler_ = handler;
 }
 
 void BranchConnection::OnInfoSent(CompletionHandler handler) {
@@ -163,6 +172,40 @@ void BranchConnection::OnSolutionReceived(
   } else {
     handler(api::Error(YOGI_ERR_PASSWORD_MISMATCH));
   }
+}
+
+void BranchConnection::RestartHeartbeatTimer() {
+  YOGI_ASSERT((remote_info_->GetTimeout() / 2).count() > 0);
+  heartbeat_timer_.expires_from_now(remote_info_->GetTimeout() / 2);
+
+  auto weak_self = std::weak_ptr<BranchConnection>(shared_from_this());
+  heartbeat_timer_.async_wait([weak_self](const auto& ec) {
+    if (ec == boost::asio::error::operation_aborted) return;
+
+    auto self = weak_self.lock();
+    if (!self) return;
+
+    self->OnHeartbeatTimerExpired();
+  });
+}
+
+void BranchConnection::OnHeartbeatTimerExpired() {
+  auto weak_self = std::weak_ptr<BranchConnection>(shared_from_this());
+  socket_->Send(heartbeat_msg_, [weak_self](auto& err) {
+    auto self = weak_self.lock();
+    if (!self) return;
+
+    if (err) {
+      self->OnSessionError(err);
+    } else {
+      self->RestartHeartbeatTimer();
+    }
+  });
+}
+
+void BranchConnection::OnSessionError(const api::Error& err) {
+  heartbeat_timer_.cancel();
+  session_completion_handler_(err);
 }
 
 }  // namespace detail

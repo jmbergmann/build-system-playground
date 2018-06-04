@@ -9,6 +9,7 @@
 #include <boost/asio.hpp>
 #include <functional>
 #include <memory>
+#include <atomic>
 
 namespace objects {
 namespace detail {
@@ -22,8 +23,13 @@ class BranchConnection final
 
   BranchInfoPtr GetRemoteBranchInfo() const { return remote_info_; }
   std::string MakeInfoString() const;
+
   const boost::asio::ip::tcp::endpoint& GetRemoteEndpoint() const {
     return socket_->GetRemoteEndpoint();
+  }
+
+  bool SessionStarted() const {
+    return session_started_;
   }
 
   void ExchangeBranchInfo(CompletionHandler handler);
@@ -53,16 +59,25 @@ class BranchConnection final
   void OnSolutionReceived(const utils::ByteVector& received_solution,
                           utils::SharedByteVector my_solution,
                           CompletionHandler handler);
+  void RestartHeartbeatTimer();
+  void OnHeartbeatTimerExpired();
+  void OnSessionError(const api::Error& err);
 
   static const LoggerPtr logger_;
 
   const utils::TimedTcpSocketPtr socket_;
+  const objects::ContextPtr context_;
   const BranchInfoPtr local_info_;
   const utils::Timestamp connected_since_;
+  const utils::SharedByteVector heartbeat_msg_;
   BranchInfoPtr remote_info_;
+  std::atomic<bool> session_started_;
+  CompletionHandler session_completion_handler_;
+  boost::asio::steady_timer heartbeat_timer_;
 };
 
 typedef std::shared_ptr<BranchConnection> BranchConnectionPtr;
+typedef std::weak_ptr<BranchConnection> BranchConnectionWeakPtr;
 
 }  // namespace detail
 }  // namespace objects

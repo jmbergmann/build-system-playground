@@ -38,7 +38,7 @@ ConnectionManager::MakeConnectedBranchesInfoStrings() const {
 
   std::lock_guard<std::mutex> lock(connections_mutex_);
   for (auto& entry : connections_) {
-    if (entry.second) {
+    if (entry.second && entry.second->SessionStarted()) {
       branches.push_back(
           std::make_pair(entry.first, entry.second->MakeInfoString()));
     }
@@ -49,7 +49,7 @@ ConnectionManager::MakeConnectedBranchesInfoStrings() const {
 
 void ConnectionManager::AwaitEvent(BranchEvents events,
                                    BranchEventHandler handler) {
-  std::lock_guard<std::recursive_mutex> lock(event_mutex_);
+  std::lock_guard<std::mutex> lock(event_mutex_);
 
   if (cancel_await_event_running_) {
     throw api::Error(YOGI_ERR_BUSY);
@@ -64,7 +64,7 @@ void ConnectionManager::AwaitEvent(BranchEvents events,
 }
 
 void ConnectionManager::CancelAwaitEvent() {
-  std::lock_guard<std::recursive_mutex> lock(event_mutex_);
+  std::lock_guard<std::mutex> lock(event_mutex_);
 
   if (cancel_await_event_running_) {
     throw api::Error(YOGI_ERR_BUSY);
@@ -95,13 +95,15 @@ void ConnectionManager::SetupAcceptor(const boost::asio::ip::tcp& protocol) {
 }
 
 void ConnectionManager::StartAccept() {
-  auto socket = MakeSocket();
+  auto socket = MakeSocketAndKeepItAlive();
+  auto weak_socket = utils::TimedTcpSocketWeakPtr(socket);
 
   auto weak_self = std::weak_ptr<ConnectionManager>{shared_from_this()};
-  socket->Accept(&acceptor_, [weak_self, socket](auto& err) {
+  socket->Accept(&acceptor_, [weak_self, weak_socket](auto& err) {
     auto self = weak_self.lock();
     if (!self) return;
 
+    auto socket = self->StopKeepingSocketAlive(weak_socket);
     self->OnAcceptFinished(err, socket);
   });
 }
@@ -130,8 +132,10 @@ void ConnectionManager::OnAdvertisementReceived(
   if (!res.second) return;
   auto entry = &*res.first;
 
-  auto socket = MakeSocket();
-  socket->Connect(ep, [this, entry, ep, socket](auto& err) {
+  auto socket = MakeSocketAndKeepItAlive();
+  auto weak_socket = utils::TimedTcpSocketWeakPtr(socket);
+  socket->Connect(ep, [this, entry, ep, weak_socket](auto& err) {
+    auto socket = this->StopKeepingSocketAlive(weak_socket);
     this->OnConnectFinished(err, entry, ep, socket);
   });
 
@@ -151,9 +155,7 @@ void ConnectionManager::OnConnectFinished(
 
   if (err && !entry->second) {
     auto& adv_uuid = entry->first;
-    EmitBranchEvent(kBranchQueriedEvent, err, adv_uuid, [&] {
-      return nlohmann::json{{"uuid", boost::uuids::to_string(adv_uuid)}};
-    });
+    EmitBranchEvent(kBranchQueriedEvent, err, adv_uuid);
 
     connections_.erase(adv_uuid);  // pointer "entry" is invalid after this
 
@@ -165,9 +167,12 @@ void ConnectionManager::OnConnectFinished(
 
 void ConnectionManager::StartExchangeBranchInfo(utils::TimedTcpSocketPtr socket,
                                                 ConnectionsMapEntry* entry) {
-  auto conn = std::make_shared<BranchConnection>(socket, info_);
-  conn->ExchangeBranchInfo([this, conn, entry](auto& err) {
-    this->OnExchangeBranchInfoFinished(err, conn, entry);
+  auto conn = MakeConnectionAndKeepItAlive(socket);
+  auto weak_conn = BranchConnectionWeakPtr(conn);
+  conn->ExchangeBranchInfo([this, weak_conn, entry](auto& err) {
+    YOGI_ASSERT(weak_conn.lock());
+    this->OnExchangeBranchInfoFinished(err, weak_conn.lock(), entry);
+    this->StopKeepingConnectionAlive(weak_conn);
   });
 }
 
@@ -200,9 +205,7 @@ void ConnectionManager::OnExchangeBranchInfoFinished(
 
   auto res = CheckRemoteBranchInfo(remote_info);
   if (res != api::kSuccess) {
-    EmitBranchEvent(kConnectFinishedEvent, res, entry->first, [&] {
-      return nlohmann::json{{"uuid", boost::uuids::to_string(entry->first)}};
-    });
+    EmitBranchEvent(kConnectFinishedEvent, res, entry->first);
 
     blacklisted_uuids_.insert(entry->first);
     connections_.erase(entry->first);
@@ -217,9 +220,7 @@ void ConnectionManager::PublishExchangeBranchInfoError(
     const api::Error& err, BranchConnectionPtr conn,
     ConnectionsMapEntry* entry) {
   if (entry) {  // Connect operation failed
-    EmitBranchEvent(kBranchQueriedEvent, err, entry->first, [&] {
-      return nlohmann::json{{"uuid", boost::uuids::to_string(entry->first)}};
-    });
+    EmitBranchEvent(kBranchQueriedEvent, err, entry->first);
   } else {
     YOGI_LOG_WARNING(logger_,
                      info_ << " Exchanging branch info with "
@@ -283,8 +284,10 @@ api::Error ConnectionManager::CheckRemoteBranchInfo(
 }
 
 void ConnectionManager::StartAuthenticate(BranchConnectionPtr conn) {
-  conn->Authenticate(password_hash_, [this, conn](auto& err) {
-    this->OnAuthenticateFinished(err, conn);
+  auto weak_conn = BranchConnectionWeakPtr(conn);
+  conn->Authenticate(password_hash_, [this, weak_conn](auto& err) {
+    YOGI_ASSERT(weak_conn.lock());
+    this->OnAuthenticateFinished(err, weak_conn.lock());
   });
 }
 
@@ -292,20 +295,65 @@ void ConnectionManager::OnAuthenticateFinished(const api::Error& err,
                                                BranchConnectionPtr conn) {
   auto& uuid = conn->GetRemoteBranchInfo()->GetUuid();
 
-  if (err == api::Error(YOGI_ERR_PASSWORD_MISMATCH)) {
-    blacklisted_uuids_.insert(uuid);
+  if (err) {
+    if (err == api::Error(YOGI_ERR_PASSWORD_MISMATCH)) {
+      blacklisted_uuids_.insert(uuid);
+    }
 
     std::lock_guard<std::mutex> lock(connections_mutex_);
     connections_.erase(uuid);
+
+    EmitBranchEvent(kConnectFinishedEvent, err, uuid);
   }
 
-  EmitBranchEvent(kConnectFinishedEvent, err, uuid, [&] {
-    return nlohmann::json{{"uuid", boost::uuids::to_string(uuid)}};
-  });
+  StartSession(conn);
 }
 
-utils::TimedTcpSocketPtr ConnectionManager::MakeSocket() {
-  return std::make_shared<utils::TimedTcpSocket>(context_, info_->GetTimeout());
+void ConnectionManager::StartSession(BranchConnectionPtr conn) {
+  auto weak_conn = BranchConnectionWeakPtr(conn);
+  conn->RunSession([this, weak_conn](auto& err) {
+    YOGI_ASSERT(weak_conn.lock());
+    this->OnSessionTerminated(err, weak_conn.lock());
+  });
+
+  EmitBranchEvent(kConnectFinishedEvent, api::kSuccess,
+                  conn->GetRemoteBranchInfo()->GetUuid());
+}
+
+void ConnectionManager::OnSessionTerminated(const api::Error& err,
+                                            BranchConnectionPtr conn) {
+  EmitBranchEvent(kConnectionLostEvent, err,
+                  conn->GetRemoteBranchInfo()->GetUuid());
+}
+
+utils::TimedTcpSocketPtr ConnectionManager::MakeSocketAndKeepItAlive() {
+  auto socket =
+      std::make_shared<utils::TimedTcpSocket>(context_, info_->GetTimeout());
+  sockets_kept_alive_.insert(socket);
+  return socket;
+}
+
+utils::TimedTcpSocketPtr ConnectionManager::StopKeepingSocketAlive(
+    const utils::TimedTcpSocketWeakPtr& weak_socket) {
+  auto socket = weak_socket.lock();
+  YOGI_ASSERT(socket);
+  sockets_kept_alive_.erase(socket);
+  return socket;
+}
+
+BranchConnectionPtr ConnectionManager::MakeConnectionAndKeepItAlive(
+    utils::TimedTcpSocketPtr socket) {
+  auto conn = std::make_shared<BranchConnection>(socket, info_);
+  connections_kept_alive_.insert(conn);
+  return conn;
+}
+
+BranchConnectionPtr ConnectionManager::StopKeepingConnectionAlive(
+    const BranchConnectionWeakPtr& weak_conn) {
+  auto conn = weak_conn.lock();
+  YOGI_ASSERT(socket);
+  connections_kept_alive_.erase(conn);
+  return conn;
 }
 
 template <typename Fn>
@@ -315,7 +363,7 @@ void ConnectionManager::EmitBranchEvent(BranchEvents event,
                                         Fn make_json_fn) {
   LogBranchEvent(event, ev_res, uuid, make_json_fn);
 
-  std::lock_guard<std::recursive_mutex> lock(event_mutex_);
+  std::lock_guard<std::mutex> lock(event_mutex_);
 
   if (!event_handler_) return;
   if (!(observed_events_ & event)) return;
@@ -326,6 +374,14 @@ void ConnectionManager::EmitBranchEvent(BranchEvents event,
   auto json = make_json_fn();
   context_->Post([=, json = std::move(json)] {
     handler(api::kSuccess, event, ev_res, uuid, json);
+  });
+}
+
+void ConnectionManager::EmitBranchEvent(BranchEvents event,
+                                        const api::Error& ev_res,
+                                        const boost::uuids::uuid& uuid) {
+  return EmitBranchEvent(event, ev_res, uuid, [&] {
+    return nlohmann::json{{"uuid", boost::uuids::to_string(uuid)}};
   });
 }
 
