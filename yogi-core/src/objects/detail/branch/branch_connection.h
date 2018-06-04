@@ -28,9 +28,7 @@ class BranchConnection final
     return socket_->GetRemoteEndpoint();
   }
 
-  bool SessionStarted() const {
-    return session_started_;
-  }
+  bool SessionStarted() const { return session_started_; }
 
   void ExchangeBranchInfo(CompletionHandler handler);
   void Authenticate(utils::SharedByteVector password_hash,
@@ -81,3 +79,4 @@ typedef std::weak_ptr<BranchConnection> BranchConnectionWeakPtr;
 
 }  // namespace detail
 }  // namespace objects
+

@@ -33,8 +33,10 @@ Branch::BranchInfoStringsList Branch::MakeConnectedBranchesInfoStrings() const {
 }
 
 void Branch::OnConnectionChanged(const api::Error& err,
-                                 detail::BranchConnectionPtr connection) {
-  // todo
+                                 detail::BranchConnectionPtr conn) {
+  YOGI_LOG_INFO(logger_, "Connection to " << conn->GetRemoteBranchInfo()
+                                          << " changed: " << err);
+  // TODO
 }
 
 const LoggerPtr Branch::logger_ = Logger::CreateStaticInternalLogger("Branch");

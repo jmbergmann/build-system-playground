@@ -318,12 +318,16 @@ void ConnectionManager::StartSession(BranchConnectionPtr conn) {
 
   EmitBranchEvent(kConnectFinishedEvent, api::kSuccess,
                   conn->GetRemoteBranchInfo()->GetUuid());
+
+  connection_changed_handler_(api::kSuccess, conn);
 }
 
 void ConnectionManager::OnSessionTerminated(const api::Error& err,
                                             BranchConnectionPtr conn) {
   EmitBranchEvent(kConnectionLostEvent, err,
                   conn->GetRemoteBranchInfo()->GetUuid());
+
+  connection_changed_handler_(err, conn);
 }
 
 utils::TimedTcpSocketPtr ConnectionManager::MakeSocketAndKeepItAlive() {

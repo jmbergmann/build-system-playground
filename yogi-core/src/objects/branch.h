@@ -32,7 +32,7 @@ class Branch : public api::ExposedObjectT<Branch, api::ObjectType::kBranch> {
 
  private:
   void OnConnectionChanged(const api::Error& err,
-                           detail::BranchConnectionPtr connection);
+                           detail::BranchConnectionPtr conn);
 
   static const LoggerPtr logger_;
 
