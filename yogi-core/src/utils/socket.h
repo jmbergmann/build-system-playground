@@ -2,6 +2,7 @@
 
 #include "../config.h"
 #include "../objects/context.h"
+#include "../objects/logger.h"
 #include "../api/error.h"
 #include "types.h"
 
@@ -39,8 +40,11 @@ class TimedTcpSocket : public std::enable_shared_from_this<TimedTcpSocket> {
   void ReceiveExactly(std::size_t num_bytes, ReceiveHandler handler);
 
  private:
+  void SetNoDelayOption();
   void StartTimeout(std::weak_ptr<TimedTcpSocket> weak_self);
   void OnTimeout();
+
+  static const objects::LoggerPtr logger_;
 
   const objects::ContextPtr context_;
   const std::chrono::nanoseconds timeout_;

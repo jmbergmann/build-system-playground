@@ -22,6 +22,7 @@ void TimedTcpSocket::Accept(boost::asio::ip::tcp::acceptor* acceptor,
 
                            if (!ec) {
                              self->remote_ep_ = self->socket_.remote_endpoint();
+                             self->SetNoDelayOption();
                              handler(api::kSuccess);
                            } else {
                              handler(api::Error(YOGI_ERR_ACCEPT_SOCKET_FAILED));
@@ -41,6 +42,7 @@ void TimedTcpSocket::Connect(const boost::asio::ip::tcp::endpoint& ep,
                           if (self->timed_out_) {
                             handler(api::Error(YOGI_ERR_TIMEOUT));
                           } else if (!ec) {
+                            self->SetNoDelayOption();
                             handler(api::kSuccess);
                           } else {
                             handler(api::Error(YOGI_ERR_CONNECT_SOCKET_FAILED));
@@ -92,6 +94,15 @@ void TimedTcpSocket::ReceiveExactly(std::size_t num_bytes,
   StartTimeout(weak_self);
 }
 
+void TimedTcpSocket::SetNoDelayOption() {
+  boost::system::error_code ec;
+  socket_.set_option(boost::asio::ip::tcp::no_delay(true), ec);
+  if (ec) {
+    YOGI_LOG_WARNING(logger_, "Could not set TCP_NODELAY option on socket: "
+                                  << ec.message());
+  }
+}
+
 void TimedTcpSocket::StartTimeout(std::weak_ptr<TimedTcpSocket> weak_self) {
   timer_.expires_from_now(timeout_);
   timer_.async_wait([weak_self](auto& ec) {
@@ -112,6 +123,9 @@ void TimedTcpSocket::OnTimeout() {
   socket_.shutdown(boost::asio::ip::tcp::socket::shutdown_both, ec);
   socket_.close(ec);
 }
+
+const objects::LoggerPtr TimedTcpSocket::logger_ =
+    objects::Logger::CreateStaticInternalLogger("Utils.Socket");
 
 }  // namespace utils
 
