@@ -1,28 +1,14 @@
-#include <gtest/gtest.h>
-#include <yogi_core.h>
-#include <chrono>
+#include "common.h"
 
-using namespace std::chrono_literals;
-
-const auto kTimingMargin = 50ms;
-
-class TimerTest : public ::testing::Test {
+class TimerTest : public Test {
  protected:
   virtual void SetUp() override {
-    context_ = nullptr;
-    int res = YOGI_ContextCreate(&context_);
-    ASSERT_EQ(res, YOGI_OK);
-    ASSERT_NE(context_, nullptr);
+    context_ = CreateContext();
 
     timer_ = nullptr;
-    res = YOGI_TimerCreate(&timer_, context_);
+    int res = YOGI_TimerCreate(&timer_, context_);
     ASSERT_EQ(res, YOGI_OK);
     ASSERT_NE(timer_, nullptr);
-  }
-
-  virtual void TearDown() override {
-    int res = YOGI_DestroyAll();
-    ASSERT_EQ(res, YOGI_OK);
   }
 
   void* context_;

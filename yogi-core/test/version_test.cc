@@ -1,5 +1,4 @@
-#include <gtest/gtest.h>
-#include <yogi_core.h>
+#include "common.h"
 
 TEST(VersionTest, Macros) {
 	std::ostringstream ss;

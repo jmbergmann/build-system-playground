@@ -1,5 +1,4 @@
-#include <gtest/gtest.h>
-#include <yogi_core.h>
+#include "common.h"
 
 #include "../src/utils/system.h"
 
@@ -8,7 +7,7 @@
 #include <time.h>
 #include <regex>
 
-class LoggerTest : public ::testing::Test {
+class LoggerTest : public Test {
  protected:
   struct Entry {
     int severity;
@@ -35,15 +34,6 @@ class LoggerTest : public ::testing::Test {
 
     res = YOGI_LogToHook(YOGI_VB_TRACE, &LoggerTest::Hook, &entries_);
     ASSERT_EQ(res, YOGI_OK);
-  }
-
-  virtual void TearDown() override {
-    int res = YOGI_DestroyAll();
-    ASSERT_EQ(res, YOGI_OK);
-
-    YOGI_LogToConsole(YOGI_VB_NONE, 0, 0, nullptr, nullptr);
-    YOGI_LogToHook(YOGI_VB_NONE, nullptr, nullptr);
-    YOGI_LogToFile(YOGI_VB_NONE, nullptr, nullptr, 0, nullptr, nullptr);
   }
 
   bool CheckLineMatchesCustomLogFormat(std::string line) {

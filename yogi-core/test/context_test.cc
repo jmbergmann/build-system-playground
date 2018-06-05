@@ -1,24 +1,11 @@
-#include <gtest/gtest.h>
-#include <yogi_core.h>
+#include "common.h"
 #include <atomic>
 #include <thread>
 
-using namespace std::chrono_literals;
-
-const auto kTimingMargin = 50ms;
-
-class ContextTest : public ::testing::Test {
+class ContextTest : public Test {
  protected:
   virtual void SetUp() override {
-    context_ = nullptr;
-    int res = YOGI_ContextCreate(&context_);
-    ASSERT_EQ(res, YOGI_OK);
-    ASSERT_NE(context_, nullptr);
-  }
-
-  virtual void TearDown() override {
-    int res = YOGI_DestroyAll();
-    ASSERT_EQ(res, YOGI_OK);
+    context_ = CreateContext();
   }
 
   void* context_;

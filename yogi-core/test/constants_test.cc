@@ -1,4 +1,4 @@
-#include <gtest/gtest.h>
+#include "common.h"
 #include "../src/api/constants.h"
 
 void check(int constant, int value) {

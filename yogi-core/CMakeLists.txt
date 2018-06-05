@@ -91,6 +91,8 @@ export (TARGETS yogi-core-header
 # Tests
 add_executable (yogi-core-test
   test/branch_test.cc
+  test/common.cc
+  test/connection_manager_test.cc
   test/constants_test.cc
   test/context_test.cc
   test/errors_test.cc

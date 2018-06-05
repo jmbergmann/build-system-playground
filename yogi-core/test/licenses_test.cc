@@ -1,10 +1,9 @@
-#include <gtest/gtest.h>
-#include <yogi_core.h>
+#include "common.h"
 
 #include <vector>
 #include <string.h>
 
-class LicensesTest : public ::testing::Test {
+class LicensesTest : public Test {
  protected:
   std::vector<std::string> GetIndividual3rdPartyLicenses() {
     std::string all = YOGI_Get3rdPartyLicenses();

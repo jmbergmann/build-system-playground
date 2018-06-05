@@ -1,5 +1,4 @@
-#include <gtest/gtest.h>
-#include <yogi_core.h>
+#include "common.h"
 
 static constexpr int kLastError = YOGI_ERR_DUPLICATE_BRANCH_PATH;
 

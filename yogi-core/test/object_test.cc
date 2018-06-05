@@ -1,6 +1,6 @@
 
 
-#include <gtest/gtest.h>
+#include "common.h"
 #include "../src/api/object.h"
 
 class Dummy : public api::ExposedObjectT<Dummy, api::ObjectType::kDummy> {};
@@ -19,7 +19,7 @@ class MyObject
 
 int MyObject::dtor_calls_ = 0;
 
-class ObjectTest : public ::testing::Test {
+class ObjectTest : public Test {
  protected:
   virtual void TearDown() override {
     api::ObjectRegister::DestroyAll();

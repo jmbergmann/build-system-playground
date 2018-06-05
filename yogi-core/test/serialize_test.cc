@@ -1,11 +1,11 @@
 
 
-#include <gtest/gtest.h>
+#include "common.h"
 #include <boost/uuid/uuid_generators.hpp>
 
 #include "../src/utils/serialize.h"
 
-class SerializeTest : public ::testing::Test {
+class SerializeTest : public Test {
  protected:
   template <typename T>
   void Check(T val) {
