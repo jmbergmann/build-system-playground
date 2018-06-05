@@ -32,7 +32,9 @@ class Branch : public api::ExposedObjectT<Branch, api::ObjectType::kBranch> {
 
  private:
   void OnConnectionChanged(const api::Error& err,
-                           detail::BranchConnectionPtr conn);
+                           const detail::BranchConnectionPtr& conn);
+  void OnMessageReceived(const utils::ByteVector& msg, std::size_t size,
+                         const detail::BranchConnectionPtr& conn);
 
   static const LoggerPtr logger_;
 

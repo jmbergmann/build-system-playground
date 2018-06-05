@@ -9,11 +9,13 @@ namespace detail {
 ConnectionManager::ConnectionManager(
     ContextPtr context, const std::string& password,
     const boost::asio::ip::udp::endpoint& adv_ep,
-    ConnectionChangedHandler connection_changed_handler)
+    ConnectionChangedHandler connection_changed_handler,
+    MessageHandler message_handler)
     : context_(context),
       password_hash_(utils::MakeSharedByteVector(
           utils::MakeSha256({password.cbegin(), password.cend()}))),
       connection_changed_handler_(connection_changed_handler),
+      message_handler_(message_handler),
       acceptor_(context->IoContext()),
       adv_sender_(std::make_shared<AdvertisingSender>(context, adv_ep)),
       adv_receiver_(std::make_shared<AdvertisingReceiver>(
