@@ -1,4 +1,5 @@
 #include "common.h"
+#include <boost/uuid/uuid_io.hpp>
 
 Test::Test() { SetupLogging(YOGI_VB_TRACE); }
 
@@ -10,27 +11,11 @@ Test::~Test() {
   YOGI_LogToFile(YOGI_VB_NONE, nullptr, nullptr, 0, nullptr, nullptr);
 }
 
-BranchEventObserver::BranchEventObserver(void* branch)
-    : branch_(branch), json_str_(10000) {
-  StartObserve();
-}
+BranchEventRecorder::BranchEventRecorder(void* context, void* branch)
+    : context_(context), branch_(branch), json_str_(10000) {}
 
-BranchEventObserver::~BranchEventObserver() {
-  int res = YOGI_BranchCancelAwaitEvent(branch_);
-  EXPECT_EQ(res, YOGI_OK);
-}
-
-void BranchEventObserver::StartObserve() {
-  int res = YOGI_BranchAwaitEvent(branch_, 0, &uuid_, json_str_.data(),
-                                  json_str_.size(),
-                                  &BranchEventObserver::Callback, this);
-  EXPECT_EQ(res, YOGI_OK);
-}
-
-nlohmann::json BranchEventObserver::Wait(int event,
-                                         const boost::uuids::uuid& uuid,
-                                         int ev_res) {
-  std::unique_lock<std::mutex> lock(mutex_);
+nlohmann::json BranchEventRecorder::RunContextUntil(
+    int event, const boost::uuids::uuid& uuid, int ev_res) {
   while (true) {
     for (auto& entry : events_) {
       if (entry.uuid == uuid && entry.event == event &&
@@ -39,30 +24,32 @@ nlohmann::json BranchEventObserver::Wait(int event,
       }
     }
 
-    auto status = cv_.wait_for(lock, 5s);
-    EXPECT_EQ(status, std::cv_status::no_timeout);
+    auto n = events_.size();
+    int res = YOGI_BranchAwaitEvent(branch_, 0, &uuid_, json_str_.data(),
+                                    json_str_.size(),
+                                    &BranchEventRecorder::Callback, this);
+    EXPECT_EQ(res, YOGI_OK);
+
+    while (n == events_.size()) {
+      res = YOGI_ContextRunOne(context_, nullptr, -1);
+      EXPECT_EQ(res, YOGI_OK);
+    }
   }
 }
 
-nlohmann::json BranchEventObserver::Wait(int event, void* branch, int ev_res) {
-  return Wait(event, GetBranchUuid(branch), ev_res);
+nlohmann::json BranchEventRecorder::RunContextUntil(int event, void* branch,
+                                                    int ev_res) {
+  return RunContextUntil(event, GetBranchUuid(branch), ev_res);
 }
 
-void BranchEventObserver::Callback(int res, int event, int ev_res,
+void BranchEventRecorder::Callback(int res, int event, int ev_res,
                                    void* userarg) {
-  if (res == YOGI_ERR_CANCELED) return;
-  EXPECT_EQ(res, YOGI_OK);
-  auto self = static_cast<BranchEventObserver*>(userarg);
+  ASSERT_EQ(res, YOGI_OK);
 
-  {
-    std::lock_guard<std::mutex> lock(self->mutex_);
-    self->events_.push_back({self->uuid_,
-                             nlohmann::json::parse(self->json_str_.data()),
-                             event, ev_res});
-    self->cv_.notify_all();
-  }
-
-  self->StartObserve();
+  auto self = static_cast<BranchEventRecorder*>(userarg);
+  self->events_.push_back({self->uuid_,
+                           nlohmann::json::parse(self->json_str_.data()), event,
+                           ev_res});
 }
 
 void SetupLogging(int verbosity) {
@@ -111,4 +98,18 @@ boost::uuids::uuid GetBranchUuid(void* branch) {
   EXPECT_EQ(res, YOGI_OK);
   EXPECT_NE(uuid, boost::uuids::uuid{});
   return uuid;
+}
+
+nlohmann::json GetBranchInfo(void* branch) {
+  char str[10000];
+  int res = YOGI_BranchGetInfo(branch, nullptr, str, sizeof(str));
+  EXPECT_EQ(res, YOGI_OK);
+  return nlohmann::json::parse(str);
+}
+
+void CheckJsonElementsAreEqual(const nlohmann::json& a, const nlohmann::json& b,
+                               const std::string& key) {
+  ASSERT_TRUE(a.count(key)) << "Key \"" << key << "\" does not exist in a";
+  ASSERT_TRUE(b.count(key)) << "Key \"" << key << "\" does not exist in b";
+  EXPECT_EQ(a[key].dump(), b[key].dump());
 }

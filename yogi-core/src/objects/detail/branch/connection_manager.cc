@@ -67,6 +67,8 @@ void ConnectionManager::AwaitEvent(BranchEvents events,
 void ConnectionManager::CancelAwaitEvent() {
   std::lock_guard<std::mutex> lock(event_mutex_);
 
+  if (!event_handler_) return;
+
   auto handler = event_handler_;
   context_->Post([handler] {
     handler(api::Error(YOGI_ERR_CANCELED), kNoEvent, api::kSuccess, {}, {});

@@ -56,10 +56,9 @@ TEST_F(ConnectionManagerTest, ConnectNormally) {
   void* branch_a = CreateBranch(context_, "a");
   void* branch_b = CreateBranch(context_, "b");
 
-  BranchEventObserver observer(branch_);
-  RunContextInBackground(context_);
-  observer.Wait(YOGI_BEV_CONNECT_FINISHED, branch_a, YOGI_OK);
-  observer.Wait(YOGI_BEV_CONNECT_FINISHED, branch_b, YOGI_OK);
+  BranchEventRecorder rec(context_, branch_);
+  rec.RunContextUntil(YOGI_BEV_CONNECT_FINISHED, branch_a, YOGI_OK);
+  rec.RunContextUntil(YOGI_BEV_CONNECT_FINISHED, branch_b, YOGI_OK);
 }
 
 TEST_F(ConnectionManagerTest, ConnectViaTcpServer) {
@@ -119,5 +118,36 @@ TEST_F(ConnectionManagerTest, UnstableConnection) {
 }
 
 TEST_F(ConnectionManagerTest, BranchEvents) {
-  // TODO
+  void* branch_a = CreateBranch(context_, "a");
+  auto uuid = GetBranchUuid(branch_a);
+  auto info = GetBranchInfo(branch_a);
+
+  BranchEventRecorder rec(context_, branch_);
+
+  auto json = rec.RunContextUntil(YOGI_BEV_BRANCH_DISCOVERED, uuid, YOGI_OK);
+  CheckJsonElementsAreEqual(json, info, "uuid");
+  EXPECT_FALSE(json.value("tcp_server_address", "").empty());
+  CheckJsonElementsAreEqual(json, info, "tcp_server_port");
+
+  json = rec.RunContextUntil(YOGI_BEV_BRANCH_QUERIED, uuid, YOGI_OK);
+  CheckJsonElementsAreEqual(json, info, "uuid");
+  CheckJsonElementsAreEqual(json, info, "name");
+  CheckJsonElementsAreEqual(json, info, "description");
+  CheckJsonElementsAreEqual(json, info, "net_name");
+  CheckJsonElementsAreEqual(json, info, "path");
+  CheckJsonElementsAreEqual(json, info, "hostname");
+  CheckJsonElementsAreEqual(json, info, "pid");
+  EXPECT_FALSE(json.value("tcp_server_address", "").empty());
+  CheckJsonElementsAreEqual(json, info, "tcp_server_port");
+  CheckJsonElementsAreEqual(json, info, "start_time");
+  CheckJsonElementsAreEqual(json, info, "timeout");
+  CheckJsonElementsAreEqual(json, info, "advertising_interval");
+
+  json = rec.RunContextUntil(YOGI_BEV_CONNECT_FINISHED, uuid, YOGI_OK);
+  CheckJsonElementsAreEqual(json, info, "uuid");
+
+  YOGI_Destroy(branch_a);
+  json = rec.RunContextUntil(YOGI_BEV_CONNECTION_LOST, uuid,
+                             YOGI_ERR_RW_SOCKET_FAILED);
+  CheckJsonElementsAreEqual(json, info, "uuid");
 }

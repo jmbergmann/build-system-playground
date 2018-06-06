@@ -6,9 +6,6 @@
 #include <yogi_core.h>
 #include <chrono>
 #include <vector>
-#include <tuple>
-#include <mutex>
-#include <condition_variable>
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/uuid/uuid.hpp>
 
@@ -20,18 +17,15 @@ class Test : public ::testing::Test {
   virtual ~Test();
 };
 
-class BranchEventObserver final {
+class BranchEventRecorder final {
  public:
-  BranchEventObserver(void* branch);
-  ~BranchEventObserver();
+  BranchEventRecorder(void* context, void* branch);
 
-  nlohmann::json Wait(int event, const boost::uuids::uuid& uuid, int ev_res);
-  nlohmann::json Wait(int event, void* branch, int ev_res);
+  nlohmann::json RunContextUntil(int event, const boost::uuids::uuid& uuid, int ev_res);
+  nlohmann::json RunContextUntil(int event, void* branch, int ev_res);
 
  private:
   static void Callback(int res, int event, int ev_res, void* userarg);
-
-  void StartObserve();
 
   struct CallbackData {
     boost::uuids::uuid uuid;
@@ -40,9 +34,8 @@ class BranchEventObserver final {
     int ev_res;
   };
 
+  void* context_;
   void* branch_;
-  std::mutex mutex_;
-  std::condition_variable cv_;
   boost::uuids::uuid uuid_;
   std::vector<char> json_str_;
   std::vector<CallbackData> events_;
@@ -62,5 +55,6 @@ void* CreateBranch(void* context, const char* name = nullptr,
                    const char* password = nullptr);
 boost::asio::ip::tcp::endpoint GetBranchTcpEndpoint(void* branch);
 boost::uuids::uuid GetBranchUuid(void* branch);
-void WaitForBranchEvents(
-    void* branch, std::vector<std::tuple<int, boost::uuids::uuid, int>> events);
+nlohmann::json GetBranchInfo(void* branch);
+void CheckJsonElementsAreEqual(const nlohmann::json& a, const nlohmann::json& b,
+                               const std::string& key);
