@@ -62,7 +62,10 @@
     "xloctime": "cpp",
     "iomanip": "cpp",
     "unordered_set": "cpp",
-    "atomic": "cpp"
+    "atomic": "cpp",
+    "random": "cpp",
+    "set": "cpp",
+    "xtree": "cpp"
   },
   "files.exclude": {
     "**/.git": true,

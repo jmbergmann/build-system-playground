@@ -1,6 +1,5 @@
 #include "common.h"
 
-#include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <regex>
 
@@ -27,10 +26,7 @@ TEST_F(BranchTest, GetInfoBufferTooSmall) {
 }
 
 TEST_F(BranchTest, GetInfoUuid) {
-  boost::uuids::uuid uuid = {0};
-  int res = YOGI_BranchGetInfo(branch_, &uuid, nullptr, 0);
-  EXPECT_EQ(res, YOGI_OK);
-  EXPECT_NE(uuid, boost::uuids::uuid());
+  GetBranchUuid(branch_);
 }
 
 TEST_F(BranchTest, GetInfoJson) {

@@ -1,7 +1,6 @@
 #include "common.h"
 #include "../src/api/constants.h"
 #include <boost/asio.hpp>
-#include <boost/uuid/uuid.hpp>
 
 class ConnectionManagerTest : public Test {
  protected:
@@ -54,7 +53,13 @@ TEST_F(ConnectionManagerTest, Advertising) {
 }
 
 TEST_F(ConnectionManagerTest, ConnectNormally) {
-  // TODO
+  void* branch_a = CreateBranch(context_, "a");
+  void* branch_b = CreateBranch(context_, "b");
+
+  BranchEventObserver observer(branch_);
+  RunContextInBackground(context_);
+  observer.Wait(YOGI_BEV_CONNECT_FINISHED, branch_a, YOGI_OK);
+  observer.Wait(YOGI_BEV_CONNECT_FINISHED, branch_b, YOGI_OK);
 }
 
 TEST_F(ConnectionManagerTest, ConnectViaTcpServer) {
@@ -115,11 +120,4 @@ TEST_F(ConnectionManagerTest, UnstableConnection) {
 
 TEST_F(ConnectionManagerTest, BranchEvents) {
   // TODO
-}
-
-TEST_F(ConnectionManagerTest, Connections) {
-  CreateBranch(context_, "A");
-  // CreateBranch(context_, "B");
-  RunContextInBackground(context_);
-  getchar();
 }

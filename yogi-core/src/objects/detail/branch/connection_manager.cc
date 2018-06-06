@@ -21,8 +21,7 @@ ConnectionManager::ConnectionManager(
       adv_receiver_(std::make_shared<AdvertisingReceiver>(
           context, adv_ep,
           [&](auto& uuid, auto& ep) { OnAdvertisementReceived(uuid, ep); })),
-      observed_events_(kNoEvent),
-      cancel_await_event_running_(false) {
+      observed_events_(kNoEvent) {
   using namespace boost::asio::ip;
   SetupAcceptor(adv_ep.protocol() == udp::v4() ? tcp::v4() : tcp::v6());
 }
@@ -53,12 +52,12 @@ void ConnectionManager::AwaitEvent(BranchEvents events,
                                    BranchEventHandler handler) {
   std::lock_guard<std::mutex> lock(event_mutex_);
 
-  if (cancel_await_event_running_) {
-    throw api::Error(YOGI_ERR_BUSY);
-  }
-
   if (event_handler_) {
-    CancelAwaitEvent();
+    auto old_handler = event_handler_;
+    context_->Post([old_handler] {
+      old_handler(api::Error(YOGI_ERR_CANCELED), kNoEvent, api::kSuccess, {},
+                  {});
+    });
   }
 
   observed_events_ = events;
@@ -68,17 +67,12 @@ void ConnectionManager::AwaitEvent(BranchEvents events,
 void ConnectionManager::CancelAwaitEvent() {
   std::lock_guard<std::mutex> lock(event_mutex_);
 
-  if (cancel_await_event_running_) {
-    throw api::Error(YOGI_ERR_BUSY);
-  }
-
-  cancel_await_event_running_ = true;
-
-  event_handler_(api::Error(YOGI_ERR_CANCELED), kNoEvent, api::kSuccess, {},
-                 {});
+  auto handler = event_handler_;
+  context_->Post([handler] {
+    handler(api::Error(YOGI_ERR_CANCELED), kNoEvent, api::kSuccess, {}, {});
+  });
 
   event_handler_ = {};
-  cancel_await_event_running_ = false;
 }
 
 void ConnectionManager::SetupAcceptor(const boost::asio::ip::tcp& protocol) {
@@ -374,13 +368,13 @@ void ConnectionManager::EmitBranchEvent(BranchEvents event,
   if (!event_handler_) return;
   if (!(observed_events_ & event)) return;
 
+  auto json = make_json_fn().dump();
   auto handler = event_handler_;
-  event_handler_ = {};
-
-  auto json = make_json_fn();
   context_->Post([=, json = std::move(json)] {
     handler(api::kSuccess, event, ev_res, uuid, json);
   });
+
+  event_handler_ = {};
 }
 
 void ConnectionManager::EmitBranchEvent(BranchEvents event,

@@ -64,7 +64,8 @@ std::chrono::nanoseconds ConvertDuration(long long duration) {
 }
 
 objects::Branch::BranchEvents ConvertBranchEvents(int events) {
-  return static_cast<objects::Branch::BranchEvents>(events);
+  return events ? static_cast<objects::Branch::BranchEvents>(events)
+                : objects::Branch::BranchEvents::kAllEvents;
 }
 
 bool IsTimeFormatValid(const std::string& fmt) {

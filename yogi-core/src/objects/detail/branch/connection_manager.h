@@ -25,6 +25,7 @@ class ConnectionManager final
     kBranchQueriedEvent = YOGI_BEV_BRANCH_QUERIED,
     kConnectFinishedEvent = YOGI_BEV_CONNECT_FINISHED,
     kConnectionLostEvent = YOGI_BEV_CONNECTION_LOST,
+    kAllEvents = 0xffffffff,
   };
 
   typedef utils::ByteVector ByteVector;
@@ -134,7 +135,6 @@ class ConnectionManager final
 
   BranchEventHandler event_handler_;
   BranchEvents observed_events_;
-  bool cancel_await_event_running_;
   std::mutex event_mutex_;
 };
 

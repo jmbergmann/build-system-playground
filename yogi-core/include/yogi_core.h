@@ -1037,10 +1037,6 @@ YOGI_API int YOGI_BranchGetConnectedBranches(void* branch, void* uuid,
  * then the previous operation will be canceled, i.e. \p fn for the previous
  * operation will be called with the YOGI_ERR_CANCELED error.
  *
- * Note: If \p fn gets called with the YOGI_ERR_CANCELED error then starting
- *       another wait operation from within \p fn will fail with with the
- *       YOGI_ERR_BUSY error;
- *
  * The \p uuid parameter will be populated with the UUID of the branch that
  * caused the event, i.e. if the remote branch B gets discovered, causing the
  * YOGI_BEV_BRANCH_DISCOVERED event to be generated, then \p uuid will be
