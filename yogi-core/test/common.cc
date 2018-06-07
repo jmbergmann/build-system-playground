@@ -79,10 +79,10 @@ void RunContextInBackground(void* context) {
 }
 
 void* CreateBranch(void* context, const char* name, const char* net_name,
-                   const char* password) {
+                   const char* password, const char* path) {
   void* branch = nullptr;
   int res = YOGI_BranchCreate(&branch, context, name, nullptr, net_name,
-                              password, nullptr, nullptr, kAdvPort,
+                              password, path, nullptr, kAdvPort,
                               kAdvInterval.count(), kConnTimeout.count());
   EXPECT_EQ(res, YOGI_OK);
   return branch;

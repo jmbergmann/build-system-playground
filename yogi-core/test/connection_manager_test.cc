@@ -61,6 +61,43 @@ TEST_F(ConnectionManagerTest, ConnectNormally) {
   rec.RunContextUntil(YOGI_BEV_CONNECT_FINISHED, branch_b, YOGI_OK);
 }
 
+TEST_F(ConnectionManagerTest, DuplicateBranchName) {
+  void* branch_a = CreateBranch(context_);  // Same name as branch_
+  BranchEventRecorder rec(context_, branch_);
+  rec.RunContextUntil(YOGI_BEV_CONNECT_FINISHED, branch_a, YOGI_ERR_DUPLICATE_BRANCH_NAME);
+
+  void* branch_b = CreateBranch(context_, "Same name");
+  rec.RunContextUntil(YOGI_BEV_CONNECT_FINISHED, branch_b, YOGI_OK);
+
+  void* branch_c = CreateBranch(context_, "Same name");
+  rec.RunContextUntil(YOGI_BEV_CONNECT_FINISHED, branch_c, YOGI_ERR_DUPLICATE_BRANCH_NAME);
+}
+
+TEST_F(ConnectionManagerTest, DuplicateBranchPath) {
+  auto branch_path = GetBranchInfo(branch_)["path"].get<std::string>();
+  void* branch_a = CreateBranch(context_, "a", nullptr, nullptr, branch_path.c_str());
+  BranchEventRecorder rec(context_, branch_);
+  rec.RunContextUntil(YOGI_BEV_CONNECT_FINISHED, branch_a, YOGI_ERR_DUPLICATE_BRANCH_PATH);
+
+  void* branch_b = CreateBranch(context_, "b", nullptr, nullptr, "/tmp");
+  rec.RunContextUntil(YOGI_BEV_CONNECT_FINISHED, branch_b, YOGI_OK);
+
+  void* branch_c = CreateBranch(context_, "c", nullptr, nullptr, "/tmp");
+  rec.RunContextUntil(YOGI_BEV_CONNECT_FINISHED, branch_c, YOGI_ERR_DUPLICATE_BRANCH_PATH);
+}
+
+TEST_F(ConnectionManagerTest, NetNameMismatch) {
+  void* branch_a = CreateBranch(context_, "a", "other net");
+  BranchEventRecorder rec(context_, branch_);
+  rec.RunContextUntil(YOGI_BEV_CONNECT_FINISHED, branch_a, YOGI_ERR_NET_NAME_MISMATCH);
+}
+
+TEST_F(ConnectionManagerTest, PasswordMismatch) {
+  void* branch_a = CreateBranch(context_, "a", nullptr, "diferent password");
+  BranchEventRecorder rec(context_, branch_);
+  rec.RunContextUntil(YOGI_BEV_CONNECT_FINISHED, branch_a, YOGI_ERR_PASSWORD_MISMATCH);
+}
+
 TEST_F(ConnectionManagerTest, ConnectViaTcpServer) {
   // TODO
 }
@@ -81,31 +118,11 @@ TEST_F(ConnectionManagerTest, Reconnect) {
   // TODO
 }
 
-TEST_F(ConnectionManagerTest, DuplicateBranchName) {
-  void* branch_a = CreateBranch(context_);  // Same name as branch_
-  BranchEventRecorder rec(context_, branch_);
-  rec.RunContextUntil(YOGI_BEV_CONNECT_FINISHED, branch_a, YOGI_ERR_DUPLICATE_BRANCH_NAME);
-
-  void* branch_b = CreateBranch(context_, "Same name");
-  rec.RunContextUntil(YOGI_BEV_CONNECT_FINISHED, branch_b, YOGI_OK);
-
-  void* branch_c = CreateBranch(context_, "Same name");
-  rec.RunContextUntil(YOGI_BEV_CONNECT_FINISHED, branch_c, YOGI_ERR_DUPLICATE_BRANCH_NAME);
-}
-
-TEST_F(ConnectionManagerTest, DuplicatePath) {
-  // TODO
-}
-
 TEST_F(ConnectionManagerTest, InvalidMagicPrefix) {
   // TODO
 }
 
 TEST_F(ConnectionManagerTest, IncompatibleVersion) {
-  // TODO
-}
-
-TEST_F(ConnectionManagerTest, PasswordMismatch) {
   // TODO
 }
 

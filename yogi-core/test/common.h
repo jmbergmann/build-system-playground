@@ -53,7 +53,8 @@ void* CreateContext();
 void RunContextInBackground(void* context);
 void* CreateBranch(void* context, const char* name = nullptr,
                    const char* net_name = nullptr,
-                   const char* password = nullptr);
+                   const char* password = nullptr,
+                   const char* path = nullptr);
 boost::asio::ip::tcp::endpoint GetBranchTcpEndpoint(void* branch);
 boost::uuids::uuid GetBranchUuid(void* branch);
 nlohmann::json GetBranchInfo(void* branch);
