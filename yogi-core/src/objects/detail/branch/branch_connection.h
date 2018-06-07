@@ -59,6 +59,7 @@ class BranchConnection final
                           CompletionHandler handler);
   void RestartHeartbeatTimer();
   void OnHeartbeatTimerExpired();
+  void StartReceive();
   void OnSessionError(const api::Error& err);
 
   static const LoggerPtr logger_;

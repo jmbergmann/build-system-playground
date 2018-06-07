@@ -58,6 +58,7 @@ void BranchConnection::RunSession(CompletionHandler handler) {
   YOGI_ASSERT(!session_started_);
 
   RestartHeartbeatTimer();
+  StartReceive();
   session_started_ = true;
   session_completion_handler_ = handler;
 }
@@ -199,6 +200,21 @@ void BranchConnection::OnHeartbeatTimerExpired() {
       self->OnSessionError(err);
     } else {
       self->RestartHeartbeatTimer();
+    }
+  });
+}
+
+void BranchConnection::StartReceive() {
+  // TODO: make this properly without ReceiveExactly and stuff
+  auto weak_self = std::weak_ptr<BranchConnection>(shared_from_this());
+  socket_->ReceiveExactly(1, [weak_self](auto& err, auto& data) {
+    auto self = weak_self.lock();
+    if (!self) return;
+
+    if (err) {
+      self->OnSessionError(err);
+    } else {
+      self->StartReceive();
     }
   });
 }
