@@ -135,7 +135,7 @@ class ConnectionManager final
 
   BranchEventHandler event_handler_;
   BranchEvents observed_events_;
-  std::mutex event_mutex_;
+  std::recursive_mutex event_mutex_;
 };
 
 typedef std::shared_ptr<ConnectionManager> ConnectionManagerPtr;

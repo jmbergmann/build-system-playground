@@ -12,7 +12,9 @@ Test::~Test() {
 }
 
 BranchEventRecorder::BranchEventRecorder(void* context, void* branch)
-    : context_(context), branch_(branch), json_str_(10000) {}
+    : context_(context), branch_(branch), json_str_(10000) {
+  StartAwaitEvent();
+}
 
 nlohmann::json BranchEventRecorder::RunContextUntil(
     int event, const boost::uuids::uuid& uuid, int ev_res) {
@@ -25,13 +27,8 @@ nlohmann::json BranchEventRecorder::RunContextUntil(
     }
 
     auto n = events_.size();
-    int res = YOGI_BranchAwaitEvent(branch_, 0, &uuid_, json_str_.data(),
-                                    json_str_.size(),
-                                    &BranchEventRecorder::Callback, this);
-    EXPECT_EQ(res, YOGI_OK);
-
     while (n == events_.size()) {
-      res = YOGI_ContextRunOne(context_, nullptr, -1);
+      int res = YOGI_ContextRunOne(context_, nullptr, -1);
       EXPECT_EQ(res, YOGI_OK);
     }
   }
@@ -42,14 +39,23 @@ nlohmann::json BranchEventRecorder::RunContextUntil(int event, void* branch,
   return RunContextUntil(event, GetBranchUuid(branch), ev_res);
 }
 
+void BranchEventRecorder::StartAwaitEvent() {
+  int res = YOGI_BranchAwaitEvent(branch_, 0, &uuid_, json_str_.data(),
+                                  json_str_.size(),
+                                  &BranchEventRecorder::Callback, this);
+  EXPECT_EQ(res, YOGI_OK);
+}
+
 void BranchEventRecorder::Callback(int res, int event, int ev_res,
                                    void* userarg) {
-  ASSERT_EQ(res, YOGI_OK);
+  if (res == YOGI_ERR_CANCELED) return;
 
   auto self = static_cast<BranchEventRecorder*>(userarg);
   self->events_.push_back({self->uuid_,
                            nlohmann::json::parse(self->json_str_.data()), event,
                            ev_res});
+
+  self->StartAwaitEvent();
 }
 
 void SetupLogging(int verbosity) {

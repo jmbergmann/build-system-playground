@@ -82,7 +82,15 @@ TEST_F(ConnectionManagerTest, Reconnect) {
 }
 
 TEST_F(ConnectionManagerTest, DuplicateBranchName) {
-  // TODO
+  void* branch_a = CreateBranch(context_);  // Same name as branch_
+  BranchEventRecorder rec(context_, branch_);
+  rec.RunContextUntil(YOGI_BEV_CONNECT_FINISHED, branch_a, YOGI_ERR_DUPLICATE_BRANCH_NAME);
+
+  void* branch_b = CreateBranch(context_, "Same name");
+  rec.RunContextUntil(YOGI_BEV_CONNECT_FINISHED, branch_b, YOGI_OK);
+
+  void* branch_c = CreateBranch(context_, "Same name");
+  rec.RunContextUntil(YOGI_BEV_CONNECT_FINISHED, branch_c, YOGI_ERR_DUPLICATE_BRANCH_NAME);
 }
 
 TEST_F(ConnectionManagerTest, DuplicatePath) {

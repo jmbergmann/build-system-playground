@@ -50,7 +50,7 @@ ConnectionManager::MakeConnectedBranchesInfoStrings() const {
 
 void ConnectionManager::AwaitEvent(BranchEvents events,
                                    BranchEventHandler handler) {
-  std::lock_guard<std::mutex> lock(event_mutex_);
+  std::lock_guard<std::recursive_mutex> lock(event_mutex_);
 
   if (event_handler_) {
     auto old_handler = event_handler_;
@@ -65,16 +65,7 @@ void ConnectionManager::AwaitEvent(BranchEvents events,
 }
 
 void ConnectionManager::CancelAwaitEvent() {
-  std::lock_guard<std::mutex> lock(event_mutex_);
-
-  if (!event_handler_) return;
-
-  auto handler = event_handler_;
-  context_->Post([handler] {
-    handler(api::Error(YOGI_ERR_CANCELED), kNoEvent, api::kSuccess, {}, {});
-  });
-
-  event_handler_ = {};
+  AwaitEvent(kNoEvent, {});
 }
 
 void ConnectionManager::SetupAcceptor(const boost::asio::ip::tcp& protocol) {
@@ -264,6 +255,14 @@ api::Error ConnectionManager::CheckRemoteBranchInfo(
     return api::Error(YOGI_ERR_NET_NAME_MISMATCH);
   }
 
+  if (remote_info->GetName() == info_->GetName()) {
+      return api::Error(YOGI_ERR_DUPLICATE_BRANCH_NAME);
+  }
+
+  if (remote_info->GetPath() == info_->GetPath()) {
+      return api::Error(YOGI_ERR_DUPLICATE_BRANCH_PATH);
+    }
+
   for (auto& entry : connections_) {
     if (!entry.second) continue;
     auto branch_info = entry.second->GetRemoteBranchInfo();
@@ -302,9 +301,9 @@ void ConnectionManager::OnAuthenticateFinished(const api::Error& err,
     connections_.erase(uuid);
 
     EmitBranchEvent(kConnectFinishedEvent, err, uuid);
+  } else {
+    StartSession(conn);
   }
-
-  StartSession(conn);
 }
 
 void ConnectionManager::StartSession(BranchConnectionPtr conn) {
@@ -365,18 +364,14 @@ void ConnectionManager::EmitBranchEvent(BranchEvents event,
                                         Fn make_json_fn) {
   LogBranchEvent(event, ev_res, uuid, make_json_fn);
 
-  std::lock_guard<std::mutex> lock(event_mutex_);
+  std::lock_guard<std::recursive_mutex> lock(event_mutex_);
 
   if (!event_handler_) return;
   if (!(observed_events_ & event)) return;
 
-  auto json = make_json_fn().dump();
   auto handler = event_handler_;
-  context_->Post([=, json = std::move(json)] {
-    handler(api::kSuccess, event, ev_res, uuid, json);
-  });
-
   event_handler_ = {};
+  handler(api::kSuccess, event, ev_res, uuid, make_json_fn().dump());
 }
 
 void ConnectionManager::EmitBranchEvent(BranchEvents event,

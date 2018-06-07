@@ -25,6 +25,7 @@ class BranchEventRecorder final {
   nlohmann::json RunContextUntil(int event, void* branch, int ev_res);
 
  private:
+  void StartAwaitEvent();
   static void Callback(int res, int event, int ev_res, void* userarg);
 
   struct CallbackData {
