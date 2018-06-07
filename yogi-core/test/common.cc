@@ -58,6 +58,22 @@ void BranchEventRecorder::Callback(int res, int event, int ev_res,
   self->StartAwaitEvent();
 }
 
+void FakeBranch::Connect(void* branch) {
+
+}
+
+void FakeBranch::Disconnect() {
+
+}
+
+void FakeBranch::Advertise() {
+
+}
+
+void FakeBranch::Accept() {
+
+}
+
 void SetupLogging(int verbosity) {
   YOGI_LogToConsole(YOGI_VB_TRACE, YOGI_ST_STDERR, YOGI_TRUE, nullptr, nullptr);
   YOGI_LoggerSetComponentsVerbosity("Yogi\\..*", verbosity, nullptr);
@@ -81,7 +97,7 @@ void RunContextInBackground(void* context) {
 void* CreateBranch(void* context, const char* name, const char* net_name,
                    const char* password, const char* path) {
   void* branch = nullptr;
-  int res = YOGI_BranchCreate(&branch, context, name, nullptr, net_name,
+  int res = YOGI_BranchCreate(&branch, context, name, "Description", net_name,
                               password, path, nullptr, kAdvPort,
                               kAdvInterval.count(), kConnTimeout.count());
   EXPECT_EQ(res, YOGI_OK);

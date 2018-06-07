@@ -11,6 +11,12 @@
 
 using namespace std::chrono_literals;
 
+static const int kAdvPort = 44442;
+static const char* kAdvAddress = "ff31::8000:2439";
+static const std::chrono::nanoseconds kAdvInterval = 100ms;
+static const std::chrono::nanoseconds kConnTimeout = 3000ms;
+static const std::chrono::nanoseconds kTimingMargin = 50ms;
+
 class Test : public ::testing::Test {
  public:
   Test();
@@ -42,11 +48,13 @@ class BranchEventRecorder final {
   std::vector<CallbackData> events_;
 };
 
-static const int kAdvPort = 44442;
-static const char* kAdvAddress = "ff31::8000:2439";
-static const std::chrono::nanoseconds kAdvInterval = 100ms;
-static const std::chrono::nanoseconds kConnTimeout = 3000ms;
-static const std::chrono::nanoseconds kTimingMargin = 50ms;
+class FakeBranch final {
+ public:
+  void Connect(void* branch);
+  void Disconnect();
+  void Advertise();
+  void Accept();
+};
 
 void SetupLogging(int verbosity);
 void* CreateContext();
@@ -60,3 +68,8 @@ boost::uuids::uuid GetBranchUuid(void* branch);
 nlohmann::json GetBranchInfo(void* branch);
 void CheckJsonElementsAreEqual(const nlohmann::json& a, const nlohmann::json& b,
                                const std::string& key);
+
+template <typename T = std::string>
+T GetBranchProperty(void* branch, const char* property) {
+  return GetBranchInfo(branch)[property].get<T>();
+}

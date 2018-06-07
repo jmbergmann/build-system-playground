@@ -45,7 +45,7 @@ TEST_F(BranchTest, GetInfoJson) {
 
   EXPECT_EQ(json.value("uuid", "NOT FOUND"), boost::uuids::to_string(uuid));
   EXPECT_EQ(json.value("name", "NOT FOUND"), default_name);
-  EXPECT_EQ(json.value("description", "NOT FOUND"), "");
+  EXPECT_FALSE(json.value("description", "").empty());
   EXPECT_EQ(json.value("net_name", "NOT FOUND"), utils::GetHostname());
   EXPECT_EQ(json.value("path", "NOT FOUND"), std::string("/") + default_name);
   EXPECT_EQ(json.value("hostname", "NOT FOUND"), utils::GetHostname());
