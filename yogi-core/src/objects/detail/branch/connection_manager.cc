@@ -324,6 +324,9 @@ void ConnectionManager::OnSessionTerminated(const api::Error& err,
   EmitBranchEvent(kConnectionLostEvent, err,
                   conn->GetRemoteBranchInfo()->GetUuid());
 
+  std::lock_guard<std::mutex> lock(connections_mutex_);
+  connections_.erase(conn->GetRemoteBranchInfo()->GetUuid());
+
   connection_changed_handler_(err, conn);
 }
 

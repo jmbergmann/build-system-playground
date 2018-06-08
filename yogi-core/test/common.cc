@@ -1,5 +1,8 @@
 #include "common.h"
+#include "../src/utils/crypto.h"
+#include "../src/utils/system.h"
 #include <boost/uuid/uuid_io.hpp>
+#include <boost/asio.hpp>
 
 Test::Test() { SetupLogging(YOGI_VB_TRACE); }
 
@@ -58,20 +61,99 @@ void BranchEventRecorder::Callback(int res, int event, int ev_res,
   self->StartAwaitEvent();
 }
 
-void FakeBranch::Connect(void* branch) {
+FakeBranch::FakeBranch()
+    : udp_ep_(boost::asio::ip::make_address(kAdvAddress), kAdvPort),
+      udp_socket_(ioc_, kUdpProtocol),
+      acceptor_(ioc_),
+      tcp_socket_(ioc_) {
+  acceptor_.open(kTcpProtocol);
+  acceptor_.set_option(boost::asio::ip::tcp::acceptor::reuse_address(true));
+  acceptor_.bind(boost::asio::ip::tcp::endpoint(kTcpProtocol, 0));
+  acceptor_.listen();
+  info_ = objects::detail::BranchInfo::CreateLocal(
+          "Fake Branch", "", utils::GetHostname(), "/Fake Branch", acceptor_.local_endpoint(), 1s, 1s);
 
+  udp_socket_.set_option(boost::asio::ip::udp::socket::reuse_address(true));
+  udp_socket_.bind(boost::asio::ip::udp::endpoint(kUdpProtocol, 0));
+  udp_socket_.set_option(
+      boost::asio::ip::multicast::join_group(boost::asio::ip::make_address(kAdvAddress)));
+}
+
+void FakeBranch::Connect(void* branch) {
+  tcp_socket_.connect(GetBranchTcpEndpoint(branch));
+  Authenticate();
 }
 
 void FakeBranch::Disconnect() {
-
+  tcp_socket_.shutdown(tcp_socket_.shutdown_both);
+  tcp_socket_.close();
 }
 
 void FakeBranch::Advertise() {
-
+  udp_socket_.send_to(boost::asio::buffer(*info_->MakeAdvertisingMessage()), udp_ep_);
 }
 
 void FakeBranch::Accept() {
+  tcp_socket_ = acceptor_.accept();
+  Authenticate();
+}
 
+bool FakeBranch::IsConnectedTo(void* branch) const {
+  struct Data {
+    boost::uuids::uuid my_uuid;
+    boost::uuids::uuid uuid;
+    bool connected = false;
+  } data;
+
+  data.my_uuid = info_->GetUuid();
+
+  int res = YOGI_BranchGetConnectedBranches(branch, &data.uuid, nullptr, 0,
+                                            [](int, void* userarg) {
+                                              auto data =
+                                                  static_cast<Data*>(userarg);
+                                              if (data->uuid == data->my_uuid) {
+                                                data->connected = true;
+                                              }
+                                            },
+                                            &data);
+  EXPECT_EQ(res, YOGI_OK);
+
+  return data.connected;
+}
+
+void FakeBranch::Authenticate() {
+  // Send branch info
+  boost::asio::write(tcp_socket_,
+                     boost::asio::buffer(*info_->MakeInfoMessage()));
+
+  // Receive branch info
+  auto buffer =
+      utils::ByteVector(objects::detail::BranchInfo::kInfoMessageHeaderSize);
+  boost::asio::read(tcp_socket_, boost::asio::buffer(buffer));
+  std::size_t body_size;
+  objects::detail::BranchInfo::DeserializeInfoMessageBodySize(&body_size,
+                                                              buffer);
+  buffer.resize(body_size);
+  boost::asio::read(tcp_socket_, boost::asio::buffer(buffer));
+
+  // Send challenge
+  auto my_challenge = utils::GenerateRandomBytes(8);
+  boost::asio::write(tcp_socket_, boost::asio::buffer(my_challenge));
+
+  // Receive challenge
+  auto remote_challenge = utils::ByteVector(8);
+  boost::asio::read(tcp_socket_, boost::asio::buffer(remote_challenge));
+
+  // Send solution
+  auto password_hash = utils::MakeSha256({});
+  buffer = remote_challenge;
+  buffer.insert(buffer.end(), password_hash.begin(), password_hash.end());
+  auto remote_solution = utils::MakeSha256(buffer);
+  boost::asio::write(tcp_socket_, boost::asio::buffer(remote_solution));
+
+  // Receive Solution
+  buffer.resize(remote_solution.size());
+  boost::asio::read(tcp_socket_, boost::asio::buffer(buffer));
 }
 
 void SetupLogging(int verbosity) {

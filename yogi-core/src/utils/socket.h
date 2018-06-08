@@ -22,7 +22,7 @@ class TimedTcpSocket : public std::enable_shared_from_this<TimedTcpSocket> {
       ReceiveHandler;
 
   TimedTcpSocket(objects::ContextPtr context, std::chrono::nanoseconds timeout);
-  virtual ~TimedTcpSocket() {}
+  virtual ~TimedTcpSocket();
 
   std::weak_ptr<TimedTcpSocket> MakeWeakPtr() { return shared_from_this(); }
 

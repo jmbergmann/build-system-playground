@@ -11,6 +11,12 @@ TimedTcpSocket::TimedTcpSocket(objects::ContextPtr context,
       timer_(context->IoContext()),
       timed_out_(false) {}
 
+TimedTcpSocket::~TimedTcpSocket() {
+  boost::system::error_code ec;
+  socket_.shutdown(socket_.shutdown_both, ec);
+  socket_.close(ec);
+}
+
 void TimedTcpSocket::Accept(boost::asio::ip::tcp::acceptor* acceptor,
                             CompletionHandler handler) {
   remote_ep_ = {};

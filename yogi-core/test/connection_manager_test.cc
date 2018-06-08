@@ -110,9 +110,14 @@ TEST_F(ConnectionManagerTest, Reconnect) {
 
   FakeBranch fake;
   fake.Connect(branch_);
+  while (!fake.IsConnectedTo(branch_));
+
   fake.Disconnect();
+  while (fake.IsConnectedTo(branch_));
+
   fake.Advertise();
   fake.Accept();
+  while (!fake.IsConnectedTo(branch_));
 }
 
 TEST_F(ConnectionManagerTest, InvalidMagicPrefix) {
