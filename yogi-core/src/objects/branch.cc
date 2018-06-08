@@ -10,9 +10,9 @@ Branch::Branch(ContextPtr context, std::string name, std::string description,
     : context_(context),
       connection_manager_(std::make_shared<detail::ConnectionManager>(
           context, password, adv_ep,
-          [&](auto& err, auto conn) { OnConnectionChanged(err, conn); },
+          [&](auto& err, auto conn) { this->OnConnectionChanged(err, conn); },
           [&](auto& msg, auto size, auto& conn) {
-            OnMessageReceived(msg, size, conn);
+            this->OnMessageReceived(msg, size, conn);
           })),
       info_(detail::BranchInfo::CreateLocal(
           name, description, net_name, path,

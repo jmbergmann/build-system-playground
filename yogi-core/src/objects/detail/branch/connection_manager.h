@@ -78,7 +78,6 @@ class ConnectionManager final
   void OnAdvertisementReceived(const boost::uuids::uuid& adv_uuid,
                                const boost::asio::ip::tcp::endpoint& ep);
   void OnConnectFinished(const api::Error& err, ConnectionsMapEntry* entry,
-                         const boost::asio::ip::tcp::endpoint& ep,
                          utils::TimedTcpSocketPtr socket);
   void StartExchangeBranchInfo(utils::TimedTcpSocketPtr socket,
                                ConnectionsMapEntry* entry);
@@ -114,7 +113,7 @@ class ConnectionManager final
 
   template <typename Fn>
   void LogBranchEvent(BranchEvents event, const api::Error& ev_res,
-                      const boost::uuids::uuid& uuid, Fn make_json_fn);
+                      Fn make_json_fn);
 
   static const LoggerPtr logger_;
 

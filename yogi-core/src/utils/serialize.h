@@ -24,7 +24,7 @@ template <typename BigEndianType, typename T>
 inline bool DeserializeInteger(T* val, const ByteVector& buffer,
                                ByteVector::const_iterator* it) {
   BigEndianType big;
-  if (std::distance(*it, buffer.end()) < sizeof(big)) {
+  if (static_cast<std::size_t>(std::distance(*it, buffer.end())) < sizeof(big)) {
     return false;
   }
 
@@ -38,13 +38,13 @@ inline bool DeserializeInteger(T* val, const ByteVector& buffer,
 
 template <typename T>
 inline void Serialize(ByteVector* buffer, const T& val) {
-  static_assert(false, "Missing specialization");
+  // static_assert(false, "Missing specialization");
 }
 
 template <typename T>
 bool Deserialize(T* val, const ByteVector& buffer,
                  ByteVector::const_iterator* it) {
-  static_assert(false, "Missing specialization");
+  // static_assert(false, "Missing specialization");
   return false;
 }
 
@@ -79,7 +79,7 @@ inline bool Deserialize<int>(int* val, const ByteVector& buffer,
 // size_t
 template <>
 inline void Serialize<std::size_t>(ByteVector* buffer, const std::size_t& val) {
-  detail::SerializeInteger<boost::endian::big_uint32_t>(buffer, val);
+  detail::SerializeInteger<boost::endian::big_uint32_t>(buffer, static_cast<std::uint32_t>(val));
 }
 
 template <>
@@ -158,7 +158,7 @@ template <>
 inline bool Deserialize<boost::uuids::uuid>(boost::uuids::uuid* uuid,
                                             const ByteVector& buffer,
                                             ByteVector::const_iterator* it) {
-  if (std::distance(*it, buffer.cend()) < sizeof(*uuid)) {
+  if (static_cast<std::size_t>(std::distance(*it, buffer.cend())) < sizeof(*uuid)) {
     return false;
   }
 

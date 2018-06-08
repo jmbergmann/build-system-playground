@@ -16,11 +16,11 @@ ConnectionManager::ConnectionManager(
           utils::MakeSha256({password.cbegin(), password.cend()}))),
       connection_changed_handler_(connection_changed_handler),
       message_handler_(message_handler),
-      acceptor_(context->IoContext()),
       adv_sender_(std::make_shared<AdvertisingSender>(context, adv_ep)),
       adv_receiver_(std::make_shared<AdvertisingReceiver>(
           context, adv_ep,
-          [&](auto& uuid, auto& ep) { OnAdvertisementReceived(uuid, ep); })),
+          [&](auto& uuid, auto& ep) { this->OnAdvertisementReceived(uuid, ep); })),
+      acceptor_(context->IoContext()),
       observed_events_(kNoEvent) {
   using namespace boost::asio::ip;
   SetupAcceptor(adv_ep.protocol() == udp::v4() ? tcp::v4() : tcp::v6());
@@ -123,9 +123,9 @@ void ConnectionManager::OnAdvertisementReceived(
 
   auto socket = MakeSocketAndKeepItAlive();
   auto weak_socket = utils::TimedTcpSocketWeakPtr(socket);
-  socket->Connect(ep, [this, entry, ep, weak_socket](auto& err) {
+  socket->Connect(ep, [this, entry, weak_socket](auto& err) {
     auto socket = this->StopKeepingSocketAlive(weak_socket);
-    this->OnConnectFinished(err, entry, ep, socket);
+    this->OnConnectFinished(err, entry, socket);
   });
 
   EmitBranchEvent(kBranchDiscoveredEvent, api::kSuccess, adv_uuid, [&] {
@@ -137,7 +137,7 @@ void ConnectionManager::OnAdvertisementReceived(
 
 void ConnectionManager::OnConnectFinished(
     const api::Error& err, ConnectionsMapEntry* entry,
-    const boost::asio::ip::tcp::endpoint& ep, utils::TimedTcpSocketPtr socket) {
+    utils::TimedTcpSocketPtr socket) {
   YOGI_ASSERT(entry != nullptr && entry->first != boost::uuids::uuid{});
 
   std::lock_guard<std::mutex> lock(connections_mutex_);
@@ -355,7 +355,7 @@ BranchConnectionPtr ConnectionManager::MakeConnectionAndKeepItAlive(
 BranchConnectionPtr ConnectionManager::StopKeepingConnectionAlive(
     const BranchConnectionWeakPtr& weak_conn) {
   auto conn = weak_conn.lock();
-  YOGI_ASSERT(socket);
+  YOGI_ASSERT(conn);
   connections_kept_alive_.erase(conn);
   return conn;
 }
@@ -365,7 +365,7 @@ void ConnectionManager::EmitBranchEvent(BranchEvents event,
                                         const api::Error& ev_res,
                                         const boost::uuids::uuid& uuid,
                                         Fn make_json_fn) {
-  LogBranchEvent(event, ev_res, uuid, make_json_fn);
+  LogBranchEvent(event, ev_res, make_json_fn);
 
   std::lock_guard<std::recursive_mutex> lock(event_mutex_);
 
@@ -388,9 +388,12 @@ void ConnectionManager::EmitBranchEvent(BranchEvents event,
 template <typename Fn>
 void ConnectionManager::LogBranchEvent(BranchEvents event,
                                        const api::Error& ev_res,
-                                       const boost::uuids::uuid& uuid,
                                        Fn make_json_fn) {
   switch (event) {
+	case kNoEvent:
+	case kAllEvents:
+	  break;
+	  
     case kBranchDiscoveredEvent:
       YOGI_LOG_DEBUG(logger_,
                      info_ << " Event: YOGI_BEV_BRANCH_DISCOVERED; ev_res=\""

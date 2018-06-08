@@ -16,7 +16,7 @@ ByteVector MakeSha256(const ByteVector& data) {
 
   SHA256_CTX sha256;
   SHA256_Init(&sha256);
-  SHA256_Update(&sha256, data.data(), static_cast<int>(data.size()));
+  SHA256_Update(&sha256, data.data(), data.size());
   SHA256_Final(hash.data(), &sha256);
 
   return hash;
