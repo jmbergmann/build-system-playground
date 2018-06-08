@@ -224,3 +224,23 @@ void CheckJsonElementsAreEqual(const nlohmann::json& a, const nlohmann::json& b,
   ASSERT_TRUE(b.count(key)) << "Key \"" << key << "\" does not exist in b";
   EXPECT_EQ(a[key].dump(), b[key].dump());
 }
+
+std::map<boost::uuids::uuid, nlohmann::json> GetConnectedBranches(
+    void* branch) {
+  struct Data {
+    boost::uuids::uuid uuid;
+    char json_str[1000];
+    std::map<boost::uuids::uuid, nlohmann::json> branches;
+  } data;
+
+  int res = YOGI_BranchGetConnectedBranches(
+      branch, &data.uuid, data.json_str, sizeof(data.json_str),
+      [](int, void* userarg) {
+        auto data = static_cast<Data*>(userarg);
+        data->branches[data->uuid] = nlohmann::json::parse(data->json_str);
+      },
+      &data);
+  EXPECT_EQ(res, YOGI_OK);
+
+  return data.branches;
+}

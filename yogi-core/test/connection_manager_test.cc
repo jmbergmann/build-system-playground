@@ -215,3 +215,57 @@ TEST_F(ConnectionManagerTest, BranchEvents) {
                              YOGI_ERR_RW_SOCKET_FAILED);
   CheckJsonElementsAreEqual(json, info, "uuid");
 }
+
+TEST_F(ConnectionManagerTest, CancelAwaitBranchEvent) {
+  bool called = false;
+  int res = YOGI_BranchAwaitEvent(branch_, 0, nullptr, nullptr, 0, [](int res, int event, int ev_res, void* userarg) {
+    EXPECT_EQ(res, YOGI_ERR_CANCELED);
+    EXPECT_EQ(event, YOGI_BEV_NONE);
+    EXPECT_EQ(ev_res, YOGI_OK);
+    *static_cast<bool*>(userarg) = true;
+  }, &called);
+  ASSERT_EQ(res, YOGI_OK);
+
+  res = YOGI_BranchCancelAwaitEvent(branch_);
+  ASSERT_EQ(res, YOGI_OK);
+
+  while (!called) {
+    res = YOGI_ContextRunOne(context_, nullptr, -1);
+    EXPECT_EQ(res, YOGI_OK);
+  }
+}
+
+TEST_F(ConnectionManagerTest, GetConnectedBranches) {
+  void* branch_a = CreateBranch(context_, "a");
+  void* branch_b = CreateBranch(context_, "b");
+
+  BranchEventRecorder rec(context_, branch_);
+  rec.RunContextUntil(YOGI_BEV_CONNECT_FINISHED, branch_a, YOGI_OK);
+  rec.RunContextUntil(YOGI_BEV_CONNECT_FINISHED, branch_b, YOGI_OK);
+
+  auto branches = GetConnectedBranches(branch_);
+  EXPECT_EQ(branches.size(), 2);
+
+  auto fn = [&](void* branch) {
+    auto info = GetBranchInfo(branch);
+    auto uuid = GetBranchUuid(branch);
+    ASSERT_TRUE(branches.count(uuid));
+
+    auto json = branches[uuid];
+    CheckJsonElementsAreEqual(json, info, "uuid");
+    CheckJsonElementsAreEqual(json, info, "name");
+    CheckJsonElementsAreEqual(json, info, "description");
+    CheckJsonElementsAreEqual(json, info, "net_name");
+    CheckJsonElementsAreEqual(json, info, "path");
+    CheckJsonElementsAreEqual(json, info, "hostname");
+    CheckJsonElementsAreEqual(json, info, "pid");
+    EXPECT_FALSE(json.value("tcp_server_address", "").empty());
+    CheckJsonElementsAreEqual(json, info, "tcp_server_port");
+    CheckJsonElementsAreEqual(json, info, "start_time");
+    CheckJsonElementsAreEqual(json, info, "timeout");
+    CheckJsonElementsAreEqual(json, info, "advertising_interval");
+  };
+
+  fn(branch_a);
+  fn(branch_b);
+}

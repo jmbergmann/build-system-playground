@@ -96,6 +96,7 @@ boost::uuids::uuid GetBranchUuid(void* branch);
 nlohmann::json GetBranchInfo(void* branch);
 void CheckJsonElementsAreEqual(const nlohmann::json& a, const nlohmann::json& b,
                                const std::string& key);
+std::map<boost::uuids::uuid, nlohmann::json> GetConnectedBranches(void* branch);
 
 template <typename T = std::string>
 T GetBranchProperty(void* branch, const char* property) {
