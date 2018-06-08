@@ -91,6 +91,9 @@ const char* Error::what() const noexcept {
 
     case YOGI_ERR_DUPLICATE_BRANCH_PATH:
       return "A branch with the same path is already active";
+
+    case YOGI_ERR_MESSAGE_TOO_LARGE:
+      return "Message is too large";
   }
 
   return "Invalid error code";

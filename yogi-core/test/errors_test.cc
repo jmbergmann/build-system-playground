@@ -1,6 +1,6 @@
 #include "common.h"
 
-static constexpr int kLastError = YOGI_ERR_DUPLICATE_BRANCH_PATH;
+static constexpr int kLastError = YOGI_ERR_MESSAGE_TOO_LARGE;
 
 TEST(ErrorsTest, GetErrorString) {
   EXPECT_STRNE(YOGI_GetErrorString(-2), YOGI_GetErrorString(-1));

@@ -7,6 +7,7 @@
 #include <yogi_core.h>
 #include <chrono>
 #include <vector>
+#include <functional>
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/ip/udp.hpp>
 #include <boost/asio/ip/tcp.hpp>
@@ -65,15 +66,16 @@ class FakeBranch final {
  public:
   FakeBranch();
 
-  void Connect(void* branch);
+  void Connect(void* branch,
+               std::function<void(utils::ByteVector*)> info_changer = {});
+  void Accept(std::function<void(utils::ByteVector*)> info_changer = {});
   void Disconnect();
-  void Advertise();
-  void Accept();
+  void Advertise(std::function<void(utils::ByteVector*)> msg_changer = {});
 
   bool IsConnectedTo(void* branch) const;
 
  private:
-  void Authenticate();
+  void Authenticate(std::function<void(utils::ByteVector*)> info_changer);
 
   objects::detail::BranchInfoPtr info_;
   boost::asio::io_context ioc_;

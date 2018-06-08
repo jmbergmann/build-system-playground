@@ -56,6 +56,10 @@ void GetConstant(void* dest, int constant) {
       *static_cast<const char**>(dest) = kDefaultLogFormat;
       break;
 
+    case YOGI_CONST_MAX_MESSAGE_SIZE:
+      *static_cast<int*>(dest) = kMaxMessageSize;
+      break;
+
     default:
       throw Error(YOGI_ERR_INVALID_PARAM);
   }

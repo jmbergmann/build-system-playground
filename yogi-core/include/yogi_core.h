@@ -80,6 +80,9 @@
 //! Default textual format for log entries (const char*)
 #define YOGI_CONST_DEFAULT_LOG_FORMAT 12
 
+//! Maximum size of a message
+#define YOGI_CONST_MAX_MESSAGE_SIZE 13
+
 //! @}
 //!
 //! @defgroup EC Error Codes
@@ -175,6 +178,9 @@
 
 //! A branch with the same path is already active
 #define YOGI_ERR_DUPLICATE_BRANCH_PATH -28
+
+//! Message is too large
+#define YOGI_ERR_MESSAGE_TOO_LARGE -29
 
 //! @}
 //!

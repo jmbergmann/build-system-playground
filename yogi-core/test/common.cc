@@ -71,17 +71,24 @@ FakeBranch::FakeBranch()
   acceptor_.bind(boost::asio::ip::tcp::endpoint(kTcpProtocol, 0));
   acceptor_.listen();
   info_ = objects::detail::BranchInfo::CreateLocal(
-          "Fake Branch", "", utils::GetHostname(), "/Fake Branch", acceptor_.local_endpoint(), 1s, 1s);
+      "Fake Branch", "", utils::GetHostname(), "/Fake Branch",
+      acceptor_.local_endpoint(), 1s, 1s);
 
   udp_socket_.set_option(boost::asio::ip::udp::socket::reuse_address(true));
   udp_socket_.bind(boost::asio::ip::udp::endpoint(kUdpProtocol, 0));
-  udp_socket_.set_option(
-      boost::asio::ip::multicast::join_group(boost::asio::ip::make_address(kAdvAddress)));
+  udp_socket_.set_option(boost::asio::ip::multicast::join_group(
+      boost::asio::ip::make_address(kAdvAddress)));
 }
 
-void FakeBranch::Connect(void* branch) {
+void FakeBranch::Connect(void* branch,
+                         std::function<void(utils::ByteVector*)> msg_changer) {
   tcp_socket_.connect(GetBranchTcpEndpoint(branch));
-  Authenticate();
+  Authenticate(msg_changer);
+}
+
+void FakeBranch::Accept(std::function<void(utils::ByteVector*)> msg_changer) {
+  tcp_socket_ = acceptor_.accept();
+  Authenticate(msg_changer);
 }
 
 void FakeBranch::Disconnect() {
@@ -89,13 +96,11 @@ void FakeBranch::Disconnect() {
   tcp_socket_.close();
 }
 
-void FakeBranch::Advertise() {
-  udp_socket_.send_to(boost::asio::buffer(*info_->MakeAdvertisingMessage()), udp_ep_);
-}
-
-void FakeBranch::Accept() {
-  tcp_socket_ = acceptor_.accept();
-  Authenticate();
+void FakeBranch::Advertise(
+    std::function<void(utils::ByteVector*)> msg_changer) {
+  auto msg = *info_->MakeAdvertisingMessage();
+  if (msg_changer) msg_changer(&msg);
+  udp_socket_.send_to(boost::asio::buffer(msg), udp_ep_);
 }
 
 bool FakeBranch::IsConnectedTo(void* branch) const {
@@ -121,10 +126,12 @@ bool FakeBranch::IsConnectedTo(void* branch) const {
   return data.connected;
 }
 
-void FakeBranch::Authenticate() {
+void FakeBranch::Authenticate(
+    std::function<void(utils::ByteVector*)> msg_changer) {
   // Send branch info
-  boost::asio::write(tcp_socket_,
-                     boost::asio::buffer(*info_->MakeInfoMessage()));
+  auto info_msg = *info_->MakeInfoMessage();
+  if (msg_changer) msg_changer(&info_msg);
+  boost::asio::write(tcp_socket_, boost::asio::buffer(info_msg));
 
   // Receive branch info
   auto buffer =

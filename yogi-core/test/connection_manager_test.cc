@@ -107,37 +107,78 @@ TEST_F(ConnectionManagerTest, PasswordMismatch) {
 
 TEST_F(ConnectionManagerTest, Reconnect) {
   RunContextInBackground(context_);
-
   FakeBranch fake;
+
   fake.Connect(branch_);
-  while (!fake.IsConnectedTo(branch_));
+  while (!fake.IsConnectedTo(branch_))
+    ;
 
   fake.Disconnect();
-  while (fake.IsConnectedTo(branch_));
+  while (fake.IsConnectedTo(branch_))
+    ;
 
   fake.Advertise();
   fake.Accept();
-  while (!fake.IsConnectedTo(branch_));
+  while (!fake.IsConnectedTo(branch_))
+    ;
 }
 
 TEST_F(ConnectionManagerTest, InvalidMagicPrefix) {
-  // TODO
+  RunContextInBackground(context_);
+  FakeBranch fake;
+
+  auto fn = [](auto msg) { msg->at(1) = 'X'; };
+
+  EXPECT_THROW(fake.Connect(branch_, fn), boost::system::system_error);
+  fake.Advertise();
+  EXPECT_THROW(fake.Accept(fn), boost::system::system_error);
 }
 
 TEST_F(ConnectionManagerTest, IncompatibleVersion) {
-  // TODO
+  RunContextInBackground(context_);
+  FakeBranch fake;
+
+  auto fn = [](auto msg) { ++msg->at(5); };
+
+  EXPECT_THROW(fake.Connect(branch_, fn), boost::system::system_error);
+  fake.Advertise();
+  EXPECT_THROW(fake.Accept(fn), boost::system::system_error);
 }
 
 TEST_F(ConnectionManagerTest, LoopbackConnection) {
-  // TODO
+  RunContextInBackground(context_);
+  FakeBranch fake;
+
+  auto fn = [&](auto msg) {
+    auto uuid = GetBranchUuid(branch_);
+    std::copy(uuid.begin(), uuid.end(), msg->begin() + 7);
+  };
+
+  EXPECT_THROW(fake.Connect(branch_, fn), boost::system::system_error);
+  fake.Advertise();
+  EXPECT_THROW(fake.Accept(fn), boost::system::system_error);
 }
 
 TEST_F(ConnectionManagerTest, BrokenAdvertisementMessage) {
-  // TODO
+  RunContextInBackground(context_);
+  FakeBranch fake;
+
+  fake.Advertise([](auto msg) { msg->push_back('x'); });
+  std::this_thread::sleep_for(1ms);
+  // just checking that nothing crashes
 }
 
 TEST_F(ConnectionManagerTest, BrokenInfoMessage) {
-  // TODO
+  RunContextInBackground(context_);
+  FakeBranch fake;
+
+  auto fn = [](auto msg) {
+    ++msg->at(objects::detail::BranchInfo::kAdvertisingMessageSize) = 0xFF;
+  };
+
+  EXPECT_THROW(fake.Connect(branch_, fn), boost::system::system_error);
+  fake.Advertise();
+  EXPECT_THROW(fake.Accept(fn), boost::system::system_error);
 }
 
 TEST_F(ConnectionManagerTest, BranchEvents) {

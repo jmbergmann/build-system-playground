@@ -1,4 +1,5 @@
 #include "branch_connection.h"
+#include "../../../api/constants.h"
 #include "../../../utils/crypto.h"
 #include "../../../utils/serialize.h"
 
@@ -84,6 +85,11 @@ void BranchConnection::OnInfoHeaderReceived(
     return;
   }
 
+  if (body_size > api::kMaxMessageSize) {
+    handler(api::Error(YOGI_ERR_MESSAGE_TOO_LARGE));
+    return;
+  }
+
   socket_->ReceiveExactly(
       body_size, [this, info_msg_hdr, handler](const auto& err,
                                                const auto& info_msg_body) {
@@ -109,6 +115,7 @@ void BranchConnection::OnInfoBodyReceived(
     }
   } catch (const api::Error& err) {
     handler(err);
+    return;
   }
 
   handler(api::kSuccess);
