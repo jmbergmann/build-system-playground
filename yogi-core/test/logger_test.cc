@@ -146,7 +146,7 @@ TEST_F(LoggerTest, LogToHook) {
 
   auto& entry = entries_.back();
   EXPECT_EQ(entry.severity, YOGI_VB_ERROR);
-  EXPECT_GT(entry.timestamp, time(nullptr) * 1000000000LL);
+  EXPECT_GT(entry.timestamp, time(nullptr) * 999999999LL);
   EXPECT_EQ(entry.tid, utils::GetCurrentThreadId());
   EXPECT_EQ(entry.file, "myfile.cc");
   EXPECT_EQ(entry.line, 123);
