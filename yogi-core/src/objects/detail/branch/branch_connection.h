@@ -23,6 +23,7 @@ class BranchConnection final
 
   BranchInfoPtr GetRemoteBranchInfo() const { return remote_info_; }
   std::string MakeInfoString() const;
+  bool SourceIsTcpServer() const { return socket_->HasBeenAccepted(); }
 
   const boost::asio::ip::tcp::endpoint& GetRemoteEndpoint() const {
     return socket_->GetRemoteEndpoint();

@@ -261,7 +261,7 @@ void BranchConnection::OnHeartbeatTimerExpired() {
 void BranchConnection::StartReceive() {
   // TODO: make this properly without ReceiveExactly and stuff
   auto weak_self = std::weak_ptr<BranchConnection>(shared_from_this());
-  socket_->ReceiveExactly(1, [weak_self](auto& err, auto& data) {
+  socket_->ReceiveExactly(1, [weak_self](auto& err, auto& /*data*/) {
     auto self = weak_self.lock();
     if (!self) return;
 

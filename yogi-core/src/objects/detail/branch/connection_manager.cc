@@ -34,6 +34,10 @@ void ConnectionManager::Start(BranchInfoPtr info) {
   StartAccept();
   adv_sender_->Start(info);
   adv_receiver_->Start(info);
+
+  YOGI_LOG_DEBUG(logger_,
+                 info_ << " Started ConnectionManager with TCP server port "
+                       << info_->GetTcpEndpoint().port());
 }
 
 ConnectionManager::BranchInfoStringsList
@@ -107,6 +111,10 @@ void ConnectionManager::OnAcceptFinished(const api::Error& err,
     return;
   }
 
+  YOGI_LOG_DEBUG(logger_, info_ << " Accepted incoming TCP connection from "
+                                << utils::MakeIpAddressString(
+                                       socket->GetRemoteEndpoint()));
+
   StartExchangeBranchInfo(socket, {});
   StartAccept();
 }
@@ -121,6 +129,10 @@ void ConnectionManager::OnAdvertisementReceived(
       connections_.insert(std::make_pair(adv_uuid, BranchConnectionPtr{}));
   if (!res.second) return;
   auto entry = &*res.first;
+
+  YOGI_LOG_DEBUG(logger_, info_ << " Attempting to connect to [" << adv_uuid
+                                << "] on " << utils::MakeIpAddressString(ep)
+                                << ":" << ep.port());
 
   auto socket = MakeSocketAndKeepItAlive();
   auto weak_socket = utils::TimedTcpSocketWeakPtr(socket);
@@ -153,6 +165,9 @@ void ConnectionManager::OnConnectFinished(const api::Error& err,
     return;
   }
 
+  YOGI_LOG_DEBUG(logger_, info_ << " TCP connection to " << *socket
+                                << " established successfully");
+
   StartExchangeBranchInfo(socket, entry);
 }
 
@@ -179,7 +194,13 @@ void ConnectionManager::OnExchangeBranchInfoFinished(
   }
 
   auto remote_info = conn->GetRemoteBranchInfo();
+  YOGI_LOG_DEBUG(logger_, info_ << " Successfully exchanged branch info with "
+                                << remote_info);
+
   if (blacklisted_uuids_.count(remote_info->GetUuid())) {
+    YOGI_LOG_DEBUG(logger_, info_ << " Dropping connection to " << remote_info
+                                  << " since it is blacklisted")
+    EraseConnectionIfNotAlreadyEstablished(entry);
     return;
   }
 
@@ -190,8 +211,8 @@ void ConnectionManager::OnExchangeBranchInfoFinished(
   if (DoesHigherPriorityConnectionExist(*entry)) {
     YOGI_ASSERT(entry->second != conn);
     YOGI_LOG_TRACE(logger_,
-                   info_ << " Dropping TCP connection to {" << entry->first
-                         << "} in favour of a higher priority connection");
+                   info_ << " Dropping TCP connection to " << remote_info
+                         << " in favour of a higher priority connection");
     return;
   }
 
@@ -239,9 +260,9 @@ void ConnectionManager::CheckAndFixUuidMismatch(const boost::uuids::uuid& uuid,
                                                 ConnectionsMapEntry** entry) {
   if (*entry) {
     if ((*entry)->first == uuid) return;
-    YOGI_LOG_INFO(logger_, info_ << "Tried to connect to {" << (*entry)->first
-                                 << "} but ended up connecting to {" << uuid
-                                 << "} instead");
+    YOGI_LOG_INFO(logger_, info_ << "Tried to connect to " << (*entry)->first
+                                 << " but ended up connecting to " << uuid
+                                 << " instead");
   }
 
   EraseConnectionIfNotAlreadyEstablished(*entry);
@@ -253,7 +274,8 @@ void ConnectionManager::CheckAndFixUuidMismatch(const boost::uuids::uuid& uuid,
 bool ConnectionManager::DoesHigherPriorityConnectionExist(
     const ConnectionsMapEntry& entry) const {
   YOGI_ASSERT(entry.first != info_->GetUuid());
-  return entry.second && entry.first < info_->GetUuid();
+  return entry.second && entry.first < info_->GetUuid() &&
+         entry.second->SourceIsTcpServer();
 }
 
 api::Error ConnectionManager::CheckRemoteBranchInfo(
@@ -314,6 +336,8 @@ void ConnectionManager::OnAuthenticateFinished(const api::Error& err,
 
     EmitBranchEvent(kConnectFinishedEvent, err, uuid);
   } else {
+    YOGI_LOG_DEBUG(logger_, info_ << " Successfully authenticated with "
+                                  << conn->GetRemoteBranchInfo());
     StartSession(conn);
   }
 }
@@ -328,11 +352,18 @@ void ConnectionManager::StartSession(BranchConnectionPtr conn) {
   EmitBranchEvent(kConnectFinishedEvent, api::kSuccess,
                   conn->GetRemoteBranchInfo()->GetUuid());
 
+  YOGI_LOG_DEBUG(logger_, info_ << " Successfully started session for "
+                                << conn->GetRemoteBranchInfo());
+
   connection_changed_handler_(api::kSuccess, conn);
 }
 
 void ConnectionManager::OnSessionTerminated(const api::Error& err,
                                             BranchConnectionPtr conn) {
+  YOGI_LOG_DEBUG(logger_, info_ << " Session for "
+                                << conn->GetRemoteBranchInfo()
+                                << " terminated: " << err);
+
   EmitBranchEvent(kConnectionLostEvent, err,
                   conn->GetRemoteBranchInfo()->GetUuid());
 

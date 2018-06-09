@@ -9,6 +9,7 @@ TimedTcpSocket::TimedTcpSocket(objects::ContextPtr context,
       timeout_(timeout),
       rcv_buffer_(MakeSharedByteVector()),
       socket_(context->IoContext()),
+      accepted_(false),
       timer_(context->IoContext()),
       timed_out_(false) {}
 
@@ -26,6 +27,8 @@ void TimedTcpSocket::Accept(boost::asio::ip::tcp::acceptor* acceptor,
                          [weak_self, handler = std::move(handler)](auto& ec) {
                            auto self = weak_self.lock();
                            if (!self) return;
+
+                           self->accepted_ = true;
 
                            if (!ec) {
                              self->remote_ep_ = self->socket_.remote_endpoint();

@@ -31,6 +31,7 @@ class TimedTcpSocket : public std::enable_shared_from_this<TimedTcpSocket> {
   }
 
   objects::ContextPtr GetContext() const { return context_; }
+  bool HasBeenAccepted() const { return accepted_; }
 
   void Accept(boost::asio::ip::tcp::acceptor* acceptor,
               CompletionHandler handler);
@@ -51,6 +52,7 @@ class TimedTcpSocket : public std::enable_shared_from_this<TimedTcpSocket> {
   const SharedByteVector rcv_buffer_;
   boost::asio::ip::tcp::socket socket_;
   boost::asio::ip::tcp::endpoint remote_ep_;
+  bool accepted_;
   boost::asio::steady_timer timer_;
   bool timed_out_;
 };
