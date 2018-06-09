@@ -208,6 +208,8 @@ void ConnectionManager::OnExchangeBranchInfoFinished(
 void ConnectionManager::PublishExchangeBranchInfoError(
     const api::Error& err, BranchConnectionPtr conn,
     ConnectionsMapEntry* entry) {
+  YOGI_ASSERT(err != api::kSuccess);
+
   if (entry) {  // Connect operation failed
     EmitBranchEvent(kBranchQueriedEvent, err, entry->first);
   } else {
