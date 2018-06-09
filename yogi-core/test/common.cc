@@ -29,10 +29,17 @@ nlohmann::json BranchEventRecorder::RunContextUntil(
       }
     }
 
+    auto start = std::chrono::steady_clock::now();
     auto n = events_.size();
     while (n == events_.size()) {
       int res = YOGI_ContextRunOne(context_, nullptr, -1);
       EXPECT_EQ(res, YOGI_OK);
+
+      bool took_too_long = std::chrono::steady_clock::now() - start > 3s;
+      EXPECT_FALSE(took_too_long) << "RunContextUntil() took too long";
+      if (took_too_long) {
+        throw std::runtime_error("RunContextUntil() took too long");
+      }
     }
   }
 }
