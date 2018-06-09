@@ -1,4 +1,5 @@
 #include "branch.h"
+#include "../utils/ip.h"
 
 namespace objects {
 
@@ -24,7 +25,7 @@ void Branch::Start() { connection_manager_->Start(info_); }
 std::string Branch::MakeInfoString() const {
   auto json = info_->ToJson();
   auto& ep = connection_manager_->GetAdvertisingEndpoint();
-  json["advertising_address"] = ep.address().to_string();
+  json["advertising_address"] = utils::MakeIpAddressString(ep);
   json["advertising_port"] = ep.port();
   return json.dump();
 }

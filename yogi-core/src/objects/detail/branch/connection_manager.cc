@@ -1,5 +1,6 @@
 #include "connection_manager.h"
 #include "../../../utils/crypto.h"
+#include "../../../utils/ip.h"
 
 #include <boost/uuid/uuid_io.hpp>
 
@@ -19,7 +20,9 @@ ConnectionManager::ConnectionManager(
       adv_sender_(std::make_shared<AdvertisingSender>(context, adv_ep)),
       adv_receiver_(std::make_shared<AdvertisingReceiver>(
           context, adv_ep,
-          [&](auto& uuid, auto& ep) { this->OnAdvertisementReceived(uuid, ep); })),
+          [&](auto& uuid, auto& ep) {
+            this->OnAdvertisementReceived(uuid, ep);
+          })),
       acceptor_(context->IoContext()),
       observed_events_(kNoEvent) {
   using namespace boost::asio::ip;
@@ -64,9 +67,7 @@ void ConnectionManager::AwaitEvent(BranchEvents events,
   event_handler_ = handler;
 }
 
-void ConnectionManager::CancelAwaitEvent() {
-  AwaitEvent(kNoEvent, {});
-}
+void ConnectionManager::CancelAwaitEvent() { AwaitEvent(kNoEvent, {}); }
 
 void ConnectionManager::SetupAcceptor(const boost::asio::ip::tcp& protocol) {
   boost::system::error_code ec;
@@ -129,15 +130,16 @@ void ConnectionManager::OnAdvertisementReceived(
   });
 
   EmitBranchEvent(kBranchDiscoveredEvent, api::kSuccess, adv_uuid, [&] {
-    return nlohmann::json{{"uuid", boost::uuids::to_string(adv_uuid)},
-                          {"tcp_server_address", ep.address().to_string()},
-                          {"tcp_server_port", ep.port()}};
+    return nlohmann::json{
+        {"uuid", boost::uuids::to_string(adv_uuid)},
+        {"tcp_server_address", utils::MakeIpAddressString(ep)},
+        {"tcp_server_port", ep.port()}};
   });
 }
 
-void ConnectionManager::OnConnectFinished(
-    const api::Error& err, ConnectionsMapEntry* entry,
-    utils::TimedTcpSocketPtr socket) {
+void ConnectionManager::OnConnectFinished(const api::Error& err,
+                                          ConnectionsMapEntry* entry,
+                                          utils::TimedTcpSocketPtr socket) {
   YOGI_ASSERT(entry != nullptr && entry->first != boost::uuids::uuid{});
 
   std::lock_guard<std::mutex> lock(connections_mutex_);
@@ -211,10 +213,10 @@ void ConnectionManager::PublishExchangeBranchInfoError(
   if (entry) {  // Connect operation failed
     EmitBranchEvent(kBranchQueriedEvent, err, entry->first);
   } else {
-    YOGI_LOG_WARNING(logger_,
-                     info_ << " Exchanging branch info with "
-                           << conn->GetRemoteEndpoint().address().to_string()
-                           << " failed: " << err);
+    YOGI_LOG_WARNING(
+        logger_, info_ << " Exchanging branch info with "
+                       << utils::MakeIpAddressString(conn->GetRemoteEndpoint())
+                       << " failed: " << err);
   }
 }
 
@@ -256,12 +258,12 @@ api::Error ConnectionManager::CheckRemoteBranchInfo(
   }
 
   if (remote_info->GetName() == info_->GetName()) {
-      return api::Error(YOGI_ERR_DUPLICATE_BRANCH_NAME);
+    return api::Error(YOGI_ERR_DUPLICATE_BRANCH_NAME);
   }
 
   if (remote_info->GetPath() == info_->GetPath()) {
-      return api::Error(YOGI_ERR_DUPLICATE_BRANCH_PATH);
-    }
+    return api::Error(YOGI_ERR_DUPLICATE_BRANCH_PATH);
+  }
 
   for (auto& entry : connections_) {
     if (!entry.second) continue;
@@ -390,10 +392,10 @@ void ConnectionManager::LogBranchEvent(BranchEvents event,
                                        const api::Error& ev_res,
                                        Fn make_json_fn) {
   switch (event) {
-	case kNoEvent:
-	case kAllEvents:
-	  break;
-	  
+    case kNoEvent:
+    case kAllEvents:
+      break;
+
     case kBranchDiscoveredEvent:
       YOGI_LOG_DEBUG(logger_,
                      info_ << " Event: YOGI_BEV_BRANCH_DISCOVERED; ev_res=\""

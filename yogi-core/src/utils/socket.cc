@@ -1,4 +1,5 @@
 #include "socket.h"
+#include "ip.h"
 
 namespace utils {
 
@@ -81,7 +82,7 @@ void TimedTcpSocket::ReceiveExactly(std::size_t num_bytes,
   auto weak_self = std::weak_ptr<TimedTcpSocket>{shared_from_this()};
   boost::asio::async_read(socket_, boost::asio::buffer(*buffer),
                           [weak_self, buffer, handler = std::move(handler)](
-                              auto& ec, auto bytes_read) {
+                              auto& ec, auto /*bytes_read*/) {
                             auto self = weak_self.lock();
                             if (!self) return;
 
@@ -138,6 +139,6 @@ const objects::LoggerPtr TimedTcpSocket::logger_ =
 std::ostream& operator<<(std::ostream& os,
                          const utils::TimedTcpSocket& socket) {
   auto& ep = socket.GetRemoteEndpoint();
-  os << ep.address().to_string() << ":" << ep.port();
+  os << utils::MakeIpAddressString(ep) << ":" << ep.port();
   return os;
 }

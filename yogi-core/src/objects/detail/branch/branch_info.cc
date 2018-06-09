@@ -1,5 +1,6 @@
 #include "branch_info.h"
 #include "../../../api/constants.h"
+#include "../../../utils/ip.h"
 #include "../../../utils/serialize.h"
 #include "../../../utils/system.h"
 
@@ -151,7 +152,7 @@ void BranchInfo::PopulateJson() {
       {"path", path_},
       {"hostname", hostname_},
       {"pid", pid_},
-      {"tcp_server_address", tcp_ep_.address().to_string()},
+      {"tcp_server_address", utils::MakeIpAddressString(tcp_ep_)},
       {"tcp_server_port", tcp_ep_.port()},
       {"start_time", start_time_.ToJavaScriptString()},
       {"timeout", static_cast<float>(timeout_.count()) / 1000'000'000.0f},
