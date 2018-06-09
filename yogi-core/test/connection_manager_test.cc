@@ -66,6 +66,7 @@ TEST_F(ConnectionManagerTest, DuplicateBranchName) {
   BranchEventRecorder rec(context_, branch_);
   rec.RunContextUntil(YOGI_BEV_CONNECT_FINISHED, branch_a,
                       YOGI_ERR_DUPLICATE_BRANCH_NAME);
+  YOGI_Destroy(branch_a);
 
   void* branch_b = CreateBranch(context_, "Same name");
   rec.RunContextUntil(YOGI_BEV_CONNECT_FINISHED, branch_b, YOGI_OK);
@@ -82,6 +83,7 @@ TEST_F(ConnectionManagerTest, DuplicateBranchPath) {
   BranchEventRecorder rec(context_, branch_);
   rec.RunContextUntil(YOGI_BEV_CONNECT_FINISHED, branch_a,
                       YOGI_ERR_DUPLICATE_BRANCH_PATH);
+  YOGI_Destroy(branch_a);
 
   void* branch_b = CreateBranch(context_, "b", nullptr, nullptr, "/tmp");
   rec.RunContextUntil(YOGI_BEV_CONNECT_FINISHED, branch_b, YOGI_OK);

@@ -197,8 +197,6 @@ void ConnectionManager::OnExchangeBranchInfoFinished(
   auto res = CheckRemoteBranchInfo(remote_info);
   if (res != api::kSuccess) {
     EmitBranchEvent(kConnectFinishedEvent, res, entry->first);
-
-    blacklisted_uuids_.insert(entry->first);
     connections_.erase(entry->first);
     return;
   }
@@ -254,14 +252,17 @@ bool ConnectionManager::DoesHigherPriorityConnectionExist(
 api::Error ConnectionManager::CheckRemoteBranchInfo(
     const BranchInfoPtr& remote_info) {
   if (remote_info->GetNetName() != info_->GetNetName()) {
+    blacklisted_uuids_.insert(remote_info->GetUuid());
     return api::Error(YOGI_ERR_NET_NAME_MISMATCH);
   }
 
   if (remote_info->GetName() == info_->GetName()) {
+    blacklisted_uuids_.insert(remote_info->GetUuid());
     return api::Error(YOGI_ERR_DUPLICATE_BRANCH_NAME);
   }
 
   if (remote_info->GetPath() == info_->GetPath()) {
+    blacklisted_uuids_.insert(remote_info->GetUuid());
     return api::Error(YOGI_ERR_DUPLICATE_BRANCH_PATH);
   }
 
