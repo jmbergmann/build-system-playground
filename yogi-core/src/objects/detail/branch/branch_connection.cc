@@ -18,7 +18,8 @@ BranchConnection::BranchConnection(utils::TimedTcpSocketPtr socket,
       heartbeat_msg_(utils::MakeSharedByteVector(utils::ByteVector{0})),
       ack_msg_(utils::MakeSharedByteVector(utils::ByteVector{0x55})),
       session_started_(false),
-      heartbeat_timer_(context_->IoContext()) {}
+      heartbeat_timer_(context_->IoContext()),
+      next_error_(api::kSuccess) {}
 
 std::string BranchConnection::MakeInfoString() const {
   auto json = remote_info_->ToJson();
@@ -42,6 +43,8 @@ void BranchConnection::Authenticate(utils::SharedByteVector password_hash,
                                     CompletionHandler handler) {
   YOGI_ASSERT(remote_info_);
 
+  if (!CheckNextError(handler)) return;
+
   auto my_challenge =
       utils::MakeSharedByteVector(utils::GenerateRandomBytes(8));
   socket_->Send(my_challenge,
@@ -57,6 +60,8 @@ void BranchConnection::Authenticate(utils::SharedByteVector password_hash,
 void BranchConnection::RunSession(CompletionHandler handler) {
   YOGI_ASSERT(remote_info_);
   YOGI_ASSERT(!session_started_);
+
+  if (!CheckNextError(handler)) return;
 
   RestartHeartbeatTimer();
   StartReceive();
@@ -129,21 +134,15 @@ void BranchConnection::OnInfoBodyReceived(
 void BranchConnection::OnInfoAckSent(CompletionHandler handler) {
   socket_->ReceiveExactly(ack_msg_->size(),
                           [this, handler](auto& err, auto& ack_msg) {
-                            if (err) {
-                              handler(err);
-                            } else {
-                              this->OnInfoAckReceived(ack_msg, handler);
-                            }
+                            this->OnInfoAckReceived(err, ack_msg, handler);
                           });
 }
 
-void BranchConnection::OnInfoAckReceived(const utils::ByteVector& ack_msg,
+void BranchConnection::OnInfoAckReceived(const api::Error& err,
+                                         const utils::ByteVector& ack_msg,
                                          CompletionHandler handler) {
-  if (ack_msg == *ack_msg_) {
-    handler(api::kSuccess);
-  } else {
-    handler(api::Error(YOGI_ERR_DESERIALIZE_MSG_FAILED));
-  }
+  CheckAckAndSetNextError(err, ack_msg);
+  handler(api::kSuccess);
 }
 
 void BranchConnection::OnChallengeSent(utils::SharedByteVector my_challenge,
@@ -214,20 +213,16 @@ void BranchConnection::OnSolutionAckSent(bool solutions_match,
                                          CompletionHandler handler) {
   socket_->ReceiveExactly(ack_msg_->size(), [this, solutions_match, handler](
                                                 auto& err, auto& ack_msg) {
-    if (err) {
-      handler(err);
-    } else {
-      this->OnSolutionAckReceived(solutions_match, ack_msg, handler);
-    }
+    this->OnSolutionAckReceived(err, solutions_match, ack_msg, handler);
   });
 }
 
-void BranchConnection::OnSolutionAckReceived(bool solutions_match,
+void BranchConnection::OnSolutionAckReceived(const api::Error& err, bool solutions_match,
                                              const utils::ByteVector& ack_msg,
                                              CompletionHandler handler) {
-  if (ack_msg != *ack_msg_) {
-    handler(api::Error(YOGI_ERR_DESERIALIZE_MSG_FAILED));
-  } else if (!solutions_match) {
+  CheckAckAndSetNextError(err, ack_msg);
+
+  if (!solutions_match) {
     handler(api::Error(YOGI_ERR_PASSWORD_MISMATCH));
   } else {
     handler(api::kSuccess);
@@ -281,6 +276,26 @@ void BranchConnection::StartReceive() {
 void BranchConnection::OnSessionError(const api::Error& err) {
   heartbeat_timer_.cancel();
   session_completion_handler_(err);
+}
+
+void BranchConnection::CheckAckAndSetNextError(
+    const api::Error& err, const utils::ByteVector& ack_msg) {
+  if (err) {
+    next_error_ = err;
+  } else if (ack_msg != *ack_msg_) {
+    next_error_ = api::Error(YOGI_ERR_DESERIALIZE_MSG_FAILED);
+  }
+}
+
+bool BranchConnection::CheckNextError(CompletionHandler handler) {
+  if (next_error_) {
+    auto err = next_error_;
+    context_->Post([err, handler] { handler(err); });
+
+    return false;
+  }
+
+  return true;
 }
 
 }  // namespace detail

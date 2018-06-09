@@ -43,7 +43,8 @@ class BranchConnection final
                           const utils::ByteVector& info_msg_body,
                           CompletionHandler handler);
   void OnInfoAckSent(CompletionHandler handler);
-  void OnInfoAckReceived(const utils::ByteVector& ack_msg,
+  void OnInfoAckReceived(const api::Error& err,
+                         const utils::ByteVector& ack_msg,
                          CompletionHandler handler);
   void OnChallengeSent(utils::SharedByteVector my_challenge,
                        utils::SharedByteVector password_hash,
@@ -61,13 +62,16 @@ class BranchConnection final
                           utils::SharedByteVector my_solution,
                           CompletionHandler handler);
   void OnSolutionAckSent(bool solutions_match, CompletionHandler handler);
-  void OnSolutionAckReceived(bool solutions_match,
+  void OnSolutionAckReceived(const api::Error& err, bool solutions_match,
                              const utils::ByteVector& ack_msg,
                              CompletionHandler handler);
   void RestartHeartbeatTimer();
   void OnHeartbeatTimerExpired();
   void StartReceive();
   void OnSessionError(const api::Error& err);
+  void CheckAckAndSetNextError(const api::Error& err,
+                               const utils::ByteVector& ack_msg);
+  bool CheckNextError(CompletionHandler handler);
 
   static const LoggerPtr logger_;
 
@@ -81,6 +85,7 @@ class BranchConnection final
   std::atomic<bool> session_started_;
   CompletionHandler session_completion_handler_;
   boost::asio::steady_timer heartbeat_timer_;
+  api::Error next_error_;
 };
 
 typedef std::shared_ptr<BranchConnection> BranchConnectionPtr;
