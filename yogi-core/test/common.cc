@@ -143,6 +143,9 @@ void FakeBranch::Authenticate(
   buffer.resize(body_size);
   boost::asio::read(tcp_socket_, boost::asio::buffer(buffer));
 
+  // ACK
+  ExchangeAck();
+
   // Send challenge
   auto my_challenge = utils::GenerateRandomBytes(8);
   boost::asio::write(tcp_socket_, boost::asio::buffer(my_challenge));
@@ -161,6 +164,16 @@ void FakeBranch::Authenticate(
   // Receive Solution
   buffer.resize(remote_solution.size());
   boost::asio::read(tcp_socket_, boost::asio::buffer(buffer));
+
+  // ACK
+  ExchangeAck();
+}
+
+void FakeBranch::ExchangeAck() {
+  auto buffer = utils::ByteVector({0x55});
+  boost::asio::write(tcp_socket_, boost::asio::buffer(buffer));
+  boost::asio::read(tcp_socket_, boost::asio::buffer(buffer));
+  EXPECT_EQ(buffer[0], 0x55);
 }
 
 void SetupLogging(int verbosity) {

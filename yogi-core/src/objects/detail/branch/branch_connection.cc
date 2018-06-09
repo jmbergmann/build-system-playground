@@ -16,6 +16,7 @@ BranchConnection::BranchConnection(utils::TimedTcpSocketPtr socket,
       local_info_(local_info),
       connected_since_(utils::Timestamp::Now()),
       heartbeat_msg_(utils::MakeSharedByteVector(utils::ByteVector{0})),
+      ack_msg_(utils::MakeSharedByteVector(utils::ByteVector{0x55})),
       session_started_(false),
       heartbeat_timer_(context_->IoContext()) {}
 
@@ -28,14 +29,13 @@ std::string BranchConnection::MakeInfoString() const {
 void BranchConnection::ExchangeBranchInfo(CompletionHandler handler) {
   YOGI_ASSERT(!remote_info_);
 
-  socket_->Send(local_info_->MakeInfoMessage(),
-                [this, handler](const auto& err) {
-                  if (err) {
-                    handler(err);
-                  } else {
-                    this->OnInfoSent(handler);
-                  }
-                });
+  socket_->Send(local_info_->MakeInfoMessage(), [this, handler](auto& err) {
+    if (err) {
+      handler(err);
+    } else {
+      this->OnInfoSent(handler);
+    }
+  });
 }
 
 void BranchConnection::Authenticate(utils::SharedByteVector password_hash,
@@ -45,7 +45,7 @@ void BranchConnection::Authenticate(utils::SharedByteVector password_hash,
   auto my_challenge =
       utils::MakeSharedByteVector(utils::GenerateRandomBytes(8));
   socket_->Send(my_challenge,
-                [this, my_challenge, password_hash, handler](const auto& err) {
+                [this, my_challenge, password_hash, handler](auto& err) {
                   if (err) {
                     handler(err);
                   } else {
@@ -91,8 +91,7 @@ void BranchConnection::OnInfoHeaderReceived(
   }
 
   socket_->ReceiveExactly(
-      body_size, [this, info_msg_hdr, handler](const auto& err,
-                                               const auto& info_msg_body) {
+      body_size, [this, info_msg_hdr, handler](auto& err, auto& info_msg_body) {
         if (err) {
           handler(err);
         } else {
@@ -118,7 +117,33 @@ void BranchConnection::OnInfoBodyReceived(
     return;
   }
 
-  handler(api::kSuccess);
+  socket_->Send(ack_msg_, [this, handler](auto& err) {
+    if (err) {
+      handler(err);
+    } else {
+      this->OnInfoAckSent(handler);
+    }
+  });
+}
+
+void BranchConnection::OnInfoAckSent(CompletionHandler handler) {
+  socket_->ReceiveExactly(ack_msg_->size(),
+                          [this, handler](auto& err, auto& ack_msg) {
+                            if (err) {
+                              handler(err);
+                            } else {
+                              this->OnInfoAckReceived(ack_msg, handler);
+                            }
+                          });
+}
+
+void BranchConnection::OnInfoAckReceived(const utils::ByteVector& ack_msg,
+                                         CompletionHandler handler) {
+  if (ack_msg == *ack_msg_) {
+    handler(api::kSuccess);
+  } else {
+    handler(api::Error(YOGI_ERR_DESERIALIZE_MSG_FAILED));
+  }
 }
 
 void BranchConnection::OnChallengeSent(utils::SharedByteVector my_challenge,
@@ -126,7 +151,7 @@ void BranchConnection::OnChallengeSent(utils::SharedByteVector my_challenge,
                                        CompletionHandler handler) {
   socket_->ReceiveExactly(
       my_challenge->size(), [this, my_challenge, password_hash, handler](
-                                const auto& err, const auto& remote_challenge) {
+                                auto& err, auto& remote_challenge) {
         if (err) {
           handler(err);
         } else {
@@ -162,8 +187,8 @@ utils::SharedByteVector BranchConnection::SolveChallenge(
 void BranchConnection::OnSolutionSent(utils::SharedByteVector my_solution,
                                       CompletionHandler handler) {
   socket_->ReceiveExactly(
-      my_solution->size(), [this, my_solution, handler](
-                               const auto& err, const auto& received_solution) {
+      my_solution->size(),
+      [this, my_solution, handler](auto& err, auto& received_solution) {
         if (err) {
           handler(err);
         } else {
@@ -175,10 +200,37 @@ void BranchConnection::OnSolutionSent(utils::SharedByteVector my_solution,
 void BranchConnection::OnSolutionReceived(
     const utils::ByteVector& received_solution,
     utils::SharedByteVector my_solution, CompletionHandler handler) {
-  if (received_solution == *my_solution) {
-    handler(api::kSuccess);
-  } else {
+  bool solutions_match = received_solution == *my_solution;
+  socket_->Send(ack_msg_, [this, solutions_match, handler](auto& err) {
+    if (err) {
+      handler(err);
+    } else {
+      this->OnSolutionAckSent(solutions_match, handler);
+    }
+  });
+}
+
+void BranchConnection::OnSolutionAckSent(bool solutions_match,
+                                         CompletionHandler handler) {
+  socket_->ReceiveExactly(ack_msg_->size(), [this, solutions_match, handler](
+                                                auto& err, auto& ack_msg) {
+    if (err) {
+      handler(err);
+    } else {
+      this->OnSolutionAckReceived(solutions_match, ack_msg, handler);
+    }
+  });
+}
+
+void BranchConnection::OnSolutionAckReceived(bool solutions_match,
+                                             const utils::ByteVector& ack_msg,
+                                             CompletionHandler handler) {
+  if (ack_msg != *ack_msg_) {
+    handler(api::Error(YOGI_ERR_DESERIALIZE_MSG_FAILED));
+  } else if (!solutions_match) {
     handler(api::Error(YOGI_ERR_PASSWORD_MISMATCH));
+  } else {
+    handler(api::kSuccess);
   }
 }
 
@@ -187,7 +239,7 @@ void BranchConnection::RestartHeartbeatTimer() {
   heartbeat_timer_.expires_from_now(remote_info_->GetTimeout() / 2);
 
   auto weak_self = std::weak_ptr<BranchConnection>(shared_from_this());
-  heartbeat_timer_.async_wait([weak_self](const auto& ec) {
+  heartbeat_timer_.async_wait([weak_self](auto& ec) {
     if (ec == boost::asio::error::operation_aborted) return;
 
     auto self = weak_self.lock();

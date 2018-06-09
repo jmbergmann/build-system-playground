@@ -76,6 +76,7 @@ class FakeBranch final {
 
  private:
   void Authenticate(std::function<void(utils::ByteVector*)> info_changer);
+  void ExchangeAck();
 
   objects::detail::BranchInfoPtr info_;
   boost::asio::io_context ioc_;

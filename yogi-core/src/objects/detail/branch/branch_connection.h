@@ -42,6 +42,9 @@ class BranchConnection final
   void OnInfoBodyReceived(const utils::ByteVector& info_msg_hdr,
                           const utils::ByteVector& info_msg_body,
                           CompletionHandler handler);
+  void OnInfoAckSent(CompletionHandler handler);
+  void OnInfoAckReceived(const utils::ByteVector& ack_msg,
+                         CompletionHandler handler);
   void OnChallengeSent(utils::SharedByteVector my_challenge,
                        utils::SharedByteVector password_hash,
                        CompletionHandler handler);
@@ -57,6 +60,10 @@ class BranchConnection final
   void OnSolutionReceived(const utils::ByteVector& received_solution,
                           utils::SharedByteVector my_solution,
                           CompletionHandler handler);
+  void OnSolutionAckSent(bool solutions_match, CompletionHandler handler);
+  void OnSolutionAckReceived(bool solutions_match,
+                             const utils::ByteVector& ack_msg,
+                             CompletionHandler handler);
   void RestartHeartbeatTimer();
   void OnHeartbeatTimerExpired();
   void StartReceive();
@@ -69,6 +76,7 @@ class BranchConnection final
   const BranchInfoPtr local_info_;
   const utils::Timestamp connected_since_;
   const utils::SharedByteVector heartbeat_msg_;
+  const utils::SharedByteVector ack_msg_;
   BranchInfoPtr remote_info_;
   std::atomic<bool> session_started_;
   CompletionHandler session_completion_handler_;
@@ -80,4 +88,3 @@ typedef std::weak_ptr<BranchConnection> BranchConnectionWeakPtr;
 
 }  // namespace detail
 }  // namespace objects
-
