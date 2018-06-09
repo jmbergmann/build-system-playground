@@ -188,8 +188,9 @@ void ConnectionManager::OnExchangeBranchInfoFinished(
   YOGI_ASSERT(entry != nullptr);
 
   if (DoesHigherPriorityConnectionExist(*entry)) {
+    YOGI_ASSERT(entry->second != conn);
     YOGI_LOG_TRACE(logger_,
-                   info_ << "Dropping TCP connection to {" << entry->first
+                   info_ << " Dropping TCP connection to {" << entry->first
                          << "} in favour of a higher priority connection");
     return;
   }
