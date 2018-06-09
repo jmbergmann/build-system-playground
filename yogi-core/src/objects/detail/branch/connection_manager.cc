@@ -246,6 +246,7 @@ void ConnectionManager::CheckAndFixUuidMismatch(const boost::uuids::uuid& uuid,
 
 bool ConnectionManager::DoesHigherPriorityConnectionExist(
     const ConnectionsMapEntry& entry) const {
+  YOGI_ASSERT(entry.first != info_->GetUuid());
   return entry.second && entry.first < info_->GetUuid();
 }
 
@@ -270,6 +271,8 @@ api::Error ConnectionManager::CheckRemoteBranchInfo(
     if (!entry.second) continue;
     auto branch_info = entry.second->GetRemoteBranchInfo();
     if (branch_info == remote_info) continue;
+
+    YOGI_ASSERT(remote_info->GetUuid() != branch_info->GetUuid());
 
     if (remote_info->GetName() == branch_info->GetName()) {
       return api::Error(YOGI_ERR_DUPLICATE_BRANCH_NAME);
