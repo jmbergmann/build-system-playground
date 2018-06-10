@@ -77,21 +77,24 @@ class ConnectionManager final
   void OnAcceptFinished(const api::Error& err, utils::TimedTcpSocketPtr socket);
   void OnAdvertisementReceived(const boost::uuids::uuid& adv_uuid,
                                const boost::asio::ip::tcp::endpoint& ep);
-  void OnConnectFinished(const api::Error& err, ConnectionsMapEntry* entry,
+  void OnConnectFinished(const api::Error& err,
+                         const boost::uuids::uuid& adv_uuid,
                          utils::TimedTcpSocketPtr socket);
   void StartExchangeBranchInfo(utils::TimedTcpSocketPtr socket,
-                               ConnectionsMapEntry* entry);
+                               const boost::uuids::uuid& adv_uuid);
   void OnExchangeBranchInfoFinished(const api::Error& err,
                                     BranchConnectionPtr conn,
-                                    ConnectionsMapEntry* entry);
+                                    const boost::uuids::uuid& adv_uuid);
+  bool CheckExchangeBranchInfoError(const api::Error& err,
+                                    const BranchConnectionPtr& conn);
+  bool VerifyUuidsMatch(const boost::uuids::uuid& remote_uuid,
+                        const boost::uuids::uuid& adv_uuid);
+  bool VerifyUuidNotBlacklisted(const boost::uuids::uuid& uuid);
+  bool VerifyConnectionHasHigherPriority(bool conn_already_exists,
+                                         const BranchConnectionPtr& conn);
   void PublishExchangeBranchInfoError(const api::Error& err,
                                       BranchConnectionPtr conn,
                                       ConnectionsMapEntry* entry);
-  void EraseConnectionIfNotAlreadyEstablished(ConnectionsMapEntry* entry);
-  void CheckAndFixUuidMismatch(const boost::uuids::uuid& uuid,
-                               ConnectionsMapEntry** entry);
-  bool DoesHigherPriorityConnectionExist(
-      const ConnectionsMapEntry& entry) const;
   api::Error CheckRemoteBranchInfo(const BranchInfoPtr& remote_info);
   void StartAuthenticate(BranchConnectionPtr conn);
   void OnAuthenticateFinished(const api::Error& err, BranchConnectionPtr conn);
@@ -129,6 +132,7 @@ class ConnectionManager final
   BranchInfoPtr info_;
 
   UuidSet blacklisted_uuids_;
+  UuidSet pending_connects_;
   ConnectionsMap connections_;
   mutable std::mutex connections_mutex_;
 

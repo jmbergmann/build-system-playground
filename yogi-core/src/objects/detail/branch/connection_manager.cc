@@ -46,7 +46,8 @@ ConnectionManager::MakeConnectedBranchesInfoStrings() const {
 
   std::lock_guard<std::mutex> lock(connections_mutex_);
   for (auto& entry : connections_) {
-    if (entry.second && entry.second->SessionStarted()) {
+    YOGI_ASSERT(entry.second);
+    if (entry.second->SessionStarted()) {
       branches.push_back(
           std::make_pair(entry.first, entry.second->MakeInfoString()));
     }
@@ -115,7 +116,7 @@ void ConnectionManager::OnAcceptFinished(const api::Error& err,
                                 << utils::MakeIpAddressString(
                                        socket->GetRemoteEndpoint()));
 
-  StartExchangeBranchInfo(socket, nullptr);
+  StartExchangeBranchInfo(socket, {});
   StartAccept();
 }
 
@@ -123,12 +124,9 @@ void ConnectionManager::OnAdvertisementReceived(
     const boost::uuids::uuid& adv_uuid,
     const boost::asio::ip::tcp::endpoint& ep) {
   std::lock_guard<std::mutex> lock(connections_mutex_);
+  if (connections_.count(adv_uuid)) return;
   if (blacklisted_uuids_.count(adv_uuid)) return;
-
-  auto res =
-      connections_.insert(std::make_pair(adv_uuid, BranchConnectionPtr{}));
-  if (!res.second) return;
-  auto entry = &*res.first;
+  if (pending_connects_.count(adv_uuid)) return;
 
   YOGI_LOG_DEBUG(logger_, info_ << " Attempting to connect to [" << adv_uuid
                                 << "] on " << utils::MakeIpAddressString(ep)
@@ -136,9 +134,9 @@ void ConnectionManager::OnAdvertisementReceived(
 
   auto socket = MakeSocketAndKeepItAlive();
   auto weak_socket = utils::TimedTcpSocketWeakPtr(socket);
-  socket->Connect(ep, [this, entry, weak_socket](auto& err) {
+  socket->Connect(ep, [this, adv_uuid, weak_socket](auto& err) {
     auto socket = this->StopKeepingSocketAlive(weak_socket);
-    this->OnConnectFinished(err, entry, socket);
+    this->OnConnectFinished(err, adv_uuid, socket);
   });
 
   EmitBranchEvent(kBranchDiscoveredEvent, api::kSuccess, adv_uuid, [&] {
@@ -150,142 +148,151 @@ void ConnectionManager::OnAdvertisementReceived(
 }
 
 void ConnectionManager::OnConnectFinished(const api::Error& err,
-                                          ConnectionsMapEntry* entry,
+                                          const boost::uuids::uuid& adv_uuid,
                                           utils::TimedTcpSocketPtr socket) {
-  YOGI_ASSERT(entry != nullptr && entry->first != boost::uuids::uuid{});
-
-  std::lock_guard<std::mutex> lock(connections_mutex_);
-
-  if (err && !entry->second) {
-    auto& adv_uuid = entry->first;
+  if (err) {
     EmitBranchEvent(kBranchQueriedEvent, err, adv_uuid);
-
-    connections_.erase(adv_uuid);  // pointer "entry" is invalid after this
-
+    pending_connects_.erase(adv_uuid);
     return;
   }
 
   YOGI_LOG_DEBUG(logger_, info_ << " TCP connection to " << *socket
                                 << " established successfully");
 
-  StartExchangeBranchInfo(socket, entry);
+  StartExchangeBranchInfo(socket, adv_uuid);
 }
 
-void ConnectionManager::StartExchangeBranchInfo(utils::TimedTcpSocketPtr socket,
-                                                ConnectionsMapEntry* entry) {
+void ConnectionManager::StartExchangeBranchInfo(
+    utils::TimedTcpSocketPtr socket, const boost::uuids::uuid& adv_uuid) {
   auto conn = MakeConnectionAndKeepItAlive(socket);
   auto weak_conn = BranchConnectionWeakPtr(conn);
-  conn->ExchangeBranchInfo([this, weak_conn, entry](auto& err) {
+  conn->ExchangeBranchInfo([this, weak_conn, adv_uuid](auto& err) {
     YOGI_ASSERT(weak_conn.lock());
-    this->OnExchangeBranchInfoFinished(err, weak_conn.lock(), entry);
+    this->OnExchangeBranchInfoFinished(err, weak_conn.lock(), adv_uuid);
     this->StopKeepingConnectionAlive(weak_conn);
+    this->pending_connects_.erase(adv_uuid);
   });
 }
 
 void ConnectionManager::OnExchangeBranchInfoFinished(
     const api::Error& err, BranchConnectionPtr conn,
-    ConnectionsMapEntry* entry) {
-  std::lock_guard<std::mutex> lock(connections_mutex_);
-
-  if (err) {
-    PublishExchangeBranchInfoError(err, conn, entry);
-    EraseConnectionIfNotAlreadyEstablished(entry);
+    const boost::uuids::uuid& adv_uuid) {
+  if (!CheckExchangeBranchInfoError(err, conn)) {
     return;
   }
 
   auto remote_info = conn->GetRemoteBranchInfo();
+  auto& remote_uuid = remote_info->GetUuid();
+
+  if (!conn->SourceIsTcpServer() && !VerifyUuidsMatch(remote_uuid, adv_uuid)) {
+    return;
+  }
+
+  if (!VerifyUuidNotBlacklisted(remote_uuid)) {
+    return;
+  }
+
   YOGI_LOG_DEBUG(logger_,
                  info_ << " Successfully exchanged branch info with "
                        << remote_info << " (source: TCP "
                        << (conn->SourceIsTcpServer() ? "server" : "client")
                        << ")");
 
-  if (blacklisted_uuids_.count(remote_info->GetUuid())) {
-    YOGI_LOG_DEBUG(logger_, info_ << " Dropping connection to " << remote_info
-                                  << " since it is blacklisted")
-    EraseConnectionIfNotAlreadyEstablished(entry);
+  std::lock_guard<std::mutex> lock(connections_mutex_);
+  auto res = connections_.insert(std::make_pair(remote_uuid, conn));
+  bool conn_already_exists = !res.second;
+
+  if (!VerifyConnectionHasHigherPriority(conn_already_exists, conn)) {
     return;
   }
 
-  // In case that UUIDs from advertising message and info message don't match
-  CheckAndFixUuidMismatch(remote_info->GetUuid(), &entry);
-  YOGI_ASSERT(entry != nullptr);
+  res.first->second = conn;
 
-  if (DoesHigherPriorityConnectionExist(*entry)) {
-    YOGI_ASSERT(entry->second != conn);
-    YOGI_LOG_TRACE(logger_,
-                   info_ << " Dropping TCP connection to " << remote_info
-                         << " in favour of a higher priority connection");
-    return;
-  }
-
-  // If entry->second already contains a connection then that connection is
-  // comming from the TCP client and did already go through the steps below so
-  // we don't bother doing them again.
-  if (!entry->second) {
-    EmitBranchEvent(kBranchQueriedEvent, api::kSuccess, entry->first,
+  if (!conn_already_exists) {
+    EmitBranchEvent(kBranchQueriedEvent, api::kSuccess, remote_uuid,
                     [&] { return remote_info->ToJson(); });
 
-    auto res = CheckRemoteBranchInfo(remote_info);
-    if (res != api::kSuccess) {
-      EmitBranchEvent(kConnectFinishedEvent, res, entry->first);
-      connections_.erase(entry->first);
+    // If a connection already exists, the following check has already been
+    // performed successfully, so we don't do it again
+    if (auto chk_err = CheckRemoteBranchInfo(remote_info)) {
+      EmitBranchEvent(kConnectFinishedEvent, chk_err, remote_uuid);
       return;
     }
   }
 
-  entry->second = conn;
   StartAuthenticate(conn);
 }
 
-void ConnectionManager::PublishExchangeBranchInfoError(
-    const api::Error& err, BranchConnectionPtr conn,
-    ConnectionsMapEntry* entry) {
-  YOGI_ASSERT(err != api::kSuccess);
+bool ConnectionManager::CheckExchangeBranchInfoError(
+    const api::Error& err, const BranchConnectionPtr& conn) {
+  if (!err) {
+    return true;
+  }
 
-  if (entry) {  // Connect operation failed
-    EmitBranchEvent(kBranchQueriedEvent, err, entry->first);
+  if (conn->SourceIsTcpServer()) {
+    YOGI_LOG_ERROR(
+        logger_,
+        info_ << "Exchanging branch info with TCP server connection from "
+              << utils::MakeIpAddressString(conn->GetRemoteEndpoint())
+              << " failed: " << err);
   } else {
-    YOGI_LOG_WARNING(
-        logger_, info_ << " Exchanging branch info with "
-                       << utils::MakeIpAddressString(conn->GetRemoteEndpoint())
-                       << " failed: " << err);
-  }
-}
-
-void ConnectionManager::EraseConnectionIfNotAlreadyEstablished(
-    ConnectionsMapEntry* entry) {
-  bool origin_is_tcp_server = entry == nullptr;
-  if (origin_is_tcp_server) return;
-
-  bool conn_already_exists = !!entry->second;
-  if (conn_already_exists) return;
-
-  connections_.erase(entry->first);
-}
-
-void ConnectionManager::CheckAndFixUuidMismatch(const boost::uuids::uuid& uuid,
-                                                ConnectionsMapEntry** entry) {
-  if (*entry) {
-    if ((*entry)->first == uuid) {
-      return;
-    }
-
-    YOGI_LOG_INFO(logger_, info_ << "Tried to connect to " << (*entry)->first
-                                 << " but ended up connecting to " << uuid
-                                 << " instead");
-    EraseConnectionIfNotAlreadyEstablished(*entry);
+    YOGI_LOG_ERROR(
+        logger_,
+        info_ << "Exchanging branch info with TCP client connection to "
+              << utils::MakeIpAddressString(conn->GetRemoteEndpoint()) << ":"
+              << conn->GetRemoteEndpoint().port() << " failed: " << err);
   }
 
-  auto res = connections_.insert(std::make_pair(uuid, BranchConnectionPtr{}));
-  *entry = &*res.first;
+  return false;
 }
 
-bool ConnectionManager::DoesHigherPriorityConnectionExist(
-    const ConnectionsMapEntry& entry) const {
-  YOGI_ASSERT(entry.first != info_->GetUuid());
-  return entry.second && entry.first < info_->GetUuid() &&
-         entry.second->SourceIsTcpServer();
+bool ConnectionManager::VerifyUuidsMatch(const boost::uuids::uuid& remote_uuid,
+                                         const boost::uuids::uuid& adv_uuid) {
+  if (remote_uuid == adv_uuid) {
+    return true;
+  }
+
+  YOGI_LOG_WARNING(logger_,
+                   info_ << " Dropping connection since branch info UUID ["
+                         << remote_uuid << "] does not match advertised UUID ["
+                         << adv_uuid
+                         << "]. This will likely be fixed with the next "
+                            "connection attempt.");
+  return false;
+}
+
+bool ConnectionManager::VerifyUuidNotBlacklisted(
+    const boost::uuids::uuid& uuid) {
+  if (!blacklisted_uuids_.count(uuid)) {
+    return true;
+  }
+
+  YOGI_LOG_DEBUG(logger_, info_ << " Dropping connection to [" << uuid
+                                << "] since it is blacklisted");
+  return false;
+}
+
+bool ConnectionManager::VerifyConnectionHasHigherPriority(
+    bool conn_already_exists, const BranchConnectionPtr& conn) {
+  if (!conn_already_exists) {
+    return true;
+  }
+
+  auto& remote_uuid = conn->GetRemoteBranchInfo()->GetUuid();
+  YOGI_ASSERT(connections_[remote_uuid]);
+
+  if (remote_uuid < info_->GetUuid() == conn->SourceIsTcpServer()) {
+    return true;
+  }
+
+  YOGI_LOG_DEBUG(
+      logger_,
+      info_ << " Dropping TCP "
+            << (conn->SourceIsTcpServer() ? "server" : "client")
+            << " connection to " << conn
+            << " since a connection with a higher priority already exists")
+
+  return false;
 }
 
 api::Error ConnectionManager::CheckRemoteBranchInfo(
@@ -306,7 +313,6 @@ api::Error ConnectionManager::CheckRemoteBranchInfo(
   }
 
   for (auto& entry : connections_) {
-    if (!entry.second) continue;
     auto branch_info = entry.second->GetRemoteBranchInfo();
     if (branch_info == remote_info) continue;
 

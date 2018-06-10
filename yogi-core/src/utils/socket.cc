@@ -15,6 +15,7 @@ TimedTcpSocket::TimedTcpSocket(objects::ContextPtr context,
 
 TimedTcpSocket::~TimedTcpSocket() {
   boost::system::error_code ec;
+  socket_.cancel(ec);
   socket_.shutdown(socket_.shutdown_both, ec);
   socket_.close(ec);
 }
@@ -23,41 +24,45 @@ void TimedTcpSocket::Accept(boost::asio::ip::tcp::acceptor* acceptor,
                             CompletionHandler handler) {
   remote_ep_ = {};
   auto weak_self = std::weak_ptr<TimedTcpSocket>{shared_from_this()};
-  acceptor->async_accept(socket_,
-                         [weak_self, handler = std::move(handler)](auto& ec) {
-                           auto self = weak_self.lock();
-                           if (!self) return;
+  acceptor->async_accept(
+      socket_, [weak_self, handler = std::move(handler)](auto& ec) {
+        auto self = weak_self.lock();
+        if (!self) return;
 
-                           self->accepted_ = true;
+        self->accepted_ = true;
 
-                           if (!ec) {
-                             self->remote_ep_ = self->socket_.remote_endpoint();
-                             self->SetNoDelayOption();
-                             handler(api::kSuccess);
-                           } else {
-                             handler(api::Error(YOGI_ERR_ACCEPT_SOCKET_FAILED));
-                           }
-                         });
+        if (!ec) {
+          self->remote_ep_ = self->socket_.remote_endpoint();
+          self->SetNoDelayOption();
+          handler(api::kSuccess);
+        } else if (ec == boost::asio::error::operation_aborted) {
+          handler(api::Error(YOGI_ERR_CANCELED));
+        } else {
+          handler(api::Error(YOGI_ERR_ACCEPT_SOCKET_FAILED));
+        }
+      });
 }
 
 void TimedTcpSocket::Connect(const boost::asio::ip::tcp::endpoint& ep,
                              CompletionHandler handler) {
   remote_ep_ = ep;
   auto weak_self = std::weak_ptr<TimedTcpSocket>{shared_from_this()};
-  socket_.async_connect(ep,
-                        [weak_self, handler = std::move(handler)](auto& ec) {
-                          auto self = weak_self.lock();
-                          if (!self) return;
+  socket_.async_connect(
+      ep, [weak_self, handler = std::move(handler)](auto& ec) {
+        auto self = weak_self.lock();
+        if (!self) return;
 
-                          if (self->timed_out_) {
-                            handler(api::Error(YOGI_ERR_TIMEOUT));
-                          } else if (!ec) {
-                            self->SetNoDelayOption();
-                            handler(api::kSuccess);
-                          } else {
-                            handler(api::Error(YOGI_ERR_CONNECT_SOCKET_FAILED));
-                          }
-                        });
+        if (self->timed_out_) {
+          handler(api::Error(YOGI_ERR_TIMEOUT));
+        } else if (!ec) {
+          self->SetNoDelayOption();
+          handler(api::kSuccess);
+        } else if (ec == boost::asio::error::operation_aborted) {
+          handler(api::Error(YOGI_ERR_CANCELED));
+        } else {
+          handler(api::Error(YOGI_ERR_CONNECT_SOCKET_FAILED));
+        }
+      });
 
   StartTimeout(weak_self);
 }
@@ -72,6 +77,8 @@ void TimedTcpSocket::Send(SharedByteVector data, CompletionHandler handler) {
 
         if (!ec) {
           handler(api::kSuccess);
+        } else if (ec == boost::asio::error::operation_aborted) {
+          handler(api::Error(YOGI_ERR_CANCELED));
         } else {
           handler(api::Error(YOGI_ERR_RW_SOCKET_FAILED));
         }
@@ -83,23 +90,25 @@ void TimedTcpSocket::ReceiveExactly(std::size_t num_bytes,
   auto buffer = rcv_buffer_;
   buffer->resize(num_bytes);
   auto weak_self = std::weak_ptr<TimedTcpSocket>{shared_from_this()};
-  boost::asio::async_read(socket_, boost::asio::buffer(*buffer),
-                          [weak_self, buffer, handler = std::move(handler)](
-                              auto& ec, auto /*bytes_read*/) {
-                            auto self = weak_self.lock();
-                            if (!self) return;
+  boost::asio::async_read(
+      socket_, boost::asio::buffer(*buffer),
+      [weak_self, buffer, handler = std::move(handler)](auto& ec,
+                                                        auto /*bytes_read*/) {
+        auto self = weak_self.lock();
+        if (!self) return;
 
-                            self->timer_.cancel();
+        self->timer_.cancel();
 
-                            if (self->timed_out_) {
-                              handler(api::Error(YOGI_ERR_TIMEOUT), *buffer);
-                            } else if (!ec) {
-                              handler(api::kSuccess, *buffer);
-                            } else {
-                              handler(api::Error(YOGI_ERR_RW_SOCKET_FAILED),
-                                      *buffer);
-                            }
-                          });
+        if (self->timed_out_) {
+          handler(api::Error(YOGI_ERR_TIMEOUT), *buffer);
+        } else if (!ec) {
+          handler(api::kSuccess, *buffer);
+        } else if (ec == boost::asio::error::operation_aborted) {
+          handler(api::Error(YOGI_ERR_CANCELED), *buffer);
+        } else {
+          handler(api::Error(YOGI_ERR_RW_SOCKET_FAILED), *buffer);
+        }
+      });
 
   StartTimeout(weak_self);
 }
