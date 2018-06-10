@@ -107,6 +107,10 @@ TEST_F(ConnectionManagerTest, PasswordMismatch) {
                       YOGI_ERR_PASSWORD_MISMATCH);
 }
 
+TEST_F(ConnectionManagerTest, AdvAndInfoMessageUuidMismatch) {
+  // TODO: CheckAndFixUuidMismatch
+}
+
 TEST_F(ConnectionManagerTest, Reconnect) {
   RunContextInBackground(context_);
   FakeBranch fake;
@@ -189,16 +193,12 @@ TEST_F(ConnectionManagerTest, BranchEvents) {
   auto info = GetBranchInfo(branch_a);
 
   BranchEventRecorder rec(context_, branch_);
-printf("================================= %d\n", __LINE__);
   auto json = rec.RunContextUntil(YOGI_BEV_BRANCH_DISCOVERED, uuid, YOGI_OK);
-printf("================================= %d\n", __LINE__);
   CheckJsonElementsAreEqual(json, info, "uuid");
   EXPECT_FALSE(json.value("tcp_server_address", "").empty());
   CheckJsonElementsAreEqual(json, info, "tcp_server_port");
 
-printf("================================= %d\n", __LINE__);
   json = rec.RunContextUntil(YOGI_BEV_BRANCH_QUERIED, uuid, YOGI_OK);
-printf("================================= %d\n", __LINE__);
   CheckJsonElementsAreEqual(json, info, "uuid");
   CheckJsonElementsAreEqual(json, info, "name");
   CheckJsonElementsAreEqual(json, info, "description");
@@ -212,16 +212,12 @@ printf("================================= %d\n", __LINE__);
   CheckJsonElementsAreEqual(json, info, "timeout");
   CheckJsonElementsAreEqual(json, info, "advertising_interval");
 
-printf("================================= %d\n", __LINE__);
   json = rec.RunContextUntil(YOGI_BEV_CONNECT_FINISHED, uuid, YOGI_OK);
   CheckJsonElementsAreEqual(json, info, "uuid");
 
-printf("================================= %d\n", __LINE__);
   YOGI_Destroy(branch_a);
-printf("================================= %d\n", __LINE__);
   json = rec.RunContextUntil(YOGI_BEV_CONNECTION_LOST, uuid,
                              YOGI_ERR_RW_SOCKET_FAILED);
-printf("================================= %d\n", __LINE__);
   CheckJsonElementsAreEqual(json, info, "uuid");
 }
 

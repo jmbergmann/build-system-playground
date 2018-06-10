@@ -115,7 +115,7 @@ void ConnectionManager::OnAcceptFinished(const api::Error& err,
                                 << utils::MakeIpAddressString(
                                        socket->GetRemoteEndpoint()));
 
-  StartExchangeBranchInfo(socket, {});
+  StartExchangeBranchInfo(socket, nullptr);
   StartAccept();
 }
 
@@ -194,8 +194,11 @@ void ConnectionManager::OnExchangeBranchInfoFinished(
   }
 
   auto remote_info = conn->GetRemoteBranchInfo();
-  YOGI_LOG_DEBUG(logger_, info_ << " Successfully exchanged branch info with "
-                                << remote_info);
+  YOGI_LOG_DEBUG(logger_,
+                 info_ << " Successfully exchanged branch info with "
+                       << remote_info << " (source: TCP "
+                       << (conn->SourceIsTcpServer() ? "server" : "client")
+                       << ")");
 
   if (blacklisted_uuids_.count(remote_info->GetUuid())) {
     YOGI_LOG_DEBUG(logger_, info_ << " Dropping connection to " << remote_info
@@ -204,7 +207,7 @@ void ConnectionManager::OnExchangeBranchInfoFinished(
     return;
   }
 
-  // UUIDs from advertising message and info message don't match
+  // In case that UUIDs from advertising message and info message don't match
   CheckAndFixUuidMismatch(remote_info->GetUuid(), &entry);
   YOGI_ASSERT(entry != nullptr);
 
@@ -216,14 +219,19 @@ void ConnectionManager::OnExchangeBranchInfoFinished(
     return;
   }
 
-  EmitBranchEvent(kBranchQueriedEvent, api::kSuccess, entry->first,
-                  [&] { return remote_info->ToJson(); });
+  // If entry->second already contains a connection then that connection is
+  // comming from the TCP client and did already go through the steps below so
+  // we don't bother doing them again.
+  if (!entry->second) {
+    EmitBranchEvent(kBranchQueriedEvent, api::kSuccess, entry->first,
+                    [&] { return remote_info->ToJson(); });
 
-  auto res = CheckRemoteBranchInfo(remote_info);
-  if (res != api::kSuccess) {
-    EmitBranchEvent(kConnectFinishedEvent, res, entry->first);
-    connections_.erase(entry->first);
-    return;
+    auto res = CheckRemoteBranchInfo(remote_info);
+    if (res != api::kSuccess) {
+      EmitBranchEvent(kConnectFinishedEvent, res, entry->first);
+      connections_.erase(entry->first);
+      return;
+    }
   }
 
   entry->second = conn;
@@ -259,13 +267,15 @@ void ConnectionManager::EraseConnectionIfNotAlreadyEstablished(
 void ConnectionManager::CheckAndFixUuidMismatch(const boost::uuids::uuid& uuid,
                                                 ConnectionsMapEntry** entry) {
   if (*entry) {
-    if ((*entry)->first == uuid) return;
+    if ((*entry)->first == uuid) {
+      return;
+    }
+
     YOGI_LOG_INFO(logger_, info_ << "Tried to connect to " << (*entry)->first
                                  << " but ended up connecting to " << uuid
                                  << " instead");
+    EraseConnectionIfNotAlreadyEstablished(*entry);
   }
-
-  EraseConnectionIfNotAlreadyEstablished(*entry);
 
   auto res = connections_.insert(std::make_pair(uuid, BranchConnectionPtr{}));
   *entry = &*res.first;
