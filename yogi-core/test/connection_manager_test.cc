@@ -48,7 +48,7 @@ TEST_F(ConnectionManagerTest, Advertising) {
   EXPECT_STREQ(data.data(), "YOGI");
   EXPECT_EQ(data[5], api::kVersionMajor);
   EXPECT_EQ(data[6], api::kVersionMinor);
-  EXPECT_EQ(std::memcmp(&uuid, data.data() + 7, 16), 0);
+  EXPECT_EQ(std::memcmp(&uuid, data.data() + 7, sizeof(uuid)), 0);
   EXPECT_TRUE(data[23] != 0 || data[24] != 0);
 }
 
@@ -108,7 +108,13 @@ TEST_F(ConnectionManagerTest, PasswordMismatch) {
 }
 
 TEST_F(ConnectionManagerTest, AdvAndInfoMessageUuidMismatch) {
-  // TODO: CheckAndFixUuidMismatch
+  RunContextInBackground(context_);
+  FakeBranch fake;
+
+  auto fn = [](auto msg) { msg->at(8) += 1; };
+  fake.Advertise(fn);
+
+  EXPECT_THROW(fake.Accept(), boost::system::system_error);
 }
 
 TEST_F(ConnectionManagerTest, Reconnect) {
