@@ -8,6 +8,7 @@
 #include <chrono>
 #include <vector>
 #include <functional>
+#include <sstream>
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/ip/udp.hpp>
 #include <boost/asio/ip/tcp.hpp>
@@ -103,3 +104,8 @@ template <typename T = std::string>
 T GetBranchProperty(void* branch, const char* property) {
   return GetBranchInfo(branch)[property].get<T>();
 }
+
+std::ostream& operator<<(std::ostream& os, const std::chrono::nanoseconds& dur);
+std::ostream& operator<<(std::ostream& os, const std::chrono::microseconds& dur);
+std::ostream& operator<<(std::ostream& os, const std::chrono::milliseconds& dur);
+std::ostream& operator<<(std::ostream& os, const std::chrono::seconds& dur);

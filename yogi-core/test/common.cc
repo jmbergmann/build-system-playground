@@ -257,3 +257,26 @@ std::map<boost::uuids::uuid, nlohmann::json> GetConnectedBranches(
 
   return data.branches;
 }
+
+std::ostream& operator<<(std::ostream& os,
+                         const std::chrono::nanoseconds& dur) {
+  os << dur.count() << "ns";
+  return os;
+}
+
+std::ostream& operator<<(std::ostream& os,
+                         const std::chrono::microseconds& dur) {
+  os << dur.count() << "us";
+  return os;
+}
+
+std::ostream& operator<<(std::ostream& os,
+                         const std::chrono::milliseconds& dur) {
+  os << dur.count() << "ms";
+  return os;
+}
+
+std::ostream& operator<<(std::ostream& os, const std::chrono::seconds& dur) {
+  os << dur.count() << "s";
+  return os;
+}
