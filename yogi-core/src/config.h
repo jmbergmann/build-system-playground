@@ -44,3 +44,5 @@
 #else
 # define YOGI_ASSERT(x)
 #endif
+
+#define YOGI_NEVER_REACHED YOGI_ASSERT(!"NEVER REACHED")

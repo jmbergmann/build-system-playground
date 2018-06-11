@@ -63,7 +63,19 @@ std::chrono::nanoseconds ConvertDuration(long long duration) {
   }
 }
 
+objects::Context::Signals ConvertSignals(int signals) {
+  if (signals & ~objects::Context::Signals::kAllSignals) {
+    throw api::Error(YOGI_ERR_INVALID_PARAM);
+  }
+
+  return signals ? static_cast<objects::Context::Signals>(signals)
+                 : objects::Context::Signals::kAllSignals;
+}
+
 objects::Branch::BranchEvents ConvertBranchEvents(int events) {
+  if (events & ~objects::Branch::BranchEvents::kAllEvents) {
+    throw api::Error(YOGI_ERR_INVALID_PARAM);
+  }
   return events ? static_cast<objects::Branch::BranchEvents>(events)
                 : objects::Branch::BranchEvents::kAllEvents;
 }
@@ -446,6 +458,31 @@ YOGI_API int YOGI_ContextPost(void* context, void (*fn)(void*), void* userarg) {
   CATCH_AND_RETURN;
 }
 
+YOGI_API int YOGI_AwaitSignal(void* context, int signals,
+                              void (*fn)(int res, int sig, void* userarg),
+                              void* userarg) {
+  CHECK_PARAM(context != nullptr);
+  CHECK_PARAM(fn != nullptr);
+
+  try {
+    auto ctx = api::ObjectRegister::Get<objects::Context>(context);
+    ctx->AwaitSignal(ConvertSignals(signals), [=](auto& res, auto sig) {
+      fn(res.error_code(), sig, userarg);
+    });
+  }
+  CATCH_AND_RETURN;
+}
+
+YOGI_API int YOGI_CancelAwaitSignal(void* context) {
+  CHECK_PARAM(context != nullptr);
+
+  try {
+    auto ctx = api::ObjectRegister::Get<objects::Context>(context);
+    ctx->CancelAwaitSignal();
+  }
+  CATCH_AND_RETURN;
+}
+
 YOGI_API int YOGI_TimerCreate(void** timer, void* context) {
   CHECK_PARAM(timer != nullptr);
   CHECK_PARAM(context != nullptr);
@@ -467,7 +504,7 @@ YOGI_API int YOGI_TimerStart(void* timer, long long duration,
   try {
     auto tmr = api::ObjectRegister::Get<objects::Timer>(timer);
     auto timeout = ConvertDuration(duration);
-    tmr->Start(timeout, [=](int res) { fn(res, userarg); });
+    tmr->Start(timeout, [=](auto& res) { fn(res.error_code(), userarg); });
   }
   CATCH_AND_RETURN;
 }

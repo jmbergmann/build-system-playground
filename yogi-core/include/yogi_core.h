@@ -241,6 +241,23 @@
 
 //! @}
 //!
+//! @defgroup SIG Interrupt Signals
+//!
+//! Definitions of interrupt signals that can be caught.
+//!
+//! @{
+
+//! No signal
+#define YOGI_SIG_NONE 0
+
+//! CTRL+C signal (SIGINT)
+#define YOGI_SIG_INT (1<<0)
+
+//! Termination request (SIGTERM)
+#define YOGI_SIG_TERM (1<<1)
+
+//! @}
+//!
 //! @defgroup BEV Branch Events
 //!
 //! Definitions of various events that can be observed on a branch.
@@ -482,8 +499,10 @@ YOGI_API int YOGI_LogToConsole(int verbosity, int stream, int colour,
  * \returns [<0] An error code in case of a failure (see \ref EC)
  ******************************************************************************/
 YOGI_API int YOGI_LogToHook(int verbosity,
-                            void (*fn)(int, long long, int, const char*, int,
-                                       const char*, const char*, void*),
+                            void (*fn)(int severity, long long timestamp,
+                                       int tid, const char* file, int line,
+                                       const char* comp, const char* msg,
+                                       void* userarg),
                             void* userarg);
 
 /***************************************************************************//**
@@ -830,6 +849,44 @@ YOGI_API int YOGI_ContextPost(void* context, void (*fn)(void* userarg),
                               void* userarg);
 
 /***************************************************************************//**
+ * Waits for an interrupt signal to occur.
+ *
+ * The handler \p fn will be called if one of the signals specified in
+ * \p signals is caught. The parameters passed to \p fn are:
+ * -# *res*: YOGI_OK or error code in case of a failure (see \ref EC)
+ * -# *sig*: The caught signal (see \ref SIG)
+ * -# *userarg*: Value of the user-specified \p userarg parameter
+ *
+ * Note: Calling this function on the same context again before the signal has
+ *       been caught will cause the previously registered handler function to
+ *       be called with the the YOGI_ERR_CANCELED error.
+ *
+ * \param[in] context The context to use
+ * \param[in] signals Signals to catch (set to 0 for all signals)
+ * \param[in] fn      The function to call
+ * \param[in] userarg User-specified argument to be passed to \p fn
+ *
+ * \returns [=0] #YOGI_OK if successful
+ * \returns [<0] An error code in case of a failure (see \ref EC)
+ ******************************************************************************/
+YOGI_API int YOGI_AwaitSignal(void* context, int signals,
+                              void (*fn)(int res, int sig, void* userarg),
+                              void* userarg);
+
+/***************************************************************************//**
+ * Cancels waiting for an interrupt signal.
+ *
+ * Causes the handler function registered via YOGI_AwaitSignal() to be called
+ * with YOGI_ERR_CANCELED.
+ *
+ * \param[in] context The context that was used for the wait operation
+ *
+ * \returns [=0] #YOGI_OK if successful
+ * \returns [<0] An error code in case of a failure (see \ref EC)
+ ******************************************************************************/
+YOGI_API int YOGI_CancelAwaitSignal(void* context);
+
+/***************************************************************************//**
  * Creates a new timer.
  *
  * \param[out] timer   Pointer to the timer handle
@@ -1026,7 +1083,7 @@ YOGI_API int YOGI_BranchGetInfo(void* branch, void* uuid, char* json,
  ******************************************************************************/
 YOGI_API int YOGI_BranchGetConnectedBranches(void* branch, void* uuid,
                                              char* json, int jsonsize,
-                                             void (*fn)(int, void* userarg),
+                                             void (*fn)(int res, void* userarg),
                                              void* userarg);
 
 /***************************************************************************//**

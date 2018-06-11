@@ -2,14 +2,14 @@
 #include "../api/error.h"
 
 #include <boost/asio/post.hpp>
+#include <signal.h>
 
 namespace objects {
 
 const LoggerPtr Context::logger_ =
     Logger::CreateStaticInternalLogger("Context");
 
-Context::Context() : work_(ioc_), running_(false) {
-}
+Context::Context() : work_(ioc_), signals_(ioc_), running_(false) {}
 
 Context::~Context() {
   Stop();
@@ -49,12 +49,12 @@ void Context::RunInBackground() {
   thread_ = std::thread([&] {
     try {
       ioc_.run();
-    }
-    catch (const std::exception& e) {
-      YOGI_LOG_FATAL(logger_, "Exception caught in context background thread: " << e.what());
-    }
-    catch (...) {
-      YOGI_LOG_FATAL(logger_, "Unknown Exception caught in context background thread");
+    } catch (const std::exception& e) {
+      YOGI_LOG_FATAL(logger_, "Exception caught in context background thread: "
+                                  << e.what());
+    } catch (...) {
+      YOGI_LOG_FATAL(logger_,
+                     "Unknown Exception caught in context background thread");
     }
 
     ClearRunningFlag();
@@ -71,8 +71,7 @@ bool Context::WaitForRunning(std::chrono::nanoseconds timeout) {
   bool timed_out = false;
   if (timeout == timeout.max()) {
     cv_.wait(lock, [&] { return running_; });
-  }
-  else {
+  } else {
     timed_out = !cv_.wait_for(lock, timeout, [&] { return running_; });
   }
 
@@ -84,8 +83,7 @@ bool Context::WaitForStopped(std::chrono::nanoseconds timeout) {
   bool timed_out = false;
   if (timeout == timeout.max()) {
     cv_.wait(lock, [&] { return !running_; });
-  }
-  else {
+  } else {
     timed_out = !cv_.wait_for(lock, timeout, [&] { return !running_; });
   }
 
@@ -96,9 +94,68 @@ bool Context::WaitForStopped(std::chrono::nanoseconds timeout) {
   return !timed_out;
 }
 
-void Context::Post(std::function<void ()> fn) {
-  boost::asio::post(ioc_, fn);
+void Context::Post(std::function<void()> fn) { boost::asio::post(ioc_, fn); }
+
+void Context::AwaitSignal(Signals sigs, SignalHandler signal_handler) {
+  std::lock_guard<std::mutex> lock(mutex_);
+
+  boost::system::error_code ec;
+  signals_.cancel(ec);
+  if (ec) {
+    YOGI_LOG_ERROR(logger_, "Could not cancel wait for signal operation: " << ec.message());
+    throw api::Error(YOGI_ERR_UNKNOWN);
+  }
+
+  signals_.clear(ec);
+  if (ec) {
+    YOGI_LOG_ERROR(logger_, "Could not clear signal set: " << ec.message());
+    throw api::Error(YOGI_ERR_UNKNOWN);
+  }
+
+  if (sigs & kSigInt) {
+    signals_.add(SIGINT, ec);
+  }
+
+  if (!ec && sigs & kSigTerm) {
+    signals_.add(SIGTERM, ec);
+  }
+
+  if (ec) {
+    YOGI_LOG_ERROR(logger_,
+                   "Could not add SIGINT to signal set: " << ec.message());
+    throw api::Error(YOGI_ERR_UNKNOWN);
+  }
+
+  signals_.async_wait([=](auto& ec, int sig_num) {
+    auto res = api::kSuccess;
+    auto sig = sigs;
+
+    if (!ec) {
+      switch (sig_num) {
+        case SIGINT:
+          sig = kSigInt;
+          break;
+
+        case SIGTERM:
+          sig = kSigTerm;
+          break;
+
+        default:
+          YOGI_NEVER_REACHED;
+      }
+    } else if (ec == boost::asio::error::operation_aborted) {
+      res = api::Error(YOGI_ERR_CANCELED);
+    } else {
+      YOGI_LOG_ERROR(logger_,
+                     "Could not wait for signal set: " << ec.message());
+      res = api::Error(YOGI_ERR_UNKNOWN);
+    }
+
+    signal_handler(res, sig);
+  });
 }
+
+void Context::CancelAwaitSignal() { signals_.cancel(); }
 
 void Context::SetRunningFlagAndReset() {
   std::lock_guard<std::mutex> lock(mutex_);

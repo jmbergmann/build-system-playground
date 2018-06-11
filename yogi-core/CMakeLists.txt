@@ -101,6 +101,7 @@ add_executable (yogi-core-test
   test/logger_test.cc
   test/object_test.cc
   test/serialize_test.cc
+  test/signals_test.cc
   test/timer_test.cc
   test/version_test.cc
 )

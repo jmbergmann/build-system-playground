@@ -15,7 +15,8 @@ class Timer : public api::ExposedObjectT<Timer, api::ObjectType::kTimer> {
  public:
   Timer(ContextPtr context);
 
-  void Start(std::chrono::nanoseconds timeout, std::function<void (int res)> fn);
+  void Start(std::chrono::nanoseconds timeout,
+             std::function<void(const api::Error& res)> fn);
   bool Cancel();
 
  private:
