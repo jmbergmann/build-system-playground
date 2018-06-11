@@ -281,7 +281,7 @@ bool ConnectionManager::VerifyConnectionHasHigherPriority(
   auto& remote_uuid = conn->GetRemoteBranchInfo()->GetUuid();
   YOGI_ASSERT(connections_[remote_uuid]);
 
-  if (remote_uuid < info_->GetUuid() == conn->SourceIsTcpServer()) {
+  if ((remote_uuid < info_->GetUuid()) == conn->SourceIsTcpServer()) {
     return true;
   }
 
