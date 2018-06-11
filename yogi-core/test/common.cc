@@ -242,7 +242,7 @@ std::map<boost::uuids::uuid, nlohmann::json> GetConnectedBranches(
     void* branch) {
   struct Data {
     boost::uuids::uuid uuid;
-    char json_str[1000];
+    char json_str[1000] = {0};
     std::map<boost::uuids::uuid, nlohmann::json> branches;
   } data;
 
