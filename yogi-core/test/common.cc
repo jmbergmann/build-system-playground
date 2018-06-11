@@ -225,7 +225,7 @@ boost::uuids::uuid GetBranchUuid(void* branch) {
 }
 
 nlohmann::json GetBranchInfo(void* branch) {
-  char str[10000];
+  char str[10000] = {0};
   int res = YOGI_BranchGetInfo(branch, nullptr, str, sizeof(str));
   EXPECT_EQ(res, YOGI_OK);
   return nlohmann::json::parse(str);
