@@ -148,7 +148,7 @@ TEST_F(ContextTest, RunOneFor) {
   auto dur = std::chrono::steady_clock::now() - start_time;
 
   EXPECT_EQ(res, YOGI_OK);
-  EXPECT_LT(dur, 5ms);
+  EXPECT_LT(dur, 5ms + kTimningMargin);
   EXPECT_EQ(count, 1);
   EXPECT_EQ(n, 1);
 
