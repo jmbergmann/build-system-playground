@@ -116,3 +116,14 @@ cotire (yogi-core-test)
 run_clang_tidy (yogi-core-test)
 
 add_test (yogi-core-test yogi-core-test)
+
+# Valgrind
+add_custom_target(yogi-core-test-valgrind
+  COMMAND valgrind --leak-check=yes $<TARGET_FILE:yogi-core-test>
+  DEPENDS yogi-core-test
+)
+
+add_custom_target(yogi-core-test-helgrind
+  COMMAND valgrind --tool=helgrind $<TARGET_FILE:yogi-core-test>
+  DEPENDS yogi-core-test
+)
