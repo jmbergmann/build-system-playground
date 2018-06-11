@@ -6,6 +6,7 @@
 #include <openssl/err.h>
 #include <random>
 #include <limits>
+#include <mutex>
 
 namespace utils {
 
@@ -25,6 +26,8 @@ ByteVector MakeSha256(const ByteVector& data) {
 ByteVector GenerateRandomBytes(std::size_t n) {
   ByteVector bytes(n);
 
+  static std::mutex mutex;  // For libcrypto's RAND_bytes() and error info
+  std::lock_guard<std::mutex> lock(mutex);
   auto res = RAND_bytes(bytes.data(), static_cast<int>(bytes.size()));
   if (res != 1) {
     char str[128];
