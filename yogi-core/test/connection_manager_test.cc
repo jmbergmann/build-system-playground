@@ -111,7 +111,7 @@ TEST_F(ConnectionManagerTest, AdvAndInfoMessageUuidMismatch) {
   RunContextInBackground(context_);
   FakeBranch fake;
 
-  auto fn = [](auto msg) { msg->at(8) += 1; };
+  auto fn = [](auto msg) { ++msg->at(8); };
   fake.Advertise(fn);
 
   EXPECT_THROW(fake.Accept(), boost::system::system_error);
