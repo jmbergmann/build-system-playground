@@ -139,6 +139,16 @@ YOGI_API int YOGI_GetConstant(void* dest, int constant) {
   CATCH_AND_RETURN;
 }
 
+YOGI_API int YOGI_GetCurrentTime(long long* timestamp) {
+  CHECK_PARAM(timestamp != nullptr);
+
+  try {
+    auto now = utils::Timestamp::Now();
+    *timestamp = now.NanosecondsSinceEpoch().count();
+  }
+  CATCH_AND_RETURN;
+}
+
 YOGI_API int YOGI_LogToConsole(int verbosity, int stream, int colour,
                                const char* timefmt, const char* fmt) {
   if (verbosity != YOGI_VB_NONE) {

@@ -387,7 +387,7 @@ YOGI_API const char* YOGI_Get3rdPartyLicenses();
 YOGI_API const char* YOGI_GetErrorString(int err);
 
 /***************************************************************************//**
- * Get the value of a constant (see \ref CV)
+ * Get the value of a constant (see \ref CV).
  *
  * Depending on the type of constant, which can either be an integer number or a
  * null-terminated string (see \ref CV), the target of the \p dest parameter
@@ -404,6 +404,16 @@ YOGI_API const char* YOGI_GetErrorString(int err);
  * \returns [<0] An error code in case of a failure (see \ref EC)
  ******************************************************************************/
 YOGI_API int YOGI_GetConstant(void* dest, int constant);
+
+/***************************************************************************//**
+ * Get the current time.
+ *
+ * \param[out] timestamp Current time in nanoseconds since 01/01/1970 UTC.
+ *
+ * \returns [=0] #YOGI_OK if successful
+ * \returns [<0] An error code in case of a failure (see \ref EC)
+ ******************************************************************************/
+YOGI_API int YOGI_GetCurrentTime(long long* timestamp);
 
 /***************************************************************************//**
  * Allows the YOGI to write library-internal and user logging to stdout or
