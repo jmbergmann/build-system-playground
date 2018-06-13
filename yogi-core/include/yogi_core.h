@@ -315,14 +315,53 @@
 
 //! Include logging configuration for file logging
 //!
-//! Adds the *--log...*  switches.
+//! Adds the *--log-...*  switches.
 #define YOGI_CLO_LOGGING (1<<0)
 
-//! Include branch configuration
+//! Include branch name configuration
 //!
-//! Adds the *--name*, *--desc*, *--net*, *--password*, *--path*, *--advaddr*,
-//! *--advport*, *--advint* and *--timeout* switches.
-#define YOGI_CLO_BRANCH (1<<1)
+//! Adds the *--name* switch.
+#define YOGI_CLO_BRANCH_NAME (1<<1)
+
+//! Include branch description configuration
+//!
+//! Adds the *--description* switch.
+#define YOGI_CLO_BRANCH_DESCRIPTION (1<<2)
+
+//! Include network name configuration
+//!
+//! Adds the *--network* switch.
+#define YOGI_CLO_BRANCH_NETWORK (1<<3)
+
+//! Include network password configuration
+//!
+//! Adds the *--password* switch.
+#define YOGI_CLO_BRANCH_PASSWORD (1<<4)
+
+//! Include branch path configuration
+//!
+//! Adds the *--path* switch.
+#define YOGI_CLO_BRANCH_PATH (1<<5)
+
+//! Include branch advertising address configuration
+//!
+//! Adds the *--adv-addr* switch.
+#define YOGI_CLO_BRANCH_ADVADDR (1<<6)
+
+//! Include branch advertising port configuration
+//!
+//! Adds the *--adv-port* switch.
+#define YOGI_CLO_BRANCH_ADVPORT (1<<7)
+
+//! Include branch advertising interval configuration
+//!
+//! Adds the *--adv-int* switch.
+#define YOGI_CLO_BRANCH_ADVINT (1<<8)
+
+//! Include branch timeout configuration
+//!
+//! Adds the *--timeout* switch.
+#define YOGI_CLO_BRANCH_TIMEOUT (1<<9)
 
 //! Parse configuration files given on the command line
 //!
@@ -330,31 +369,50 @@
 //! in two supplied configuration files, then the value from the rightmost file
 //! will be used. However, values given directly on the command line, i.e. not
 //! through files, have higher priority.
-#define YOGI_CLO_FILES (1<<2)
+#define YOGI_CLO_FILES (1<<10)
 
-//! Allow supplying a JSON string directly on the command line
+//! Same as YOGI_CLO_FILES but at least one configuration must be given
+#define YOGI_CLO_FILES_REQUIRED (1<<11)
+
+//! Allow overriding arbitrary configuration sections
 //!
-//! Adds the *--json* and *--set* switches.
+//! Adds the *--override* switch.
 //!
 //! This is useful for supplying arbitrary parameters on the command line
 //! without having to store them in a file.
 //!
 //! Note: Parameters supplied in this way override the same parameters in any
-//!       given configuration file. However, parameters supplied on the command
-//!       line through direct switches have higher priority.
-#define YOGI_CLO_JSON (1<<3)
+//!       given configuration file. If the same parameter is set directly on
+//!       the command line multiple times, then the rightmost value is used.
+#define YOGI_CLO_OVERRIDES (1<<12)
 
 //! Allow setting variables via a dedicated switch
 //!
 //! Adds the *--var* switch.
-#define YOGI_CLO_VARIABLES (1<<4)
+#define YOGI_CLO_VARIABLES (1<<13)
+
+//! Combination of all branch flags
+#define YOGI_CLO_BRANCH_ALL ( YOGI_CLO_BRANCH_NAME        \
+                            | YOGI_CLO_BRANCH_DESCRIPTION \
+                            | YOGI_CLO_BRANCH_NETWORK     \
+                            | YOGI_CLO_BRANCH_PASSWORD    \
+                            | YOGI_CLO_BRANCH_PATH        \
+                            | YOGI_CLO_BRANCH_ADVADDR     \
+                            | YOGI_CLO_BRANCH_ADVPORT     \
+                            | YOGI_CLO_BRANCH_ADVINT      \
+                            | YOGI_CLO_BRANCH_TIMEOUT     \
+                            )
 
 //! Combination of all flags
 //!
 //! This is usually used when using the application object.
-#define YOGI_CLO_ALL                                                     \
-  (YOGI_CLO_LOGGING | YOGI_CLO_BRANCH | YOGI_CLO_FILES | YOGI_CLO_JSON | \
-   YOGI_CLO_VARIABLES)
+#define YOGI_CLO_ALL ( YOGI_CLO_LOGGING        \
+                     | YOGI_CLO_BRANCH_ALL     \
+                     | YOGI_CLO_FILES          \
+                     | YOGI_CLO_FILES_REQUIRED \
+                     | YOGI_CLO_OVERRIDES      \
+                     | YOGI_CLO_VARIABLES      \
+                     )
 
 //! @}
 //!
@@ -555,11 +613,11 @@ YOGI_API int YOGI_GetCurrentTime(long long* timestamp);
  *  - *%Y*: Four digit year
  *  - *%m*: Month name as a decimal 01 to 12
  *  - *%d*: Day of the month as decimal 01 to 31
- *  - *%F*: Equivalent to "%Y-%m-%d" (the ISO 8601 date format)
+ *  - *%F*: Equivalent to %Y-%m-%d (the ISO 8601 date format)
  *  - *%H*: The hour as a decimal number using a 24-hour clock (range 00 to 23)
  *  - *%M*: The minute as a decimal 00 to 59
  *  - *%S*: Seconds as a decimal 00 to 59
- *  - *%T*: Equivalent to "%H:%M:%S" (the ISO 8601 time format)
+ *  - *%T*: Equivalent to %H:%M:%S (the ISO 8601 time format)
  *  - *%3*: Milliseconds as decimal number 000 to 999
  *  - *%6*: Microseconds as decimal number 000 to 999
  *  - *%9*: Nanoseconds as decimal number 000 to 999

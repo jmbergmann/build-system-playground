@@ -33,17 +33,16 @@ TEST(ConstantsTest, GetConstant) {
 TEST(ConstantsTest, GetEachConstant) {
   using namespace api;
 
-  check(YOGI_CONST_VERSION_NUMBER,                    kVersionNumber);
-  check(YOGI_CONST_VERSION_MAJOR,                     kVersionMajor);
-  check(YOGI_CONST_VERSION_MINOR,                     kVersionMinor);
-  check(YOGI_CONST_VERSION_PATCH,                     kVersionPatch);
-  check(YOGI_CONST_DEFAULT_ADV_ADDRESS,               kDefaultAdvAddress);
-  check(YOGI_CONST_DEFAULT_ADV_PORT,                  kDefaultAdvPort);
-  check(YOGI_CONST_DEFAULT_ADV_INTERVAL,              kDefaultAdvInterval);
-  check(YOGI_CONST_DEFAULT_CONNECTION_TIMEOUT,        kDefaultConnectionTimeout);
-  check(YOGI_CONST_DEFAULT_BRANCHES_CLEANUP_INTERVAL, kDefaultBranchesCleanupInterval);
-  check(YOGI_CONST_DEFAULT_LOGGER_VERBOSITY,          kDefaultLoggerVerbosity);
-  check(YOGI_CONST_DEFAULT_LOG_TIME_FORMAT,           kDefaultLogTimeFormat);
-  check(YOGI_CONST_DEFAULT_LOG_FORMAT,                kDefaultLogFormat);
-  check(YOGI_CONST_MAX_MESSAGE_SIZE,                  kMaxMessageSize);
+  check(YOGI_CONST_VERSION_NUMBER,             kVersionNumber);
+  check(YOGI_CONST_VERSION_MAJOR,              kVersionMajor);
+  check(YOGI_CONST_VERSION_MINOR,              kVersionMinor);
+  check(YOGI_CONST_VERSION_PATCH,              kVersionPatch);
+  check(YOGI_CONST_DEFAULT_ADV_ADDRESS,        kDefaultAdvAddress);
+  check(YOGI_CONST_DEFAULT_ADV_PORT,           kDefaultAdvPort);
+  check(YOGI_CONST_DEFAULT_ADV_INTERVAL,       kDefaultAdvInterval);
+  check(YOGI_CONST_DEFAULT_CONNECTION_TIMEOUT, kDefaultConnectionTimeout);
+  check(YOGI_CONST_DEFAULT_LOGGER_VERBOSITY,   kDefaultLoggerVerbosity);
+  check(YOGI_CONST_DEFAULT_LOG_TIME_FORMAT,    kDefaultLogTimeFormat);
+  check(YOGI_CONST_DEFAULT_LOG_FORMAT,         kDefaultLogFormat);
+  check(YOGI_CONST_MAX_MESSAGE_SIZE,           kMaxMessageSize);
 }

@@ -28,7 +28,9 @@ find_package (OpenSSL REQUIRED)
 # Boost
 set (Boost_USE_STATIC_LIBS ON)
 set (Boost_MULTITHREADED ON)
-find_package (Boost 1.66 COMPONENTS system filesystem thread date_time REQUIRED)
+find_package (Boost 1.66
+  COMPONENTS system filesystem thread date_time program_options
+  REQUIRED)
 add_library (boost INTERFACE IMPORTED)
 set_property (TARGET boost
   PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIR})
