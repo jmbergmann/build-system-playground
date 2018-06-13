@@ -185,14 +185,17 @@
 //! Parsing the command line failed
 #define YOGI_ERR_PARSING_CMDLINE_FAILED -30
 
+//! Parsing a JSON string failed
+#define YOGI_ERR_PARSING_JSON_FAILED -31
+
 //! Parsing a configuration file failed
-#define YOGI_ERR_PARSING_FILE_FAILED -31
+#define YOGI_ERR_PARSING_FILE_FAILED -32
 
 //! The configuration is not valid
-#define YOGI_ERR_CONFIG_NOT_VALID -32
+#define YOGI_ERR_CONFIG_NOT_VALID -33
 
 //! Help/usage text requested
-#define YOGI_ERR_HELP_REQUESTED -33
+#define YOGI_ERR_HELP_REQUESTED -34
 
 //! @}
 //!
@@ -307,7 +310,7 @@
 //!
 //! @{
 
-//! No flags
+//! No options
 #define YOGI_CLO_NONE 0
 
 //! Include logging configuration for file logging
@@ -800,79 +803,95 @@ YOGI_API int YOGI_DestroyAll();
  *
  * The \p flags parameter is used to change the behaviour of a configuration
  * object in certain key areas (see \ref CFG). If the configuration will be used
- * in combination with YOGI_ConfigUpdateFromCommandLine() then consider using
- * at least the YOGI_CFG_IMMUTABLE_CMDLINE flag.
+ * in combination with YOGI_ConfigurationUpdateFromCommandLine() then consider
+ * using at least the YOGI_CFG_IMMUTABLE_CMDLINE flag.
  *
- * \param[out] cfg   Pointer to the configuration handle
- * \param[in]  flags See \ref CFG for possible behaviour adjustments
+ * \param[out] config Pointer to the configuration handle
+ * \param[in]  flags  See \ref CFG for possible behaviour adjustments
  *
  * \returns [=0] #YOGI_OK if successful
  * \returns [<0] An error code in case of a failure (see \ref EC)
  ******************************************************************************/
-YOGI_API int YOGI_ConfigCreate(void** cfg, int flags);
+YOGI_API int YOGI_ConfigurationCreate(void** config, int flags);
 
 /***************************************************************************//**
  * Updates a configuration from the command line options.
  *
- * If this function returns one of YOGI_ERR_PARSING_CMDLINE_FAILED,
- * YOGI_ERR_PARSING_FILE_FAILED or YOGI_ERR_CONFIG_NOT_VALID then a more
- * detailed description of the error can be obtained via
- * YOGI_ConfigGetLastErrorDescription().
+ * The function populates \p err with:
+ * - a description of the error if the function returns one of
+ *   YOGI_ERR_PARSING_CMDLINE_FAILED, YOGI_ERR_PARSING_FILE_FAILED,
+ *   YOGI_ERR_PARSING_JSON_FAILED or YOGI_ERR_CONFIG_NOT_VALID; and
+ * - the help/usage text if the function returns YOGI_ERR_HELP_REQUESTED; and
+ * - an empty, null-terminated string otherwise.
  *
- * In case the usage/help text is requested, this function will return
- * YOGI_ERR_HELP_REQUESTED.
+ * If the string to be written to \p err is larger than \p errsize then \p err
+ * will be populated as much as possible (and null-terminated). However, as
+ * opposed to other API functions, the functions returns the original error.
  *
- * \param[in] cfg    The configuration to update
- * \param[in] argc   Number strings in \p argv
- * \param[in] argv   Strings given on the command line
- * \param[in] stream Stream to use for printing usage/help text (see \ref ST)
- * \param[in] flags  Adjustments for how options are parsed (see \ref CLO)
+ * \param[in]  config  The configuration to update
+ * \param[in]  argc    Number strings in \p argv
+ * \param[in]  argv    Strings given on the command line
+ * \param[in]  options Options to provide on the command line (see \ref CLO)
+ * \param[out] err     Pointer to a char array for storing an error description
+ *                     (can be set to NULL)
+ * \param[in]  errsize Maximum number of bytes to write to \p err
  *
  * \returns [=0] #YOGI_OK if successful
  * \returns [<0] An error code in case of a failure (see \ref EC)
  ******************************************************************************/
-YOGI_API int YOGI_ConfigUpdateFromCommandLine(void* cfg, int argc,
-                                              const char* const* argv,
-                                              int stream, int flags);
+YOGI_API int YOGI_ConfigurationUpdateFromCommandLine(void* config, int argc,
+                                                     const char* const* argv,
+                                                     int options, char* err,
+                                                     int errsize);
 
 /***************************************************************************//**
  * Updates a configuration from a JSON-formatted string.
  *
- * \param[in] cfg  The configuration to update
- * \param[in] json Null-terminated, JSON-formatted string
+ * The function populates \p err with:
+ * - a description of the error if the function returns one of
+ *   YOGI_ERR_PARSING_JSON_FAILED or YOGI_ERR_CONFIG_NOT_VALID; and
+ * - an empty, null-terminated string otherwise.
+ *
+ * If the string to be written to \p err is larger than \p errsize then \p err
+ * will be populated as much as possible (and null-terminated). However, as
+ * opposed to other API functions, the functions returns the original error.
+ *
+ * \param[in]  config  The configuration to update
+ * \param[in]  json    Null-terminated, JSON-formatted string
+ * \param[out] err     Pointer to a char array for storing an error description
+ *                     (can be set to NULL)
+ * \param[in]  errsize Maximum number of bytes to write to \p err
  *
  * \returns [=0] #YOGI_OK if successful
  * \returns [<0] An error code in case of a failure (see \ref EC)
  ******************************************************************************/
-YOGI_API int YOGI_ConfigUpdateFromJson(void* cfg, const char* json);
+YOGI_API int YOGI_ConfigurationUpdateFromJson(void* config, const char* json,
+                                              char* err, int errsize);
 
 /***************************************************************************//**
  * Updates a configuration from a JSON file.
  *
- * \param[in] cfg      The configuration to update
- * \param[in] filename Path to the JSON file
+ * The function populates \p err with:
+ * - a description of the error if the function returns one of
+ *   YOGI_ERR_PARSING_FILE_FAILED or YOGI_ERR_CONFIG_NOT_VALID; and
+ * - an empty, null-terminated string otherwise.
+ *
+ * If the string to be written to \p err is larger than \p errsize then \p err
+ * will be populated as much as possible (and null-terminated). However, as
+ * opposed to other API functions, the functions returns the original error.
+ *
+ * \param[in]  config   The configuration to update
+ * \param[in]  filename Path to the JSON file
+ * \param[out] err      Pointer to a char array for storing an error description
+ *                      (can be set to NULL)
+ * \param[in]  errsize  Maximum number of bytes to write to \p err
  *
  * \returns [=0] #YOGI_OK if successful
  * \returns [<0] An error code in case of a failure (see \ref EC)
  ******************************************************************************/
-YOGI_API int YOGI_ConfigUpdateFromFile(void* cfg, const char* filename);
-
-/***************************************************************************//**
- * Retrieves a description of why the last update operation failed.
- *
- * If the description is larger than the space provided by \p str and \p strsize
- * then this function returns YOGI_ERR_BUFFER_TOO_SMALL, however, \p str will
- * still be populated as much as possible (and null-terminated).
- *
- * \param[in]  cfg     The configuration
- * \param[out] str     Pointer to a string for storing the description
- * \param[in]  strsize Maximum number of bytes to write to \p str
- *
- * \returns [=0] #YOGI_OK if successful
- * \returns [<0] An error code in case of a failure (see \ref EC)
- ******************************************************************************/
-YOGI_API int YOGI_ConfigGetLastUpdateErrorDescription(void* cfg, char* str,
-                                                      int strsize);
+YOGI_API int YOGI_ConfigurationUpdateFromFile(void* config,
+                                              const char* filename, char* err,
+                                              int errsize);
 
 /***************************************************************************//**
  * Retrieves the configuration as a JSON-formatted string.
@@ -884,21 +903,21 @@ YOGI_API int YOGI_ConfigGetLastUpdateErrorDescription(void* cfg, char* str,
  * \p str will still be populated as much as possible (and null-terminated). In
  * this case, \p json will *not* contain valid JSON data.
  *
- * \param[in]  cfg      The configuration
+ * \param[in]  config   The configuration
  * \param[out] json     Pointer to a string for storing the configuration
  * \param[in]  jsonsize Maximum number of bytes to write to \p json
  *
  * \returns [=0] #YOGI_OK if successful
  * \returns [<0] An error code in case of a failure (see \ref EC)
  ******************************************************************************/
-YOGI_API int YOGI_ConfigGetJson(void* cfg, char* json, int jsonsize);
+YOGI_API int YOGI_ConfigurationDump(void* config, char* json, int jsonsize);
 
 /***************************************************************************//**
  * Writes the configuration to a file
  *
  * This is useful for debugging purposes.
  *
- * \param[in] cfg      The configuration
+ * \param[in] config   The configuration
  * \param[in] filename Path to the output file
  * \param[in] resvars  Set to YOGI_TRUE to resolve any variables before writing
  *                     the configuration to the file and YOGI_FALSE otherwise
@@ -907,8 +926,8 @@ YOGI_API int YOGI_ConfigGetJson(void* cfg, char* json, int jsonsize);
  * \returns [=0] #YOGI_OK if successful
  * \returns [<0] An error code in case of a failure (see \ref EC)
  ******************************************************************************/
-YOGI_API int YOGI_ConfigWriteToFile(void* cfg, const char* filename,
-                                    int resvars, int indent);
+YOGI_API int YOGI_ConfigurationWriteToFile(void* config, const char* filename,
+                                           int resvars, int indent);
 
 /***************************************************************************//**
  * Creates a context for the execution of asynchronous operations.

@@ -98,6 +98,9 @@ const char* Error::what() const noexcept {
     case YOGI_ERR_PARSING_CMDLINE_FAILED:
       return "Parsing the command line failed";
 
+    case YOGI_ERR_PARSING_JSON_FAILED:
+      return "Parsing a JSON string failed";
+
     case YOGI_ERR_PARSING_FILE_FAILED:
       return "Parsing a configuration file failed";
 

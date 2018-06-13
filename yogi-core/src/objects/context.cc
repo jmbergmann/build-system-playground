@@ -6,9 +6,6 @@
 
 namespace objects {
 
-const LoggerPtr Context::logger_ =
-    Logger::CreateStaticInternalLogger("Context");
-
 Context::Context() : work_(ioc_), signals_(ioc_), running_(false) {}
 
 Context::~Context() {
@@ -182,5 +179,8 @@ int Context::RunImpl(Fn fn) {
   ClearRunningFlag();
   return cnt;
 }
+
+const LoggerPtr Context::logger_ =
+    Logger::CreateStaticInternalLogger("Context");
 
 }  // namespace objects

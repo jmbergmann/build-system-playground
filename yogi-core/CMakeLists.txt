@@ -30,6 +30,7 @@ add_library (yogi-core-static STATIC
   src/objects/detail/log/log_sink.cc
   src/objects/detail/log/text_based_log_sink.cc
   src/objects/branch.cc
+  src/objects/configuration.cc
   src/objects/context.cc
   src/objects/logger.cc
   src/objects/timer.cc
@@ -50,7 +51,14 @@ export (TARGETS yogi-core-static
 
 # Dynamic library
 add_library (yogi-core SHARED
-  src/yogi_core.cc
+  src/yogi_core/branches.cc
+  src/yogi_core/configurations.cc
+  src/yogi_core/contexts.cc
+  src/yogi_core/helpers.cc
+  src/yogi_core/logging.cc
+  src/yogi_core/miscellaneous.cc
+  src/yogi_core/signals.cc
+  src/yogi_core/timers.cc
 )
 
 target_link_libraries (yogi-core
@@ -93,6 +101,7 @@ export (TARGETS yogi-core-header
 add_executable (yogi-core-test
   test/branch_test.cc
   test/common.cc
+  test/configuration_test.cc
   test/connection_manager_test.cc
   test/constants_test.cc
   test/context_test.cc

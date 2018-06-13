@@ -2,6 +2,7 @@
 
 #include "../config.h"
 #include "../api/object.h"
+#include "../utils/types.h"
 #include "logger.h"
 
 #include <boost/asio/io_context.hpp>
@@ -62,14 +63,6 @@ class Context : public api::ExposedObjectT<Context, api::ObjectType::kContext> {
 
 typedef std::shared_ptr<Context> ContextPtr;
 
-inline Context::Signals operator|(Context::Signals a, Context::Signals b) {
-  return static_cast<Context::Signals>(static_cast<int>(a) |
-                                       static_cast<int>(b));
-}
-
-inline Context::Signals operator&(Context::Signals a, Context::Signals b) {
-  return static_cast<Context::Signals>(static_cast<int>(a) &
-                                       static_cast<int>(b));
-}
+YOGI_DEFINE_FLAG_OPERATORS(Context::Signals);
 
 }  // namespace objects

@@ -144,17 +144,7 @@ class ConnectionManager final
 
 typedef std::shared_ptr<ConnectionManager> ConnectionManagerPtr;
 
-inline ConnectionManager::BranchEvents operator|(
-    ConnectionManager::BranchEvents a, ConnectionManager::BranchEvents b) {
-  return static_cast<ConnectionManager::BranchEvents>(static_cast<int>(a) |
-                                                      static_cast<int>(b));
-}
-
-inline ConnectionManager::BranchEvents operator&(
-    ConnectionManager::BranchEvents a, ConnectionManager::BranchEvents b) {
-  return static_cast<ConnectionManager::BranchEvents>(static_cast<int>(a) &
-                                                      static_cast<int>(b));
-}
+YOGI_DEFINE_FLAG_OPERATORS(ConnectionManager::BranchEvents);
 
 }  // namespace detail
 }  // namespace objects

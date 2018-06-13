@@ -16,6 +16,7 @@ enum class ObjectType {
   kLogger,
   kTimer,
   kBranch,
+  kConfiguration,
 };
 
 typedef void* ObjectHandle;

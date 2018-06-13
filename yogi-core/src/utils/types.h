@@ -6,6 +6,14 @@
 #include <memory>
 #include <utility>
 
+#define YOGI_DEFINE_FLAG_OPERATORS(enum_)                                 \
+  inline enum_ operator|(enum_ a, enum_ b) {                              \
+    return static_cast<enum_>(static_cast<int>(a) | static_cast<int>(b)); \
+  }                                                                       \
+  inline enum_ operator&(enum_ a, enum_ b) {                              \
+    return static_cast<enum_>(static_cast<int>(a) & static_cast<int>(b)); \
+  }
+
 namespace utils {
 
 typedef unsigned char Byte;
