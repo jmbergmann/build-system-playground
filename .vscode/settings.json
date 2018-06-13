@@ -65,7 +65,8 @@
     "atomic": "cpp",
     "random": "cpp",
     "set": "cpp",
-    "xtree": "cpp"
+    "xtree": "cpp",
+    "valarray": "cpp"
   },
   "files.exclude": {
     "**/.git": true,

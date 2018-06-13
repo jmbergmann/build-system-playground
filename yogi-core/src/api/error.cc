@@ -94,6 +94,18 @@ const char* Error::what() const noexcept {
 
     case YOGI_ERR_MESSAGE_TOO_LARGE:
       return "Message is too large";
+
+    case YOGI_ERR_PARSING_CMDLINE_FAILED:
+      return "Parsing the command line failed";
+
+    case YOGI_ERR_PARSING_FILE_FAILED:
+      return "Parsing a configuration file failed";
+
+    case YOGI_ERR_CONFIG_NOT_VALID:
+      return "The configuration is not valid";
+
+    case YOGI_ERR_HELP_REQUESTED:
+      return "Help/usage text requested";
   }
 
   return "Invalid error code";
