@@ -50,6 +50,13 @@ class CommandLineParser {
   void HandleHelpOptions();
   void ExtractOptions();
 
+  void LogFileNotifier(const std::string& val);
+  void LogConsoleNotifier(const std::string& val);
+  void LogVerbosityNotifier(const std::vector<std::string>& val);
+  void FileNotifier(const std::vector<std::string>& val);
+  void OverrideNotifier(const std::vector<std::string>& val);
+  void VariableNotifier(const std::vector<std::string>& val);
+
   const int argc_;
   const char* const* const argv_;
   const CommandLineOptions options_;
