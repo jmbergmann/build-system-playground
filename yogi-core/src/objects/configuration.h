@@ -5,7 +5,7 @@
 #include "../api/error.h"
 #include "../utils/types.h"
 #include "../../../3rd_party/json/json.hpp"
-#include "detail/configuration/command_line_parser.h"
+#include "detail/command_line_parser.h"
 #include "logger.h"
 
 #include <mutex>

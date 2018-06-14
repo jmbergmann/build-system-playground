@@ -1,7 +1,7 @@
 #include "command_line_parser.h"
-#include "../../../api/error.h"
-#include "../../../objects/logger.h"
-#include "../../../utils/glob.h"
+#include "../../api/error.h"
+#include "../../objects/logger.h"
+#include "../../utils/glob.h"
 
 #include <boost/algorithm/string.hpp>
 #include <boost/optional/optional_io.hpp>

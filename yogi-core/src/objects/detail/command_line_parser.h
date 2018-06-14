@@ -1,8 +1,8 @@
 #pragma once
 
-#include "../../../config.h"
-#include "../../../utils/types.h"
-#include "../../../../../3rd_party/json/json.hpp"
+#include "../../config.h"
+#include "../../utils/types.h"
+#include "../../../../3rd_party/json/json.hpp"
 
 #include <boost/program_options.hpp>
 #include <vector>
