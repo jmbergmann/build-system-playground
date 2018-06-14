@@ -1,4 +1,4 @@
-#include "common.h"
+#include "../common.h"
 
 static constexpr int kLastError = YOGI_ERR_HELP_REQUESTED;
 

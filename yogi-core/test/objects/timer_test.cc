@@ -1,4 +1,4 @@
-#include "common.h"
+#include "../common.h"
 
 class TimerTest : public Test {
  protected:

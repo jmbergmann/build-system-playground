@@ -1,7 +1,7 @@
 
 
-#include "common.h"
-#include "../src/api/object.h"
+#include "../common.h"
+#include "../../src/api/object.h"
 
 class Dummy : public api::ExposedObjectT<Dummy, api::ObjectType::kDummy> {};
 

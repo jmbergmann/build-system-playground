@@ -1,6 +1,6 @@
-#include "common.h"
+#include "../common.h"
 
-#include "../src/utils/system.h"
+#include "../../src/utils/system.h"
 
 #include <boost/algorithm/string.hpp>
 #include <boost/filesystem.hpp>

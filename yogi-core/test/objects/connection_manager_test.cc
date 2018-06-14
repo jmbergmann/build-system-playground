@@ -1,5 +1,5 @@
-#include "common.h"
-#include "../src/api/constants.h"
+#include "../common.h"
+#include "../../src/api/constants.h"
 #include <boost/asio.hpp>
 
 class ConnectionManagerTest : public Test {

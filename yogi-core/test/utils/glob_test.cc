@@ -1,5 +1,5 @@
-#include "common.h"
-#include "../src/utils/glob.h"
+#include "../common.h"
+#include "../../src/utils/glob.h"
 
 #include <boost/filesystem.hpp>
 #include <fstream>

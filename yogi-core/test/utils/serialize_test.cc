@@ -1,9 +1,9 @@
 
 
-#include "common.h"
+#include "../common.h"
 #include <boost/uuid/uuid_generators.hpp>
 
-#include "../src/utils/serialize.h"
+#include "../../src/utils/serialize.h"
 
 class SerializeTest : public Test {
  protected:

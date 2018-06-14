@@ -101,21 +101,21 @@ export (TARGETS yogi-core-header
 
 # Tests
 add_executable (yogi-core-test
-  test/branch_test.cc
+  test/api/constants_test.cc
+  test/api/errors_test.cc
+  test/api/object_test.cc
+  test/licenses/licenses_test.cc
+  test/objects/branch_test.cc
+  test/objects/configuration_test.cc
+  test/objects/connection_manager_test.cc
+  test/objects/context_test.cc
+  test/objects/logger_test.cc
+  test/objects/signals_test.cc
+  test/objects/timer_test.cc
+  test/utils/glob_test.cc
+  test/utils/serialize_test.cc
   test/common.cc
-  test/configuration_test.cc
-  test/connection_manager_test.cc
-  test/constants_test.cc
-  test/context_test.cc
-  test/errors_test.cc
-  test/glob_test.cc
-  test/licenses_test.cc
-  test/logger_test.cc
-  test/object_test.cc
-  test/serialize_test.cc
-  test/signals_test.cc
   test/time_test.cc
-  test/timer_test.cc
   test/version_test.cc
 )
 
