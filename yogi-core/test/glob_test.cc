@@ -1,5 +1,5 @@
 #include "common.h"
-#include "../src/objects/detail/configuration/glob.h"
+#include "../src/utils/glob.h"
 
 #include <boost/filesystem.hpp>
 #include <fstream>
@@ -44,7 +44,7 @@ struct GlobTest : public Test {
 
   void check(std::vector<std::string> patterns,
              std::vector<std::string> expectedFilenames) {
-    auto filenames = objects::detail::Glob(patterns);
+    auto filenames = utils::Glob(patterns);
     EXPECT_EQ(expectedFilenames.size(), filenames.size());
 
     for (auto& filename : expectedFilenames) {
@@ -104,8 +104,8 @@ TEST_F(GlobTest, AbsolutePaths) {
 }
 
 TEST_F(GlobTest, ResultOrder) {
-  auto filenames = objects::detail::Glob(
-      {"old/one.json", "./old/three.ini", "old/one.json"});
+  auto filenames =
+      utils::Glob({"old/one.json", "./old/three.ini", "old/one.json"});
 
   EXPECT_EQ(2u, filenames.size());
   EXPECT_TRUE(fs::equivalent(filenames[0], "old/three.ini"));
@@ -116,7 +116,7 @@ TEST_F(GlobTest, BadConfigurationFilePattern) {
   const char* bad_pattern = "./old/does_not_exist.ini";
 
   try {
-    objects::detail::Glob({"old/one.json", bad_pattern});
+    utils::Glob({"old/one.json", bad_pattern});
     FAIL();
   } catch (const std::exception& e) {
     std::string s = e.what();

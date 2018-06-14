@@ -12,8 +12,7 @@
 namespace fs = boost::filesystem;
 using namespace std::string_literals;
 
-namespace objects {
-namespace detail {
+namespace utils {
 namespace {
 
 std::vector<std::string> SplitPatternByDirectoryAndSimplify(
@@ -150,5 +149,4 @@ std::vector<std::string> Glob(const std::vector<std::string>& patterns) {
   return filenames;
 }
 
-}  // namespace detail
-}  // namespace objects
+}  // namespace utils

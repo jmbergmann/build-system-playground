@@ -5,7 +5,6 @@
 #include "../../../../../3rd_party/json/json.hpp"
 
 #include <boost/program_options.hpp>
-#include <boost/optional.hpp>
 #include <vector>
 #include <string>
 
@@ -43,14 +42,13 @@ class CommandLineParser {
   void AddHelpOptions();
   void AddLoggingOptions();
   void AddBranchOptions();
-  void AddFilesOption();
-  void AddOverrideOption();
-  void AddVariableOption();
+  void AddFileOptions();
+  void AddOverrideOptions();
+  void AddVariableOptions();
+
   void PopulateVariablesMap();
-  void VerifyHelpOption();
-  void VerifyHelpLoggingOption();
-  void VerifyLogConsoleOption();
-  void VerifyFilesOption();
+  void HandleHelpOptions();
+  void ExtractOptions();
 
   const int argc_;
   const char* const* const argv_;
@@ -61,26 +59,10 @@ class CommandLineParser {
   boost::program_options::options_description hidden_options_;
   boost::program_options::positional_options_description positional_options_;
   boost::program_options::variables_map vm_;
+  nlohmann::json json_;
 
-  boost::optional<bool> log_colour_;
-  boost::optional<std::string> log_file_;
-  boost::optional<std::string> log_console_;
-  boost::optional<std::string> log_fmt_;
-  boost::optional<std::string> log_time_fmt_;
-  std::vector<std::string> log_verbosities_;
-  boost::optional<std::string> branch_name_;
-  boost::optional<std::string> branch_description_;
-  boost::optional<std::string> branch_network_;
-  boost::optional<std::string> branch_password_;
-  boost::optional<std::string> branch_path_;
-  boost::optional<std::string> branch_adv_addr_;
-  boost::optional<int> branch_adv_port_;
-  boost::optional<float> branch_adv_interval_;
-  boost::optional<float> branch_timeout_;
-  std::vector<std::string> cfg_file_patterns_;
-  std::vector<std::string> cfg_files_;
-  std::vector<std::string> overrides_;
-  std::vector<std::string> variables_;
+  std::vector<std::string> config_files_;
+  std::vector<nlohmann::json> overrides_;
 };
 
 YOGI_DEFINE_FLAG_OPERATORS(CommandLineParser::CommandLineOptions);

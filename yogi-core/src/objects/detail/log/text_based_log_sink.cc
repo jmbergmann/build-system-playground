@@ -62,6 +62,9 @@ void TextBasedLogSink::WriteEntry(Verbosity severity,
           case kTrace:
             ss << "TRC";
             break;
+          default:
+            YOGI_NEVER_REACHED;
+            break;
         }
         break;
 

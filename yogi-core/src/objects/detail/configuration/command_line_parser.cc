@@ -1,9 +1,12 @@
 #include "command_line_parser.h"
 #include "../../../api/error.h"
+#include "../../../objects/logger.h"
+#include "../../../utils/glob.h"
 
 #include <boost/algorithm/string.hpp>
 #include <boost/optional/optional_io.hpp>
 #include <sstream>
+#include <algorithm>
 
 namespace po = boost::program_options;
 using namespace std::string_literals;
@@ -25,18 +28,15 @@ nlohmann::json CommandLineParser::Parse() {
   AddHelpOptions();
   AddLoggingOptions();
   AddBranchOptions();
-  AddFilesOption();
-  AddOverrideOption();
-  AddVariableOption();
+  AddFileOptions();
+  AddOverrideOptions();
+  AddVariableOptions();
 
   PopulateVariablesMap();
+  HandleHelpOptions();
+  ExtractOptions();
 
-  VerifyHelpOption();
-  VerifyHelpLoggingOption();
-  VerifyLogConsoleOption();
-  VerifyFilesOption();
-
-  return {};
+  return json_;
 }
 
 void CommandLineParser::AddHelpOptions() {
@@ -59,25 +59,69 @@ void CommandLineParser::AddLoggingOptions() {
   // clang-format off
   if (options_ & kLoggingOptions) {
     visible_options_.add_options()(
-      "log-file", po::value(&log_file_),
-      "Path to the logfile (supports time placeholders)"
+      "log-file", po::value<std::string>()->notifier([&](auto& val) {
+        if (boost::to_upper_copy(val) == "NONE") {
+          json_["logging"]["console"] = nullptr;
+        } else {
+          json_["logging"]["console"] = val;
+        }
+      }),
+      "Path to the logfile with support for time placeholders; set to NONE to disable"
     )(
-      "log-console", po::value(&log_console_)->notifier([&](auto& val) {
-        log_console_ = boost::algorithm::to_upper_copy(*val);
-      })->implicit_value("STDERR"s),
-      "Log to either STDOUT or STDERR (default is STDERR)"
+      "log-console", po::value<std::string>()->implicit_value("STDERR"s)->notifier([&](auto& val) {
+        auto s = boost::to_upper_copy(val);
+        if (s != "STDERR" && s != "STDOUT" && s != "NONE") {
+          err_description_ = "Invalid value \""s + val + "\"for --log-console."
+                             " Allowed values are STDOUT, STDERR and NONE.";
+          throw api::Error(YOGI_ERR_PARSING_CMDLINE_FAILED);
+        }
+
+        if (s == "NONE") {
+          json_["logging"]["console"] = nullptr;
+        } else {
+          json_["logging"]["console"] = s;
+        }
+      }),
+      "Log to either STDOUT, STDERR or NONE (implicit value is STDERR)"
     )(
-      "log-colour,logcolor", po::value(&log_colour_)->implicit_value(true),
+      "log-colour", po::value<bool>()->implicit_value(true)->notifier([&](auto& val) {
+        json_["logging"]["colour"] = val;
+      }),
       "Use colour when logging to the console"
     )(
-      "log-fmt", po::value(&log_fmt_),
-      "Format of a log entry (supports entry placeholders)"
+      "log-fmt", po::value<std::string>()->notifier([&](auto& val) {
+        json_["logging"]["entry-format"] = val;
+      }),
+      "Format of a log entry (use entry placeholders)"
     )(
-      "log-timefmt", po::value(&log_time_fmt_),
-      "Format of a log entry's timestamp (supports time placeholders)"
+      "log-timefmt", po::value<std::string>()->notifier([&](auto& val) {
+        json_["logging"]["time-format"] = val;
+      }),
+      "Format of a log entry's timestamp (use time placeholders)"
     )(
-      "log-verbosity", po::value(&log_verbosities_)->composing(),
-      "Configuration variables (e.g. --log-verbosity='Yogi.*:DEBUG')"
+      "log-verbosity", po::value<std::vector<std::string>>()->notifier([&](auto& val) {
+        for (auto& str : val) {
+          auto sep_pos = str.find('=');
+          if (sep_pos == std::string::npos) {
+            err_description_ = "Invalid log verbosity string format \""s + str + "\"";
+            throw api::Error(YOGI_ERR_PARSING_CMDLINE_FAILED);
+          }
+
+          auto comp = str.substr(0, sep_pos);
+          auto verb = str.substr(sep_pos + 1);
+
+          try {
+            Logger::StringToVerbosity(verb);
+          }
+          catch (const std::exception& e) {
+            err_description_ = e.what();
+            throw api::Error(YOGI_ERR_PARSING_CMDLINE_FAILED);
+          }
+
+          json_["verbosity"][comp] = verb;
+        }
+      }),
+      "Configuration variables (e.g. --log-verbosity='Yogi.*=DEBUG')"
     );
   }
   // clang-format on
@@ -87,75 +131,106 @@ void CommandLineParser::AddBranchOptions() {
   // clang-format off
   if (options_ & kBranchNameOption) {
     visible_options_.add_options()(
-      "name", po::value(&branch_name_),
+      "name", po::value<std::string>()->notifier([&](auto& val) {
+        json_["branch"]["name"] = val;
+      }),
       "Branch name"
     );
   }
 
   if (options_ & kBranchDescriptionOption) {
     visible_options_.add_options()(
-      "description", po::value(&branch_description_),
+      "description", po::value<std::string>()->notifier([&](auto& val) {
+        json_["branch"]["description"] = val;
+      }),
       "Branch description"
     );
   }
 
   if (options_ & kBranchNetworkOption) {
     visible_options_.add_options()(
-      "network", po::value(&branch_network_),
+      "network", po::value<std::string>()->notifier([&](auto& val) {
+        json_["branch"]["network"] = val;
+      }),
       "Network name"
     );
   }
 
   if (options_ & kBranchPasswordOption) {
     visible_options_.add_options()(
-      "password", po::value(&branch_password_),
+      "password", po::value<std::string>()->notifier([&](auto& val) {
+        json_["branch"]["password"] = val;
+      }),
       "Network password"
     );
   }
 
   if (options_ & kBranchPathOption) {
     visible_options_.add_options()(
-      "path", po::value(&branch_path_),
+      "path", po::value<std::string>()->notifier([&](auto& val) {
+        json_["branch"]["path"] = val;
+      }),
       "Branch path"
     );
   }
 
   if (options_ & kBranchAdvaddrOption) {
     visible_options_.add_options()(
-      "adv-addr", po::value(&branch_adv_addr_),
-      "Branch advertising address (e.g. --adv-addr='ff31::8000:2439')"
+      "adv-addr", po::value<std::string>()->notifier([&](auto& val) {
+        json_["branch"]["advertising-address"] = val;
+      }),
+      "Branch advertising address (e.g. --adv-addr 'ff31::8000:2439')"
     );
   }
 
   if (options_ & kBranchAdvportOption) {
     visible_options_.add_options()(
-      "adv-port", po::value(&branch_adv_port_),
-      "Branch advertising port (e.g. --adv-port=13531"
+      "adv-port", po::value<unsigned>()->notifier([&](auto& val) {
+        json_["branch"]["advertising-port"] = val;
+      }),
+      "Branch advertising port (e.g. --adv-port 13531"
     );
   }
 
   if (options_ & kBranchAdvintOption) {
     visible_options_.add_options()(
-      "adv-int", po::value(&branch_adv_interval_),
-      "Branch advertising interval in seconds (e.g. --adv-int=3.0)"
+      "adv-int", po::value<float>()->notifier([&](auto& val) {
+        json_["branch"]["advertising-interval"] = val;
+      }),
+      "Branch advertising interval in seconds (e.g. --adv-int 3.0)"
     );
   }
 
   if (options_ & kBranchTimeoutOption) {
     visible_options_.add_options()(
-      "timeout", po::value(&branch_timeout_),
-      "Branch timeout in seconds (e.g. --timeout=3.0)"
+      "timeout", po::value<float>()->notifier([&](auto& val) {
+        json_["branch"]["timeout"] = val;
+      }),
+      "Branch timeout in seconds (e.g. --timeout 3.0)"
     );
   }
   // clang-format on
 }
 
-void CommandLineParser::AddFilesOption() {
+void CommandLineParser::AddFileOptions() {
   // clang-format off
   if (options_ & kFileOption || options_ & kFileRequiredOption) {
     auto name = "_cfg_files";
     hidden_options_.add_options()(
-      name, po::value(&cfg_file_patterns_),
+      name, po::value<std::vector<std::string>>()->notifier([&](auto& val) {
+        try {
+          config_files_ = utils::Glob(val);
+        }
+        catch (const std::exception& e) {
+          err_description_ = e.what();
+          throw api::Error(YOGI_ERR_PARSING_CMDLINE_FAILED);
+        }
+
+        if (options_ & kFileRequiredOption && config_files_.empty()) {
+          err_description_ = "No configuration files specified.";
+          throw api::Error(YOGI_ERR_PARSING_CMDLINE_FAILED);
+        }
+      }),
       "Configuration files (JSON format)"
     );
 
@@ -164,24 +239,76 @@ void CommandLineParser::AddFilesOption() {
   // clang-format on
 }
 
-void CommandLineParser::AddOverrideOption() {
+void CommandLineParser::AddOverrideOptions() {
   // clang-format off
   if (options_ & kOverrideOption) {
     visible_options_.add_options()(
-      "override,o", po::value(&overrides_)->composing(),
-      "Configuration overrides in simplified (--override='person.age:42') or"
-        " JSON (--override='{\"person\":{\"age\":42}}') format"
+      "override,o", po::value<std::vector<std::string>>()->notifier([&](auto& val) {
+        for (auto& str : val) {
+          std::string json_str;
+          if (str.front() == '{') {
+            json_str = str;
+          }
+          else {
+            auto sep_pos = str.find('=');
+            if (sep_pos == std::string::npos) {
+              err_description_ = "Invalid override format \""s + str + "\"";
+              throw api::Error(YOGI_ERR_PARSING_CMDLINE_FAILED);
+            }
+
+            auto path = str.substr(0, sep_pos);
+            auto value = str.substr(sep_pos + 1);
+
+            std::vector<std::string> path_elements;
+            boost::algorithm::split(path_elements, path, boost::is_any_of("."));
+
+            std::stringstream ss;
+            for (auto& elem : path_elements) {
+              ss << "{\"" << elem << "\":";
+            }
+            ss << value;
+            for (auto it = path_elements.begin(); it != path_elements.end(); ++it) {
+              ss << "}";
+            }
+
+            json_str = ss.str();
+          }
+
+          try {
+            overrides_.emplace_back(nlohmann::json::parse(json_str));
+          }
+          catch (const std::exception& e) {
+            err_description_ = "Parsing \""s + str + "\" failed: " + e.what();
+            throw api::Error(YOGI_ERR_PARSING_CMDLINE_FAILED);
+          }
+        }
+      }),
+      "Configuration overrides in simplified (--override 'person.age=42') or"
+        " JSON (--override '{\"person\":{\"age\":42}}') format"
     );
   }
   // clang-format on
 }
 
-void CommandLineParser::AddVariableOption() {
+void CommandLineParser::AddVariableOptions() {
   // clang-format off
   if (options_ & kVariableOption) {
     visible_options_.add_options()(
-      "var,v", po::value(&variables_)->composing(),
-      "Configuration variables (e.g. --var='DIR=\"/usr/local\"'"
+      "var,v", po::value<std::vector<std::string>>()->notifier([&](auto& val) {
+        for (auto& str : val) {
+          auto sep_pos = str.find('=');
+          if (sep_pos == std::string::npos) {
+            err_description_ = "Invalid veriable format \""s + str + "\"";
+            throw api::Error(YOGI_ERR_PARSING_CMDLINE_FAILED);
+          }
+
+          auto name = str.substr(0, sep_pos);
+          auto value = str.substr(sep_pos + 1);
+
+          json_["variables"][name] = value;
+        }
+      }),
+      "Configuration variables (e.g. --var 'DIR=\"/usr/local\"')"
     );
   }
   // clang-format on
@@ -198,14 +325,13 @@ void CommandLineParser::PopulateVariablesMap() {
                   .positional(positional_options_)
                   .run(),
               vm_);
-    po::notify(vm_);
   } catch (const po::error& e) {
     err_description_ = e.what();
     throw api::Error(YOGI_ERR_PARSING_CMDLINE_FAILED);
   }
 }
 
-void CommandLineParser::VerifyHelpOption() {
+void CommandLineParser::HandleHelpOptions() {
   if (vm_.count("help")) {
     std::string binary_name = argv_[0];
     auto pos = binary_name.find_last_of("/\\");
@@ -228,9 +354,7 @@ void CommandLineParser::VerifyHelpOption() {
     err_description_ = ss.str();
     throw api::Error(YOGI_ERR_HELP_REQUESTED);
   }
-}
 
-void CommandLineParser::VerifyHelpLoggingOption() {
   if (vm_.count("help-logging")) {
     // clang-format off
     std::stringstream ss;
@@ -268,22 +392,11 @@ void CommandLineParser::VerifyHelpLoggingOption() {
   }
 }
 
-void CommandLineParser::VerifyLogConsoleOption() {
-  if (!log_console_) {
-    return;
-  }
-
-  if (*log_console_ != "STDERR" && *log_console_ != "STDOUT") {
-    err_description_ =
-        "Invalid value \""s + *log_console_ +
-        "\"for --log-console. Allowed values are STDOUT and STDERR.";
-    throw api::Error(YOGI_ERR_PARSING_CMDLINE_FAILED);
-  }
-}
-
-void CommandLineParser::VerifyFilesOption() {
-  if (options_ & kFileRequiredOption && cfg_file_patterns_.empty()) {
-    err_description_ = "No configuration files specified.";
+void CommandLineParser::ExtractOptions() {
+  try {
+    po::notify(vm_);
+  } catch (const po::error& e) {
+    err_description_ = e.what();
     throw api::Error(YOGI_ERR_PARSING_CMDLINE_FAILED);
   }
 }

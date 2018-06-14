@@ -25,7 +25,6 @@ add_library (yogi-core-static STATIC
   src/objects/detail/branch/branch_info.cc
   src/objects/detail/branch/connection_manager.cc
   src/objects/detail/configuration/command_line_parser.cc
-  src/objects/detail/configuration/glob.cc
   src/objects/detail/log/console_log_sink.cc
   src/objects/detail/log/file_log_sink.cc
   src/objects/detail/log/hook_log_sink.cc
@@ -38,6 +37,7 @@ add_library (yogi-core-static STATIC
   src/objects/timer.cc
   src/utils/console.cc
   src/utils/crypto.cc
+  src/utils/glob.cc
   src/utils/ip.cc
   src/utils/socket.cc
   src/utils/system.cc

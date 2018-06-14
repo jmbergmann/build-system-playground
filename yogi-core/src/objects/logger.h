@@ -34,6 +34,7 @@ class Logger : public api::ExposedObjectT<Logger, api::ObjectType::kLogger> {
  public:
   typedef detail::LogSink::Verbosity Verbosity;
 
+  static Verbosity StringToVerbosity(const std::string& str);
   static void SetSink(detail::ConsoleLogSinkPtr&& sink);
   static void SetSink(detail::HookLogSinkPtr&& sink);
   static void SetSink(detail::FileLogSinkPtr&& sink);

@@ -42,6 +42,10 @@ void ConsoleLogSink::SetOutputColours(Verbosity severity) {
     case Verbosity::kTrace:
       utils::SetConsoleColour(stream_, utils::ForegroundColour::kBrown);
       break;
+
+    default:
+      YOGI_NEVER_REACHED;
+      break;
   }
 }
 

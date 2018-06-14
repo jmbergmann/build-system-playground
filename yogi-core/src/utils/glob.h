@@ -1,14 +1,12 @@
 #pragma once
 
-#include "../../../config.h"
+#include "../config.h"
 
 #include <vector>
 #include <string>
 
-namespace objects {
-namespace detail {
+namespace utils {
 
 std::vector<std::string> Glob(const std::vector<std::string>& patterns);
 
-}  // namespace detail
-}  // namespace objects
+}  // namespace utils

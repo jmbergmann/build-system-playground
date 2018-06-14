@@ -2,15 +2,25 @@
 #include "../api/constants.h"
 #include "../utils/system.h"
 
+#include <boost/algorithm/string.hpp>
 #include <algorithm>
+#include <stdexcept>
+
+using namespace std::string_literals;
 
 namespace objects {
 
-std::mutex Logger::sinks_mutex_;
-detail::LogSinkPtr Logger::console_sink_;
-detail::LogSinkPtr Logger::hook_sink_;
-detail::LogSinkPtr Logger::file_sink_;
-LoggerPtr Logger::app_logger_ = Logger::Create("App");
+Logger::Verbosity Logger::StringToVerbosity(const std::string& str) {
+  if (boost::iequals(str, "NONE")) return Verbosity::kNone;
+  if (boost::iequals(str, "FATAL")) return Verbosity::kFatal;
+  if (boost::iequals(str, "ERROR")) return Verbosity::kError;
+  if (boost::iequals(str, "WARNING")) return Verbosity::kWarning;
+  if (boost::iequals(str, "INFO")) return Verbosity::kInfo;
+  if (boost::iequals(str, "DEBUG")) return Verbosity::kDebug;
+  if (boost::iequals(str, "TRACE")) return Verbosity::kTrace;
+
+  throw std::runtime_error("Invalid verbosity \""s + str + "\"");
+}
 
 void Logger::SetSink(detail::ConsoleLogSinkPtr&& sink) {
   std::lock_guard<std::mutex> lock(sinks_mutex_);
@@ -59,5 +69,11 @@ std::vector<std::weak_ptr<Logger>>& Logger::InternalLoggers() {
   static std::vector<std::weak_ptr<Logger>> vec;
   return vec;
 }
+
+std::mutex Logger::sinks_mutex_;
+detail::LogSinkPtr Logger::console_sink_;
+detail::LogSinkPtr Logger::hook_sink_;
+detail::LogSinkPtr Logger::file_sink_;
+LoggerPtr Logger::app_logger_ = Logger::Create("App");
 
 }  // namespace objects

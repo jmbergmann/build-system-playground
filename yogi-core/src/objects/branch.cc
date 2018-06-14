@@ -18,6 +18,9 @@ Branch::Branch(ContextPtr context, std::string name, std::string description,
       info_(detail::BranchInfo::CreateLocal(
           name, description, net_name, path,
           connection_manager_->GetTcpServerEndpoint(), timeout, adv_interval)) {
+  if (adv_ep.port() == 0) {
+    throw api::Error(YOGI_ERR_INVALID_PARAM);
+  }
 }
 
 void Branch::Start() { connection_manager_->Start(info_); }

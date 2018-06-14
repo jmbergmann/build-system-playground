@@ -11,6 +11,7 @@ namespace detail {
 class LogSink {
  public:
   enum Verbosity {
+    kNone    = YOGI_VB_NONE,
     kFatal   = YOGI_VB_FATAL,
     kError   = YOGI_VB_ERROR,
     kWarning = YOGI_VB_WARNING,
