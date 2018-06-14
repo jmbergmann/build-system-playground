@@ -3,9 +3,10 @@
 #include "stdio.h"
 
 #ifdef _WIN32
-#   include <Windows.h>
+# include <Windows.h>
+# include <cstdlib>
 #else
-#   include <unistd.h>
+# include <unistd.h>
 #endif
 
 namespace utils {
@@ -29,16 +30,18 @@ auto win32_original_stderr_colours = []() {
 
 }  // anonymous namespace
 
-void SetConsoleTitle(FILE* stream, const std::string& title) {
 #ifdef _WIN32
-    ::SetConsoleTitle(title.c_str());
-#else
-    if (isatty(stream == stdout ? STDOUT_FILENO : STDERR_FILENO)) {
-      fprintf(stream, "\033]0;%s\007", title.c_str());
-      fflush(stream);
-    }
-#endif
+void SetConsoleTitle(FILE*, const std::string& title) {
+  ::SetConsoleTitle(title.c_str());
 }
+#else
+void SetConsoleTitle(FILE* stream, const std::string& title) {
+  if (isatty(stream == stdout ? STDOUT_FILENO : STDERR_FILENO)) {
+    fprintf(stream, "\033]0;%s\007", title.c_str());
+    fflush(stream);
+  }
+}
+#endif
 
 void SetConsoleColour(FILE* stream, ForegroundColour colour) {
 #ifdef _WIN32
