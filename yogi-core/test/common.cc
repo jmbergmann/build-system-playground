@@ -176,6 +176,33 @@ void FakeBranch::ExchangeAck() {
   EXPECT_EQ(buffer[0], 0x55);
 }
 
+CommandLine::CommandLine(std::initializer_list<std::string> args) {
+  argc = static_cast<int>(args.size() + 1);
+  argv = new char*[argc];
+
+  std::string exe = "executable-name";
+  argv[0] = new char[exe.size() + 1];
+  std::copy(exe.begin(), exe.end(), argv[0]);
+  argv[0][exe.size()] = '\0';
+
+  auto it = args.begin();
+  for (int i = 1; i < argc; ++i) {
+    auto& arg = *it;
+    argv[i] = new char[arg.size() + 1];
+    std::copy(arg.begin(), arg.end(), argv[i]);
+    argv[i][arg.size()] = '\0';
+    ++it;
+  }
+}
+
+CommandLine::~CommandLine() {
+  for (int i = 0; i < argc; ++i) {
+    delete[] argv[i];
+  }
+
+  delete[] argv;
+}
+
 void SetupLogging(int verbosity) {
   YOGI_LogToConsole(YOGI_VB_TRACE, YOGI_ST_STDERR, YOGI_TRUE, nullptr, nullptr);
   YOGI_LoggerSetComponentsVerbosity("Yogi\\..*", verbosity, nullptr);

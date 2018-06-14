@@ -35,10 +35,18 @@ class CommandLineParser {
   CommandLineParser(int argc, const char* const* argv,
                     CommandLineOptions options);
 
-  nlohmann::json Parse();
+  void Parse();
   const std::string& GetLastErrorString() const { return err_description_; }
+  const nlohmann::json& GetFilesConfiguration() const { return files_json_; }
+  const nlohmann::json& GetDirectConfiguration() const { return direct_json_; }
 
  private:
+  struct Override {
+    bool json_pointer_syntax;
+    nlohmann::json::json_pointer path;
+    nlohmann::json value;
+  };
+
   void AddHelpOptions();
   void AddLoggingOptions();
   void AddBranchOptions();
@@ -49,6 +57,8 @@ class CommandLineParser {
   void PopulateVariablesMap();
   void HandleHelpOptions();
   void ExtractOptions();
+  void ApplyOverrides();
+  void LoadConfigFiles();
 
   void LogFileNotifier(const std::string& val);
   void LogConsoleNotifier(const std::string& val);
@@ -66,10 +76,11 @@ class CommandLineParser {
   boost::program_options::options_description hidden_options_;
   boost::program_options::positional_options_description positional_options_;
   boost::program_options::variables_map vm_;
-  nlohmann::json json_;
+  nlohmann::json files_json_;
+  nlohmann::json direct_json_;
 
   std::vector<std::string> config_files_;
-  std::vector<nlohmann::json> overrides_;
+  std::vector<Override> overrides_;
 };
 
 YOGI_DEFINE_FLAG_OPERATORS(CommandLineParser::CommandLineOptions);

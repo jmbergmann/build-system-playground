@@ -87,6 +87,15 @@ class FakeBranch final {
   boost::asio::ip::tcp::socket tcp_socket_;
 };
 
+struct CommandLine final
+{
+    int argc;
+    char** argv;
+
+    CommandLine(std::initializer_list<std::string> args);
+    ~CommandLine();
+};
+
 void SetupLogging(int verbosity);
 void* CreateContext();
 void RunContextInBackground(void* context);

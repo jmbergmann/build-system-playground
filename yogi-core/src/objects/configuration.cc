@@ -15,9 +15,8 @@ void Configuration::UpdateFromCommandLine(int argc, const char* const* argv,
                                           std::string* err_description) {
   detail::CommandLineParser parser(argc, argv, options);
 
-  nlohmann::json json;
   try {
-    json = parser.Parse();
+    parser.Parse();
   }
   catch (const api::Error& err) {
     *err_description = parser.GetLastErrorString();
