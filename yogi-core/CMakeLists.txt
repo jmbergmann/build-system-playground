@@ -108,6 +108,7 @@ add_executable (yogi-core-test
   test/constants_test.cc
   test/context_test.cc
   test/errors_test.cc
+  test/glob_test.cc
   test/licenses_test.cc
   test/logger_test.cc
   test/object_test.cc
