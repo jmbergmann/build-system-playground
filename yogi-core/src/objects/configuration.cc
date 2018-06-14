@@ -1,6 +1,5 @@
 #include "configuration.h"
 
-#include <boost/program_options.hpp>
 #include <boost/optional.hpp>
 #include <boost/optional/optional_io.hpp>
 #include <boost/algorithm/string.hpp>
@@ -39,7 +38,9 @@ void Configuration::UpdateFromCommandLine(int argc, const char* const* argv,
       "log-file", po::value(&log_file),
       "Path to the logfile (supports time placeholders)"
     )(
-      "log-console", po::value(&log_console)->implicit_value("STDERR"s),
+      "log-console", po::value(&log_console)->notifier([&](auto& val) {
+        log_console = boost::algorithm::to_upper_copy(*val);
+      })->implicit_value("STDERR"s),
       "Log to either STDOUT or STDERR (default is STDERR)"
     )(
       "log-colour,logcolor", po::value(&log_colour)->implicit_value(true),
@@ -174,6 +175,28 @@ void Configuration::UpdateFromCommandLine(int argc, const char* const* argv,
     throw api::Error(YOGI_ERR_PARSING_CMDLINE_FAILED);
   }
 
+  VerifyHelpOption(argv, vm, visible_options, options, err_description);
+  VerifyHelpLoggingOption(vm, err_description);
+  VerifyLogConsoleOption(log_console, err_description);
+  VerifyFilesOption(cfg_file_patterns, options, err_description);
+}
+
+void Configuration::UpdateFromString(const std::string& json_str,
+                                     std::string* err_description) {}
+
+void Configuration::UpdateFromFile(const std::string& filename,
+                                   std::string* err_description) {}
+
+std::string Configuration::Dump(bool resolve_variables) const { return {}; }
+
+void Configuration::WriteToFile(const std::string& filename,
+                                bool resolve_variables,
+                                int identation_width) const {}
+
+void Configuration::VerifyHelpOption(
+    const char* const* argv, const boost::program_options::variables_map& vm,
+    const boost::program_options::options_description& visible_options,
+    CommandLineOptions options, std::string* err_description) {
   if (vm.count("help")) {
     std::string binary_name = argv[0];
     auto pos = binary_name.find_last_of("/\\");
@@ -195,67 +218,71 @@ void Configuration::UpdateFromCommandLine(int argc, const char* const* argv,
     *err_description = ss.str();
     throw api::Error(YOGI_ERR_HELP_REQUESTED);
   }
+}
 
+void Configuration::VerifyHelpLoggingOption(
+    const boost::program_options::variables_map& vm,
+    std::string* err_description) {
   if (vm.count("help-logging")) {
     // clang-format off
-    std::stringstream ss;
-    ss << "Some of the logging switches support the placeholders listed below." << std::endl;
-    ss << std::endl;
-    ss << "Time placeholders:" << std::endl;
-    ss << "  %Y - Four digit year" << std::endl;
-    ss << "  %m - Month name as a decimal 01 to 12" << std::endl;
-    ss << "  %d - Day of the month as decimal 01 to 31" << std::endl;
-    ss << "  %F - Equivalent to %Y-%m-%d (the ISO 8601 date format)" << std::endl;
-    ss << "  %H - The hour as a decimal number using a 24-hour clock (range 00 to 23)" << std::endl;
-    ss << "  %M - The minute as a decimal 00 to 59" << std::endl;
-    ss << "  %S - Seconds as a decimal 00 to 59" << std::endl;
-    ss << "  %T - Equivalent to %H:%M:%S (the ISO 8601 time format)" << std::endl;
-    ss << "  %3 - Milliseconds as decimal number 000 to 999" << std::endl;
-    ss << "  %6 - Microseconds as decimal number 000 to 999" << std::endl;
-    ss << "  %9 - Nanoseconds as decimal number 000 to 999" << std::endl;
-    ss << std::endl;
-    ss << "Entry placeholders:" << std::endl;
-    ss << "  $t - Timestamp, formatted according to \p timefmt" << std::endl;
-    ss << "  $P - Process ID (PID)" << std::endl;
-    ss << "  $T - Thread ID" << std::endl;
-    ss << "  $s - Severity as a 3 letter abbreviation (FAT, ERR, WRN, IFO, DBG or TRC)" << std::endl;
-    ss << "  $m - Log message" << std::endl;
-    ss << "  $f - Source filename" << std::endl;
-    ss << "  $l - Source line number" << std::endl;
-    ss << "  $c - Component tag" << std::endl;
-    ss << "  $< - Set console colour corresponding to severity" << std::endl;
-    ss << "  $> - Reset the colours (also done after each log entry)" << std::endl;
-    ss << "  $$ - A $ sign" << std::endl;
+  std::stringstream ss;
+  ss << "Some of the logging switches support the placeholders listed below." << std::endl;
+  ss << std::endl;
+  ss << "Time placeholders:" << std::endl;
+  ss << "  %Y - Four digit year" << std::endl;
+  ss << "  %m - Month name as a decimal 01 to 12" << std::endl;
+  ss << "  %d - Day of the month as decimal 01 to 31" << std::endl;
+  ss << "  %F - Equivalent to %Y-%m-%d (the ISO 8601 date format)" << std::endl;
+  ss << "  %H - The hour as a decimal number using a 24-hour clock (range 00 to 23)" << std::endl;
+  ss << "  %M - The minute as a decimal 00 to 59" << std::endl;
+  ss << "  %S - Seconds as a decimal 00 to 59" << std::endl;
+  ss << "  %T - Equivalent to %H:%M:%S (the ISO 8601 time format)" << std::endl;
+  ss << "  %3 - Milliseconds as decimal number 000 to 999" << std::endl;
+  ss << "  %6 - Microseconds as decimal number 000 to 999" << std::endl;
+  ss << "  %9 - Nanoseconds as decimal number 000 to 999" << std::endl;
+  ss << std::endl;
+  ss << "Entry placeholders:" << std::endl;
+  ss << "  $t - Timestamp, formatted according to \p timefmt" << std::endl;
+  ss << "  $P - Process ID (PID)" << std::endl;
+  ss << "  $T - Thread ID" << std::endl;
+  ss << "  $s - Severity as a 3 letter abbreviation (FAT, ERR, WRN, IFO, DBG or TRC)" << std::endl;
+  ss << "  $m - Log message" << std::endl;
+  ss << "  $f - Source filename" << std::endl;
+  ss << "  $l - Source line number" << std::endl;
+  ss << "  $c - Component tag" << std::endl;
+  ss << "  $< - Set console colour corresponding to severity" << std::endl;
+  ss << "  $> - Reset the colours (also done after each log entry)" << std::endl;
+  ss << "  $$ - A $ sign" << std::endl;
     // clang-format on
+
+    *err_description = ss.str();
+    throw api::Error(YOGI_ERR_HELP_REQUESTED);
+  }
+}
+
+void Configuration::VerifyLogConsoleOption(
+    const boost::optional<std::string>& log_console,
+    std::string* err_description) {
+  if (!log_console) {
+    return;
   }
 
-  if (log_console) {
-    boost::algorithm::to_upper(*log_console);
-    if (*log_console != "STDERR" && *log_console != "STDOUT") {
-      *err_description =
-          "Invalid value \""s + *log_console +
-          "\"for --log-console. Allowed values are STDOUT and STDERR.";
-      throw api::Error(YOGI_ERR_PARSING_CMDLINE_FAILED);
-    }
+  if (*log_console != "STDERR" && *log_console != "STDOUT") {
+    *err_description =
+        "Invalid value \""s + *log_console +
+        "\"for --log-console. Allowed values are STDOUT and STDERR.";
+    throw api::Error(YOGI_ERR_PARSING_CMDLINE_FAILED);
   }
+}
 
+void Configuration::VerifyFilesOption(
+    const std::vector<std::string>& cfg_file_patterns,
+    CommandLineOptions options, std::string* err_description) {
   if (options & kFileRequiredOption && cfg_file_patterns.empty()) {
     *err_description = "No configuration files specified.";
     throw api::Error(YOGI_ERR_PARSING_CMDLINE_FAILED);
   }
 }
-
-void Configuration::UpdateFromString(const std::string& json_str,
-                                     std::string* err_description) {}
-
-void Configuration::UpdateFromFile(const std::string& filename,
-                                   std::string* err_description) {}
-
-std::string Configuration::Dump(bool resolve_variables) const { return {}; }
-
-void Configuration::WriteToFile(const std::string& filename,
-                                bool resolve_variables,
-                                int identation_width) const {}
 
 const LoggerPtr Configuration::logger_ =
     Logger::CreateStaticInternalLogger("Configuration");

@@ -7,6 +7,7 @@
 #include "logger.h"
 #include "../../../3rd_party/json/json.hpp"
 
+#include <boost/program_options.hpp>
 #include <mutex>
 #include <string>
 
@@ -56,6 +57,20 @@ class Configuration
                    int identation_width) const;
 
  private:
+  static void VerifyHelpOption(
+      const char* const* argv, const boost::program_options::variables_map& vm,
+      const boost::program_options::options_description& visible_options,
+      CommandLineOptions options, std::string* err_description);
+  static void VerifyHelpLoggingOption(
+      const boost::program_options::variables_map& vm,
+      std::string* err_description);
+  static void VerifyLogConsoleOption(
+      const boost::optional<std::string>& log_console,
+      std::string* err_description);
+  static void VerifyFilesOption(
+      const std::vector<std::string>& cfg_file_patterns,
+      CommandLineOptions options, std::string* err_description);
+
   static const LoggerPtr logger_;
 
   const bool variables_supported_;
