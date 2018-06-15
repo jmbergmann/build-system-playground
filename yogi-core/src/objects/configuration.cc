@@ -100,14 +100,6 @@ void Configuration::WriteToFile(const std::string& filename,
   }
 }
 
-template <typename Fn>
-void Configuration::WalkAllElements(nlohmann::json* json, Fn fn) {
-  for (auto it = json->begin(); it != json->end(); ++it) {
-    WalkAllElements(&it.value(), fn);
-    fn(it.key(), &it.value());
-  }
-}
-
 void Configuration::CheckCircularVariableDependency(
     const std::string& var_ref, const nlohmann::json& var_val,
     std::string* err_desc) {
@@ -133,8 +125,9 @@ void Configuration::ResolveVariablesSections(nlohmann::json* vars,
   }
 }
 
-void ResolveSingleVariable(nlohmann::json* elem, const std::string& var_ref,
-                           const nlohmann::json& var_val) {
+void Configuration::ResolveSingleVariable(nlohmann::json* elem,
+                                          const std::string& var_ref,
+                                          const nlohmann::json& var_val) {
   if (!elem->is_string()) {
     return;
   }
@@ -153,9 +146,16 @@ nlohmann::json Configuration::ResolveVariables(
   auto json = unresolved_json;
   auto& vars = json["variables"];
 
-  WalkAllElements(&json, [&](const auto& key, auto* val) {
+  ResolveVariablesSections(&vars, err_desc);
 
+  WalkAllElements(&json, [&](const auto& key, auto* elem) {
+    for (auto it = vars.cbegin(); it != vars.cend(); ++it) {
+      auto var_ref = "${"s + it.key() + '}';
+      ResolveSingleVariable(elem, var_ref, it.value());
+    }
   });
+
+  return json;
 }
 
 template <typename Fn>
