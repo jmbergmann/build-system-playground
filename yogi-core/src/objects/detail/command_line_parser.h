@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../../config.h"
+#include "../../api/error.h"
 #include "../../utils/types.h"
 #include "../../../../3rd_party/json/json.hpp"
 
@@ -21,9 +22,9 @@ class CommandLineParser {
     kBranchNetworkOption = YOGI_CLO_BRANCH_NETWORK,
     kBranchPasswordOption = YOGI_CLO_BRANCH_PASSWORD,
     kBranchPathOption = YOGI_CLO_BRANCH_PATH,
-    kBranchAdvaddrOption = YOGI_CLO_BRANCH_ADVADDR,
-    kBranchAdvportOption = YOGI_CLO_BRANCH_ADVPORT,
-    kBranchAdvintOption = YOGI_CLO_BRANCH_ADVINT,
+    kBranchAdvAddressOption = YOGI_CLO_BRANCH_ADVADDR,
+    kBranchAdvPortOption = YOGI_CLO_BRANCH_ADVPORT,
+    kBranchAdvIntervalOption = YOGI_CLO_BRANCH_ADVINT,
     kBranchTimeoutOption = YOGI_CLO_BRANCH_TIMEOUT,
     kFileOption = YOGI_CLO_FILES,
     kFileRequiredOption = YOGI_CLO_FILES_REQUIRED,

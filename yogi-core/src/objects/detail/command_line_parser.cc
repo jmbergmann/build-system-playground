@@ -81,7 +81,7 @@ void CommandLineParser::AddLoggingOptions() {
       }),
       "Format of a log entry (use entry placeholders)"
     )(
-      "log-timefmt", po::value<std::string>()->notifier([&](auto& val) {
+      "log-time-fmt", po::value<std::string>()->notifier([&](auto& val) {
         direct_json_["logging"]["time-format"] = val;
       }),
       "Format of a log entry's timestamp (use time placeholders)"
@@ -142,7 +142,7 @@ void CommandLineParser::AddBranchOptions() {
     );
   }
 
-  if (options_ & kBranchAdvaddrOption) {
+  if (options_ & kBranchAdvAddressOption) {
     visible_options_.add_options()(
       "adv-addr", po::value<std::string>()->notifier([&](auto& val) {
         direct_json_["branch"]["advertising-address"] = val;
@@ -151,7 +151,7 @@ void CommandLineParser::AddBranchOptions() {
     );
   }
 
-  if (options_ & kBranchAdvportOption) {
+  if (options_ & kBranchAdvPortOption) {
     visible_options_.add_options()(
       "adv-port", po::value<unsigned>()->notifier([&](auto& val) {
         direct_json_["branch"]["advertising-port"] = val;
@@ -160,7 +160,7 @@ void CommandLineParser::AddBranchOptions() {
     );
   }
 
-  if (options_ & kBranchAdvintOption) {
+  if (options_ & kBranchAdvIntervalOption) {
     visible_options_.add_options()(
       "adv-int", po::value<float>()->notifier([&](auto& val) {
         direct_json_["branch"]["advertising-interval"] = val;
@@ -397,7 +397,7 @@ void CommandLineParser::LogVerbosityNotifier(
       throw api::Error(YOGI_ERR_PARSING_CMDLINE_FAILED);
     }
 
-    direct_json_["verbosity"][comp] = verb;
+    direct_json_["logging"]["verbosity"][comp] = verb;
   }
 }
 

@@ -16,6 +16,15 @@
 
 using namespace std::chrono_literals;
 
+#define EXPECT_THROW_ERROR(x, ec)            \
+  try {                                      \
+    x;                                       \
+  } catch (const api::Error& err) {          \
+    EXPECT_EQ(err.error_code(), ec);         \
+  } catch (...) {                            \
+    FAIL() << "Wrong exception type thrown"; \
+  }
+
 static const int kAdvPort = 44442;
 static const char* kAdvAddress = "ff31::8000:2439";
 static const std::chrono::nanoseconds kAdvInterval = 100ms;
@@ -87,13 +96,12 @@ class FakeBranch final {
   boost::asio::ip::tcp::socket tcp_socket_;
 };
 
-struct CommandLine final
-{
-    int argc;
-    char** argv;
+struct CommandLine final {
+  int argc;
+  char** argv;
 
-    CommandLine(std::initializer_list<std::string> args);
-    ~CommandLine();
+  CommandLine(std::initializer_list<std::string> args);
+  ~CommandLine();
 };
 
 void SetupLogging(int verbosity);
@@ -115,6 +123,8 @@ T GetBranchProperty(void* branch, const char* property) {
 }
 
 std::ostream& operator<<(std::ostream& os, const std::chrono::nanoseconds& dur);
-std::ostream& operator<<(std::ostream& os, const std::chrono::microseconds& dur);
-std::ostream& operator<<(std::ostream& os, const std::chrono::milliseconds& dur);
+std::ostream& operator<<(std::ostream& os,
+                         const std::chrono::microseconds& dur);
+std::ostream& operator<<(std::ostream& os,
+                         const std::chrono::milliseconds& dur);
 std::ostream& operator<<(std::ostream& os, const std::chrono::seconds& dur);

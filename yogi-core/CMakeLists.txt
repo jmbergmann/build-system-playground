@@ -106,6 +106,7 @@ add_executable (yogi-core-test
   test/api/object_test.cc
   test/licenses/licenses_test.cc
   test/objects/branch_test.cc
+  test/objects/command_line_parser_test.cc
   test/objects/configuration_test.cc
   test/objects/connection_manager_test.cc
   test/objects/context_test.cc
