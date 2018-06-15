@@ -3,7 +3,7 @@
 #include "../../config.h"
 #include "../../api/error.h"
 #include "../../utils/types.h"
-#include "../../../../3rd_party/json/json.hpp"
+#include "../../../../3rd_party/nlohmann/json.hpp"
 
 #include <boost/program_options.hpp>
 #include <vector>

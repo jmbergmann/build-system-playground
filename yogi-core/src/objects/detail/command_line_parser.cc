@@ -338,17 +338,12 @@ void CommandLineParser::LoadConfigFiles() {
     nlohmann::json json;
     try {
       f >> json;
-    } catch (const nlohmann::json::exception& e) {
+    } catch (const std::exception& e) {
       err_description_ = "Could not parse "s + file + ": " + e.what();
       throw api::Error(YOGI_ERR_PARSING_FILE_FAILED);
     }
 
-    try {
-      files_json_.merge_patch(json);
-    } catch (const nlohmann::json::exception& e) {
-      err_description_ = "Could not merge "s + file + ": " + e.what();
-      throw api::Error(YOGI_ERR_PARSING_FILE_FAILED);
-    }
+    files_json_.merge_patch(json);
   }
 }
 

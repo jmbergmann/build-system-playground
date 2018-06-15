@@ -1,6 +1,6 @@
 #include "../common.h"
 
-static constexpr int kLastError = YOGI_ERR_HELP_REQUESTED;
+static constexpr int kLastError = YOGI_ERR_VARIABLE_USED_IN_KEY;
 
 TEST(ErrorsTest, GetErrorString) {
   EXPECT_STRNE(YOGI_GetErrorString(-2), YOGI_GetErrorString(-1));

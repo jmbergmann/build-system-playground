@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../../3rd_party/json/json.hpp"
+#include "../../3rd_party/nlohmann/json.hpp"
 #include "../src/objects/detail/branch/branch_info.h"
 
 #include <gtest/gtest.h>

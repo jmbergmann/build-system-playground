@@ -109,14 +109,27 @@ const char* Error::what() const noexcept {
 
     case YOGI_ERR_HELP_REQUESTED:
       return "Help/usage text requested";
+
+    case YOGI_ERR_WRITE_TO_FILE_FAILED:
+      return "Could not write to file";
+
+    case YOGI_ERR_UNDEFINED_VARIABLES:
+      return "One or more configuration variables are undefined or could not "
+             "be resolved";
+
+    case YOGI_ERR_NO_VARIABLE_SUPPORT:
+      return "Support for configuration variables has been disabled";
+
+    case YOGI_ERR_VARIABLE_USED_IN_KEY:
+      return "A configuration variable has been used in a key";
   }
 
   return "Invalid error code";
 }
 
-} // namespace api
+}  // namespace api
 
-std::ostream& operator<< (std::ostream& os, const api::Error& err) {
+std::ostream& operator<<(std::ostream& os, const api::Error& err) {
   os << err.what();
   return os;
 }

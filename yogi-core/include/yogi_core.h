@@ -197,6 +197,18 @@
 //! Help/usage text requested
 #define YOGI_ERR_HELP_REQUESTED -34
 
+//! Could not write to file
+#define YOGI_ERR_WRITE_TO_FILE_FAILED -35
+
+//! One or more configuration variables are undefined or could not be resolved
+#define YOGI_ERR_UNDEFINED_VARIABLES -36
+
+//! Support for configuration variables has been disabled
+#define YOGI_ERR_NO_VARIABLE_SUPPORT -37
+
+//! A configuration variable has been used in a key
+#define YOGI_ERR_VARIABLE_USED_IN_KEY -38
+
 //! @}
 //!
 //! @defgroup VB Log verbosity/severity

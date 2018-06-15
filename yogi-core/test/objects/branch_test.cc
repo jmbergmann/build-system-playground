@@ -4,7 +4,7 @@
 #include <regex>
 
 #include "../../src/utils/system.h"
-#include "../../../3rd_party/json/json.hpp"
+#include "../../../3rd_party/nlohmann/json.hpp"
 
 class BranchTest : public Test {
  protected:

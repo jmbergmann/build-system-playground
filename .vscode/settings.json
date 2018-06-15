@@ -71,7 +71,8 @@
     "clocale": "cpp",
     "forward_list": "cpp",
     "map": "cpp",
-    "numeric": "cpp"
+    "numeric": "cpp",
+    "fstream": "cpp"
   },
   "files.exclude": {
     "**/.git": true,
