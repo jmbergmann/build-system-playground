@@ -4,6 +4,8 @@
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/asio.hpp>
 
+namespace fs = boost::filesystem;
+
 Test::Test() { SetupLogging(YOGI_VB_TRACE); }
 
 Test::~Test() {
@@ -174,6 +176,18 @@ void FakeBranch::ExchangeAck() {
   boost::asio::write(tcp_socket_, boost::asio::buffer(buffer));
   boost::asio::read(tcp_socket_, boost::asio::buffer(buffer));
   EXPECT_EQ(buffer[0], 0x55);
+}
+
+TemporaryWorkdirGuard::TemporaryWorkdirGuard() {
+  temp_path_ = fs::temp_directory_path() / fs::unique_path();
+  fs::create_directory(temp_path_);
+  old_working_dir_ = fs::current_path();
+  fs::current_path(temp_path_);
+}
+
+TemporaryWorkdirGuard::~TemporaryWorkdirGuard() {
+  fs::current_path(old_working_dir_);
+  fs::remove_all(temp_path_);
 }
 
 CommandLine::CommandLine(std::initializer_list<std::string> args) {

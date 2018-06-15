@@ -13,6 +13,7 @@
 #include <boost/asio/ip/udp.hpp>
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/uuid/uuid.hpp>
+#include <boost/filesystem.hpp>
 
 using namespace std::chrono_literals;
 
@@ -94,6 +95,16 @@ class FakeBranch final {
   boost::asio::ip::udp::socket udp_socket_;
   boost::asio::ip::tcp::acceptor acceptor_;
   boost::asio::ip::tcp::socket tcp_socket_;
+};
+
+class TemporaryWorkdirGuard final {
+ public:
+  TemporaryWorkdirGuard();
+  ~TemporaryWorkdirGuard();
+
+ private:
+  boost::filesystem::path old_working_dir_;
+  boost::filesystem::path temp_path_;
 };
 
 struct CommandLine final {

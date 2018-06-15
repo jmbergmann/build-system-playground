@@ -1,25 +1,11 @@
 #include "../common.h"
 #include "../../src/objects/detail/command_line_parser.h"
 
-#include <boost/filesystem.hpp>
-
 using objects::detail::CommandLineParser;
 namespace fs = boost::filesystem;
 
 class CommandLineParserTest : public Test {
  protected:
-  virtual void SetUp() override {
-    temp_path = fs::temp_directory_path() / fs::unique_path();
-    fs::create_directory(temp_path);
-    old_working_dir = fs::current_path();
-    fs::current_path(temp_path);
-  }
-
-  virtual void TearDown() override {
-    fs::current_path(old_working_dir);
-    fs::remove_all(temp_path);
-  }
-
   nlohmann::json CheckParsingSucceeds(
       const CommandLine& cmdline, CommandLineParser::CommandLineOptions options,
       const char* section_name) {
@@ -69,9 +55,6 @@ class CommandLineParserTest : public Test {
 
     CheckParsingFailsWithNoOptions(cmdline);
   }
-
-  fs::path old_working_dir;
-  fs::path temp_path;
 };
 
 TEST_F(CommandLineParserTest, HelpOption) {
@@ -190,6 +173,8 @@ TEST_F(CommandLineParserTest, BranchTimeoutOption) {
 }
 
 TEST_F(CommandLineParserTest, FileOption) {
+  TemporaryWorkdirGuard workdir;
+
   {
     fs::ofstream file("a.json");
     file << "{\"person\": {\"name\": \"Joe\", \"age\": 42}}";
@@ -220,6 +205,8 @@ TEST_F(CommandLineParserTest, FileOption) {
 }
 
 TEST_F(CommandLineParserTest, FileOptionCorruptFile) {
+  TemporaryWorkdirGuard workdir;
+
   {
     fs::ofstream file("bad.json");
     file << "{\"person\": {\"age\": 44}";

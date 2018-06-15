@@ -8,15 +8,8 @@
 namespace fs = boost::filesystem;
 
 struct GlobTest : public Test {
-  fs::path old_working_dir;
-  fs::path temp_path;
-
+ protected:
   virtual void SetUp() override {
-    temp_path = fs::temp_directory_path() / fs::unique_path();
-    fs::create_directory(temp_path);
-    old_working_dir = fs::current_path();
-    fs::current_path(temp_path);
-
     fs::create_directory("test");
     std::ofstream("test/a.json");
     std::ofstream("test/b.json");
@@ -35,11 +28,6 @@ struct GlobTest : public Test {
     std::ofstream("test/stuff/even_more.json");
 
     fs::current_path("test/config");
-  }
-
-  virtual void TearDown() override {
-    fs::current_path(old_working_dir);
-    fs::remove_all(temp_path);
   }
 
   void check(std::vector<std::string> patterns,
@@ -65,6 +53,8 @@ struct GlobTest : public Test {
                          << "' unexpectedly found by glob()";
     }
   }
+
+  TemporaryWorkdirGuard workdir;
 };
 
 TEST_F(GlobTest, ExplicitFilenames) {
