@@ -219,6 +219,24 @@ TEST_F(CommandLineParserTest, FileOption) {
   CheckParsingFailsWithNoOptions(cmdline);
 }
 
+TEST_F(CommandLineParserTest, FileOptionCorruptFile) {
+  {
+    fs::ofstream file("bad.json");
+    file << "{\"person\": {\"age\": 44}";
+  }
+
+  // clang-format off
+  CommandLine cmdline{
+    "bad.json",
+  };
+  // clang-format on
+
+  CommandLineParser parser(cmdline.argc, cmdline.argv,
+                           CommandLineParser::kFileOption);
+  EXPECT_THROW_ERROR(parser.Parse(), YOGI_ERR_PARSING_FILE_FAILED);
+  EXPECT_FALSE(parser.GetLastErrorString().empty());
+}
+
 TEST_F(CommandLineParserTest, OverrideOption) {
   // clang-format off
   CommandLine cmdline{
