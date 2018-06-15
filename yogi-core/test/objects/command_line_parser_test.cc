@@ -173,6 +173,41 @@ TEST_F(CommandLineParserTest, BranchTimeoutOption) {
 
 TEST_F(CommandLineParserTest, FileOption) {}
 
-TEST_F(CommandLineParserTest, OverrideOption) {}
+TEST_F(CommandLineParserTest, OverrideOption) {
+  // clang-format off
+  CommandLine cmdline{
+    "--override", "{\"person\":{\"age\":42}}",
+    "--o={\"person\":{\"name\":\"Joe\"}}",
+    "-o", "/person/name=Marc",
+  };
+  // clang-format on
 
-TEST_F(CommandLineParserTest, VariableOptions) {}
+  auto section = CheckParsingSucceeds(
+      cmdline, CommandLineParser::kOverrideOption, "person");
+
+  EXPECT_EQ(section.value("age", -1), 42);
+  EXPECT_EQ(section.value("name", "NOT FOUND"), "Marc");
+
+  CheckParsingFailsWithNoOptions(cmdline);
+}
+
+TEST_F(CommandLineParserTest, VariableOptions) {
+  // clang-format off
+  CommandLine cmdline{
+    "--var", "DIR=\"/usr/local\"",
+    "--var=NAME=Yohummus",
+    "--v=NUM=55",
+    "--v", "PI=3.14",
+  };
+  // clang-format on
+
+  auto section = CheckParsingSucceeds(
+      cmdline, CommandLineParser::kVariableOption, "variables");
+
+  EXPECT_EQ(section.value("DIR", "NOT FOUND"), "/usr/local");
+  EXPECT_EQ(section.value("NAME", "NOT FOUND"), "Yohummus");
+  EXPECT_EQ(section.value("NUM", -1), 55);
+  EXPECT_FLOAT_EQ(section.value("PI", -1.0f), 3.14f);
+
+  CheckParsingFailsWithNoOptions(cmdline);
+}

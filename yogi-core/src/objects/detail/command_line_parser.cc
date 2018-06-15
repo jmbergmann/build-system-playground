@@ -321,8 +321,7 @@ void CommandLineParser::ApplyOverrides() {
         direct_json_.merge_patch(ovr.value);
       }
     }
-  }
-  catch (const nlohmann::json::exception& e) {
+  } catch (const nlohmann::json::exception& e) {
     err_description_ = e.what();
     throw api::Error(YOGI_ERR_PARSING_CMDLINE_FAILED);
   }
@@ -335,7 +334,6 @@ void CommandLineParser::LoadConfigFiles() {
       err_description_ = "Could not open "s + file;
       throw api::Error(YOGI_ERR_PARSING_FILE_FAILED);
     }
-
 
     nlohmann::json json;
     try {
@@ -419,8 +417,16 @@ void CommandLineParser::OverrideNotifier(const std::vector<std::string>& val) {
   for (auto& str : val) {
     Override ovr;
 
-    std::string json_str;
     if (str.front() == '{') {
+      ovr.json_pointer_syntax = false;
+
+      try {
+        ovr.value = nlohmann::json::parse(str);
+      } catch (const std::exception& e) {
+        err_description_ = "Parsing \""s + str + "\" failed: " + e.what();
+        throw api::Error(YOGI_ERR_PARSING_CMDLINE_FAILED);
+      }
+    } else {
       ovr.json_pointer_syntax = true;
 
       auto sep_pos = str.find('=');
@@ -430,19 +436,15 @@ void CommandLineParser::OverrideNotifier(const std::vector<std::string>& val) {
       }
 
       ovr.path = nlohmann::json::json_pointer(str.substr(0, sep_pos));
-      json_str = str.substr(sep_pos + 1);
-
-    } else {
-      ovr.json_pointer_syntax = false;
-      json_str = str;
+      auto value_str = str.substr(sep_pos + 1);
+      try {
+        ovr.value = nlohmann::json::parse(value_str);
+      } catch (const nlohmann::json::exception&) {
+        ovr.value = value_str;
+      }
     }
 
-    try {
-      ovr.value = nlohmann::json::parse(json_str);
-    } catch (const std::exception& e) {
-      err_description_ = "Parsing \""s + str + "\" failed: " + e.what();
-      throw api::Error(YOGI_ERR_PARSING_CMDLINE_FAILED);
-    }
+    overrides_.push_back(ovr);
   }
 }
 
@@ -457,7 +459,12 @@ void CommandLineParser::VariableNotifier(const std::vector<std::string>& val) {
     auto name = str.substr(0, sep_pos);
     auto value = str.substr(sep_pos + 1);
 
-    direct_json_["variables"][name] = value;
+    auto& target = direct_json_["variables"][name];
+    try {
+      target = nlohmann::json::parse(value);
+    } catch (const nlohmann::json::exception&) {
+      target = value;
+    }
   }
 }
 
