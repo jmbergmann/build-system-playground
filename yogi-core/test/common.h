@@ -133,6 +133,8 @@ T GetBranchProperty(void* branch, const char* property) {
   return GetBranchInfo(branch)[property].get<T>();
 }
 
+std::string ReadFile(const std::string& filename);
+
 std::ostream& operator<<(std::ostream& os, const std::chrono::nanoseconds& dur);
 std::ostream& operator<<(std::ostream& os,
                          const std::chrono::microseconds& dur);

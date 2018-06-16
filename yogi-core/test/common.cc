@@ -299,6 +299,14 @@ std::map<boost::uuids::uuid, nlohmann::json> GetConnectedBranches(
   return data.branches;
 }
 
+std::string ReadFile(const std::string& filename) {
+  std::ifstream f(filename);
+  EXPECT_TRUE(f.is_open()) << filename;
+  std::string content((std::istreambuf_iterator<char>(f)),
+                      (std::istreambuf_iterator<char>()));
+  return content;
+}
+
 std::ostream& operator<<(std::ostream& os,
                          const std::chrono::nanoseconds& dur) {
   os << dur.count() << "ns";

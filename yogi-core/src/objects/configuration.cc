@@ -10,7 +10,7 @@ namespace objects {
 
 Configuration::Configuration(ConfigurationFlags flags)
     : variables_supported_(!(flags & kDisableVariables)),
-      mutable_cmdline_(!(flags & kMutableCmdline)),
+      mutable_cmdline_(flags & kMutableCmdline),
       json_({}),
       immutable_json_({}) {}
 
@@ -29,7 +29,7 @@ void Configuration::UpdateFromCommandLine(int argc, const char* const* argv,
   VerifyAndMerge(parser.GetFilesConfiguration(),
                  parser.GetDirectConfiguration(), err_desc);
 
-  if (!(options & kMutableCmdline)) {
+  if (!mutable_cmdline_) {
     immutable_json_ = parser.GetDirectConfiguration();
   }
 }
@@ -74,7 +74,7 @@ std::string Configuration::Dump(bool resolve_variables,
       throw api::Error(YOGI_ERR_NO_VARIABLE_SUPPORT);
     }
 
-    return ResolveVariables(json_, nullptr).dump();
+    return ResolveVariables(json_, nullptr).dump(indentation_width);
   } else {
     return json_.dump(indentation_width);
   }
@@ -98,7 +98,10 @@ void Configuration::WriteToFile(const std::string& filename,
     } else {
       f << json_.dump(indentation_width);
     }
-    f << std::endl;
+
+    if (indentation_width != -1) {
+      f << std::endl;
+    }
   } catch (const std::exception& e) {
     YOGI_LOG_ERROR(logger_, "Could not write configuration to "
                                 << filename << ": " << e.what());

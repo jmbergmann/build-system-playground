@@ -154,11 +154,134 @@ TEST_F(ConfigurationTest, UpdateFromCorruptFile) {
   CheckConfigurationIsOriginal();
 }
 
-TEST_F(ConfigurationTest, Dump) {}
+TEST_F(ConfigurationTest, Dump) {
+  void* cfg1 = MakeConfiguration(YOGI_CFG_NONE);
+  void* cfg2 = MakeConfiguration(YOGI_CFG_DISABLE_VARIABLES);
 
-TEST_F(ConfigurationTest, WriteToFile) { TemporaryWorkdirGuard workdir; }
+  char str[1000];
+  int res = YOGI_ConfigurationDump(cfg1, str, sizeof(str), YOGI_TRUE, -1);
+  EXPECT_EQ(res, YOGI_OK);
+  EXPECT_STRNE(str, "");
+  EXPECT_EQ(std::string(str).find_first_of(" \n"), std::string::npos);
 
-TEST_F(ConfigurationTest, ImmutableCommandLine) {}
+  res = YOGI_ConfigurationDump(cfg1, str, sizeof(str), YOGI_FALSE, -1);
+  EXPECT_EQ(res, YOGI_OK);
+  EXPECT_STRNE(str, "");
+  EXPECT_EQ(std::string(str).find_first_of(" \n"), std::string::npos);
+
+  res = YOGI_ConfigurationDump(cfg1, str, sizeof(str), YOGI_TRUE, 2);
+  EXPECT_EQ(res, YOGI_OK);
+  EXPECT_STRNE(str, "");
+  EXPECT_NE(std::string(str).find('\n'), std::string::npos);
+  EXPECT_NE(std::string(str).find("  "), std::string::npos);
+
+  res = YOGI_ConfigurationDump(cfg2, str, sizeof(str), YOGI_FALSE, -1);
+  EXPECT_EQ(res, YOGI_OK);
+  EXPECT_STRNE(str, "");
+  EXPECT_EQ(std::string(str).find_first_of(" \n"), std::string::npos);
+
+  res = YOGI_ConfigurationDump(cfg2, str, sizeof(str), YOGI_TRUE, -1);
+  EXPECT_EQ(res, YOGI_ERR_NO_VARIABLE_SUPPORT);
+}
+
+TEST_F(ConfigurationTest, WriteToFile) {
+  TemporaryWorkdirGuard workdir;
+  void* cfg1 = MakeConfiguration(YOGI_CFG_NONE);
+  void* cfg2 = MakeConfiguration(YOGI_CFG_DISABLE_VARIABLES);
+
+  int res = YOGI_ConfigurationWriteToFile(cfg1, "a.json", YOGI_TRUE, -1);
+  EXPECT_EQ(res, YOGI_OK);
+  auto content = ReadFile("a.json");
+  EXPECT_FALSE(content.empty());
+  EXPECT_EQ(std::string(content).find_first_of(" \n"), std::string::npos);
+
+  res = YOGI_ConfigurationWriteToFile(cfg1, "b.json", YOGI_FALSE, -1);
+  EXPECT_EQ(res, YOGI_OK);
+  content = ReadFile("b.json");
+  EXPECT_FALSE(content.empty());
+  EXPECT_EQ(std::string(content).find_first_of(" \n"), std::string::npos);
+
+  res = YOGI_ConfigurationWriteToFile(cfg1, "c.json", YOGI_TRUE, 2);
+  EXPECT_EQ(res, YOGI_OK);
+  content = ReadFile("c.json");
+  EXPECT_FALSE(content.empty());
+  EXPECT_NE(std::string(content).find('\n'), std::string::npos);
+  EXPECT_NE(std::string(content).find("  "), std::string::npos);
+
+  res = YOGI_ConfigurationWriteToFile(cfg2, "d.json", YOGI_FALSE, -1);
+  EXPECT_EQ(res, YOGI_OK);
+  content = ReadFile("d.json");
+  EXPECT_FALSE(content.empty());
+  EXPECT_EQ(std::string(content).find_first_of(" \n"), std::string::npos);
+
+  res = YOGI_ConfigurationWriteToFile(cfg2, "e.json", YOGI_TRUE, -1);
+  EXPECT_EQ(res, YOGI_ERR_NO_VARIABLE_SUPPORT);
+}
+
+TEST_F(ConfigurationTest, ImmutableCommandLine) {
+  TemporaryWorkdirGuard workdir;
+  {
+    fs::ofstream file("a.json");
+    file << "{\"person\": {\"age\": 10}}";
+  }
+
+  // clang-format off
+  CommandLine cmdline{
+    "--name", "My Branch",
+    "--override", "{\"person\":{\"age\":55}}",
+    "a.json",
+  };
+
+  nlohmann::json json_update = {
+    {"person", {
+      {"age", 88}
+    }},
+    {"branch", {
+      {"name", "Edgar"}
+    }}
+  };
+  // clang-format on
+
+  // Immutable command line
+  void* cfg1 = MakeConfiguration(YOGI_CFG_NONE);
+  int res = YOGI_ConfigurationUpdateFromCommandLine(
+      cfg1, cmdline.argc, cmdline.argv, YOGI_CLO_ALL, nullptr, 0);
+  EXPECT_EQ(res, YOGI_OK);
+  auto json = DumpConfiguration(cfg1);
+  ASSERT_TRUE(json.count("person")) << json;
+  EXPECT_EQ(json["person"].value("age", -1), 55);
+  ASSERT_TRUE(json.count("branch")) << json;
+  EXPECT_EQ(json["branch"].value("name", "NOT FOUND"), "My Branch");
+
+  res = YOGI_ConfigurationUpdateFromJson(cfg1, json_update.dump().c_str(),
+                                         nullptr, 0);
+  EXPECT_EQ(res, YOGI_OK);
+  json = DumpConfiguration(cfg1);
+  ASSERT_TRUE(json.count("person")) << json;
+  EXPECT_EQ(json["person"].value("age", -1), 55);
+  ASSERT_TRUE(json.count("branch")) << json;
+  EXPECT_EQ(json["branch"].value("name", "NOT FOUND"), "My Branch");
+
+  // Mutable command line
+  void* cfg2 = MakeConfiguration(YOGI_CFG_MUTABLE_CMDLINE);
+  res = YOGI_ConfigurationUpdateFromCommandLine(
+      cfg2, cmdline.argc, cmdline.argv, YOGI_CLO_ALL, nullptr, 0);
+  EXPECT_EQ(res, YOGI_OK);
+  json = DumpConfiguration(cfg2);
+  ASSERT_TRUE(json.count("person")) << json;
+  EXPECT_EQ(json["person"].value("age", -1), 55);
+  ASSERT_TRUE(json.count("branch")) << json;
+  EXPECT_EQ(json["branch"].value("name", "NOT FOUND"), "My Branch");
+
+  res = YOGI_ConfigurationUpdateFromJson(cfg2, json_update.dump().c_str(),
+                                         nullptr, 0);
+  EXPECT_EQ(res, YOGI_OK);
+  json = DumpConfiguration(cfg2);
+  ASSERT_TRUE(json.count("person")) << json;
+  EXPECT_EQ(json["person"].value("age", -1), 88);
+  ASSERT_TRUE(json.count("branch")) << json;
+  EXPECT_EQ(json["branch"].value("name", "NOT FOUND"), "Edgar");
+}
 
 TEST_F(ConfigurationTest, Variables) {}
 
