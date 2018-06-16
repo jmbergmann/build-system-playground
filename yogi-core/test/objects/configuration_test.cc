@@ -283,6 +283,87 @@ TEST_F(ConfigurationTest, ImmutableCommandLine) {
   EXPECT_EQ(json["branch"].value("name", "NOT FOUND"), "Edgar");
 }
 
-TEST_F(ConfigurationTest, Variables) {}
+TEST_F(ConfigurationTest, Variables) {
+  // clang-format off
+  nlohmann::json json_update = {
+    {"person", {
+      {"age", "${AGE}"},
+      {"age-string", "${AGE} years"},
+      {"name", "${NAME} Wayne"}
+    }},
+    {"variables", {
+      {"AGE", 33},
+      {"NAME", "Joe ${MIDDLENAME}"}
+    }}
+  };
+  // clang-format on
 
-TEST_F(ConfigurationTest, BadVariables) {}
+  // clang-format off
+  CommandLine cmdline{
+    "--var", "MIDDLENAME=Rob",
+  };
+  // clang-format on
+
+  char err_desc[1000];
+  int res = YOGI_ConfigurationUpdateFromCommandLine(cfg_, cmdline.argc,
+                                                    cmdline.argv, YOGI_CLO_ALL,
+                                                    err_desc, sizeof(err_desc));
+  ASSERT_EQ(res, YOGI_OK);
+  EXPECT_STREQ(err_desc, "");
+
+  res = YOGI_ConfigurationUpdateFromJson(cfg_, json_update.dump().c_str(),
+                                         err_desc, sizeof(err_desc));
+  ASSERT_EQ(res, YOGI_OK) << err_desc;
+  EXPECT_STREQ(err_desc, "");
+
+  auto json = DumpConfiguration(cfg_);
+  ASSERT_TRUE(json.count("person")) << json;
+  EXPECT_EQ(json["person"].value("age", -1), 33);
+  EXPECT_EQ(json["person"].value("age-string", "NOT FOUND"), "33 years");
+  EXPECT_EQ(json["person"].value("name", "NOT FOUND"), "Joe Rob Wayne");
+  ASSERT_TRUE(json.count("variables")) << json;
+  EXPECT_EQ(json["variables"].value("AGE", -1), 33);
+  EXPECT_EQ(json["variables"].value("NAME", "NOT FOUND"), "Joe Rob");
+  EXPECT_EQ(json["variables"].value("MIDDLENAME", "NOT FOUND"), "Rob");
+}
+
+TEST_F(ConfigurationTest, BadVariables) {
+  // clang-format off
+  nlohmann::json json = {
+    {"name", "My ${NAME} please"}
+  };
+  // clang-format on
+
+  char err_desc[1000];
+  int res = YOGI_ConfigurationUpdateFromJson(cfg_, json.dump().c_str(),
+                                             err_desc, sizeof(err_desc));
+  ASSERT_EQ(res, YOGI_ERR_UNDEFINED_VARIABLES) << err_desc;
+  EXPECT_NE(std::string(err_desc).find("NAME"), std::string::npos);
+
+  // clang-format off
+  json = {
+    {"name", "Var ${NAME is unterminated"}
+  };
+  // clang-format on
+
+  res = YOGI_ConfigurationUpdateFromJson(cfg_, json.dump().c_str(), err_desc,
+                                         sizeof(err_desc));
+  ASSERT_EQ(res, YOGI_ERR_UNDEFINED_VARIABLES) << err_desc;
+  EXPECT_NE(std::string(err_desc).find("NAME is unterminated"),
+            std::string::npos);
+
+  // clang-format off
+  json = {
+    {"variables", {
+      {"ABX", "${ABO}"},
+      {"ABO", "${ABI}"},
+      {"ABI", "${ABX}"},
+    }}
+  };
+  // clang-format on
+
+  res = YOGI_ConfigurationUpdateFromJson(cfg_, json.dump().c_str(), err_desc,
+                                         sizeof(err_desc));
+  ASSERT_EQ(res, YOGI_ERR_UNDEFINED_VARIABLES) << err_desc;
+  EXPECT_NE(std::string(err_desc).find("AB"), std::string::npos);
+}

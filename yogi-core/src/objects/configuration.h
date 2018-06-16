@@ -51,6 +51,8 @@ class Configuration
 
   static void CheckVariablesOnlyUsedInValues(nlohmann::json* json,
                                              std::string* err_desc);
+  static void CheckAllVariablesAreResolved(nlohmann::json* json,
+                                           std::string* err_desc);
 
   void VerifyAndMerge(const nlohmann::json& json_to_merge,
                       const nlohmann::json& immutable_json,

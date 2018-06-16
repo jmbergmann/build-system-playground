@@ -115,7 +115,8 @@ void Configuration::CheckCircularVariableDependency(
   if (var_val.is_string()) {
     auto str = var_val.get<std::string>();
     if (str.find(var_ref) != std::string::npos) {
-      *err_desc = "Circular dependency in "s + var_ref;
+      *err_desc = "Circular dependency in variable \""s +
+                  var_ref.substr(2, var_ref.size() - 3) + '"';
       throw api::Error(YOGI_ERR_UNDEFINED_VARIABLES);
     }
   }
@@ -145,7 +146,9 @@ void Configuration::ResolveSingleVariable(nlohmann::json* elem,
   if (val == var_ref) {
     *elem = var_val;
   } else {
-    boost::replace_all(val, var_ref, var_val.dump());
+    auto replacement =
+        var_val.is_string() ? var_val.get<std::string>() : var_val.dump();
+    boost::replace_all(val, var_ref, replacement);
     *elem = val;
   }
 }
@@ -192,6 +195,21 @@ void Configuration::CheckVariablesOnlyUsedInValues(nlohmann::json* json,
   });
 }
 
+void Configuration::CheckAllVariablesAreResolved(nlohmann::json* json,
+                                                 std::string* err_desc) {
+  WalkAllElements(json, [=](const auto&, const auto* elem) {
+    if (!elem->is_string()) return;
+    auto val = elem->get<std::string>();
+    auto pos = val.find("${");
+    if (pos != std::string::npos) {
+      *err_desc = "Variable \""s +
+                  val.substr(pos + 2, val.find('}', pos + 2) - pos - 2) +
+                  "\" could not be resolved";
+      throw api::Error(YOGI_ERR_UNDEFINED_VARIABLES);
+    }
+  });
+}
+
 void Configuration::VerifyAndMerge(const nlohmann::json& json_to_merge,
                                    const nlohmann::json& immutable_json,
                                    std::string* err_desc) {
@@ -201,7 +219,8 @@ void Configuration::VerifyAndMerge(const nlohmann::json& json_to_merge,
 
   if (variables_supported_) {
     CheckVariablesOnlyUsedInValues(&new_json, err_desc);
-    ResolveVariables(new_json, err_desc);
+    auto resolved_json = ResolveVariables(new_json, err_desc);
+    CheckAllVariablesAreResolved(&resolved_json, err_desc);
   }
 
   json_ = new_json;
