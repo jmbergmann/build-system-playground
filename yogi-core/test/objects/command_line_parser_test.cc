@@ -174,7 +174,6 @@ TEST_F(CommandLineParserTest, BranchTimeoutOption) {
 
 TEST_F(CommandLineParserTest, FileOption) {
   TemporaryWorkdirGuard workdir;
-
   {
     fs::ofstream file("a.json");
     file << "{\"person\": {\"name\": \"Joe\", \"age\": 42}}";
@@ -206,7 +205,6 @@ TEST_F(CommandLineParserTest, FileOption) {
 
 TEST_F(CommandLineParserTest, FileOptionCorruptFile) {
   TemporaryWorkdirGuard workdir;
-
   {
     fs::ofstream file("bad.json");
     file << "{\"person\": {\"age\": 44}";

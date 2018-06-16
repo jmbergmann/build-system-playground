@@ -34,8 +34,14 @@ YOGI_API int YOGI_ConfigurationUpdateFromCommandLine(void* config, int argc,
     auto cfg = api::ObjectRegister::Get<objects::Configuration>(config);
 
     std::string err_desc;
-    cfg->UpdateFromCommandLine(argc, argv,
-                               ConvertFlags(options, Options::kNoOptions), &err_desc);
+    try {
+      cfg->UpdateFromCommandLine(
+          argc, argv, ConvertFlags(options, Options::kNoOptions), &err_desc);
+    } catch (...) {
+      CopyStringToUserBuffer(err_desc, err, errsize);
+      throw;
+    }
+
     CopyStringToUserBuffer(err_desc, err, errsize);
   }
   CATCH_AND_RETURN;
@@ -51,7 +57,13 @@ YOGI_API int YOGI_ConfigurationUpdateFromJson(void* config, const char* json,
     auto cfg = api::ObjectRegister::Get<objects::Configuration>(config);
 
     std::string err_desc;
-    cfg->UpdateFromString(json, &err_desc);
+    try {
+      cfg->UpdateFromString(json, &err_desc);
+    } catch (...) {
+      CopyStringToUserBuffer(err_desc, err, errsize);
+      throw;
+    }
+
     CopyStringToUserBuffer(err_desc, err, errsize);
   }
   CATCH_AND_RETURN;
@@ -68,20 +80,29 @@ YOGI_API int YOGI_ConfigurationUpdateFromFile(void* config,
     auto cfg = api::ObjectRegister::Get<objects::Configuration>(config);
 
     std::string err_desc;
-    cfg->UpdateFromFile(filename, &err_desc);
+    try {
+      cfg->UpdateFromFile(filename, &err_desc);
+    } catch (...) {
+      CopyStringToUserBuffer(err_desc, err, errsize);
+      throw;
+    }
+
     CopyStringToUserBuffer(err_desc, err, errsize);
   }
   CATCH_AND_RETURN;
 }
 
-YOGI_API int YOGI_ConfigurationDump(void* config, char* json, int jsonsize) {
+YOGI_API int YOGI_ConfigurationDump(void* config, char* json, int jsonsize,
+                                    int resvars, int indent) {
   CHECK_PARAM(config != nullptr);
   CHECK_PARAM(json != nullptr);
   CHECK_PARAM(jsonsize > 0);
+  CHECK_PARAM(resvars == YOGI_TRUE || resvars == YOGI_FALSE);
+  CHECK_PARAM(indent >= -1);
 
   try {
     auto cfg = api::ObjectRegister::Get<objects::Configuration>(config);
-    auto str = cfg->Dump(true);
+    auto str = cfg->Dump(resvars == YOGI_TRUE, indent);
     if (!CopyStringToUserBuffer(str, json, jsonsize)) {
       return YOGI_ERR_BUFFER_TOO_SMALL;
     }
@@ -94,7 +115,7 @@ YOGI_API int YOGI_ConfigurationWriteToFile(void* config, const char* filename,
   CHECK_PARAM(config != nullptr);
   CHECK_PARAM(filename != nullptr);
   CHECK_PARAM(resvars == YOGI_TRUE || resvars == YOGI_FALSE);
-  CHECK_PARAM(indent >= 0);
+  CHECK_PARAM(indent >= -1);
 
   try {
     auto cfg = api::ObjectRegister::Get<objects::Configuration>(config);

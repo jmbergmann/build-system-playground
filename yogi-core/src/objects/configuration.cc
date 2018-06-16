@@ -10,7 +10,9 @@ namespace objects {
 
 Configuration::Configuration(ConfigurationFlags flags)
     : variables_supported_(!(flags & kDisableVariables)),
-      mutable_cmdline_(!(flags & kMutableCmdline)) {}
+      mutable_cmdline_(!(flags & kMutableCmdline)),
+      json_({}),
+      immutable_json_({}) {}
 
 void Configuration::UpdateFromCommandLine(int argc, const char* const* argv,
                                           CommandLineOptions options,
@@ -65,7 +67,8 @@ void Configuration::UpdateFromFile(const std::string& filename,
   VerifyAndMerge(json, immutable_json_, err_desc);
 }
 
-std::string Configuration::Dump(bool resolve_variables) const {
+std::string Configuration::Dump(bool resolve_variables,
+                                int indentation_width) const {
   if (resolve_variables) {
     if (!variables_supported_) {
       throw api::Error(YOGI_ERR_NO_VARIABLE_SUPPORT);
@@ -73,7 +76,7 @@ std::string Configuration::Dump(bool resolve_variables) const {
 
     return ResolveVariables(json_, nullptr).dump();
   } else {
-    return json_.dump();
+    return json_.dump(indentation_width);
   }
 }
 
@@ -90,8 +93,11 @@ void Configuration::WriteToFile(const std::string& filename,
   }
 
   try {
-    f << std::setw(indentation_width);
-    f << (resolve_variables ? ResolveVariables(json_, nullptr) : json_);
+    if (resolve_variables) {
+      f << ResolveVariables(json_, nullptr).dump(indentation_width);
+    } else {
+      f << json_.dump(indentation_width);
+    }
     f << std::endl;
   } catch (const std::exception& e) {
     YOGI_LOG_ERROR(logger_, "Could not write configuration to "
@@ -144,6 +150,10 @@ void Configuration::ResolveSingleVariable(nlohmann::json* elem,
 nlohmann::json Configuration::ResolveVariables(
     const nlohmann::json& unresolved_json, std::string* err_desc) {
   auto json = unresolved_json;
+  if (!json.count("variables")) {
+    return json;
+  }
+
   auto& vars = json["variables"];
 
   ResolveVariablesSections(&vars, err_desc);
@@ -161,7 +171,10 @@ nlohmann::json Configuration::ResolveVariables(
 template <typename Fn>
 void Configuration::WalkAllElements(nlohmann::json* json, Fn fn) {
   for (auto it = json->begin(); it != json->end(); ++it) {
-    WalkAllElements(&it.value(), fn);
+    if (it.value().is_structured()) {
+      WalkAllElements(&it.value(), fn);
+    }
+
     fn(it.key(), &it.value());
   }
 }

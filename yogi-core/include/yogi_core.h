@@ -976,11 +976,16 @@ YOGI_API int YOGI_ConfigurationUpdateFromFile(void* config,
  * \param[in]  config   The configuration
  * \param[out] json     Pointer to a string for storing the configuration
  * \param[in]  jsonsize Maximum number of bytes to write to \p json
+ * \param[in]  resvars  Set to YOGI_TRUE to resolve any variables before writing
+ *                      the configuration to \p json and YOGI_FALSE otherwise
+ * \param[in]  indent   Indentation size (number of space characters to use);
+ *                      -1 omits new lines as well
  *
  * \returns [=0] #YOGI_OK if successful
  * \returns [<0] An error code in case of a failure (see \ref EC)
  ******************************************************************************/
-YOGI_API int YOGI_ConfigurationDump(void* config, char* json, int jsonsize);
+YOGI_API int YOGI_ConfigurationDump(void* config, char* json, int jsonsize,
+                                    int resvars, int indent);
 
 /***************************************************************************//**
  * Writes the configuration to a file
@@ -991,7 +996,8 @@ YOGI_API int YOGI_ConfigurationDump(void* config, char* json, int jsonsize);
  * \param[in] filename Path to the output file
  * \param[in] resvars  Set to YOGI_TRUE to resolve any variables before writing
  *                     the configuration to the file and YOGI_FALSE otherwise
- * \param[in] indent   Indentation size (number of space characters to use)
+ * \param[in] indent   Indentation size (number of space characters to use);
+ *                     -1 omits new lines as well
  *
  * \returns [=0] #YOGI_OK if successful
  * \returns [<0] An error code in case of a failure (see \ref EC)

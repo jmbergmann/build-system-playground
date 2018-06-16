@@ -31,7 +31,7 @@ class Configuration
                              CommandLineOptions options, std::string* err_desc);
   void UpdateFromString(const std::string& json_str, std::string* err_desc);
   void UpdateFromFile(const std::string& filename, std::string* err_desc);
-  std::string Dump(bool resolve_variables) const;
+  std::string Dump(bool resolve_variables, int indentation_width) const;
   void WriteToFile(const std::string& filename, bool resolve_variables,
                    int indentation_width) const;
 
