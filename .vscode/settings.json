@@ -85,6 +85,19 @@
     "**/bin/": true,
     "**/obj/": true,
     "build/": true,
-    "**/.exe/": true
-  }
+    "**/.exe/": true,
+    "**/__pycache__/": true,
+    "**/*.dll": true
+  },
+  "python.unitTest.unittestArgs": [
+    "-v",
+    "-s",
+    "./yogi-python",
+    "-p",
+    "test_*.py"
+  ],
+  "python.unitTest.pyTestEnabled": false,
+  "python.unitTest.nosetestsEnabled": false,
+  "python.unitTest.unittestEnabled": false,
+  "python.unitTest.promptToConfigure": false
 }
