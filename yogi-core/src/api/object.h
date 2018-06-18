@@ -17,6 +17,7 @@ enum class ObjectType {
   kTimer,
   kBranch,
   kConfiguration,
+  kSignalSet,
 };
 
 typedef void* ObjectHandle;
@@ -56,9 +57,7 @@ typedef std::shared_ptr<ExposedObject> ObjectPtr;
 template <typename TO, ObjectType TK>
 class ExposedObjectT : public ExposedObject {
  public:
-  static constexpr ObjectType StaticType() {
-    return TK;
-  }
+  static constexpr ObjectType StaticType() { return TK; }
 
   template <typename... TArgs>
   static std::shared_ptr<TO> Create(TArgs&&... args) {
@@ -87,18 +86,26 @@ class ObjectRegister {
     return obj->second->Cast<TO>();
   }
 
-  template <typename TO>
-  static std::vector<std::shared_ptr<TO>> GetAll() {
+  template <typename TO, typename TP>
+  static std::vector<std::shared_ptr<TO>> GetMatching(TP predicate) {
     std::lock_guard<std::mutex> lock(mutex_);
 
     std::vector<std::shared_ptr<TO>> vec;
     for (auto& obj : objects_) {
       if (obj.second->Type() == TO::StaticType()) {
-        vec.push_back(std::static_pointer_cast<TO>(obj.second));
+        auto typed_obj = std::static_pointer_cast<TO>(obj.second);
+        if (predicate(typed_obj)) {
+          vec.emplace_back(std::move(typed_obj));
+        }
       }
     }
 
     return vec;
+  }
+
+  template <typename TO>
+  static std::vector<std::shared_ptr<TO>> GetAll() {
+    return GetMatching<TO>([](auto&) { return true; });
   }
 
   static ObjectHandle Register(const ObjectPtr& obj);

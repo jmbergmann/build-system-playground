@@ -72,7 +72,8 @@
     "forward_list": "cpp",
     "map": "cpp",
     "numeric": "cpp",
-    "fstream": "cpp"
+    "fstream": "cpp",
+    "xxatomic": "cpp"
   },
   "files.exclude": {
     "**/.git": true,

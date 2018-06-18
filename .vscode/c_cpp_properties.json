@@ -57,7 +57,8 @@
                 "C:/Program Files (x86)/Windows Kits/10/Include/10.0.16299.0/winrt",
                 "${workspaceRoot}/yogi-core/include",
                 "${workspaceRoot}/yogi-cpp/include",
-                "C:/vcpkg/installed/x86-windows/include"
+                "C:/vcpkg/installed/x86-windows/include",
+                "C:/vcpkg/installed/x86-windows-static/include"
             ],
             "defines": [
                 "_DEBUG",
@@ -74,7 +75,9 @@
                     "C:/Program Files (x86)/Windows Kits/10/Include/10.0.16299.0/shared",
                     "C:/Program Files (x86)/Windows Kits/10/Include/10.0.16299.0/winrt",
                     "${workspaceRoot}/yogi-core/include",
-                    "${workspaceRoot}/yogi-cpp/include"
+                    "${workspaceRoot}/yogi-cpp/include",
+                "C:/vcpkg/installed/x64-windows/include",
+                "C:/vcpkg/installed/x64-windows-static/include"
                 ],
                 "limitSymbolsToIncludedHeaders": true,
                 "databaseFilename": ""

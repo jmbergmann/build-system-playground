@@ -35,6 +35,7 @@ add_library (yogi-core-static STATIC
   src/objects/configuration.cc
   src/objects/context.cc
   src/objects/logger.cc
+  src/objects/signal_set.cc
   src/objects/timer.cc
   src/utils/console.cc
   src/utils/crypto.cc
@@ -112,7 +113,7 @@ add_executable (yogi-core-test
   test/objects/connection_manager_test.cc
   test/objects/context_test.cc
   test/objects/logger_test.cc
-  test/objects/signals_test.cc
+  test/objects/signal_set_test.cc
   test/objects/timer_test.cc
   test/utils/glob_test.cc
   test/utils/serialize_test.cc

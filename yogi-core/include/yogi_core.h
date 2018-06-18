@@ -268,6 +268,64 @@
 
 //! @}
 //!
+//! @defgroup SIG Signals
+//!
+//! Definitions of various signals.
+//!
+//! Signals in Yogi are intended to be used similar to POSIX signals. They have
+//! to be raised explicitly by the user (e.g. when receiving an actual POSIX
+//! signal like SIGINT) via YOGI_RaiseSignal(). A signal will be received by
+//! all signal sets containing that signal.
+//!
+//! @{
+
+//! No signal
+#define YOGI_SIG_NONE 0
+
+//! Interrupt (e.g. by receiving SIGINT or pressing STRG + C)
+#define YOGI_SIG_INT (1<<0)
+
+//! Termination request (e.g. by receiving SIGTERM)
+#define YOGI_SIG_TERM (1<<1)
+
+//! User-defined signal 1
+#define YOGI_SIG_USR1 (1<<24)
+
+//! User-defined signal 2
+#define YOGI_SIG_USR2 (1<<25)
+
+//! User-defined signal 3
+#define YOGI_SIG_USR3 (1<<26)
+
+//! User-defined signal 4
+#define YOGI_SIG_USR4 (1<<27)
+
+//! User-defined signal 5
+#define YOGI_SIG_USR5 (1<<28)
+
+//! User-defined signal 6
+#define YOGI_SIG_USR6 (1<<29)
+
+//! User-defined signal 7
+#define YOGI_SIG_USR7 (1<<30)
+
+//! User-defined signal 8
+#define YOGI_SIG_USR8 (1<<31)
+
+//! All signals
+#define YOGI_SIG_ALL ( YOGI_SIG_INT  \
+                     | YOGI_SIG_TERM \
+                     | YOGI_SIG_USR1 \
+                     | YOGI_SIG_USR2 \
+                     | YOGI_SIG_USR3 \
+                     | YOGI_SIG_USR4 \
+                     | YOGI_SIG_USR5 \
+                     | YOGI_SIG_USR6 \
+                     | YOGI_SIG_USR7 \
+                     | YOGI_SIG_USR8 )
+
+//! @}
+//!
 //! @defgroup CFG Configuration Options
 //!
 //! Definitions flags used to change a configuration object's behaviour.
@@ -425,23 +483,6 @@
                      | YOGI_CLO_OVERRIDES      \
                      | YOGI_CLO_VARIABLES      \
                      )
-
-//! @}
-//!
-//! @defgroup SIG Interrupt Signals
-//!
-//! Definitions of interrupt signals that can be caught.
-//!
-//! @{
-
-//! No signal
-#define YOGI_SIG_NONE 0
-
-//! CTRL+C signal (SIGINT)
-#define YOGI_SIG_INT (1<<0)
-
-//! Termination request (SIGTERM)
-#define YOGI_SIG_TERM (1<<1)
 
 //! @}
 //!
@@ -1190,42 +1231,91 @@ YOGI_API int YOGI_ContextPost(void* context, void (*fn)(void* userarg),
                               void* userarg);
 
 /***************************************************************************//**
- * Waits for an interrupt signal to occur.
+ * Raises a signal
  *
- * The handler \p fn will be called if one of the signals specified in
- * \p signals is caught. The parameters passed to \p fn are:
+ * Signals in Yogi are intended to be used similar to POSIX signals. They have
+ * to be raised explicitly by the user (e.g. when receiving an actual POSIX
+ * signal like SIGINT) via this function. A signal will be received by all
+ * signal sets containing that signal.
+ *
+ * The \p sigarg parameter can be used to deliver user-defined data to the
+ * signal handlers. The \p cnt parameter is populated with the number of signal
+ * handlers to be executed and is inteded to be used for memory management
+ * purposes for \p sigarg; i.e. once \p cnt signal handlers have been executed,
+ * \p sigarg won't be used any more.
+ *
+ * \param[in]  signal The signal to raise (see \ref SIG)
+ * \param[in]  sigarg User-defined data to pass to the event handlers
+ * \param[out] cnt    Number of signal handlers scheduled for execution (can be
+ *                    set to NULL)
+ *
+ * \returns [=0] #YOGI_OK if successful
+ * \returns [<0] An error code in case of a failure (see \ref EC)
+ ******************************************************************************/
+YOGI_API int YOGI_RaiseSignal(int signal, void* sigarg, int* cnt);
+
+/***************************************************************************//**
+ * Creates a new signal set.
+ *
+ * Signal sets are used to receive signals raised via YOGI_RaiseSignal().
+ *
+ * Signals are queued until they are can be delived by means of calls to
+ * YOGI_SignalSetAwait().
+ *
+ * \param[out] sigset  Pointer to the signal set handle
+ * \param[in]  context The context to use
+ * \param[in]  signals The signals to listen for
+ *
+ * \returns [=0] #YOGI_OK if successful
+ * \returns [<0] An error code in case of a failure (see \ref EC)
+ ******************************************************************************/
+YOGI_API int YOGI_SignalSetCreate(void** sigset, void* context, int signals);
+
+/***************************************************************************//**
+ * Waits for a signal to be raised.
+ *
+ * The handler \p fn will be called after one of the signals in the signal set
+ * is caught. The parameters passed to \p fn are:
  * -# *res*: YOGI_OK or error code in case of a failure (see \ref EC)
  * -# *sig*: The caught signal (see \ref SIG)
+ * -# *sigarg*: User-defined parameter passed to YOGI_RaiseSignal()
+ * -# *remcnt*: Number of remaining handler invokations
  * -# *userarg*: Value of the user-specified \p userarg parameter
+ *
+ * Note: The *remcnt* parameter of the handler function is intended to be used
+ *       for memory management purposes. For example, if the user code allocates
+ *       an object that they pass as *sigarg* to YOGI_RaiseSignal() then that
+ *       object can be destroyed once the last handler function, i.e. the
+ *       handler function with *remcnt* = 0, gets called.
  *
  * Note: Calling this function on the same context again before the signal has
  *       been caught will cause the previously registered handler function to
  *       be called with the the YOGI_ERR_CANCELED error.
  *
- * \param[in] context The context to use
- * \param[in] signals Signals to catch (set to 0 for all signals)
+ * \param[in] sigset  The signal set
  * \param[in] fn      The function to call
  * \param[in] userarg User-specified argument to be passed to \p fn
  *
  * \returns [=0] #YOGI_OK if successful
  * \returns [<0] An error code in case of a failure (see \ref EC)
  ******************************************************************************/
-YOGI_API int YOGI_AwaitSignal(void* context, int signals,
-                              void (*fn)(int res, int sig, void* userarg),
-                              void* userarg);
+YOGI_API int YOGI_SignalSetAwait(void* sigset,
+                                 void (*fn)(int res, int sig, void* sigarg,
+                                            int remcnt, void* userarg),
+                                 void* userarg);
 
 /***************************************************************************//**
- * Cancels waiting for an interrupt signal.
+ * Cancels waiting for a signal.
  *
- * Causes the handler function registered via YOGI_AwaitSignal() to be called
+ * Causes the handler function registered via YOGI_SignalSetAwait() to be called
  * with YOGI_ERR_CANCELED.
  *
- * \param[in] context The context that was used for the wait operation
+ * \param[in] sigset The signal set
  *
  * \returns [=0] #YOGI_OK if successful
  * \returns [<0] An error code in case of a failure (see \ref EC)
  ******************************************************************************/
-YOGI_API int YOGI_CancelAwaitSignal(void* context);
+YOGI_API int YOGI_SignalSetCancelAwait(void* sigset);
 
 /***************************************************************************//**
  * Creates a new timer.

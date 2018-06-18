@@ -16,6 +16,7 @@ inline Enum ConvertFlags(int flags, Enum default_flags) {
   return flags ? static_cast<Enum>(flags) : default_flags;
 }
 
+bool IsExactlyOneBitSet(int bit_field);
 bool IsTimeFormatValid(const std::string& fmt);
 bool IsLogFormatValid(std::string fmt);
 void CopyUuidToUserBuffer(const boost::uuids::uuid& uuid, void* buffer);

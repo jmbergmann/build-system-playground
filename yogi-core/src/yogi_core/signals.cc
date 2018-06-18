@@ -1,31 +1,61 @@
 #include "macros.h"
 #include "helpers.h"
-#include "../objects/context.h"
+#include "../objects/signal_set.h"
 
-YOGI_API int YOGI_AwaitSignal(void* context, int signals,
-                              void (*fn)(int res, int sig, void* userarg),
-                              void* userarg) {
-  using Signals = objects::Context::Signals;
+YOGI_API int YOGI_RaiseSignal(int signal, void* evarg, int* cnt) {
+  using Signals = objects::SignalSet::Signals;
 
-  CHECK_PARAM(context != nullptr);
-  CHECK_PARAM(fn != nullptr);
-  CHECK_FLAGS(signals, Signals::kAllSignals);
+  CHECK_PARAM(signal, Signals::kAllSignals);
+  CHECK_PARAM(IsExactlyOneBitSet(signal));
 
   try {
-    auto ctx = api::ObjectRegister::Get<objects::Context>(context);
-    ctx->AwaitSignal(
-        ConvertFlags(signals, Signals::kAllSignals),
-        [=](auto& res, auto sig) { fn(res.error_code(), sig, userarg); });
+    int n = objects::SignalSet::RaiseSignal(
+        ConvertFlags(signal, Signals::kNoSignal), evarg);
+    if (cnt) {
+      *cnt = n;
+    }
   }
   CATCH_AND_RETURN;
 }
 
-YOGI_API int YOGI_CancelAwaitSignal(void* context) {
+YOGI_API int YOGI_SignalSetCreate(void** sigset, void* context, int signals) {
+  using Signals = objects::SignalSet::Signals;
+
+  CHECK_PARAM(sigset != nullptr);
   CHECK_PARAM(context != nullptr);
+  CHECK_FLAGS(signals, Signals::kAllSignals);
 
   try {
     auto ctx = api::ObjectRegister::Get<objects::Context>(context);
-    ctx->CancelAwaitSignal();
+    auto set = objects::SignalSet::Create(
+        ctx, ConvertFlags(signals, Signals::kNoSignal));
+    *sigset = api::ObjectRegister::Register(set);
+  }
+  CATCH_AND_RETURN;
+}
+
+YOGI_API int YOGI_SignalSetAwait(void* sigset,
+                                 void (*fn)(int res, int sig, void* evarg,
+                                            int remcnt, void* userarg),
+                                 void* userarg) {
+  CHECK_PARAM(sigset != nullptr);
+  CHECK_PARAM(fn != nullptr);
+
+  try {
+    auto set = api::ObjectRegister::Get<objects::SignalSet>(sigset);
+    set->Await([=](auto& res, auto signal, void* evarg, int remcnt) {
+      fn(res.error_code(), signal, evarg, remcnt, userarg);
+    });
+  }
+  CATCH_AND_RETURN;
+}
+
+YOGI_API int YOGI_SignalSetCancelAwait(void* sigset) {
+  CHECK_PARAM(sigset != nullptr);
+
+  try {
+    auto set = api::ObjectRegister::Get<objects::SignalSet>(sigset);
+    set->CancelAwait();
   }
   CATCH_AND_RETURN;
 }

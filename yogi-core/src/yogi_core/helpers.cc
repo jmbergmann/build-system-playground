@@ -4,6 +4,11 @@
 #include <boost/algorithm/string.hpp>
 #include <regex>
 
+bool IsExactlyOneBitSet(int bit_field) {
+  auto x = static_cast<unsigned int>(bit_field);
+  return x && !(x & (x - 1));
+}
+
 bool IsTimeFormatValid(const std::string& fmt) {
   if (fmt.empty()) return false;
 
