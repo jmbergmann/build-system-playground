@@ -1,3 +1,16 @@
+# Compiler flags
+if (WIN32)
+  set (CMAKE_CXX_FLAGS "/EHsc /permissive- /W4 /w14640")
+  use_static_windows_runtime ()
+else ()
+  set (warnings                  "-Wall -Wextra -Wnon-virtual-dtor -pedantic -Wold-style-cast -Wcast-align -Wunused -Woverloaded-virtual -Wconversion -Wsign-conversion -Wduplicated-cond -Wlogical-op -Wnull-dereference")
+  set (ignored_warnings          "-Wno-unused-variable -Wno-unused-function -Wno-overloaded-virtual -Wno-unused-value -Wno-shadow -Wno-trigraphs")
+  set (CMAKE_CXX_STANDARD        14)
+  set (CMAKE_CXX_FLAGS           "-std=c++${CMAKE_CXX_STANDARD} ${warnings} ${ignored_warnings}")
+  set (CMAKE_CXX_FLAGS_DEBUG     "-g -ggdb")
+  set (CMAKE_CXX_FLAGS_RELEASE   "-O2 -DNDEBUG")
+endif ()
+
 # Static library
 add_library (yogi-hub-static STATIC
   src/random_stuff.cc

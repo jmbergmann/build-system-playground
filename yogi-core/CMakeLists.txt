@@ -1,6 +1,7 @@
 # Compiler flags
 if (WIN32)
-  set (CMAKE_CXX_FLAGS             "/EHsc /permissive- /W4 /w14640")
+  set (CMAKE_CXX_FLAGS "/EHsc /permissive- /W4 /w14640")
+  use_static_windows_runtime ()
 else ()
   set (warnings                  "-Wall -Wextra -Wnon-virtual-dtor -pedantic -Wold-style-cast -Wcast-align -Wunused -Woverloaded-virtual -Wconversion -Wsign-conversion -Wduplicated-cond -Wlogical-op -Wnull-dereference")
   set (ignored_warnings          "-Wno-unused-variable -Wno-unused-function -Wno-overloaded-virtual -Wno-unused-value -Wno-shadow -Wno-trigraphs")

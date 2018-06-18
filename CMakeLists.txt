@@ -27,6 +27,8 @@ find_package (OpenSSL REQUIRED)
 
 # Boost
 set (Boost_USE_STATIC_LIBS ON)
+set (Boost_USE_STATIC_RUNTIME OFF)
+set (Boost_USE_DEBUG_RUNTIME ON)
 set (Boost_MULTITHREADED ON)
 find_package (Boost 1.66
   COMPONENTS system filesystem thread date_time program_options
@@ -35,6 +37,15 @@ add_library (boost INTERFACE IMPORTED)
 set_property (TARGET boost
   PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIR})
 find_package (Threads REQUIRED)
+
+# Static runtime on Windows
+macro (use_static_windows_runtime)
+  foreach (flag_var CMAKE_CXX_FLAGS CMAKE_CXX_FLAGS_DEBUG CMAKE_CXX_FLAGS_RELEASE CMAKE_CXX_FLAGS_MINSIZEREL CMAKE_CXX_FLAGS_RELWITHDEBINFO)
+    if (${flag_var} MATCHES "/MD")
+      string (REGEX REPLACE "/MD" "/MT" ${flag_var} "${${flag_var}}")
+    endif ()
+  endforeach ()
+endmacro ()
 
 # Read required Python version from setup.py
 file (STRINGS "${CMAKE_SOURCE_DIR}/yogi-python/setup.py" python_version

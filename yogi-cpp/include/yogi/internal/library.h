@@ -6,7 +6,7 @@
 #include <string>
 #include <iostream>
 
-#if defined(WIN32)
+#ifdef _WIN32
 # include <Windows.h>
 #else
 # include <dlfcn.h>
@@ -44,7 +44,7 @@ class Library final {
     return reinterpret_cast<Fn>(addr);
   }
 
-#if defined(WIN32)
+#ifdef _WIN32
   typedef HMODULE LibraryHandle;
   typedef FARPROC ProcAddress;
 #else
@@ -78,7 +78,7 @@ class Library final {
   static std::string GetLastErrorString();
 };
 
-#if defined(WIN32)
+#ifdef _WIN32
 
 const char* Library::GetFilename() {
   #pragma warning(push)
