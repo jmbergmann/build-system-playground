@@ -73,7 +73,9 @@
     "map": "cpp",
     "numeric": "cpp",
     "fstream": "cpp",
-    "xxatomic": "cpp"
+    "xxatomic": "cpp",
+    "deque": "cpp",
+    "queue": "cpp"
   },
   "files.exclude": {
     "**/.git": true,

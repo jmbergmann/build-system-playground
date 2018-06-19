@@ -1239,20 +1239,26 @@ YOGI_API int YOGI_ContextPost(void* context, void (*fn)(void* userarg),
  * signal sets containing that signal.
  *
  * The \p sigarg parameter can be used to deliver user-defined data to the
- * signal handlers. The \p cnt parameter is populated with the number of signal
- * handlers to be executed and is inteded to be used for memory management
- * purposes for \p sigarg; i.e. once \p cnt signal handlers have been executed,
- * \p sigarg won't be used any more.
+ * signal handlers. The cleanup handler \p fn will be called once all signal
+ * handlers have been called; it is intended to be used for memory management
+ * purposes. Once \p fn has been called, \p sigarg is not used any more and
+ * can be destroyed.
  *
- * \param[in]  signal The signal to raise (see \ref SIG)
- * \param[in]  sigarg User-defined data to pass to the event handlers
- * \param[out] cnt    Number of signal handlers scheduled for execution (can be
- *                    set to NULL)
+ * Note: The cleanup handler \p fn can get called either from within the
+ *       YOGI_RaiseSignal() function or from any context within the program.
+ *
+ * \param[in] signal  The signal to raise (see \ref SIG)
+ * \param[in] sigarg  User-defined data to pass to the event handlers
+ * \param[in] fn      Function to be called once all signal handlers have been
+ *                    executed (can be NULL)
+ * \param[in] userarg User-specified argument to be passed to \p fn
  *
  * \returns [=0] #YOGI_OK if successful
  * \returns [<0] An error code in case of a failure (see \ref EC)
  ******************************************************************************/
-YOGI_API int YOGI_RaiseSignal(int signal, void* sigarg, int* cnt);
+YOGI_API int YOGI_RaiseSignal(int signal, void* sigarg,
+                              void (*fn)(void* sigarg, void* userarg),
+                              void* userarg);
 
 /***************************************************************************//**
  * Creates a new signal set.
@@ -1279,14 +1285,7 @@ YOGI_API int YOGI_SignalSetCreate(void** sigset, void* context, int signals);
  * -# *res*: YOGI_OK or error code in case of a failure (see \ref EC)
  * -# *sig*: The caught signal (see \ref SIG)
  * -# *sigarg*: User-defined parameter passed to YOGI_RaiseSignal()
- * -# *remcnt*: Number of remaining handler invokations
  * -# *userarg*: Value of the user-specified \p userarg parameter
- *
- * Note: The *remcnt* parameter of the handler function is intended to be used
- *       for memory management purposes. For example, if the user code allocates
- *       an object that they pass as *sigarg* to YOGI_RaiseSignal() then that
- *       object can be destroyed once the last handler function, i.e. the
- *       handler function with *remcnt* = 0, gets called.
  *
  * Note: Calling this function on the same context again before the signal has
  *       been caught will cause the previously registered handler function to
@@ -1301,7 +1300,7 @@ YOGI_API int YOGI_SignalSetCreate(void** sigset, void* context, int signals);
  ******************************************************************************/
 YOGI_API int YOGI_SignalSetAwait(void* sigset,
                                  void (*fn)(int res, int sig, void* sigarg,
-                                            int remcnt, void* userarg),
+                                            void* userarg),
                                  void* userarg);
 
 /***************************************************************************//**

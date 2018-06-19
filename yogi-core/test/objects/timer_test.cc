@@ -70,3 +70,16 @@ TEST_F(TimerTest, Cancel) {
 
   EXPECT_EQ(handler_res, YOGI_ERR_CANCELED);
 }
+
+TEST_F(TimerTest, Destruction) {
+  int handler_res = 1;
+  int res = YOGI_TimerStart(
+      timer_, -1,  // Infinite timeout
+      [](int res_, void* handler_res_) { *static_cast<int*>(handler_res_) = res_; },
+      &handler_res);
+
+  YOGI_Destroy(timer_);
+
+  YOGI_ContextRunOne(context_, nullptr, -1);
+  EXPECT_EQ(handler_res, YOGI_ERR_CANCELED);
+}

@@ -45,6 +45,7 @@ class ConnectionManager final
                     const boost::asio::ip::udp::endpoint& adv_ep,
                     ConnectionChangedHandler connection_changed_handler,
                     MessageHandler message_handler);
+  virtual ~ConnectionManager();
 
   void Start(BranchInfoPtr info);
 

@@ -29,6 +29,10 @@ ConnectionManager::ConnectionManager(
   SetupAcceptor(adv_ep.protocol() == udp::v4() ? tcp::v4() : tcp::v6());
 }
 
+ConnectionManager::~ConnectionManager() {
+  CancelAwaitEvent();
+}
+
 void ConnectionManager::Start(BranchInfoPtr info) {
   info_ = info;
   StartAccept();

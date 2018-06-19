@@ -29,13 +29,16 @@ class SignalSet
     kAllSignals = YOGI_SIG_ALL,
   };
 
+  typedef std::function<void()> CleanupHandler;
   typedef std::function<void(const api::Error& res, Signals signal,
-                             void* sigarg, int remcnt)>
+                             void* sigarg)>
       AwaitHandler;
 
-  static int RaiseSignal(Signals signal, void* sigarg);
+  static void RaiseSignal(Signals signal, void* sigarg,
+                          CleanupHandler cleanup_handler);
 
   SignalSet(ContextPtr context, Signals signals);
+  virtual ~SignalSet();
 
   Signals GetSignals() const { return signals_; }
   void Await(AwaitHandler handler);
@@ -46,6 +49,7 @@ class SignalSet
     Signals signal;
     void* sigarg;
     int cnt;
+    CleanupHandler cleanup_handler;
   };
 
   typedef std::shared_ptr<SignalData> SignalDataPtr;

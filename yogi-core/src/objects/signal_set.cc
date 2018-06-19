@@ -4,25 +4,27 @@
 
 namespace objects {
 
-int SignalSet::RaiseSignal(Signals signal, void* sigarg) {
+void SignalSet::RaiseSignal(Signals signal, void* sigarg,
+                            CleanupHandler cleanup_handler) {
   YOGI_ASSERT(signal != kNoSignal);
 
   auto data = std::make_shared<SignalData>();
   data->signal = signal;
   data->sigarg = sigarg;
+  data->cleanup_handler = cleanup_handler;
 
-  auto sets = api::ObjectRegister::GetMatching<SignalSet>([&](auto& set) {
-    return set->GetSignals() & signal;
-  });
+  auto sets = api::ObjectRegister::GetMatching<SignalSet>(
+      [&](auto& set) { return set->GetSignals() & signal; });
 
-  int n = static_cast<int>(sets.size());
-  data->cnt = n;
+  data->cnt = static_cast<int>(sets.size());
+  if (data->cnt == 0) {
+    data->cleanup_handler();
+    return;
+  }
 
   for (auto& set : sets) {
     set->OnSignalRaised(data);
   }
-
-  return n;
 }
 
 SignalSet::SignalSet(ContextPtr context, Signals signals)
@@ -34,7 +36,7 @@ void SignalSet::Await(AwaitHandler handler) {
   if (handler_) {
     auto old_handler = handler_;
     context_->Post([old_handler] {
-      old_handler(api::Error(YOGI_ERR_CANCELED), kNoSignal, nullptr, 0);
+      old_handler(api::Error(YOGI_ERR_CANCELED), kNoSignal, nullptr);
     });
   }
 
@@ -43,6 +45,20 @@ void SignalSet::Await(AwaitHandler handler) {
   if (!queue_.empty()) {
     DeliverNextSignal();
   }
+}
+
+SignalSet::~SignalSet() {
+  while (!queue_.empty()) {
+    auto data = queue_.front();
+    queue_.pop();
+
+    --data->cnt;
+    if (data->cnt == 0) {
+      context_->Post([data] { data->cleanup_handler(); });
+    }
+  }
+
+  CancelAwait();
 }
 
 void SignalSet::CancelAwait() { Await({}); }
@@ -68,9 +84,12 @@ void SignalSet::DeliverNextSignal() {
   auto data = queue_.front();
   queue_.pop();
 
-  context_->Post([handler, data]{
+  context_->Post([handler, data] {
+    handler(api::kSuccess, data->signal, data->sigarg);
     --data->cnt;
-    handler(api::kSuccess, data->signal, data->sigarg, data->cnt);
+    if (data->cnt == 0) {
+      data->cleanup_handler();
+    }
   });
 }
 
