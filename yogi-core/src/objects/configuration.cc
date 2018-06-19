@@ -164,7 +164,7 @@ nlohmann::json Configuration::ResolveVariables(
 
   ResolveVariablesSections(&vars, err_desc);
 
-  WalkAllElements(&json, [&](const auto& key, auto* elem) {
+  WalkAllElements(&json, [&](const auto&, auto* elem) {
     for (auto it = vars.cbegin(); it != vars.cend(); ++it) {
       auto var_ref = "${"s + it.key() + '}';
       ResolveSingleVariable(elem, var_ref, it.value());
