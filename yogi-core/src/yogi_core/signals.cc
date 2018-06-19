@@ -7,7 +7,7 @@ YOGI_API int YOGI_RaiseSignal(int signal, void* sigarg,
                               void* userarg) {
   using Signals = objects::SignalSet::Signals;
 
-  CHECK_PARAM(signal, Signals::kAllSignals);
+  CHECK_FLAGS(signal, Signals::kAllSignals);
   CHECK_PARAM(IsExactlyOneBitSet(signal));
 
   try {
