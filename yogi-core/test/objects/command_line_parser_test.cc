@@ -36,7 +36,8 @@ class CommandLineParserTest : public Test {
 
     auto section = CheckParsingSucceeds(cmdline, options, section_name);
     ASSERT_TRUE(!!section.count(key));
-    EXPECT_FLOAT_EQ(section[key].get<T>(), val);
+    EXPECT_FLOAT_EQ(static_cast<float>(section[key].get<T>()),
+                    static_cast<float>(val));
 
     CheckParsingFailsWithNoOptions(cmdline);
   }
