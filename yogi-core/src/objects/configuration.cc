@@ -199,7 +199,7 @@ void Configuration::CheckAllVariablesAreResolved(nlohmann::json* json,
                                                  std::string* err_desc) {
   WalkAllElements(json, [=](const auto&, const auto* elem) {
     if (!elem->is_string()) return;
-    auto val = elem->get<std::string>();
+    auto val = elem->template get<std::string>();
     auto pos = val.find("${");
     if (pos != std::string::npos) {
       *err_desc = "Variable \""s +
