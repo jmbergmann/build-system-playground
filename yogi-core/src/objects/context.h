@@ -63,6 +63,6 @@ class Context : public api::ExposedObjectT<Context, api::ObjectType::kContext> {
 
 typedef std::shared_ptr<Context> ContextPtr;
 
-YOGI_DEFINE_FLAG_OPERATORS(Context::Signals);
+YOGI_DEFINE_FLAG_OPERATORS(Context::Signals)
 
 }  // namespace objects

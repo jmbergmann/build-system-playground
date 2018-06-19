@@ -84,7 +84,7 @@ class CommandLineParser {
   std::vector<Override> overrides_;
 };
 
-YOGI_DEFINE_FLAG_OPERATORS(CommandLineParser::CommandLineOptions);
+YOGI_DEFINE_FLAG_OPERATORS(CommandLineParser::CommandLineOptions)
 
 }  // namespace detail
 }  // namespace objects

@@ -145,7 +145,7 @@ class ConnectionManager final
 
 typedef std::shared_ptr<ConnectionManager> ConnectionManagerPtr;
 
-YOGI_DEFINE_FLAG_OPERATORS(ConnectionManager::BranchEvents);
+YOGI_DEFINE_FLAG_OPERATORS(ConnectionManager::BranchEvents)
 
 }  // namespace detail
 }  // namespace objects

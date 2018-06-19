@@ -67,6 +67,6 @@ class SignalSet
 
 typedef std::shared_ptr<SignalSet> SignalSetPtr;
 
-YOGI_DEFINE_FLAG_OPERATORS(SignalSet::Signals);
+YOGI_DEFINE_FLAG_OPERATORS(SignalSet::Signals)
 
 }  // namespace objects

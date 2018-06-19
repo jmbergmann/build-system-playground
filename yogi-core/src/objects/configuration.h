@@ -70,6 +70,6 @@ class Configuration
 
 typedef std::shared_ptr<Configuration> ConfigurationPtr;
 
-YOGI_DEFINE_FLAG_OPERATORS(Configuration::ConfigurationFlags);
+YOGI_DEFINE_FLAG_OPERATORS(Configuration::ConfigurationFlags)
 
 }  // namespace objects

@@ -64,12 +64,12 @@ void CommandLineParser::AddLoggingOptions() {
   if (options_ & kLoggingOptions) {
     visible_options_.add_options()(
       "log-file", po::value<std::string>()->notifier([&](auto& val) {
-        LogFileNotifier(val);
+        this->LogFileNotifier(val);
       }),
       "Path to the logfile with support for time placeholders; set to NONE to disable"
     )(
       "log-console", po::value<std::string>()->notifier([&](auto& val) {
-        LogConsoleNotifier(val);
+        this->LogConsoleNotifier(val);
       })->implicit_value("STDERR"s),
       "Log to either STDOUT, STDERR or NONE (implicit value is STDERR)"
     )(
@@ -89,7 +89,7 @@ void CommandLineParser::AddLoggingOptions() {
       "Format of a log entry's timestamp (use time placeholders)"
     )(
       "log-verbosity", po::value<std::vector<std::string>>()->notifier([&](auto& val) {
-        LogVerbosityNotifier(val);
+        this->LogVerbosityNotifier(val);
       }),
       "Logger verbosities (e.g. --log-verbosity='Yogi.*=DEBUG')"
     );
@@ -204,7 +204,7 @@ void CommandLineParser::AddOverrideOptions() {
   if (options_ & kOverrideOption) {
     visible_options_.add_options()(
       "override,o", po::value<std::vector<std::string>>()->notifier([&](auto& val) {
-        OverrideNotifier(val);
+        this->OverrideNotifier(val);
       }),
       "Configuration overrides in either JSON Merge Patch (RFC 7386) format"
       " (--override '{\"person\":{\"age\":42}}') or simplified using JSON"
@@ -219,7 +219,7 @@ void CommandLineParser::AddVariableOptions() {
   if (options_ & kVariableOption) {
     visible_options_.add_options()(
       "var,v", po::value<std::vector<std::string>>()->notifier([&](auto& val) {
-        VariableNotifier(val);
+        this->VariableNotifier(val);
       }),
       "Configuration variables (e.g. --var 'DIR=\"/usr/local\"')"
     );
