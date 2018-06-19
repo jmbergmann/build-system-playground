@@ -188,7 +188,7 @@ void CommandLineParser::AddFileOptions() {
     auto name = "_cfg_files";
     hidden_options_.add_options()(
       name, po::value<std::vector<std::string>>()->notifier([&](auto& val) {
-        FileNotifier(val);
+        this->FileNotifier(val);
       }),
       "Configuration files (JSON format); multiple files will be merged"
       " according to JSON Merge Patch (RFC 7386) from left to right"
