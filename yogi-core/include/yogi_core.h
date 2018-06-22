@@ -869,37 +869,6 @@ YOGI_API int YOGI_LoggerLog(void* logger, int severity, const char* file,
                             int line, const char* msg);
 
 /***************************************************************************//**
- * Destroys an object.
- *
- * Tries to destroy the object belonging to the given handle. The call fails and
- * returns #YOGI_ERR_OBJECT_STILL_USED if the object is still being used by other
- * objects that have been created via other library calls.
- *
- * Never destroy a context object from within a handler function that is executed
- * through the same context.
- *
- * Destroying an object will cause any active asynchronous operations to get
- * canceled and the corresponding completion handlers will be invoked with an
- * error code of #YOGI_ERR_CANCELED.
- ******************************************************************************/
-YOGI_API int YOGI_Destroy(void* object);
-
-/***************************************************************************//**
- * Destroys all objects.
- *
- * Destroys all previously created objects. All handles will be invalidated and
- * must not be used any more. This effectively resets the library.
- *
- * This function must be called outside of any handler function that is executed
- * through a context's event loop.
- *
- * Destroying objects will cause any active asynchronous operations to get
- * canceled and the corresponding completion handlers will be invoked with an
- * error code of #YOGI_ERR_CANCELED.
- ******************************************************************************/
-YOGI_API int YOGI_DestroyAll();
-
-/***************************************************************************//**
  * Creates a configuration.
  *
  * A configuration represents a set of parameters that usually remain constant
@@ -1573,6 +1542,37 @@ YOGI_API int YOGI_BranchAwaitEvent(
  * \returns [<0] An error code in case of a failure (see \ref EC)
  ******************************************************************************/
 YOGI_API int YOGI_BranchCancelAwaitEvent(void* branch);
+
+/***************************************************************************//**
+ * Destroys an object.
+ *
+ * Tries to destroy the object belonging to the given handle. The call fails and
+ * returns #YOGI_ERR_OBJECT_STILL_USED if the object is still being used by other
+ * objects that have been created via other library calls.
+ *
+ * Never destroy a context object from within a handler function that is executed
+ * through the same context.
+ *
+ * Destroying an object will cause any active asynchronous operations to get
+ * canceled and the corresponding completion handlers will be invoked with an
+ * error code of #YOGI_ERR_CANCELED.
+ ******************************************************************************/
+YOGI_API int YOGI_Destroy(void* object);
+
+/***************************************************************************//**
+ * Destroys all objects.
+ *
+ * Destroys all previously created objects. All handles will be invalidated and
+ * must not be used any more. This effectively resets the library.
+ *
+ * This function must be called outside of any handler function that is executed
+ * through a context's event loop.
+ *
+ * Destroying objects will cause any active asynchronous operations to get
+ * canceled and the corresponding completion handlers will be invoked with an
+ * error code of #YOGI_ERR_CANCELED.
+ ******************************************************************************/
+YOGI_API int YOGI_DestroyAll();
 
 //! @}
 
