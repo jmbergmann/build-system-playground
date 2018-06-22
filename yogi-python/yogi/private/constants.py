@@ -1,7 +1,8 @@
-from .errors import *
-from ctypes import *
+from .errors import api_result_handler
 from .logging import Verbosity
-from . import library  # To make sure the library is loaded first
+from .library import yogi
+
+from ctypes import c_void_p, c_int, c_char_p, c_longlong, byref
 
 
 yogi.YOGI_GetConstant.restype = api_result_handler

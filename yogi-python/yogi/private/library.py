@@ -1,6 +1,7 @@
 import os
 import platform
-from ctypes import *
+import ctypes
+
 
 # Determine shared library path and filename
 lib_filename = os.getenv('YOGI_CORE_LIBRARY')
@@ -14,7 +15,7 @@ if lib_filename is None:
 
 # Load the shared library
 try:
-    yogi = cdll.LoadLibrary(lib_filename)
+    yogi = ctypes.cdll.LoadLibrary(lib_filename)
 except Exception as e:
     raise Exception('ERROR: Could not load {}: {}. Make sure the library is in your library search path.'
                     .format(lib_filename, e))

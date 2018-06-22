@@ -1,5 +1,6 @@
 from .library import yogi
-from ctypes import *
+
+from ctypes import c_char_p
 
 yogi.YOGI_GetVersion.restype = c_char_p
 yogi.YOGI_GetVersion.argtypes = []

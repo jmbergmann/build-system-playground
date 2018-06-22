@@ -1,5 +1,6 @@
 from .library import yogi
-from ctypes import *
+
+from ctypes import c_char_p, c_int
 
 
 yogi.YOGI_GetErrorString.restype = c_char_p
