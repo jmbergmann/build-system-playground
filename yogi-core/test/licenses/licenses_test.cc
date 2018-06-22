@@ -52,3 +52,19 @@ TEST_F(LicensesTest, JsonLicense) {
     "Licensed under the MIT License"
   });
 }
+
+TEST_F(LicensesTest, JsoOpenSslLicense) {
+  Check3rdPartyLicense({
+    "OpenSSL License",
+    "The OpenSSL Project",
+    "http://www.openssl.org",
+    "Original SSLeay License"
+  });
+}
+
+TEST_F(LicensesTest, BoostLicense) {
+  Check3rdPartyLicense({
+    "Boost Software License - Version 1.0",
+    "WITHOUT WARRANTY OF ANY KIND"
+  });
+}
