@@ -7,10 +7,12 @@ from .class_property import class_property
 yogi.YOGI_GetConstant.restype = api_result_handler
 yogi.YOGI_GetConstant.argtypes = [c_void_p, c_int]
 
+
 def get_constant(api_id, api_type):
-    c = api_type();
+    c = api_type()
     yogi.YOGI_GetConstant(byref(c), api_id)
     return c.value.decode() if api_type is c_char_p else c.value
+
 
 class Constants:
     @class_property

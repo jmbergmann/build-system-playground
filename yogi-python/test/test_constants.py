@@ -1,12 +1,14 @@
 import yogi
 import unittest
 
+
 class TestConstants(unittest.TestCase):
     def test_version_number(self):
         c = yogi.Constants.VERSION_NUMBER
         self.assertIsInstance(c, str)
         self.assertGreater(len(c), 4)
-        self.assertEqual(c, "{}.{}.{}".format(yogi.Constants.VERSION_MAJOR, yogi.Constants.VERSION_MINOR, yogi.Constants.VERSION_PATCH))
+        self.assertEqual(c, "{}.{}.{}".format(yogi.Constants.VERSION_MAJOR,
+                                              yogi.Constants.VERSION_MINOR, yogi.Constants.VERSION_PATCH))
 
     def test_version_major(self):
         c = yogi.Constants.VERSION_MAJOR
@@ -61,6 +63,7 @@ class TestConstants(unittest.TestCase):
         c = yogi.Constants.DEFAULT_ADV_INTERVAL
         self.assertIsInstance(c, int)
         self.assertGreaterEqual(c, 1000)
+
 
 if __name__ == '__main__':
     unittest.main()

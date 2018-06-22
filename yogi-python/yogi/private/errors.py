@@ -18,14 +18,13 @@ class Result:
         return self._value >= 0
 
     def __eq__(self, other) -> bool:
-        return self._value == other.value and isinstance(other, Result)
+        return isinstance(other, Result) and self._value == other.value
 
     def __ne__(self, other) -> bool:
         return not (self == other)
 
     def __str__(self) -> str:
-        s = yogi.YOGI_GetErrorString(self._value if self._value < 0 else 0).decode()
-        return '[{}] {}'.format(self._value, s)
+        return yogi.YOGI_GetErrorString(self._value).decode()
 
     def __hash__(self)-> int:
         return self._value

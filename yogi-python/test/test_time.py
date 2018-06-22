@@ -2,6 +2,7 @@ import yogi
 import unittest
 import datetime
 
+
 class TestTime(unittest.TestCase):
     def test_get_current_time(self):
         t = yogi.get_current_time()
@@ -10,6 +11,7 @@ class TestTime(unittest.TestCase):
         delta = datetime.timedelta(seconds=1)
         self.assertGreater(t, now - delta)
         self.assertLess(t, now + delta)
+
 
 if __name__ == '__main__':
     unittest.main()

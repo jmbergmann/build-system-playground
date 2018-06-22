@@ -1,6 +1,7 @@
 import yogi
 import unittest
 
+
 class TestLicenses(unittest.TestCase):
     def test_license(self):
         lic = yogi.get_license()
@@ -12,6 +13,7 @@ class TestLicenses(unittest.TestCase):
         self.assertIsInstance(lic, str)
         self.assertGreater(len(lic), 100)
         self.assertNotEqual(yogi.get_license(), lic)
+
 
 if __name__ == '__main__':
     unittest.main()

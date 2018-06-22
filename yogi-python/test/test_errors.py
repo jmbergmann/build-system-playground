@@ -1,6 +1,7 @@
 import yogi
 import unittest
 
+
 class TestErrors(unittest.TestCase):
     def test_result(self):
         self.assertFalse(yogi.Result(-1))
@@ -27,6 +28,7 @@ class TestErrors(unittest.TestCase):
         self.assertEqual(str(yogi.Success(1)), str(yogi.Result(1)))
         self.assertEqual(yogi.Success(1), yogi.Result(1))
         self.assertIsInstance(yogi.Success(1), yogi.Result)
+
 
 if __name__ == '__main__':
     unittest.main()
