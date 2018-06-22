@@ -67,21 +67,17 @@
 //! Default connection timeout in nanoseconds (long long)
 #define YOGI_CONST_DEFAULT_CONNECTION_TIMEOUT 8
 
-//! Default time until a discovered but unconnected remote branch will be
-//! removed from the list of discovered branches
-#define YOGI_CONST_DEFAULT_BRANCHES_CLEANUP_INTERVAL 9
-
 //! Default logging verbosity (int)
-#define YOGI_CONST_DEFAULT_LOGGER_VERBOSITY 10
+#define YOGI_CONST_DEFAULT_LOGGER_VERBOSITY 9
 
 //! Default textual format for timestamps in log entries (const char*)
-#define YOGI_CONST_DEFAULT_LOG_TIME_FORMAT 11
+#define YOGI_CONST_DEFAULT_LOG_TIME_FORMAT 10
 
 //! Default textual format for log entries (const char*)
-#define YOGI_CONST_DEFAULT_LOG_FORMAT 12
+#define YOGI_CONST_DEFAULT_LOG_FORMAT 11
 
-//! Maximum size of a message
-#define YOGI_CONST_MAX_MESSAGE_SIZE 13
+//! Maximum size of a message (int)
+#define YOGI_CONST_MAX_MESSAGE_SIZE 12
 
 //! @}
 //!
