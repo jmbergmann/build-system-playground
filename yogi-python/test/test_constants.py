@@ -8,7 +8,8 @@ class TestConstants(unittest.TestCase):
         self.assertIsInstance(c, str)
         self.assertGreater(len(c), 4)
         self.assertEqual(c, "{}.{}.{}".format(yogi.Constants.VERSION_MAJOR,
-                                              yogi.Constants.VERSION_MINOR, yogi.Constants.VERSION_PATCH))
+                                              yogi.Constants.VERSION_MINOR,
+                                              yogi.Constants.VERSION_PATCH))
 
     def test_version_major(self):
         c = yogi.Constants.VERSION_MAJOR

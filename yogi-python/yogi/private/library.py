@@ -17,5 +17,5 @@ if lib_filename is None:
 try:
     yogi = ctypes.cdll.LoadLibrary(lib_filename)
 except Exception as e:
-    raise Exception('ERROR: Could not load {}: {}. Make sure the library is in your library search path.'
-                    .format(lib_filename, e))
+    raise Exception('ERROR: Could not load {}: {}. Make sure the library is'
+                    ' in your library search path.'.format(lib_filename, e))

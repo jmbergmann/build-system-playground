@@ -1,9 +1,10 @@
 # Download node modules
-set (npm_ok_file node_modules_installed_successfully)
+set (npm_ok_file
+  ${CMAKE_CURRENT_BINARY_DIR}/node_modules_installed_successfully)
 
 add_custom_command (
   OUTPUT ${npm_ok_file}
-  COMMAND npm install && echo > ${CMAKE_CURRENT_BINARY_DIR}/${npm_ok_file}
+  COMMAND npm install && echo > ${npm_ok_file}
   WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
 )
 
@@ -13,7 +14,10 @@ set (bundle_files
   yogi.js.map
 )
 
-file (GLOB_RECURSE src_files src/*.js)
+file (GLOB_RECURSE src_files
+  src/*.js
+  src/**/*.js
+)
 
 add_custom_command (
   OUTPUT ${bundle_files}
