@@ -24,6 +24,7 @@ endif ()
 
 # OpenSSL
 find_package (OpenSSL REQUIRED)
+set (OPENSSL_USE_STATIC_LIBS ON)
 
 # Boost
 set (Boost_USE_STATIC_LIBS ON)
