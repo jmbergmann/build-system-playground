@@ -83,7 +83,7 @@
 //!
 //! @defgroup EC Error Codes
 //!
-//! YOGI error codes are always < 0 and a human-readable description of an
+//! Yogi error codes are always < 0 and a human-readable description of an
 //! error code can be obtained by calling YOGI_GetErrorString().
 //!
 //! @{

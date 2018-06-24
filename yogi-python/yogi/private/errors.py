@@ -1,6 +1,50 @@
 from .library import yogi
 
 from ctypes import c_char_p, c_int
+from enum import IntEnum
+
+
+class ErrorCode(IntEnum):
+    """Error codes returned by functions from the Yogi Core library."""
+    OK = 0
+    UNKNOWN = -1
+    OBJECT_STILL_USED = -2
+    BAD_ALLOC = -3
+    INVALID_PARAM = -4
+    INVALID_HANDLE = -5
+    WRONG_OBJECT_TYPE = -6
+    CANCELED = -7
+    BUSY = -8
+    TIMEOUT = -9
+    TIMER_EXPIRED = -10
+    BUFFER_TOO_SMALL = -11
+    OPEN_SOCKET_FAILED = -12
+    BIND_SOCKET_FAILED = -13
+    LISTEN_SOCKET_FAILED = -14
+    SET_SOCKET_OPTION_FAILED = -15
+    INVALID_REGEX = -16
+    OPEN_FILE_FAILED = -17
+    RW_SOCKET_FAILED = -18
+    CONNECT_SOCKET_FAILED = -19
+    INVALID_MAGIC_PREFIX = -20
+    INCOMPATIBLE_VERSION = -21
+    DESERIALIZE_MSG_FAILED = -22
+    ACCEPT_SOCKET_FAILED = -23
+    LOOPBACK_CONNECTION = -24
+    PASSWORD_MISMATCH = -25
+    NET_NAME_MISMATCH = -26
+    DUPLICATE_BRANCH_NAME = -27
+    DUPLICATE_BRANCH_PATH = -28
+    MESSAGE_TOO_LARGE = -29
+    PARSING_CMDLINE_FAILED = -30
+    PARSING_JSON_FAILED = -31
+    PARSING_FILE_FAILED = -32
+    CONFIG_NOT_VALID = -33
+    HELP_REQUESTED = -34
+    WRITE_TO_FILE_FAILED = -35
+    UNDEFINED_VARIABLES = -36
+    NO_VARIABLE_SUPPORT = -37
+    VARIABLE_USED_IN_KEY = -38
 
 
 yogi.YOGI_GetErrorString.restype = c_char_p
@@ -24,9 +68,13 @@ class Result:
 
     @property
     def value(self) -> int:
-        """The number as returned by the Yogi Core library functions.
-        """
+        """The number as returned by the Yogi Core library functions."""
         return self._value
+
+    @property
+    def error_code(self) -> ErrorCode:
+        """Error code associated with this result."""
+        return ErrorCode(self._value) if self._value < 0 else ErrorCode.OK
 
     def __bool__(self) -> bool:
         return self._value >= 0
@@ -45,8 +93,7 @@ class Result:
 
 
 class Failure(Exception, Result):
-    """Represents the failure of an operation.
-    """
+    """Represents the failure of an operation."""
     def __init__(self, value: int):
         assert value < 0
         Result.__init__(self, value)
@@ -56,8 +103,7 @@ class Failure(Exception, Result):
 
 
 class Success(Result):
-    """Represents the success of an operation.
-    """
+    """Represents the success of an operation."""
     def __init__(self, value: int = 0):
         assert value >= 0
         Result.__init__(self, value)

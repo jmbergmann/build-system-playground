@@ -1,7 +1,7 @@
-from enum import Enum
+from enum import IntEnum
 
 
-class Verbosity(Enum):
+class Verbosity(IntEnum):
     """Levels of how verbose logging output is.
 
     Attributes:
@@ -20,7 +20,7 @@ class Verbosity(Enum):
     TRACE = 5
 
 
-class Stream(Enum):
+class Stream(IntEnum):
     """Output streams for writing to the terminal.
 
     Attributes:
