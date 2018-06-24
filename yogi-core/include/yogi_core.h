@@ -679,8 +679,7 @@ YOGI_API int YOGI_GetCurrentTime(long long* timestamp);
  *  - *%9*: Nanoseconds as decimal number 000 to 999
  *
  * The \p fmt parameter describes the textual format of the complete log entry
- * as it will appear on the console or in a log file. The supported placeholders
- * are:
+ * as it will appear on the console. The supported placeholders are:
  *  - *$t*: Timestamp, formatted according to \p timefmt
  *  - *$P*: Process ID (PID)
  *  - *$T*: Thread ID
@@ -693,7 +692,7 @@ YOGI_API int YOGI_GetCurrentTime(long long* timestamp);
  *  - *$>*: Reset the colours (also done after each log entry)
  *  - *$$*: A $ sign
  *
- * \param[in] verbosity Maximum verbosity of messages to log to stderr
+ * \param[in] verbosity Maximum verbosity of messages to log
  * \param[in] stream    The stream to use (#YOGI_ST_STDOUT or #YOGI_ST_STDERR)
  * \param[in] colour    Use colours in output (#YOGI_TRUE or #YOGI_FALSE)
  * \param[in] timefmt   Format of the timestamp (set to NULL for default)
@@ -708,7 +707,7 @@ YOGI_API int YOGI_LogToConsole(int verbosity, int stream, int colour,
 /***************************************************************************//**
  * Installs a callback function for receiving log entries.
  *
- * This function can be used to get notified whenever the YOGI library itself or
+ * This function can be used to get notified whenever the Yogi library itself or
  * the user produces log messages. These messages can then be processed further
  * in user code.
  *
@@ -720,9 +719,9 @@ YOGI_API int YOGI_LogToConsole(int verbosity, int stream, int colour,
  *       does not have to be thread-safe.
  *
  * The parameters passed to \p fn are:
- *  -# *severity*: Severity (verbosity) of the message (see \ref VB)
- *  -# *timestamp*: Timestamp of the message in nanoseconds since 01/01/1970 UTC
- *  -# *tid*: Thread ID
+ *  -# *severity*: Severity (verbosity) of the entry (see \ref VB)
+ *  -# *timestamp*: Timestamp of the entry in nanoseconds since 01/01/1970 UTC
+ *  -# *tid*: ID of the thread that created the entry
  *  -# *file*: Source file name
  *  -# *line*: Source file line number
  *  -# *comp*: Component that created the entry
@@ -757,7 +756,7 @@ YOGI_API int YOGI_LogToHook(int verbosity,
  * \p verbosity to #YOGI_VB_NONE.
  *
  * The \p timefmt and \p fmt parameters describe the textual format for a log
- * entry. The \p filename parameter supports the all placeholders that are valid
+ * entry. The \p filename parameter supports all placeholders that are valid
  * for \p timefmt See the YOGI_LogToConsole() function for supported
  * placeholders.
  *

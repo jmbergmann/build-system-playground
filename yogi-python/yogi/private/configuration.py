@@ -31,7 +31,7 @@ class CommandLineOptions(IntEnum):
         BRANCH_ADVINT      Include branch advertising interval configuration.
         BRANCH_TIMEOUT     Include branch timeout configuration.
         FILES              Parse configuration files given on the command
-                           .line
+                           line.
         FILES_REQUIRED     Same as YOGI_CLO_FILES but at least one
                            configuration must be given.
         OVERRIDES          Allow overriding arbitrary configuration sections.

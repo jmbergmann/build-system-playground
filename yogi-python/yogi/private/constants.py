@@ -3,6 +3,7 @@ from .logging import Verbosity
 from .library import yogi
 
 from ctypes import c_void_p, c_int, c_char_p, c_longlong, byref
+from typing import ClassVar
 
 
 yogi.YOGI_GetConstant.restype = api_result_handler
