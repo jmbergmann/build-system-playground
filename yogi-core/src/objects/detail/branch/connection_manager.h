@@ -25,8 +25,7 @@ class ConnectionManager final
     kBranchQueriedEvent = YOGI_BEV_BRANCH_QUERIED,
     kConnectFinishedEvent = YOGI_BEV_CONNECT_FINISHED,
     kConnectionLostEvent = YOGI_BEV_CONNECTION_LOST,
-    kAllEvents = kBranchDiscoveredEvent | kBranchQueriedEvent |
-                 kConnectFinishedEvent | kConnectionLostEvent,
+    kAllEvents = YOGI_BEV_ALL,
   };
 
   typedef utils::ByteVector ByteVector;

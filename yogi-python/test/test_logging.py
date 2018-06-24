@@ -1,21 +1,15 @@
 import yogi
 import unittest
 
-from .common import get_core_macro
+from .common import TestCase
 
 
-class TestLogging(unittest.TestCase):
+class TestLogging(TestCase):
     def test_verbosity_enum(self):
-        for vb in yogi.Verbosity:
-            macro_name = "YOGI_VB_" + vb.name
-            macro_val = get_core_macro(macro_name)
-            self.assertEqual(vb, macro_val)
+        self.assertEnumMatches("YOGI_VB_", yogi.Verbosity)
 
     def test_stream_enum(self):
-        for st in yogi.Stream:
-            macro_name = "YOGI_ST_" + st.name
-            macro_val = get_core_macro(macro_name)
-            self.assertEqual(st, macro_val)
+        self.assertEnumMatches("YOGI_ST_", yogi.Stream)
 
 
 if __name__ == '__main__':

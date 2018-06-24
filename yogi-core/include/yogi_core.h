@@ -324,7 +324,7 @@
 //!
 //! @defgroup CFG Configuration Options
 //!
-//! Definitions flags used to change a configuration object's behaviour.
+//! Flags used to change a configuration object's behaviour.
 //!
 //! @{
 
@@ -372,7 +372,7 @@
 //!
 //! @defgroup CLO Command Line Options
 //!
-//! Definitions of flags used to adjust how command line options are parsed.
+//! Flags used to adjust how command line options are parsed.
 //!
 //! @{
 
@@ -508,7 +508,7 @@
 //!   }
 #define YOGI_BEV_BRANCH_DISCOVERED (1<<0)
 
-//! Querying new branch for information finished (successfully or not)
+//! Querying a new branch for information finished (successfully or not)
 //!
 //! Associated event information:
 //!
@@ -545,6 +545,13 @@
 //!     "uuid": "123e4567-e89b-12d3-a456-426655440000"
 //!   }
 #define YOGI_BEV_CONNECTION_LOST (1<<3)
+
+//! All branch events
+#define YOGI_BEV_ALL ( YOGI_BEV_BRANCH_DISCOVERED \
+                     | YOGI_BEV_BRANCH_QUERIED    \
+                     | YOGI_BEV_CONNECT_FINISHED  \
+                     | YOGI_BEV_CONNECTION_LOST   \
+                     )
 
 //! @}
 
@@ -1513,8 +1520,7 @@ YOGI_API int YOGI_BranchGetConnectedBranches(void* branch, void* uuid,
  *       valid until \p fn has been executed.
  *
  * \param[in]  branch   The branch handle
- * \param[in]  events   Events to observe (see \ref BEV); set to 0 to observe
- *                      all events
+ * \param[in]  events   Events to observe (see \ref BEV)
  * \param[out] uuid     Pointer to 16 byte array for storing the UUID
  *                      (can be set to NULL)
  * \param[out] json     Pointer to a char array for storing event information

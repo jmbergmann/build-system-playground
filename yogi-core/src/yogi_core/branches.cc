@@ -110,7 +110,7 @@ YOGI_API int YOGI_BranchAwaitEvent(void* branch, int events, void* uuid,
     auto brn = api::ObjectRegister::Get<objects::Branch>(branch);
 
     brn->AwaitEvent(
-        ConvertFlags(events, BranchEvents::kAllEvents),
+        ConvertFlags(events, BranchEvents::kNoEvent),
         [=](auto& res, auto event, auto& evres, auto& tmp_uuid,
             auto& tmp_json) {
           if (res != api::kSuccess) {

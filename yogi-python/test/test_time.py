@@ -2,8 +2,10 @@ import yogi
 import unittest
 import datetime
 
+from .common import TestCase
 
-class TestTime(unittest.TestCase):
+
+class TestTime(TestCase):
     def test_get_current_time(self):
         t = yogi.get_current_time()
         self.assertIsInstance(t, datetime.datetime)

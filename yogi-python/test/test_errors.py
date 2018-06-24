@@ -1,18 +1,16 @@
 import yogi
 import unittest
 
-from .common import get_core_macro
+from .common import TestCase
 
 
-class TestErrors(unittest.TestCase):
-    def test_error_codes(self):
+class TestErrors(TestCase):
+    def test_error_code_enum(self):
         for ec in yogi.ErrorCode:
-            if ec == yogi.ErrorCode.OK:
-                macro_name = "YOGI_" + ec.name
-            else:
-                macro_name = "YOGI_ERR_" + ec.name
-            macro_val = get_core_macro(macro_name)
-            self.assertEqual(ec, macro_val)
+            prefix = "YOGI_"
+            if ec is not yogi.ErrorCode.OK:
+                prefix += "ERR_"
+            self.assertEnumElementMatches(prefix, ec)
 
     def test_result(self):
         self.assertFalse(yogi.Result(-1))

@@ -1,8 +1,10 @@
 import yogi
 import unittest
 
+from .common import TestCase
 
-class TestLicenses(unittest.TestCase):
+
+class TestLicenses(TestCase):
     def test_license(self):
         lic = yogi.get_license()
         self.assertIsInstance(lic, str)

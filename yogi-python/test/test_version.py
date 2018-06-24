@@ -1,8 +1,10 @@
 import yogi
 import unittest
 
+from .common import TestCase
 
-class TestVersion(unittest.TestCase):
+
+class TestVersion(TestCase):
     def test_get_version(self):
         version = yogi.get_version()
         self.assertIsInstance(version, str)
