@@ -7,6 +7,11 @@ yogi.YOGI_GetLicense.argtypes = []
 
 
 def get_license() -> str:
+    """Retrieve the Yogi license.
+
+    Returns:
+        String containing the Yogi license.
+    """
     return yogi.YOGI_GetLicense().decode()
 
 
@@ -15,4 +20,9 @@ yogi.YOGI_Get3rdPartyLicenses.argtypes = []
 
 
 def get_3rd_party_licenses() -> str:
+    """Retrieve the licenses of 3rd party libraries compiled into Yogi Core.
+
+    Returns:
+        String containing the 3rd party licenses.
+    """
     return yogi.YOGI_Get3rdPartyLicenses().decode()

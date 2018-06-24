@@ -7,4 +7,9 @@ yogi.YOGI_GetVersion.argtypes = []
 
 
 def get_version() -> str:
+    """Retrieve the Yogi Core version.
+
+    Returns:
+        Version string of the loaded Yogi Core library.
+    """
     return yogi.YOGI_GetVersion().decode()

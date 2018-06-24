@@ -10,6 +10,11 @@ yogi.YOGI_GetCurrentTime.argtypes = [POINTER(c_longlong)]
 
 
 def get_current_time() -> datetime.datetime:
+    """Returns the current time.
+
+    Returns:
+        Aware datetime object representing the current time.
+    """
     timestamp = c_longlong()
     yogi.YOGI_GetCurrentTime(byref(timestamp))
     epoch = datetime.datetime(1970, 1, 1, tzinfo=datetime.timezone.utc)

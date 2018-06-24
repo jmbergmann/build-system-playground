@@ -16,6 +16,26 @@ def get_constant(api_id, api_type):
 
 
 class Constants:
+    """Constants built into the Yogi Core library.
+
+    Attributes:
+        VERSION_NUMBER             Complete Yogi Core version number.
+        VERSION_MAJOR              Yogi Core major version number.
+        VERSION_MINOR              Yogi Core minor version number.
+        VERSION_PATCH              Yogi Core patch version number.
+        DEFAULT_ADV_ADDRESS        Default IP address for advertising.
+        DEFAULT_ADV_PORT           Default UDP port for advertising.
+        DEFAULT_ADV_INTERVAL       Default time between two advertising.
+                                   messages.
+        DEFAULT_CONNECTION_TIMEOUT Default timeout for connections between.
+                                   two branches.
+        DEFAULT_LOGGER_VERBOSITY   Default verbosity for newly created
+                                   loggers.
+        DEFAULT_LOG_TIME_FORMAT    Default format of the time string in log.
+                                   entries.
+        DEFAULT_LOG_FORMAT         Default format of a log entry.
+        MAX_MESSAGE_SIZE           Maximum size of a message between branches.
+    """
     VERSION_NUMBER = get_constant(1, c_char_p)  # type: str
     VERSION_MAJOR = get_constant(2, c_int)  # type: int
     VERSION_MINOR = get_constant(3, c_int)  # type: int

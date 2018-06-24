@@ -8,11 +8,24 @@ yogi.YOGI_GetErrorString.argtypes = [c_int]
 
 
 class Result:
+    """Represents a result of an operation.
+
+    This is a wrapper around the result code returned by the function from the
+    Yogi Core library. A result is represented by a number which is >= 0 in
+    case of success and < 0 in case of a failure.
+    """
     def __init__(self, value: int):
+        """Constructs the result.
+
+        Args:
+            value: Number as returned by the Yogi Core library functions.
+        """
         self._value = value
 
     @property
     def value(self) -> int:
+        """The number as returned by the Yogi Core library functions.
+        """
         return self._value
 
     def __bool__(self) -> bool:
@@ -32,6 +45,8 @@ class Result:
 
 
 class Failure(Exception, Result):
+    """Represents the failure of an operation.
+    """
     def __init__(self, value: int):
         assert value < 0
         Result.__init__(self, value)
@@ -41,6 +56,8 @@ class Failure(Exception, Result):
 
 
 class Success(Result):
+    """Represents the success of an operation.
+    """
     def __init__(self, value: int = 0):
         assert value >= 0
         Result.__init__(self, value)
