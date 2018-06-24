@@ -23,3 +23,6 @@ __pycache__/
 yogi-dotnet/**/bin/
 yogi-dotnet/**/obj/
 yogi-dotnet/**/packages/
+
+# VSCode
+.vscode/.ropeproject

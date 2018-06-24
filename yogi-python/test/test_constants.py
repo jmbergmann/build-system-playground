@@ -1,30 +1,30 @@
 import yogi
 import unittest
 
+from .common import get_core_macro
+
 
 class TestConstants(unittest.TestCase):
     def test_version_number(self):
         c = yogi.Constants.VERSION_NUMBER
         self.assertIsInstance(c, str)
         self.assertGreater(len(c), 4)
-        self.assertEqual(c, "{}.{}.{}".format(yogi.Constants.VERSION_MAJOR,
-                                              yogi.Constants.VERSION_MINOR,
-                                              yogi.Constants.VERSION_PATCH))
+        self.assertEqual(c, get_core_macro("YOGI_HDR_VERSION"))
 
     def test_version_major(self):
         c = yogi.Constants.VERSION_MAJOR
         self.assertIsInstance(c, int)
-        self.assertGreaterEqual(c, 0)
+        self.assertGreaterEqual(c, get_core_macro("YOGI_HDR_VERSION_MAJOR"))
 
     def test_version_minor(self):
         c = yogi.Constants.VERSION_MINOR
         self.assertIsInstance(c, int)
-        self.assertGreaterEqual(c, 0)
+        self.assertGreaterEqual(c, get_core_macro("YOGI_HDR_VERSION_MINOR"))
 
     def test_version_patch(self):
         c = yogi.Constants.VERSION_PATCH
         self.assertIsInstance(c, int)
-        self.assertGreaterEqual(c, 0)
+        self.assertGreaterEqual(c, get_core_macro("YOGI_HDR_VERSION_PATCH"))
 
     def test_default_adv_address(self):
         c = yogi.Constants.DEFAULT_ADV_ADDRESS

@@ -1,7 +1,7 @@
 import yogi
 import unittest
 
-from .common import get_yogi_core_macro
+from .common import get_core_macro
 
 
 class TestErrors(unittest.TestCase):
@@ -11,7 +11,7 @@ class TestErrors(unittest.TestCase):
                 macro_name = "YOGI_" + ec.name
             else:
                 macro_name = "YOGI_ERR_" + ec.name
-            macro_val = get_yogi_core_macro(macro_name)
+            macro_val = get_core_macro(macro_name)
             self.assertEqual(ec, macro_val)
 
     def test_result(self):
