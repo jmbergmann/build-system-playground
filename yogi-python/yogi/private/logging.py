@@ -303,7 +303,7 @@ class Logger(Object):
         """
         vb=c_int()
         yogi.YOGI_LoggerGetVerbosity(self._handle, byref(vb))
-        return Verbosity(vb)
+        return Verbosity(vb.value)
 
     @verbosity.setter
     def verbosity(self, verbosity: Verbosity):
