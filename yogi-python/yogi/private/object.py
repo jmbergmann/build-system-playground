@@ -15,6 +15,9 @@ class Object:
         self._handle = handle
 
     def __del__(self):
+        assert self._handle, "Looks like the ctor of the inheriting class" \
+            "forgot to call Object.__init__(self, handle)."
+
         try:
             yogi.YOGI_Destroy(self._handle)
         except Failure:

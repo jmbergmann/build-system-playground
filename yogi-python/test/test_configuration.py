@@ -1,12 +1,24 @@
 import yogi
 import unittest
+import json
+import tempfile
+import shutil
+import os.path
 
 from .common import TestCase
 
 
 class TestConfigurations(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.temp_dir = tempfile.mkdtemp()
+
+    @classmethod
+    def tearDownClass(cls):
+        shutil.rmtree(cls.temp_dir)
+
     def test_configuration_options_enum(self):
-        self.assertEnumMatches("YOGI_CFG_", yogi.ConfigurationOptions)
+        self.assertEnumMatches("YOGI_CFG_", yogi.ConfigurationFlags)
 
     def test_command_line_options_enum(self):
         for opt in yogi.CommandLineOptions:
@@ -18,6 +30,69 @@ class TestConfigurations(TestCase):
                 self.assertFlagCombinationMatches("YOGI_CLO_", opt, exc)
             else:
                 self.assertFlagMatches("YOGI_CLO_", opt)
+
+    def test_flags_property(self):
+        cfg = yogi.Configuration(yogi.ConfigurationFlags.MUTABLE_CMDLINE)
+        self.assertEqual(cfg.flags, yogi.ConfigurationFlags.MUTABLE_CMDLINE)
+
+    def test_update_from_command_line(self):
+        pass
+
+    def test_update_from_json(self):
+        cfg = yogi.Configuration()
+        cfg.update_from_json({"age": 42})
+
+        jsn = json.loads(cfg.dump())
+        self.assertEqual(jsn["age"], 42)
+
+    def test_update_from_file(self):
+        filename = os.path.join(self.temp_dir, "cfg.json")
+        with open(filename, "w") as f:
+            f.write('{"age": 66}')
+
+        cfg = yogi.Configuration()
+        cfg.update_from_file(filename)
+
+        jsn = json.loads(cfg.dump())
+        self.assertEqual(jsn["age"], 66)
+
+    def test_dump(self):
+        cfg = yogi.Configuration(yogi.ConfigurationFlags.DISABLE_VARIABLES)
+        cfg.update_from_json({"age": 42})
+
+        self.assertRaises(yogi.Failure, lambda: cfg.dump(True))
+
+        self.assertFalse(" " in cfg.dump())
+        self.assertFalse("\n" in cfg.dump())
+        self.assertTrue(" " in cfg.dump(indentation=2))
+        self.assertTrue("\n" in cfg.dump(indentation=2))
+
+    def test_write_to_file(self):
+        filename = os.path.join(self.temp_dir, "dump.json")
+
+        cfg = yogi.Configuration(yogi.ConfigurationFlags.DISABLE_VARIABLES)
+        cfg.update_from_json({"age": 11})
+
+        self.assertRaises(yogi.Failure, lambda: cfg.write_to_file(filename,
+                                                                  True))
+
+        cfg.write_to_file(filename)
+        with open(filename) as f:
+            content = f.read()
+            self.assertFalse(" " in content)
+            self.assertFalse("\n" in content)
+
+            jsn = json.loads(content)
+            self.assertEqual(jsn["age"], 11)
+
+        cfg.write_to_file(filename, indentation=2)
+        with open(filename) as f:
+            content = f.read()
+            self.assertTrue(" " in content)
+            self.assertTrue("\n" in content)
+
+            jsn = json.loads(content)
+            self.assertEqual(jsn["age"], 11)
 
 
 if __name__ == '__main__':

@@ -14,6 +14,7 @@ def timestamp_to_datetime(timestamp: int) -> datetime.datetime:
     delta = datetime.timedelta(microseconds=timestamp / 1000)
     return epoch + delta
 
+
 def get_current_time() -> datetime.datetime:
     """Returns the current time.
 

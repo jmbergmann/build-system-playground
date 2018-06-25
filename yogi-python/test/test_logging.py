@@ -115,7 +115,8 @@ class TestLogging(TestCase):
             self.assertEqual(line, 123)
 
         yogi.log_to_hook(yogi.Verbosity.INFO, fn2)
-        logger.log(yogi.Verbosity.WARNING, "Hey dude", file="my file", line=123)
+        logger.log(yogi.Verbosity.WARNING, "Hey dude",
+                   file="my file", line=123)
         self.assertTrue(called)
 
     def test_app_logger(self):

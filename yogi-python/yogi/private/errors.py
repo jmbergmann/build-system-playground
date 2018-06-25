@@ -58,6 +58,7 @@ class Result:
     Yogi Core library. A result is represented by a number which is >= 0 in
     case of success and < 0 in case of a failure.
     """
+
     def __init__(self, value: int):
         """Constructs the result.
 
@@ -86,7 +87,7 @@ class Result:
         return not (self == other)
 
     def __str__(self) -> str:
-        return yogi.YOGI_GetErrorString(self._value).decode()
+        return yogi.YOGI_GetErrorString(self._value).decode("utf-8")
 
     def __hash__(self)-> int:
         return self._value
@@ -94,6 +95,7 @@ class Result:
 
 class Failure(Exception, Result):
     """Represents the failure of an operation."""
+
     def __init__(self, value: int):
         assert value < 0
         Result.__init__(self, value)
@@ -102,8 +104,25 @@ class Failure(Exception, Result):
         return Result.__str__(self)
 
 
+class DescriptiveFailure(Failure):
+    """A failure of an operation which includes a description."""
+
+    def __init__(self, value: int, description: str):
+        Failure.__init__(self, value)
+        self._description = description
+
+    @property
+    def description(self) -> str:
+        """More detailed information of the error."""
+        return self._description
+
+    def __str__(self) -> str:
+        return Failure.__str__(self) + ". Description: " + self._description
+
+
 class Success(Result):
     """Represents the success of an operation."""
+
     def __init__(self, value: int = 0):
         assert value >= 0
         Result.__init__(self, value)

@@ -322,7 +322,7 @@
 
 //! @}
 //!
-//! @defgroup CFG Configuration Options
+//! @defgroup CFG Configuration Flags
 //!
 //! Flags used to change a configuration object's behaviour.
 //!
@@ -884,9 +884,7 @@ YOGI_API int YOGI_LoggerLog(void* logger, int severity, const char* file,
  * also intended to store user-defined parameters.
  *
  * The \p flags parameter is used to change the behaviour of a configuration
- * object in certain key areas (see \ref CFG). If the configuration will be used
- * in combination with YOGI_ConfigurationUpdateFromCommandLine() then consider
- * using at least the YOGI_CFG_IMMUTABLE_CMDLINE flag.
+ * object in certain key areas (see \ref CFG).
  *
  * \param[out] config Pointer to the configuration handle
  * \param[in]  flags  See \ref CFG for possible behaviour adjustments
@@ -897,7 +895,7 @@ YOGI_API int YOGI_LoggerLog(void* logger, int severity, const char* file,
 YOGI_API int YOGI_ConfigurationCreate(void** config, int flags);
 
 /***************************************************************************//**
- * Updates a configuration from the command line options.
+ * Updates a configuration from command line options.
  *
  * The function populates \p err with:
  * - a description of the error if the function returns one of
@@ -976,9 +974,7 @@ YOGI_API int YOGI_ConfigurationUpdateFromFile(void* config,
                                               int errsize);
 
 /***************************************************************************//**
- * Retrieves the configuration as a JSON-formatted string.
- *
- * Any variables in the configuration will be resolved populating \p json.
+ * Retrieves a configuration as a JSON-formatted string.
  *
  * If the configuration is larger than the space provided by \p json and
  * \p jsonsize then this function returns YOGI_ERR_BUFFER_TOO_SMALL, however,
@@ -1000,7 +996,7 @@ YOGI_API int YOGI_ConfigurationDump(void* config, char* json, int jsonsize,
                                     int resvars, int indent);
 
 /***************************************************************************//**
- * Writes the configuration to a file
+ * Writes a configuration to a file in JSON format.
  *
  * This is useful for debugging purposes.
  *

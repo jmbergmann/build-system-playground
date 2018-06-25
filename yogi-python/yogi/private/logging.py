@@ -112,8 +112,10 @@ def log_to_console(verbosity: Union[Verbosity, None],
 
 
 yogi.YOGI_LogToHook.restype = api_result_handler
-yogi.YOGI_LogToHook.argtypes = [c_int, CFUNCTYPE(None, c_int, c_longlong,
-    c_int, c_char_p, c_int, c_char_p, c_char_p, c_void_p), c_void_p]
+yogi.YOGI_LogToHook.argtypes = [
+    c_int, CFUNCTYPE(
+        None, c_int, c_longlong,
+        c_int, c_char_p, c_int, c_char_p, c_char_p, c_void_p), c_void_p]
 
 
 def log_to_hook(verbosity: Union[Verbosity, None],
@@ -218,31 +220,31 @@ def log_to_file(verbosity: Union[Verbosity, None], filename: str = None,
         return
 
     assert filename is not None
-    filename=filename.encode("utf-8")
+    filename = filename.encode("utf-8")
 
     if timefmt is not None:
-        timefmt=timefmt.encode("utf-8")
+        timefmt = timefmt.encode("utf-8")
 
     if fmt is not None:
-        fmt=fmt.encode("utf-8")
+        fmt = fmt.encode("utf-8")
 
-    gen_filename=create_string_buffer(256)
+    gen_filename = create_string_buffer(256)
     yogi.YOGI_LogToFile(verbosity, filename, gen_filename,
                         sizeof(gen_filename), timefmt, fmt)
     return gen_filename.value.decode("utf-8")
 
 
-yogi.YOGI_LoggerCreate.restype=api_result_handler
-yogi.YOGI_LoggerCreate.argtypes=[POINTER(c_void_p), c_char_p]
+yogi.YOGI_LoggerCreate.restype = api_result_handler
+yogi.YOGI_LoggerCreate.argtypes = [POINTER(c_void_p), c_char_p]
 
-yogi.YOGI_LoggerGetVerbosity.restype=api_result_handler
-yogi.YOGI_LoggerGetVerbosity.argtypes=[c_void_p, POINTER(c_int)]
+yogi.YOGI_LoggerGetVerbosity.restype = api_result_handler
+yogi.YOGI_LoggerGetVerbosity.argtypes = [c_void_p, POINTER(c_int)]
 
-yogi.YOGI_LoggerSetVerbosity.restype=api_result_handler
-yogi.YOGI_LoggerSetVerbosity.argtypes=[c_void_p, c_int]
+yogi.YOGI_LoggerSetVerbosity.restype = api_result_handler
+yogi.YOGI_LoggerSetVerbosity.argtypes = [c_void_p, c_int]
 
-yogi.YOGI_LoggerSetComponentsVerbosity.restype=api_result_handler
-yogi.YOGI_LoggerSetComponentsVerbosity.argtypes=[
+yogi.YOGI_LoggerSetComponentsVerbosity.restype = api_result_handler
+yogi.YOGI_LoggerSetComponentsVerbosity.argtypes = [
     c_char_p, c_int, POINTER(c_int)]
 
 yogi.YOGI_LoggerLog.restype = api_result_handler
@@ -280,7 +282,7 @@ class Logger(Object):
         Returns:
             Number of matching loggers.
         """
-        n=c_int()
+        n = c_int()
         yogi.YOGI_LoggerSetComponentsVerbosity(components.encode("utf-8"),
                                                verbosity, byref(n))
         return n.value
@@ -293,7 +295,7 @@ class Logger(Object):
         Args:
             component: The component tag to use.
         """
-        handle=c_void_p()
+        handle = c_void_p()
         yogi.YOGI_LoggerCreate(byref(handle), component.encode("utf-8"))
         Object.__init__(self, handle)
 
@@ -301,7 +303,7 @@ class Logger(Object):
     def verbosity(self) -> Verbosity:
         """Verbosity of the logger.
         """
-        vb=c_int()
+        vb = c_int()
         yogi.YOGI_LoggerGetVerbosity(self._handle, byref(vb))
         return Verbosity(vb.value)
 
@@ -342,6 +344,7 @@ class AppLogger(Logger):
     the same logger, i.e. changing its verbosity will change the verbosity of
     every AppLogger instance.
     """
+
     def __init__(self):
         """Create an instance of the App logger."""
         Object.__init__(self, None)
