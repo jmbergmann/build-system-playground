@@ -40,10 +40,10 @@ YOGI_API int YOGI_SignalSetCreate(void** sigset, void* context, int signals) {
   CATCH_AND_RETURN;
 }
 
-YOGI_API int YOGI_SignalSetAwait(void* sigset,
-                                 void (*fn)(int res, int sig, void* sigarg,
-                                            void* userarg),
-                                 void* userarg) {
+YOGI_API int YOGI_SignalSetAwaitSignal(void* sigset,
+                                       void (*fn)(int res, int sig,
+                                                  void* sigarg, void* userarg),
+                                       void* userarg) {
   CHECK_PARAM(sigset != nullptr);
   CHECK_PARAM(fn != nullptr);
 
@@ -56,7 +56,7 @@ YOGI_API int YOGI_SignalSetAwait(void* sigset,
   CATCH_AND_RETURN;
 }
 
-YOGI_API int YOGI_SignalSetCancelAwait(void* sigset) {
+YOGI_API int YOGI_SignalSetCancelAwaitSignal(void* sigset) {
   CHECK_PARAM(sigset != nullptr);
 
   try {

@@ -21,35 +21,37 @@ TEST_F(SignalSetTest, Await) {
   void* sigset_3 = CreateSignalSet(YOGI_SIG_USR2);
 
   bool called_1 = false;
-  int res =
-      YOGI_SignalSetAwait(sigset_1,
-                          [](int res, int sig, void* sigarg, void* userarg) {
-                            EXPECT_EQ(res, YOGI_OK);
-                            EXPECT_EQ(sig, YOGI_SIG_INT);
-                            EXPECT_EQ(*static_cast<int*>(sigarg), 123);
-                            *static_cast<bool*>(userarg) = true;
-                          },
-                          &called_1);
+  int res = YOGI_SignalSetAwaitSignal(
+      sigset_1,
+      [](int res, int sig, void* sigarg, void* userarg) {
+        EXPECT_EQ(res, YOGI_OK);
+        EXPECT_EQ(sig, YOGI_SIG_INT);
+        EXPECT_EQ(*static_cast<int*>(sigarg), 123);
+        *static_cast<bool*>(userarg) = true;
+      },
+      &called_1);
   EXPECT_EQ(res, YOGI_OK);
 
   bool called_2 = false;
-  res = YOGI_SignalSetAwait(sigset_2,
-                            [](int res, int sig, void* sigarg, void* userarg) {
-                              EXPECT_EQ(res, YOGI_OK);
-                              EXPECT_EQ(sig, YOGI_SIG_INT);
-                              EXPECT_EQ(*static_cast<int*>(sigarg), 123);
-                              *static_cast<bool*>(userarg) = true;
-                            },
-                            &called_2);
+  res = YOGI_SignalSetAwaitSignal(
+      sigset_2,
+      [](int res, int sig, void* sigarg, void* userarg) {
+        EXPECT_EQ(res, YOGI_OK);
+        EXPECT_EQ(sig, YOGI_SIG_INT);
+        EXPECT_EQ(*static_cast<int*>(sigarg), 123);
+        *static_cast<bool*>(userarg) = true;
+      },
+      &called_2);
   EXPECT_EQ(res, YOGI_OK);
 
   bool called_3 = false;
-  res = YOGI_SignalSetAwait(sigset_3,
-                            [](int res, int sig, void* sigarg, void* userarg) {
-                              EXPECT_EQ(res, YOGI_ERR_CANCELED);
-                              *static_cast<bool*>(userarg) = true;
-                            },
-                            &called_3);
+  res = YOGI_SignalSetAwaitSignal(
+      sigset_3,
+      [](int res, int sig, void* sigarg, void* userarg) {
+        EXPECT_EQ(res, YOGI_ERR_CANCELED);
+        *static_cast<bool*>(userarg) = true;
+      },
+      &called_3);
   EXPECT_EQ(res, YOGI_OK);
 
   int sigarg = 123;
@@ -83,7 +85,7 @@ TEST_F(SignalSetTest, CleanupHandler) {
   EXPECT_EQ(res, YOGI_OK);
   EXPECT_TRUE(calls.empty());
 
-  res = YOGI_SignalSetAwait(
+  res = YOGI_SignalSetAwaitSignal(
       sigset_1,
       [](int res, int sig, void* sigarg, void* userarg) {
         static_cast<std::vector<bool>*>(userarg)->push_back(false);
@@ -94,7 +96,7 @@ TEST_F(SignalSetTest, CleanupHandler) {
   YOGI_ContextRunOne(context_, nullptr, -1);
   EXPECT_EQ(calls, std::vector<bool>({false}));
 
-  res = YOGI_SignalSetAwait(
+  res = YOGI_SignalSetAwaitSignal(
       sigset_2,
       [](int res, int sig, void* sigarg, void* userarg) {
         static_cast<std::vector<bool>*>(userarg)->push_back(false);
@@ -157,29 +159,29 @@ TEST_F(SignalSetTest, Queueing) {
   EXPECT_EQ(res, YOGI_OK);
 
   std::vector<int> sigargs;
-  res =
-      YOGI_SignalSetAwait(sigset,
-                          [](int res, int sig, void* sigarg, void* userarg) {
-                            EXPECT_EQ(res, YOGI_OK);
-                            EXPECT_EQ(sig, YOGI_SIG_INT);
-                            static_cast<std::vector<int>*>(userarg)->push_back(
-                                *static_cast<int*>(sigarg));
-                          },
-                          &sigargs);
+  res = YOGI_SignalSetAwaitSignal(
+      sigset,
+      [](int res, int sig, void* sigarg, void* userarg) {
+        EXPECT_EQ(res, YOGI_OK);
+        EXPECT_EQ(sig, YOGI_SIG_INT);
+        static_cast<std::vector<int>*>(userarg)->push_back(
+            *static_cast<int*>(sigarg));
+      },
+      &sigargs);
   EXPECT_EQ(res, YOGI_OK);
 
   YOGI_ContextRunOne(context_, nullptr, -1);
   EXPECT_EQ(sigargs, std::vector<int>({123}));
 
-  res =
-      YOGI_SignalSetAwait(sigset,
-                          [](int res, int sig, void* sigarg, void* userarg) {
-                            EXPECT_EQ(res, YOGI_OK);
-                            EXPECT_EQ(sig, YOGI_SIG_INT);
-                            static_cast<std::vector<int>*>(userarg)->push_back(
-                                *static_cast<int*>(sigarg));
-                          },
-                          &sigargs);
+  res = YOGI_SignalSetAwaitSignal(
+      sigset,
+      [](int res, int sig, void* sigarg, void* userarg) {
+        EXPECT_EQ(res, YOGI_OK);
+        EXPECT_EQ(sig, YOGI_SIG_INT);
+        static_cast<std::vector<int>*>(userarg)->push_back(
+            *static_cast<int*>(sigarg));
+      },
+      &sigargs);
   EXPECT_EQ(res, YOGI_OK);
 
   YOGI_ContextRunOne(context_, nullptr, -1);
@@ -194,16 +196,16 @@ TEST_F(SignalSetTest, CancelAwait) {
   void* sigset = CreateSignalSet(YOGI_SIG_INT);
 
   bool called = false;
-  YOGI_SignalSetAwait(sigset,
-                      [](int res, int sig, void* sigarg, void* userarg) {
-                        EXPECT_EQ(res, YOGI_ERR_CANCELED);
-                        EXPECT_EQ(sig, YOGI_SIG_NONE);
-                        EXPECT_EQ(sigarg, nullptr);
-                        *static_cast<bool*>(userarg) = true;
-                      },
-                      &called);
+  YOGI_SignalSetAwaitSignal(sigset,
+                            [](int res, int sig, void* sigarg, void* userarg) {
+                              EXPECT_EQ(res, YOGI_ERR_CANCELED);
+                              EXPECT_EQ(sig, YOGI_SIG_NONE);
+                              EXPECT_EQ(sigarg, nullptr);
+                              *static_cast<bool*>(userarg) = true;
+                            },
+                            &called);
 
-  int res = YOGI_SignalSetCancelAwait(sigset);
+  int res = YOGI_SignalSetCancelAwaitSignal(sigset);
   EXPECT_EQ(res, YOGI_OK);
 
   YOGI_ContextRunOne(context_, nullptr, -1);
@@ -214,22 +216,22 @@ TEST_F(SignalSetTest, OverrideAwait) {
   void* sigset = CreateSignalSet(YOGI_SIG_INT);
 
   bool called_1 = false;
-  YOGI_SignalSetAwait(sigset,
-                      [](int res, int sig, void* sigarg, void* userarg) {
-                        EXPECT_EQ(res, YOGI_ERR_CANCELED);
-                        EXPECT_EQ(sig, YOGI_SIG_NONE);
-                        EXPECT_EQ(sigarg, nullptr);
-                        *static_cast<bool*>(userarg) = true;
-                      },
-                      &called_1);
+  YOGI_SignalSetAwaitSignal(sigset,
+                            [](int res, int sig, void* sigarg, void* userarg) {
+                              EXPECT_EQ(res, YOGI_ERR_CANCELED);
+                              EXPECT_EQ(sig, YOGI_SIG_NONE);
+                              EXPECT_EQ(sigarg, nullptr);
+                              *static_cast<bool*>(userarg) = true;
+                            },
+                            &called_1);
 
   bool called_2 = false;
-  int res =
-      YOGI_SignalSetAwait(sigset,
-                          [](int res, int sig, void* sigarg, void* userarg) {
-                            *static_cast<bool*>(userarg) = true;
-                          },
-                          &called_2);
+  int res = YOGI_SignalSetAwaitSignal(
+      sigset,
+      [](int res, int sig, void* sigarg, void* userarg) {
+        *static_cast<bool*>(userarg) = true;
+      },
+      &called_2);
   EXPECT_EQ(res, YOGI_OK);
 
   YOGI_ContextRunOne(context_, nullptr, -1);
@@ -241,14 +243,14 @@ TEST_F(SignalSetTest, AwaitOnDestruction) {
   void* sigset = CreateSignalSet(YOGI_SIG_INT);
 
   bool called = false;
-  YOGI_SignalSetAwait(sigset,
-                      [](int res, int sig, void* sigarg, void* userarg) {
-                        EXPECT_EQ(res, YOGI_ERR_CANCELED);
-                        EXPECT_EQ(sig, YOGI_SIG_NONE);
-                        EXPECT_EQ(sigarg, nullptr);
-                        *static_cast<bool*>(userarg) = true;
-                      },
-                      &called);
+  YOGI_SignalSetAwaitSignal(sigset,
+                            [](int res, int sig, void* sigarg, void* userarg) {
+                              EXPECT_EQ(res, YOGI_ERR_CANCELED);
+                              EXPECT_EQ(sig, YOGI_SIG_NONE);
+                              EXPECT_EQ(sigarg, nullptr);
+                              *static_cast<bool*>(userarg) = true;
+                            },
+                            &called);
 
   YOGI_Destroy(sigset);
 

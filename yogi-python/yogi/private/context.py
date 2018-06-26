@@ -233,3 +233,4 @@ class Context(Object):
             yogi.YOGI_ContextPost(self._handle, wrapped_fn, None)
         except Exception:
             dec_ref_cnt(fn_obj)
+            raise

@@ -37,7 +37,6 @@ class TestLogging(TestCase):
 
     def test_log_to_hook(self):
         now = yogi.get_current_time()
-        fn_called = False
         fn_severity = None
         fn_timestamp = None
         fn_tid = None
@@ -45,11 +44,11 @@ class TestLogging(TestCase):
         fn_line = None
         fn_comp = None
         fn_msg = None
+        fn_called = False
 
         def fn(severity, timestamp, tid, file, line, comp, msg):
-            nonlocal fn_called, fn_severity, fn_timestamp, fn_tid, fn_file, \
-                fn_line, fn_comp, fn_msg
-            fn_called = True
+            nonlocal fn_severity, fn_timestamp, fn_tid, fn_file, fn_line, \
+                fn_comp, fn_msg, fn_called
             fn_severity = severity
             fn_timestamp = timestamp
             fn_tid = tid
@@ -57,6 +56,7 @@ class TestLogging(TestCase):
             fn_line = line
             fn_comp = comp
             fn_msg = msg
+            fn_called = True
 
         yogi.log_to_hook(yogi.Verbosity.DEBUG, fn)
         yogi.app_logger.log(yogi.Verbosity.WARNING, "A warning")
@@ -111,13 +111,13 @@ class TestLogging(TestCase):
         fn_msg = None
 
         def fn(severity, timestamp, tid, file, line, comp, msg):
-            nonlocal fn_called, fn_severity, fn_file, fn_line, fn_comp, fn_msg
-            fn_called = True
+            nonlocal fn_severity, fn_file, fn_line, fn_comp, fn_msg, fn_called
             fn_severity = severity
             fn_file = file
             fn_line = line
             fn_comp = comp
             fn_msg = msg
+            fn_called = True
 
         yogi.log_to_hook(yogi.Verbosity.INFO, fn)
         logger.log(yogi.Verbosity.WARNING, "Hey dude")
@@ -131,10 +131,10 @@ class TestLogging(TestCase):
         fn_called = False
 
         def fn2(severity, timestamp, tid, file, line, comp, msg):
-            nonlocal fn_called, fn_file, fn_line
-            fn_called = True
+            nonlocal fn_file, fn_line, fn_called
             fn_file = file
             fn_line = line
+            fn_called = True
 
         yogi.log_to_hook(yogi.Verbosity.INFO, fn2)
         logger.log(yogi.Verbosity.WARNING, "Hey dude",

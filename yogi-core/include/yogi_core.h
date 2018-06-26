@@ -1198,7 +1198,7 @@ YOGI_API int YOGI_ContextPost(void* context, void (*fn)(void* userarg),
                               void* userarg);
 
 /***************************************************************************//**
- * Raises a signal
+ * Raises a signal.
  *
  * Signals in Yogi are intended to be used similar to POSIX signals. They have
  * to be raised explicitly by the user (e.g. when receiving an actual POSIX
@@ -1215,7 +1215,7 @@ YOGI_API int YOGI_ContextPost(void* context, void (*fn)(void* userarg),
  *       YOGI_RaiseSignal() function or from any context within the program.
  *
  * \param[in] signal  The signal to raise (see \ref SIG)
- * \param[in] sigarg  User-defined data to pass to the event handlers
+ * \param[in] sigarg  User-defined data to pass to the signal handlers
  * \param[in] fn      Function to be called once all signal handlers have been
  *                    executed (can be NULL)
  * \param[in] userarg User-specified argument to be passed to \p fn
@@ -1231,9 +1231,8 @@ YOGI_API int YOGI_RaiseSignal(int signal, void* sigarg,
  * Creates a new signal set.
  *
  * Signal sets are used to receive signals raised via YOGI_RaiseSignal().
- *
- * Signals are queued until they are can be delived by means of calls to
- * YOGI_SignalSetAwait().
+ * The signals are queued until they can be delived by means of calls to
+ * YOGI_SignalSetAwaitSignal().
  *
  * \param[out] sigset  Pointer to the signal set handle
  * \param[in]  context The context to use
@@ -1265,23 +1264,23 @@ YOGI_API int YOGI_SignalSetCreate(void** sigset, void* context, int signals);
  * \returns [=0] #YOGI_OK if successful
  * \returns [<0] An error code in case of a failure (see \ref EC)
  ******************************************************************************/
-YOGI_API int YOGI_SignalSetAwait(void* sigset,
-                                 void (*fn)(int res, int sig, void* sigarg,
-                                            void* userarg),
-                                 void* userarg);
+YOGI_API int YOGI_SignalSetAwaitSignal(void* sigset,
+                                       void (*fn)(int res, int sig,
+                                                  void* sigarg, void* userarg),
+                                       void* userarg);
 
 /***************************************************************************//**
  * Cancels waiting for a signal.
  *
- * Causes the handler function registered via YOGI_SignalSetAwait() to be called
- * with YOGI_ERR_CANCELED.
+ * Causes the handler function registered via YOGI_SignalSetAwaitSignal() to be
+ * called with YOGI_ERR_CANCELED.
  *
  * \param[in] sigset The signal set
  *
  * \returns [=0] #YOGI_OK if successful
  * \returns [<0] An error code in case of a failure (see \ref EC)
  ******************************************************************************/
-YOGI_API int YOGI_SignalSetCancelAwait(void* sigset);
+YOGI_API int YOGI_SignalSetCancelAwaitSignal(void* sigset);
 
 /***************************************************************************//**
  * Creates a new timer.
