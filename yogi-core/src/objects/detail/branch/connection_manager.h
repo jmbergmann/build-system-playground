@@ -88,6 +88,7 @@ class ConnectionManager final
                                     const boost::uuids::uuid& adv_uuid);
   bool CheckExchangeBranchInfoError(const api::Error& err,
                                     const BranchConnectionPtr& conn);
+  bool InOberserveOnlyMode() const;
   bool VerifyUuidsMatch(const boost::uuids::uuid& remote_uuid,
                         const boost::uuids::uuid& adv_uuid);
   bool VerifyUuidNotBlacklisted(const boost::uuids::uuid& uuid);

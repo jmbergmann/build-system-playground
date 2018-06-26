@@ -647,7 +647,7 @@ YOGI_API int YOGI_GetConstant(void* dest, int constant);
 YOGI_API int YOGI_GetCurrentTime(long long* timestamp);
 
 /***************************************************************************//**
- * Allows the YOGI to write library-internal and user logging to stdout or
+ * Allows the Yogi to write library-internal and user logging to stdout or
  * stderr.
  *
  * This function supports colourizing the output if the terminal that the
@@ -1335,36 +1335,36 @@ YOGI_API int YOGI_TimerCancel(void* timer);
 /***************************************************************************//**
  * Creates a new branch.
  *
- * A branch represents an entry point into a YOGI network. It advertises itself
+ * A branch represents an entry point into a Yogi network. It advertises itself
  * via IP broadcasts/multicasts with its unique ID and information required for
  * establishing a connection. If a branch detects other branches on the network,
  * it connects to them via TCP to retrieve further information such as their
  * name, description and network name. If the network names match, two branches
  * attempt to authenticate with each other by securely comparing passwords.
  * Once authentication succeeds and there is no other known branch with the same
- * path then the branches can actively communicate as part of the YOGI network.
+ * path then the branches can actively communicate as part of the Yogi network.
  *
  * Advertising and establishing connections can be limited to certain network
  * interfaces via the \p interface parameter. The default is to use all
  * available interfaces.
  *
  * The \p advint parameter can be set to -1 which prevents the branch from
- * actively participating in the YOGI network, i.e. the branch will not
+ * actively participating in the Yogi network, i.e. the branch will not
  * advertise itself and it will not authenticate in order to join a network.
  * However, the branch will temporarily connect to other branches in order to
  * obtain more detailed information such as name, description, network name
  * and so on. This is useful for obtaining information about active branches
- * without actually becoming part of the YOGI network.
+ * without actually becoming part of the Yogi network.
  *
  * Note: Even though the authentication process via passwords is done in a
- *       secure manor, any further communication is done in plain text.
+ *       secure manner, any further communication is done in plain text.
  *
  * \param[out] branch      Pointer to the branch handle
  * \param[in]  context     The context to use
  * \param[in]  name        Name of the branch (set to NULL to use the format
  *                         PID@hostname with PID being the process ID)
  * \param[in]  description Description of the branch (set to NULL for none)
- * \param[in]  netname     Name of network to join (set to NULL to use the
+ * \param[in]  netname     Name of the network to join (set to NULL to use the
  *                         machine's hostname)
  * \param[in]  password    Password for the network (set to NULL for none)
  * \param[in]  path        Path of the branch in the network (set to NULL to use

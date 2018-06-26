@@ -29,9 +29,7 @@ ConnectionManager::ConnectionManager(
   SetupAcceptor(adv_ep.protocol() == udp::v4() ? tcp::v4() : tcp::v6());
 }
 
-ConnectionManager::~ConnectionManager() {
-  CancelAwaitEvent();
-}
+ConnectionManager::~ConnectionManager() { CancelAwaitEvent(); }
 
 void ConnectionManager::Start(BranchInfoPtr info) {
   info_ = info;
@@ -224,7 +222,11 @@ void ConnectionManager::OnExchangeBranchInfoFinished(
     }
   }
 
-  StartAuthenticate(conn);
+  if (InOberserveOnlyMode()) {
+    blacklisted_uuids_.insert(remote_uuid);
+  } else {
+    StartAuthenticate(conn);
+  }
 }
 
 bool ConnectionManager::CheckExchangeBranchInfoError(
@@ -248,6 +250,10 @@ bool ConnectionManager::CheckExchangeBranchInfoError(
   }
 
   return false;
+}
+
+bool ConnectionManager::InOberserveOnlyMode() const {
+  return info_->GetAdvertisingInterval() == std::chrono::nanoseconds::max();
 }
 
 bool ConnectionManager::VerifyUuidsMatch(const boost::uuids::uuid& remote_uuid,
