@@ -1483,10 +1483,10 @@ YOGI_API int YOGI_BranchGetConnectedBranches(void* branch, void* uuid,
                                              void* userarg);
 
 /***************************************************************************//**
- * Asynchronously waits for a branch event to occur.
+ * Wait for a branch event to occur.
  *
- * This function will register \p fn to be called once a branch event occurs on
- * the given \p branch. The parameters passed to \p fn are:
+ * This function will register \p fn to be called once one of the given branch
+ * \p events occurs on the given \p branch. The parameters passed to \p fn are:
  *  -# *res*: YOGI_OK or error code associated with the wait operation
  *  -# *event*: The branch event that occurred (see \ref BEV)
  *  -# *evres*: YOGI_OK or error code assitiated with the event

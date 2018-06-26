@@ -163,6 +163,6 @@ class SignalSet(Object):
         """Cancels waiting for a signal.
 
         This causes the handler function registered via await_signal() to be
-        called with a cancelation error.
+        called with a cancellation error.
         """
         yogi.YOGI_SignalSetCancelAwaitSignal(self._handle)

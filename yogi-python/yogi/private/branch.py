@@ -1,12 +1,12 @@
 from .object import Object
-from .errors import api_result_handler
+from .errors import Result, api_result_handler
 from .library import yogi
 from .handler import Handler
 from .context import Context
 
 import datetime
 from enum import IntEnum
-from typing import Callable, Any
+from typing import Callable, Any, Optional
 from ctypes import c_int, c_longlong, c_void_p, CFUNCTYPE, POINTER, byref
 
 
@@ -32,18 +32,20 @@ class BranchEvents(IntEnum):
 class Branch(Object):
     """Entry point into a Yogi network.
 
-    A branch represents an entry point into a YOGI network. It advertises itself
-    via IP broadcasts/multicasts with its unique ID and information required for
-    establishing a connection. If a branch detects other branches on the network,
-    it connects to them via TCP to retrieve further information such as their
-    name, description and network name. If the network names match, two branches
-    attempt to authenticate with each other by securely comparing passwords.
-    Once authentication succeeds and there is no other known branch with the same
-    path then the branches can actively communicate as part of the Yogi network.
+    A branch represents an entry point into a YOGI network. It advertises
+    itself via IP broadcasts/multicasts with its unique ID and information
+    required for establishing a connection. If a branch detects other branches
+    on the network, it connects to them via TCP to retrieve further
+    information such as their name, description and network name. If the
+    network names match, two branches attempt to authenticate with each other
+    by securely comparing passwords. Once authentication succeeds and there is
+    no other known branch with the same path then the branches can actively
+    communicate as part of the Yogi network.
 
     Note: Even though the authentication process via passwords is done in a
           secure manner, any further communication is done in plain text.
     """
+
     def __init__(self, context: Context, name: str, description: str = None,
                  netname: str = None, password: str = None, path: str = None,
                  advaddr: str = None, advport: int = None,
@@ -102,14 +104,14 @@ class Branch(Object):
               "advertising_interval": 1.0,
               "tcp_server_address":   "::",
               "tcp_server_port":      53332,
-              "start_time":           "2018-04-23T18:25:43.511Z",
+              "start_time":           <datetime.datetime Object>,
               "timeout":              3.0
             }
 
         Returns:
             Dictionary containing constant information about the branch.
         """
-        pass # TODO: make sure to use inf instead of -1 for times and convert start time
+        pass  # TODO: make sure to use inf instead of -1 for times and convert start time
 
     @property
     def uuid(self) -> str:
@@ -181,3 +183,79 @@ class Branch(Object):
         """Connection timeout."""
         return self.info.timeout
 
+    def get_connected_branches(self) -> dict:
+        """Retrieves information about all connected remote branches.
+
+        This function returns a dictionary where each is the UUID of the
+        connected remote branch and the value is another dictionary with the
+        following structure:
+            {
+              "uuid":                 "123e4567-e89b-12d3-a456-426655440000",
+              "name":                 "Pump Safety Logic",
+              "description":          "Monitors the pump for safety",
+              "net_name":             "Hardware Control",
+              "path":                 "/Cooling System/Pump/Safety",
+              "hostname":             "beaglebone",
+              "pid":                  3321,
+              "tcp_server_address":   "fe80::f086:b106:2c1b:c45",
+              "tcp_server_port":      43384,
+              "start_time":           <datetime.datetime Object>,
+              "timeout":              3.0,
+              "advertising_interval": 1.0
+            }
+
+        Returns:
+            Dictionary mapping the UUID of each connected remote branch to
+            another dictionary with detailed information.
+        """
+        pass
+
+    def await_event(self, events: BranchEvents,
+                    fn: Callable[[Result, BranchEvents, Result, Optional[dict]
+                                  ], Any]) -> None:
+        """Wait for a branch event to occur.
+
+        This function will register the handler fn to be executed once one of
+        the given branch events occurs. The handler's parameters are, from
+        left to right, the result associated with the wait operation, the
+        event that occurred, the result associated with the event, and a
+        dictionary containing event details.
+
+        If this function is called while a previous wait operation is still
+        active then the previous operation will be canceled, i.e. the handler
+        fn for the previous operation will be called with a cancellation
+        error.
+
+        If successful, the event information passed to the handler function fn
+        contains at least the UUID of the remote branch. For newly discovered
+        branches, both address and port of the remote TCP server are included
+        and when querying a remote branch succeeds, all of the available
+        branch information is included:
+            {
+              "uuid":                 "123e4567-e89b-12d3-a456-426655440000",
+              "name":                 "Pump Safety Logic",
+              "description":          "Monitors the pump for safety",
+              "net_name":             "Hardware Control",
+              "path":                 "/Cooling System/Pump/Safety",
+              "hostname":             "beaglebone",
+              "pid":                  3321,
+              "tcp_server_address":   "fe80::f086:b106:2c1b:c45",
+              "tcp_server_port":      43384,
+              "start_time":           <datetime.datetime Object>,
+              "timeout":              3.0,
+              "advertising_interval": 1.0
+            }
+
+        Args:
+            events: Events to observe.
+            fn:     Handler to call.
+        """
+        pass
+
+    def cancel_await_event(self) -> None:
+        """Cancels waiting for a branch event.
+
+        Calling this function will cause the handler registerd via
+        await_event() to be called with a cancellation error.
+        """
+        pass
