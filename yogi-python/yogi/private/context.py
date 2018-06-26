@@ -3,7 +3,6 @@ from .errors import Failure, ErrorCode, api_result_handler
 from .library import yogi
 from .handler import inc_ref_cnt, dec_ref_cnt
 
-import datetime
 from typing import Callable, Any
 from ctypes import c_int, c_longlong, c_void_p, CFUNCTYPE, POINTER, byref, \
     py_object
@@ -86,7 +85,7 @@ class Context(Object):
         yogi.YOGI_ContextPollOne(self._handle, byref(n))
         return n.value
 
-    def run(self, duration: datetime.timedelta = None) -> int:
+    def run(self, duration: float = float('inf')) -> int:
         """Runs the context's event processing loop for the specified
         duration.
 
@@ -99,18 +98,17 @@ class Context(Object):
         are being executed through the context.
 
         Args:
-            duration: Maximum amount of time to run. A value of None means
-                      infinity.
+            duration: Maximum amount of time to run.
 
         Returns:
             Number of executed handlers.
         """
         n = c_int()
-        t = -1 if duration is None else int(duration.total_seconds() * 1e9)
+        t = -1 if duration == float('inf') else int(duration * 1e9)
         yogi.YOGI_ContextRun(self._handle, byref(n), t)
         return n.value
 
-    def run_one(self, duration: datetime.timedelta = None) -> int:
+    def run_one(self, duration: float = float('inf')) -> int:
         """Runs the context's event processing loop for the specified
         duration to execute at most one handler.
 
@@ -124,14 +122,13 @@ class Context(Object):
         are being executed through the context.
 
         Args:
-            duration: Maximum amount of time to run. A value of None means
-                      infinity.
+            duration: Maximum amount of time to run.
 
         Returns:
             Number of executed handlers (either 1 or 0).
         """
         n = c_int()
-        t = -1 if duration is None else int(duration.total_seconds() * 1e9)
+        t = -1 if duration == float('inf') else int(duration * 1e9)
         yogi.YOGI_ContextRunOne(self._handle, byref(n), t)
         return n.value
 
@@ -159,7 +156,7 @@ class Context(Object):
         """
         yogi.YOGI_ContextStop(self._handle)
 
-    def wait_for_running(self, duration: datetime.timedelta = None) -> bool:
+    def wait_for_running(self, duration: float = float('inf')) -> bool:
         """Blocks until the context's event processing loop is being run or
         until the specified timeout is reached.
 
@@ -173,7 +170,7 @@ class Context(Object):
             True if the context's event processing loop is running within
             the specified duration and False otherwise.
         """
-        t = -1 if duration is None else int(duration.total_seconds() * 1e9)
+        t = -1 if duration == float('inf') else int(duration * 1e9)
         try:
             yogi.YOGI_ContextWaitForRunning(self._handle, t)
         except Failure as failure:
@@ -184,7 +181,7 @@ class Context(Object):
 
         return True
 
-    def wait_for_stopped(self, duration: datetime.timedelta = None) -> bool:
+    def wait_for_stopped(self, duration: float = float('inf')) -> bool:
         """Blocks until no thread is running the context's event processing
         loop or until the specified timeout is reached.
 
@@ -198,7 +195,7 @@ class Context(Object):
             True if the context's event processing loop is not running within
             within the specified duration and False otherwise.
         """
-        t = -1 if duration is None else int(duration.total_seconds() * 1e9)
+        t = -1 if duration == float('inf') else int(duration * 1e9)
         try:
             yogi.YOGI_ContextWaitForStopped(self._handle, t)
         except Failure as failure:

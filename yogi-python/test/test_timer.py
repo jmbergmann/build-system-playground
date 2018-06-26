@@ -19,7 +19,7 @@ class TestTimer(TestCase):
             fn_res = res
             fn_called = True
 
-        self.timer.start(datetime.timedelta(microseconds=1000), fn)
+        self.timer.start(1e-3, fn)
         while not fn_called:
             self.context.run_one()
 
@@ -36,7 +36,7 @@ class TestTimer(TestCase):
             fn_called = True
 
         self.assertFalse(self.timer.cancel())
-        self.timer.start(None, fn)
+        self.timer.start(float('inf'), fn)
         self.assertTrue(self.timer.cancel())
         while not fn_called:
             self.context.run_one()

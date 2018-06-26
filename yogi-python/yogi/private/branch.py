@@ -1,4 +1,13 @@
+from .object import Object
+from .errors import api_result_handler
+from .library import yogi
+from .handler import Handler
+from .context import Context
+
+import datetime
 from enum import IntEnum
+from typing import Callable, Any
+from ctypes import c_int, c_longlong, c_void_p, CFUNCTYPE, POINTER, byref
 
 
 class BranchEvents(IntEnum):
@@ -18,3 +27,8 @@ class BranchEvents(IntEnum):
     CONNECTION_LOST = (1 << 3)
     ALL = BRANCH_DISCOVERED | BRANCH_QUERIED | CONNECT_FINISHED \
         | CONNECTION_LOST
+
+
+class Branch(Object):
+    def __init__(self, context: Context, name: str, description: str, netname: str, password: str, path: str, advaddr: str, advport: int, advint: datetime.timedelta, timeout: datetime.timedelta):
+        pass

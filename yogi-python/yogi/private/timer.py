@@ -33,18 +33,17 @@ class Timer(Object):
         yogi.YOGI_TimerCreate(byref(handle), context._handle)
         Object.__init__(self, handle, [context])
 
-    def start(self, duration: datetime.timedelta,
-              fn: Callable[[Result], Any]) -> None:
+    def start(self, duration: float, fn: Callable[[Result], Any]) -> None:
         """Starts the timer in single shot mode.
 
         If the timer is already running, the timer will be canceled first, as
         if stop() were called explicitly.
 
         Args:
-            duration: Time when the timer expires (None for infinity).
+            duration: Time when the timer expires.
             fn:       Handler function to call after the given time passed.
         """
-        t = -1 if duration is None else int(duration.total_seconds() * 1e9)
+        t = -1 if duration == float('inf') else int(duration * 1e9)
         with Handler(yogi.YOGI_TimerStart.argtypes[2], fn) as handler:
             yogi.YOGI_TimerStart(self._handle, t, handler, None)
 
