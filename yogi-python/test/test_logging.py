@@ -37,30 +37,44 @@ class TestLogging(TestCase):
 
     def test_log_to_hook(self):
         now = yogi.get_current_time()
-        called = False
+        fn_called = False
+        fn_severity = None
+        fn_timestamp = None
+        fn_tid = None
+        fn_file = None
+        fn_line = None
+        fn_comp = None
+        fn_msg = None
 
         def fn(severity, timestamp, tid, file, line, comp, msg):
-            nonlocal called
-            called = True
-
-            self.assertIsInstance(severity, yogi.Verbosity)
-            self.assertEqual(severity, yogi.Verbosity.WARNING)
-            self.assertIsInstance(timestamp, datetime.datetime)
-            self.assertGreaterEqual(timestamp, now)
-            self.assertIsInstance(tid, int)
-            self.assertGreater(tid, 0)
-            self.assertIsInstance(file, str)
-            self.assertEqual(file, __file__)
-            self.assertIsInstance(line, int)
-            self.assertGreater(line, 0)
-            self.assertIsInstance(comp, str)
-            self.assertEqual(comp, "App")
-            self.assertIsInstance(msg, str)
-            self.assertEqual(msg, "A warning")
+            nonlocal fn_called, fn_severity, fn_timestamp, fn_tid, fn_file, \
+                fn_line, fn_comp, fn_msg
+            fn_called = True
+            fn_severity = severity
+            fn_timestamp = timestamp
+            fn_tid = tid
+            fn_file = file
+            fn_line = line
+            fn_comp = comp
+            fn_msg = msg
 
         yogi.log_to_hook(yogi.Verbosity.DEBUG, fn)
         yogi.app_logger.log(yogi.Verbosity.WARNING, "A warning")
-        self.assertTrue(called)
+        self.assertTrue(fn_called)
+        self.assertIsInstance(fn_severity, yogi.Verbosity)
+        self.assertEqual(fn_severity, yogi.Verbosity.WARNING)
+        self.assertIsInstance(fn_timestamp, datetime.datetime)
+        self.assertGreaterEqual(fn_timestamp, now)
+        self.assertIsInstance(fn_tid, int)
+        self.assertGreater(fn_tid, 0)
+        self.assertIsInstance(fn_file, str)
+        self.assertEqual(fn_file, __file__)
+        self.assertIsInstance(fn_line, int)
+        self.assertGreater(fn_line, 0)
+        self.assertIsInstance(fn_comp, str)
+        self.assertEqual(fn_comp, "App")
+        self.assertIsInstance(fn_msg, str)
+        self.assertEqual(fn_msg, "A warning")
 
     def test_log_to_file(self):
         file_prefix = os.path.join(self.temp_dir, "logfile_%Y_")
@@ -89,35 +103,45 @@ class TestLogging(TestCase):
     def test_logger_log(self):
         logger = yogi.Logger("My logger")
 
-        called = False
+        fn_called = False
+        fn_severity = None
+        fn_file = None
+        fn_line = None
+        fn_comp = None
+        fn_msg = None
 
         def fn(severity, timestamp, tid, file, line, comp, msg):
-            nonlocal called
-            called = True
-
-            self.assertEqual(severity, yogi.Verbosity.WARNING)
-            self.assertEqual(comp, "My logger")
-            self.assertEqual(msg, "Hey dude")
-            self.assertEqual(file, __file__)
-            self.assertGreater(line, 0)
+            nonlocal fn_called, fn_severity, fn_file, fn_line, fn_comp, fn_msg
+            fn_called = True
+            fn_severity = severity
+            fn_file = file
+            fn_line = line
+            fn_comp = comp
+            fn_msg = msg
 
         yogi.log_to_hook(yogi.Verbosity.INFO, fn)
         logger.log(yogi.Verbosity.WARNING, "Hey dude")
-        self.assertTrue(called)
+        self.assertTrue(fn_called)
+        self.assertEqual(fn_severity, yogi.Verbosity.WARNING)
+        self.assertEqual(fn_comp, "My logger")
+        self.assertEqual(fn_msg, "Hey dude")
+        self.assertEqual(fn_file, __file__)
+        self.assertGreater(fn_line, 0)
 
-        called = False
+        fn_called = False
 
         def fn2(severity, timestamp, tid, file, line, comp, msg):
-            nonlocal called
-            called = True
-
-            self.assertEqual(file, "my file")
-            self.assertEqual(line, 123)
+            nonlocal fn_called, fn_file, fn_line
+            fn_called = True
+            fn_file = file
+            fn_line = line
 
         yogi.log_to_hook(yogi.Verbosity.INFO, fn2)
         logger.log(yogi.Verbosity.WARNING, "Hey dude",
                    file="my file", line=123)
-        self.assertTrue(called)
+        self.assertTrue(fn_called)
+        self.assertEqual(fn_file, "my file")
+        self.assertEqual(fn_line, 123)
 
     def test_app_logger(self):
         self.assertIsInstance(yogi.app_logger, yogi.AppLogger)

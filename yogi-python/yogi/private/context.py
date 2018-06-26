@@ -43,8 +43,9 @@ yogi.YOGI_ContextPost.argtypes = [c_void_p, CFUNCTYPE(None, c_void_p),
 
 class Context(Object):
     """Scheduler for the execution of asynchronous operations."""
+
     def __init__(self):
-        """Creates a context."""
+        """Creates the context."""
         handle = c_void_p()
         yogi.YOGI_ContextCreate(byref(handle))
         Object.__init__(self, handle)
@@ -229,6 +230,6 @@ class Context(Object):
         inc_ref_cnt(fn_obj)
 
         try:
-            yogi.YOGI_ContextPost(self._handle, wrapped_fn, c_void_p())
-        except:
+            yogi.YOGI_ContextPost(self._handle, wrapped_fn, None)
+        except Exception:
             dec_ref_cnt(fn_obj)

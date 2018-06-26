@@ -38,6 +38,7 @@ class TestContext(TestCase):
 
     def test_run_in_background(self):
         called = False
+
         def fn():
             nonlocal called
             called = True
