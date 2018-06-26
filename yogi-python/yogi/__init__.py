@@ -1,4 +1,5 @@
 from .private.branch import BranchEvents
+from .private.context import Context
 from .private.configuration import ConfigurationFlags, CommandLineOptions, \
     Configuration
 from .private.constants import Constants

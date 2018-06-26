@@ -36,7 +36,12 @@ class TestConfigurations(TestCase):
         self.assertEqual(cfg.flags, yogi.ConfigurationFlags.MUTABLE_CMDLINE)
 
     def test_update_from_command_line(self):
-        pass
+        cfg = yogi.Configuration()
+        cfg.update_from_command_line(
+            ["exe", "-o", '{"age": 25}'], yogi.CommandLineOptions.OVERRIDES)
+
+        jsn = json.loads(cfg.dump())
+        self.assertEqual(jsn["age"], 25)
 
     def test_update_from_json(self):
         cfg = yogi.Configuration()

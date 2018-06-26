@@ -6,7 +6,7 @@ from .library import yogi
 from enum import IntEnum
 import json
 from typing import List, Union, Optional
-from ctypes import c_int, c_char_p, c_void_p, POINTER, byref, \
+from ctypes import c_int, c_char_p, c_char, c_void_p, POINTER, byref, \
     create_string_buffer, sizeof
 
 
@@ -75,7 +75,7 @@ yogi.YOGI_ConfigurationCreate.argtypes = [POINTER(c_void_p), c_int]
 
 yogi.YOGI_ConfigurationUpdateFromCommandLine.restype = api_result_handler
 yogi.YOGI_ConfigurationUpdateFromCommandLine.argtypes = [
-    c_void_p, c_int, POINTER(c_void_p), c_int, c_char_p, c_int]
+    c_void_p, c_int, POINTER(POINTER(c_char)), c_int, c_char_p, c_int]
 
 yogi.YOGI_ConfigurationUpdateFromJson.restype = api_result_handler
 yogi.YOGI_ConfigurationUpdateFromJson.argtypes = [c_void_p, c_char_p,
@@ -146,13 +146,13 @@ class Configuration(Object):
             argv:    List of command line arguments including the script name.
             options: Options to provide on the command line.
         """
-        args = (c_char_p * len(argv + 1))()
+        args = (POINTER(c_char) * (len(argv) + 1))()
         for i, arg in enumerate(argv):
             args[i] = create_string_buffer(arg.encode("utf-8"))
 
         run_with_discriptive_failure_awareness(
             lambda err: yogi.YOGI_ConfigurationUpdateFromCommandLine(
-                self._handle, len(args), args, options, err, sizeof(err)))
+                self._handle, len(args) - 1, args, options, err, sizeof(err)))
 
     def update_from_json(self, jsn: Union[str, object]) -> None:
         """Updates the configuration from a JSON data.

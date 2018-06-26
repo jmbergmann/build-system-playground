@@ -1027,9 +1027,9 @@ YOGI_API int YOGI_ContextCreate(void** context);
  * Runs the context's event processing loop to execute ready handlers.
  *
  * This function runs handlers (internal and user-supplied such as functions
- * registered through YOGI_ContextPost() or YOGI_TimerStartSingleShot()) that
- * are ready to run, without blocking, until the YOGI_ContextStop() function has
- * been called or there are no more ready handlers.
+ * registered through YOGI_ContextPost()) that are ready to run, without
+ * blocking, until the YOGI_ContextStop() function has been called or there
+ * are no more ready handlers.
  *
  * This function must be called from outside any handler functions that are being
  * executed through the context.
@@ -1047,8 +1047,8 @@ YOGI_API int YOGI_ContextPoll(void* context, int* count);
  * handler.
  *
  * This function runs at most one handler (internal and user-supplied such as
- * functions registered through YOGI_ContextPost() or
- * YOGI_TimerStartSingleShot()) that is ready to run, without blocking.
+ * functions registered through YOGI_ContextPost()) that is ready to run,
+ * without blocking.
  *
  * This function must be called from outside any handler functions that are being
  * executed through the context.
@@ -1066,8 +1066,8 @@ YOGI_API int YOGI_ContextPollOne(void* context, int* count);
  *
  * This function blocks while running the context's event processing loop and
  * calling dispatched handlers (internal and user-supplied such as functions
- * registered through RunInContext() or YOGI_TimerStartSingleShot()) for the
- * specified duration unless YOGI_ContextStop() is called within that time.
+ * registered through YOGI_ContextPost()) for the specified duration unless
+ * YOGI_ContextStop() is called within that time.
  *
  * This function must be called from outside any handler functions that are being
  * executed through the context.
@@ -1087,9 +1087,9 @@ YOGI_API int YOGI_ContextRun(void* context, int* count, long long duration);
  *
  * This function blocks while running the context's event processing loop and
  * calling dispatched handlers (internal and user-supplied such as functions
- * registered through RunInContext() or YOGI_TimerStartSingleShot()) for the
- * specified duration until a single handler function has been executed,
- * unless YOGI_ContextStop() is called within that time.
+ * registered through YOGI_ContextPost()) for the specified duration until a
+ * single handler function has been executed, unless YOGI_ContextStop() is
+ * called within that time.
  *
  * This function must be called from outside any handler functions that are being
  * executed through the context.
@@ -1150,7 +1150,7 @@ YOGI_API int YOGI_ContextStop(void* context);
  * executed through the context.
  *
  * \param[in] context  The context to use
- * \param[in] duration Duration in nanoseconds (-1 for infinity)
+ * \param[in] duration Maximum time to wait in nanoseconds (-1 for infinity)
  *
  * \returns [=0] #YOGI_OK if successful
  * \returns [<0] An error code in case of a failure (see \ref EC)
@@ -1158,8 +1158,8 @@ YOGI_API int YOGI_ContextStop(void* context);
 YOGI_API int YOGI_ContextWaitForRunning(void* context, long long duration);
 
 /***************************************************************************//**
- * Blocks until no thread is running the context's event processing loop any
- * or until the specified timeout is reached.
+ * Blocks until no thread is running the context's event processing loop or
+ * until the specified timeout is reached.
  *
  * If the \p duration parameter is set to 0 then the function works in polling
  * mode.
@@ -1172,7 +1172,7 @@ YOGI_API int YOGI_ContextWaitForRunning(void* context, long long duration);
  * executed through the context.
  *
  * \param[in] context  The context to use
- * \param[in] duration Duration in nanoseconds (-1 for infinity)
+ * \param[in] duration Maximum time to wait in nanoseconds (-1 for infinity)
  *
  * \returns [=0] #YOGI_OK if successful
  * \returns [<0] An error code in case of a failure (see \ref EC)
@@ -1180,12 +1180,12 @@ YOGI_API int YOGI_ContextWaitForRunning(void* context, long long duration);
 YOGI_API int YOGI_ContextWaitForStopped(void* context, long long duration);
 
 /***************************************************************************//**
- * Adds the given functions to the context's event processing queue to be
+ * Adds the given function to the context's event processing queue to be
  * executed and returns immediately.
  *
- * The handler \p fn will will only be executed after this function returns and
- * only by a thread running the context's event processing loop. The only
- * parameter for \p fn will be set to the value of the \p userarg parameter.
+ * The handler \p fn will only be executed after this function returns and only
+ * by a thread running the context's event processing loop. The only parameter
+ * for \p fn will be set to the value of the \p userarg parameter.
  *
  * \param[in] context The context to use
  * \param[in] fn      The function to call from within the given context
