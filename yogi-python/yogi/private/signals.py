@@ -102,12 +102,17 @@ def raise_signal(signal: Signals, sigarg: T = None,
         raise
 
 
+class PyObjectWrapper(py_object):
+    def from_param(self, *args):
+        return self
+
+
 yogi.YOGI_SignalSetCreate.restype = api_result_handler
 yogi.YOGI_SignalSetCreate.argtypes = [POINTER(c_void_p), c_void_p, c_int]
 
 yogi.YOGI_SignalSetAwaitSignal.restype = api_result_handler
 yogi.YOGI_SignalSetAwaitSignal.argtypes = [c_void_p, CFUNCTYPE(
-    None, c_int, c_int, py_object, c_void_p), c_void_p]
+    None, c_int, c_int, PyObjectWrapper, c_void_p), c_void_p]
 
 yogi.YOGI_SignalSetCancelAwaitSignal.restype = api_result_handler
 yogi.YOGI_SignalSetCancelAwaitSignal.argtypes = [c_void_p]
@@ -143,10 +148,11 @@ class SignalSet(Object):
         Args:
             fn: Handler function to call.
         """
-        def wrapped_fn(res, signals, sigarg):
+        def wrapped_fn(res, signals, sigarg_obj):
             if len(signature(fn).parameters) == 2:
                 fn(res, Signals(signals))
             else:
+                sigarg = sigarg_obj.value if sigarg_obj else None
                 fn(res, Signals(signals), sigarg)
 
         with Handler(yogi.YOGI_SignalSetAwaitSignal.argtypes[1], wrapped_fn
