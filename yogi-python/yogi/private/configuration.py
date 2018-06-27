@@ -213,7 +213,7 @@ class Configuration(Object):
                 break
             except Failure as failure:
                 if failure.error_code is ErrorCode.BUFFER_TOO_SMALL:
-                    s = create_string_buffer(len(s) * 2)
+                    s = create_string_buffer(sizeof(s) * 2)
                 else:
                     raise
 

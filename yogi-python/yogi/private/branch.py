@@ -1,13 +1,17 @@
 from .object import Object
-from .errors import Result, api_result_handler
+from .errors import Result, Failure, Success, ErrorCode, api_result_handler, \
+    error_code_to_result
 from .library import yogi
 from .handler import Handler
 from .context import Context
+from .time import string_to_datetime
 
+import json
 import datetime
 from enum import IntEnum
 from typing import Callable, Any, Optional
-from ctypes import c_int, c_longlong, c_void_p, CFUNCTYPE, POINTER, byref
+from ctypes import c_int, c_longlong, c_void_p, c_char_p, CFUNCTYPE, \
+    POINTER, byref, create_string_buffer, sizeof
 
 
 class BranchEvents(IntEnum):
@@ -27,6 +31,37 @@ class BranchEvents(IntEnum):
     CONNECTION_LOST = (1 << 3)
     ALL = BRANCH_DISCOVERED | BRANCH_QUERIED | CONNECT_FINISHED \
         | CONNECTION_LOST
+
+
+def convert_info_fields(info):
+    if info["advertising_interval"] == -1:
+        info["advertising_interval"] = float("inf")
+
+    if info["timeout"] == -1:
+        info["timeout"] = float("inf")
+
+    info["start_time"] = string_to_datetime(
+        info["start_time"])
+
+
+yogi.YOGI_BranchCreate.restype = api_result_handler
+yogi.YOGI_BranchCreate.argtypes = [POINTER(c_void_p), c_void_p, c_char_p, \
+    c_char_p, c_char_p, c_char_p, c_char_p, c_char_p, c_int, c_longlong, \
+    c_longlong]
+
+yogi.YOGI_BranchGetInfo.restype = api_result_handler
+yogi.YOGI_BranchGetInfo.argtypes = [c_void_p, c_void_p, c_char_p, c_int]
+
+yogi.YOGI_BranchGetConnectedBranches.restype = api_result_handler
+yogi.YOGI_BranchGetConnectedBranches.argtypes = [c_void_p, c_void_p, \
+    c_char_p, c_int, CFUNCTYPE(None, c_int, c_void_p), c_void_p]
+
+yogi.YOGI_BranchAwaitEvent.restype = api_result_handler
+yogi.YOGI_BranchAwaitEvent.argtypes = [c_void_p, c_int, c_void_p, c_char_p, \
+    c_int, CFUNCTYPE(None, c_int, c_int, c_int, c_void_p), c_void_p]
+
+yogi.YOGI_BranchCancelAwaitEvent.restype = api_result_handler
+yogi.YOGI_BranchCancelAwaitEvent.argtypes = [c_void_p]
 
 
 class Branch(Object):
@@ -84,7 +119,29 @@ class Branch(Object):
             timeout:     Maximum time of inactivity before a remote branch is
                          considered to be dead (must be at least 0.001).
         """
-        pass
+        def conv_string(s):
+            if s is None:
+                return None
+            else:
+                return s.encode("utf-8")
+
+        def conv_duration(duration):
+            if duration is None:
+                return 0
+            elif duration == float("inf"):
+                return -1
+            else:
+                return int(duration * 1e9)
+
+        handle = c_void_p()
+        yogi.YOGI_BranchCreate(byref(handle), context._handle,
+                               conv_string(name), conv_string(description),
+                               conv_string(netname), conv_string(password),
+                               conv_string(path), conv_string(advaddr),
+                               advport or 0, conv_duration(advint),
+                               conv_duration(timeout))
+        Object.__init__(self, handle, [context])
+        self._info = None
 
     @property
     def info(self) -> dict:
@@ -104,84 +161,99 @@ class Branch(Object):
               "advertising_interval": 1.0,
               "tcp_server_address":   "::",
               "tcp_server_port":      53332,
-              "start_time":           <datetime.datetime Object>,
+              "start_time":           <instance of datetime.datetime>,
               "timeout":              3.0
             }
 
         Returns:
             Dictionary containing constant information about the branch.
         """
-        pass  # TODO: make sure to use inf instead of -1 for times and convert start time
+        if not self._info:
+            s = create_string_buffer(1024)
+            while True:
+                try:
+                    yogi.YOGI_BranchGetInfo(self._handle, None, s, sizeof(s))
+                    break
+                except Failure as failure:
+                    if failure.error_code is ErrorCode.BUFFER_TOO_SMALL:
+                        s = create_string_buffer(sizeof(s) * 2)
+                    else:
+                        raise
+
+            self._info = json.loads(s.value.decode("utf-8"))
+            convert_info_fields(self._info)
+
+        return self._info
 
     @property
     def uuid(self) -> str:
         """UUID of the branch."""
-        return self.info.uuid
+        return self.info["uuid"]
 
     @property
     def name(self) -> str:
         """Name of the branch."""
-        return self.info.name
+        return self.info["name"]
 
     @property
     def description(self) -> str:
         """Description of the branch."""
-        return self.info.description
+        return self.info["description"]
 
     @property
     def net_name(self) -> str:
         """Name of the network."""
-        return self.info.net_name
+        return self.info["net_name"]
 
     @property
     def path(self) -> str:
         """Path of the branch."""
-        return self.info.path
+        return self.info["path"]
 
     @property
     def hostname(self) -> str:
         """The machine's hostname."""
-        return self.info.hostname
+        return self.info["hostname"]
 
     @property
     def pid(self) -> int:
         """ID of the process."""
-        return self.info.pid
+        return self.info["pid"]
 
     @property
     def advertising_address(self) -> str:
         """Advertising IP address."""
-        return self.info.advertising_address
+        return self.info["advertising_address"]
 
     @property
     def advertising_port(self) -> int:
         """Advertising port."""
-        return self.info.advertising_port
+        return self.info["advertising_port"]
 
     @property
     def advertising_interval(self) -> float:
         """Advertising interval."""
-        return self.info.advertising_interval
+        return self.info["advertising_interval"]
 
     @property
     def tcp_server_address(self) -> str:
         """Address of the TCP server for incoming connections."""
-        return self.info.tcp_server_address
+        return self.info["tcp_server_address"]
 
     @property
     def tcp_server_port(self) -> int:
         """Listening port of the TCP server for incoming connections."""
-        return self.info.tcp_server_port
+        return self.info["tcp_server_port"]
 
     @property
     def start_time(self) -> datetime.datetime:
         """Time when the branch was started."""
-        return self.info.start_time
+        return self.info["start_time"]
 
     @property
     def timeout(self) -> float:
         """Connection timeout."""
-        return self.info.timeout
+        return self.info["timeout"]
 
     def get_connected_branches(self) -> dict:
         """Retrieves information about all connected remote branches.
@@ -199,7 +271,7 @@ class Branch(Object):
               "pid":                  3321,
               "tcp_server_address":   "fe80::f086:b106:2c1b:c45",
               "tcp_server_port":      43384,
-              "start_time":           <datetime.datetime Object>,
+              "start_time":           <instance of datetime.datetime>,
               "timeout":              3.0,
               "advertising_interval": 1.0
             }
@@ -208,7 +280,34 @@ class Branch(Object):
             Dictionary mapping the UUID of each connected remote branch to
             another dictionary with detailed information.
         """
-        pass
+        s = create_string_buffer(1024)
+        strings = []
+
+        def append_string(res, userarg):
+            strings.append(s.value.decode("utf-8"))
+
+        c_append_string = yogi.YOGI_BranchGetConnectedBranches.argtypes[4](
+            append_string)
+
+        while True:
+            try:
+                yogi.YOGI_BranchGetConnectedBranches(self._handle, None, s,
+                    sizeof(s), c_append_string, None)
+                break
+            except Failure as failure:
+                if failure.error_code is ErrorCode.BUFFER_TOO_SMALL:
+                    strings = []
+                    s = create_string_buffer(sizeof(s) * 2)
+                else:
+                    raise
+
+        branches = {}
+        for string in strings:
+            info = json.loads(string)
+            convert_info_fields(info)
+            branches[info["uuid"]] = info
+
+        return branches
 
     def await_event(self, events: BranchEvents,
                     fn: Callable[[Result, BranchEvents, Result, Optional[dict]
@@ -241,7 +340,7 @@ class Branch(Object):
               "pid":                  3321,
               "tcp_server_address":   "fe80::f086:b106:2c1b:c45",
               "tcp_server_port":      43384,
-              "start_time":           <datetime.datetime Object>,
+              "start_time":           <instance of datetime.datetime>,
               "timeout":              3.0,
               "advertising_interval": 1.0
             }
@@ -250,7 +349,20 @@ class Branch(Object):
             events: Events to observe.
             fn:     Handler to call.
         """
-        pass
+        s = create_string_buffer(10240)
+
+        def wrapped_fn(res, event, evres):
+            info = None
+            if res == Success():
+                info = json.loads(s.value.decode("utf-8"))
+                convert_info_fields(info)
+
+            fn(res, BranchEvents(event), error_code_to_result(evres), info)
+
+        with Handler(yogi.YOGI_BranchAwaitEvent.argtypes[5], wrapped_fn
+                     )as handler:
+            yogi.YOGI_BranchAwaitEvent(self._handle, events, None, s,
+                sizeof(s), handler, None)
 
     def cancel_await_event(self) -> None:
         """Cancels waiting for a branch event.
@@ -258,4 +370,4 @@ class Branch(Object):
         Calling this function will cause the handler registerd via
         await_event() to be called with a cancellation error.
         """
-        pass
+        yogi.YOGI_BranchCancelAwaitEvent(self._handle)

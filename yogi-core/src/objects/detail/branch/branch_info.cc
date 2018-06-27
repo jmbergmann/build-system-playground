@@ -144,6 +144,11 @@ void BranchInfo::PopulateMessages() {
 }
 
 void BranchInfo::PopulateJson() {
+  float timeout = timeout_ == timeout_.max() ? -1 : (timeout_.count() / 1e9f);
+  float adv_interval = adv_interval_ == adv_interval_.max()
+                           ? -1
+                           : (adv_interval_.count() / 1e9f);
+
   json_ = {
       {"uuid", boost::uuids::to_string(uuid_)},
       {"name", name_},
@@ -155,9 +160,8 @@ void BranchInfo::PopulateJson() {
       {"tcp_server_address", utils::MakeIpAddressString(tcp_ep_)},
       {"tcp_server_port", tcp_ep_.port()},
       {"start_time", start_time_.ToJavaScriptString()},
-      {"timeout", static_cast<float>(timeout_.count()) / 1000'000'000.0f},
-      {"advertising_interval",
-       static_cast<float>(adv_interval_.count()) / 1000'000'000.0f},
+      {"timeout", timeout},
+      {"advertising_interval", adv_interval},
   };
 }
 

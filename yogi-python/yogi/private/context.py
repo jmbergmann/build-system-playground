@@ -85,7 +85,7 @@ class Context(Object):
         yogi.YOGI_ContextPollOne(self._handle, byref(n))
         return n.value
 
-    def run(self, duration: float = float('inf')) -> int:
+    def run(self, duration: float = float("inf")) -> int:
         """Runs the context's event processing loop for the specified
         duration.
 
@@ -104,11 +104,11 @@ class Context(Object):
             Number of executed handlers.
         """
         n = c_int()
-        t = -1 if duration == float('inf') else int(duration * 1e9)
+        t = -1 if duration == float("inf") else int(duration * 1e9)
         yogi.YOGI_ContextRun(self._handle, byref(n), t)
         return n.value
 
-    def run_one(self, duration: float = float('inf')) -> int:
+    def run_one(self, duration: float = float("inf")) -> int:
         """Runs the context's event processing loop for the specified
         duration to execute at most one handler.
 
@@ -128,7 +128,7 @@ class Context(Object):
             Number of executed handlers (either 1 or 0).
         """
         n = c_int()
-        t = -1 if duration == float('inf') else int(duration * 1e9)
+        t = -1 if duration == float("inf") else int(duration * 1e9)
         yogi.YOGI_ContextRunOne(self._handle, byref(n), t)
         return n.value
 
@@ -156,7 +156,7 @@ class Context(Object):
         """
         yogi.YOGI_ContextStop(self._handle)
 
-    def wait_for_running(self, duration: float = float('inf')) -> bool:
+    def wait_for_running(self, duration: float = float("inf")) -> bool:
         """Blocks until the context's event processing loop is being run or
         until the specified timeout is reached.
 
@@ -170,7 +170,7 @@ class Context(Object):
             True if the context's event processing loop is running within
             the specified duration and False otherwise.
         """
-        t = -1 if duration == float('inf') else int(duration * 1e9)
+        t = -1 if duration == float("inf") else int(duration * 1e9)
         try:
             yogi.YOGI_ContextWaitForRunning(self._handle, t)
         except Failure as failure:
@@ -181,7 +181,7 @@ class Context(Object):
 
         return True
 
-    def wait_for_stopped(self, duration: float = float('inf')) -> bool:
+    def wait_for_stopped(self, duration: float = float("inf")) -> bool:
         """Blocks until no thread is running the context's event processing
         loop or until the specified timeout is reached.
 
@@ -195,7 +195,7 @@ class Context(Object):
             True if the context's event processing loop is not running within
             within the specified duration and False otherwise.
         """
-        t = -1 if duration == float('inf') else int(duration * 1e9)
+        t = -1 if duration == float("inf") else int(duration * 1e9)
         try:
             yogi.YOGI_ContextWaitForStopped(self._handle, t)
         except Failure as failure:

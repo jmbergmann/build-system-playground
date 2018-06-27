@@ -36,7 +36,6 @@ class TestLogging(TestCase):
         yogi.app_logger.log(yogi.Verbosity.ERROR, "Error message")
 
     def test_log_to_hook(self):
-        now = yogi.get_current_time()
         fn_severity = None
         fn_timestamp = None
         fn_tid = None
@@ -64,7 +63,7 @@ class TestLogging(TestCase):
         self.assertIsInstance(fn_severity, yogi.Verbosity)
         self.assertEqual(fn_severity, yogi.Verbosity.WARNING)
         self.assertIsInstance(fn_timestamp, datetime.datetime)
-        self.assertGreaterEqual(fn_timestamp, now)
+        self.assertLessEqual(fn_timestamp, yogi.get_current_time())
         self.assertIsInstance(fn_tid, int)
         self.assertGreater(fn_tid, 0)
         self.assertIsInstance(fn_file, str)

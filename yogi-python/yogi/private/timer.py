@@ -43,7 +43,7 @@ class Timer(Object):
             duration: Time when the timer expires.
             fn:       Handler function to call after the given time passed.
         """
-        t = -1 if duration == float('inf') else int(duration * 1e9)
+        t = -1 if duration == float("inf") else int(duration * 1e9)
         with Handler(yogi.YOGI_TimerStart.argtypes[2], fn) as handler:
             yogi.YOGI_TimerStart(self._handle, t, handler, None)
 
