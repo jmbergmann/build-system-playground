@@ -61,7 +61,7 @@ class TestBranches(TestCase):
         fn_res = None
         fn_event = None
         fn_evres = None
-        fn_info = None
+        fn_info = {}
         fn_called = False
 
         def fn(res, event, evres, info):
