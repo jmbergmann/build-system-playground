@@ -45,20 +45,22 @@ def convert_info_fields(info):
 
 
 yogi.YOGI_BranchCreate.restype = api_result_handler
-yogi.YOGI_BranchCreate.argtypes = [POINTER(c_void_p), c_void_p, c_char_p, \
-    c_char_p, c_char_p, c_char_p, c_char_p, c_char_p, c_int, c_longlong, \
-    c_longlong]
+yogi.YOGI_BranchCreate.argtypes = [
+    POINTER(c_void_p), c_void_p, c_char_p, c_char_p, c_char_p, c_char_p,
+    c_char_p, c_char_p, c_int, c_longlong, c_longlong]
 
 yogi.YOGI_BranchGetInfo.restype = api_result_handler
 yogi.YOGI_BranchGetInfo.argtypes = [c_void_p, c_void_p, c_char_p, c_int]
 
 yogi.YOGI_BranchGetConnectedBranches.restype = api_result_handler
-yogi.YOGI_BranchGetConnectedBranches.argtypes = [c_void_p, c_void_p, \
-    c_char_p, c_int, CFUNCTYPE(None, c_int, c_void_p), c_void_p]
+yogi.YOGI_BranchGetConnectedBranches.argtypes = [
+    c_void_p, c_void_p, c_char_p, c_int, CFUNCTYPE(None, c_int, c_void_p),
+    c_void_p]
 
 yogi.YOGI_BranchAwaitEvent.restype = api_result_handler
-yogi.YOGI_BranchAwaitEvent.argtypes = [c_void_p, c_int, c_void_p, c_char_p, \
-    c_int, CFUNCTYPE(None, c_int, c_int, c_int, c_void_p), c_void_p]
+yogi.YOGI_BranchAwaitEvent.argtypes = [
+    c_void_p, c_int, c_void_p, c_char_p, c_int,
+    CFUNCTYPE(None, c_int, c_int, c_int, c_void_p), c_void_p]
 
 yogi.YOGI_BranchCancelAwaitEvent.restype = api_result_handler
 yogi.YOGI_BranchCancelAwaitEvent.argtypes = [c_void_p]
@@ -291,8 +293,8 @@ class Branch(Object):
 
         while True:
             try:
-                yogi.YOGI_BranchGetConnectedBranches(self._handle, None, s,
-                    sizeof(s), c_append_string, None)
+                yogi.YOGI_BranchGetConnectedBranches(
+                    self._handle, None, s, sizeof(s), c_append_string, None)
                 break
             except Failure as failure:
                 if failure.error_code is ErrorCode.BUFFER_TOO_SMALL:
@@ -362,7 +364,7 @@ class Branch(Object):
         with Handler(yogi.YOGI_BranchAwaitEvent.argtypes[5], wrapped_fn
                      )as handler:
             yogi.YOGI_BranchAwaitEvent(self._handle, events, None, s,
-                sizeof(s), handler, None)
+                                       sizeof(s), handler, None)
 
     def cancel_await_event(self) -> None:
         """Cancels waiting for a branch event.

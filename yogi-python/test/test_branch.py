@@ -88,7 +88,6 @@ class TestBranches(TestCase):
         self.assertEqual(fn_info["start_time"], branch_a.start_time)
         self.assertEqual(fn_info["timeout"], branch_a.timeout)
 
-
     def test_cancel_await_event(self):
         branch = yogi.Branch(self.context, "My Branch")
 

@@ -18,6 +18,7 @@ def timestamp_to_datetime(timestamp: int) -> datetime.datetime:
 def string_to_datetime(s: str) -> datetime.datetime:
     return datetime.datetime.strptime(s + "+0000", "%Y-%m-%dT%H:%M:%S.%fZ%z")
 
+
 def get_current_time() -> datetime.datetime:
     """Returns the current time.
 
