@@ -43,21 +43,21 @@ void SetConsoleTitle(FILE* stream, const std::string& title) {
 }
 #endif
 
-void SetConsoleColour(FILE* stream, ForegroundColour colour) {
+void SetConsoleColour(FILE* stream, ForegroundColour color) {
 #ifdef _WIN32
   HANDLE hdl =
       GetStdHandle(stream == stdout ? STD_OUTPUT_HANDLE : STD_ERROR_HANDLE);
   CONSOLE_SCREEN_BUFFER_INFO csbi;
   GetConsoleScreenBufferInfo(hdl, &csbi);
   SetConsoleTextAttribute(
-      hdl, (csbi.wAttributes & 0xFFF0) | static_cast<WORD>(colour));
+      hdl, (csbi.wAttributes & 0xFFF0) | static_cast<WORD>(color));
 #else
     if (!isatty(stream == stdout ? STDOUT_FILENO : STDERR_FILENO)) {
         return;
     }
 
     const char* seq;
-    switch (colour) {
+    switch (color) {
       case ForegroundColour::kBlack:        seq = "\033[22;30m"; break;
       case ForegroundColour::kBlue:         seq = "\033[22;34m"; break;
       case ForegroundColour::kGreen:        seq = "\033[22;32m"; break;
@@ -81,21 +81,21 @@ void SetConsoleColour(FILE* stream, ForegroundColour colour) {
 #endif
 }
 
-void SetConsoleColour(FILE* stream, BackgroundColour colour) {
+void SetConsoleColour(FILE* stream, BackgroundColour color) {
 #ifdef _WIN32
   HANDLE hdl =
       GetStdHandle(stream == stdout ? STD_OUTPUT_HANDLE : STD_ERROR_HANDLE);
   CONSOLE_SCREEN_BUFFER_INFO csbi;
   GetConsoleScreenBufferInfo(hdl, &csbi);
   SetConsoleTextAttribute(
-      hdl, (csbi.wAttributes & 0xFF0F) | (static_cast<WORD>(colour) << 4));
+      hdl, (csbi.wAttributes & 0xFF0F) | (static_cast<WORD>(color) << 4));
 #else
     if (!isatty(stream == stdout ? STDOUT_FILENO : STDERR_FILENO)) {
         return;
     }
 
     const char* seq;
-    switch (colour) {
+    switch (color) {
       case BackgroundColour::kBlack:   seq = "\033[40m"; break;
       case BackgroundColour::kRed:     seq = "\033[41m"; break;
       case BackgroundColour::kGreen:   seq = "\033[42m"; break;

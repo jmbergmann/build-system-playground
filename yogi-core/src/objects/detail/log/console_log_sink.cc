@@ -6,11 +6,11 @@
 namespace objects {
 namespace detail {
 
-ConsoleLogSink::ConsoleLogSink(Verbosity verbosity, FILE* stream, bool colour,
+ConsoleLogSink::ConsoleLogSink(Verbosity verbosity, FILE* stream, bool color,
                                std::string time_fmt, std::string fmt)
-    : TextBasedLogSink(verbosity, time_fmt, fmt, !colour),
+    : TextBasedLogSink(verbosity, time_fmt, fmt, !color),
       stream_(stream),
-      colour_(colour) {}
+      colour_(color) {}
 
 void ConsoleLogSink::WritePartialOutput(const std::string& str) {
   fputs(str.c_str(), stream_);

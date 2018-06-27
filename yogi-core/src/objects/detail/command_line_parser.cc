@@ -73,10 +73,10 @@ void CommandLineParser::AddLoggingOptions() {
       })->implicit_value("STDERR"s),
       "Log to either STDOUT, STDERR or NONE (implicit value is STDERR)"
     )(
-      "log-colour", po::value<bool>()->notifier([&](auto& val) {
-        direct_json_["logging"]["colour"] = val;
+      "log-color", po::value<bool>()->notifier([&](auto& val) {
+        direct_json_["logging"]["color"] = val;
       })->implicit_value(true),
-      "Use colour when logging to the console"
+      "Use color when logging to the console"
     )(
       "log-fmt", po::value<std::string>()->notifier([&](auto& val) {
         direct_json_["logging"]["entry-format"] = val;
@@ -295,7 +295,7 @@ void CommandLineParser::HandleHelpOptions() {
     ss << "  $f - Source filename" << std::endl;
     ss << "  $l - Source line number" << std::endl;
     ss << "  $c - Component tag" << std::endl;
-    ss << "  $< - Set console colour corresponding to severity" << std::endl;
+    ss << "  $< - Set console color corresponding to severity" << std::endl;
     ss << "  $> - Reset the colours (also done after each log entry)" << std::endl;
     ss << "  $$ - A $ sign" << std::endl;
     // clang-format on

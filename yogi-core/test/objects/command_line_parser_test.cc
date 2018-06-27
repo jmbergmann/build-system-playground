@@ -93,7 +93,7 @@ TEST_F(CommandLineParserTest, LoggingOptions) {
   CommandLine cmdline{
     "--log-file", "/tmp/logfile.txt",
     "--log-console=STDOUT",
-    "--log-colour",
+    "--log-color",
     "--log-fmt", "some entry format",
     "--log-time-fmt", "some time format",
     "--log-verbosity", "Yogi.*=WARNING",
@@ -106,7 +106,7 @@ TEST_F(CommandLineParserTest, LoggingOptions) {
 
   EXPECT_EQ(section.value("file", "NOT FOUND"), "/tmp/logfile.txt");
   EXPECT_EQ(section.value("console", "NOT FOUND"), "STDOUT");
-  EXPECT_EQ(section.value("colour", false), true);
+  EXPECT_EQ(section.value("color", false), true);
   EXPECT_EQ(section.value("entry-format", "NOT FOUND"), "some entry format");
   EXPECT_EQ(section.value("time-format", "NOT FOUND"), "some time format");
 

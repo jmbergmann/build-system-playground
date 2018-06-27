@@ -38,8 +38,8 @@ enum class BackgroundColour {
 };
 
 void SetConsoleTitle(FILE* stream, const std::string& title);
-void SetConsoleColour(FILE* stream, ForegroundColour colour);
-void SetConsoleColour(FILE* stream, BackgroundColour colour);
+void SetConsoleColour(FILE* stream, ForegroundColour color);
+void SetConsoleColour(FILE* stream, BackgroundColour color);
 void ResetConsoleColours(FILE* stream);
 
 }  // namespace utils

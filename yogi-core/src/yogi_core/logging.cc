@@ -5,12 +5,12 @@
 
 #include <regex>
 
-YOGI_API int YOGI_LogToConsole(int verbosity, int stream, int colour,
+YOGI_API int YOGI_LogToConsole(int verbosity, int stream, int color,
                                const char* timefmt, const char* fmt) {
   if (verbosity != YOGI_VB_NONE) {
     CHECK_PARAM(YOGI_VB_FATAL <= verbosity && verbosity <= YOGI_VB_TRACE);
     CHECK_PARAM(stream == YOGI_ST_STDOUT || stream == YOGI_ST_STDERR);
-    CHECK_PARAM(colour == YOGI_TRUE || colour == YOGI_FALSE);
+    CHECK_PARAM(color == YOGI_TRUE || color == YOGI_FALSE);
     CHECK_PARAM(timefmt == nullptr || IsTimeFormatValid(timefmt));
     CHECK_PARAM(fmt == nullptr || IsLogFormatValid(fmt));
   }
@@ -22,7 +22,7 @@ YOGI_API int YOGI_LogToConsole(int verbosity, int stream, int colour,
       objects::Logger::SetSink(
           std::make_unique<objects::detail::ConsoleLogSink>(
               static_cast<objects::Logger::Verbosity>(verbosity),
-              stream == YOGI_ST_STDOUT ? stdout : stderr, !!colour,
+              stream == YOGI_ST_STDOUT ? stdout : stderr, !!color,
               timefmt ? timefmt : api::kDefaultLogTimeFormat,
               fmt ? fmt : api::kDefaultLogFormat));
     }

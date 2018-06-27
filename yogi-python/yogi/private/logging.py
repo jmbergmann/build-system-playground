@@ -46,7 +46,7 @@ yogi.YOGI_LogToConsole.argtypes = [c_int, c_int, c_int, c_char_p, c_char_p]
 
 
 def log_to_console(verbosity: Union[Verbosity, None],
-                   stream: Stream = Stream.STDERR, colour: bool = True,
+                   stream: Stream = Stream.STDERR, color: bool = True,
                    timefmt: str = None, fmt: str = None) -> None:
     """Allows the YOGI to write library-internal and user logging to stdout or
     stderr.
@@ -54,7 +54,7 @@ def log_to_console(verbosity: Union[Verbosity, None],
     Setting verbosity to Verbosity.None disables logging to the console.
 
     This function supports colourizing the output if the terminal that the
-    process is running in supports it. The colour used for a log entry depends
+    process is running in supports it. The color used for a log entry depends
     on the entry's severity. For example, errors will be printed in red and
     warnings in yellow.
 
@@ -88,14 +88,14 @@ def log_to_console(verbosity: Union[Verbosity, None],
         $f: Source file name.
         $l: Source line number.
         $c: Component tag.
-        $<: Set console colour corresponding to severity.
+        $<: Set console color corresponding to severity.
         $>: Reset the colours (also done after each log entry).
         $$: A $ sign.
 
     Args:
         verbosity: Maximum verbosity of messages to log.
         stream:    The stream to use.
-        colour:    Use colours in output.
+        color:    Use colours in output.
         timefmt:   Format of the timestamp (see above for placeholders).
         fmt:       Format of a log entry (see above for placeholders).
     """
@@ -108,7 +108,7 @@ def log_to_console(verbosity: Union[Verbosity, None],
     if verbosity is None:
         yogi.YOGI_LogToConsole(-1, 0, 0, None, None)
     else:
-        yogi.YOGI_LogToConsole(verbosity, stream, colour, timefmt, fmt)
+        yogi.YOGI_LogToConsole(verbosity, stream, color, timefmt, fmt)
 
 
 yogi.YOGI_LogToHook.restype = api_result_handler

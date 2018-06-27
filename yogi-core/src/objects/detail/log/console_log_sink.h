@@ -8,7 +8,7 @@ namespace detail {
 
 class ConsoleLogSink : public TextBasedLogSink {
  public:
-  ConsoleLogSink(Verbosity verbosity, FILE* stream, bool colour,
+  ConsoleLogSink(Verbosity verbosity, FILE* stream, bool color,
                  std::string time_fmt, std::string fmt);
 
  protected:
