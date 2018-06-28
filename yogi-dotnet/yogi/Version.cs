@@ -20,7 +20,7 @@ static public partial class Yogi
                 throw new MissingMethodException($"Function YOGI_GetVersion is missing in {Library.filename}");
             }
 
-            YOGI_GetVersion = (GetVersionDelegate)Marshal.GetDelegateForFunctionPointer(fn, typeof(GetVersionDelegate));
+            YOGI_GetVersion = Marshal.GetDelegateForFunctionPointer(fn, typeof(GetVersionDelegate)) as GetVersionDelegate;
         }
     }
 
