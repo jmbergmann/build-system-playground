@@ -144,10 +144,15 @@ void BranchInfo::PopulateMessages() {
 }
 
 void BranchInfo::PopulateJson() {
-  float timeout = timeout_ == timeout_.max() ? -1 : (timeout_.count() / 1e9f);
-  float adv_interval = adv_interval_ == adv_interval_.max()
-                           ? -1
-                           : (adv_interval_.count() / 1e9f);
+  float timeout = -1;
+  if (timeout_ != timeout_.max()) {
+    timeout = static_cast<float>(timeout_.count()) / 1e9f;
+  }
+
+  float adv_interval = -1;
+  if (adv_interval_ != adv_interval_.max()) {
+    adv_interval = static_cast<float>(adv_interval_.count()) / 1e9f;
+  }
 
   json_ = {
       {"uuid", boost::uuids::to_string(uuid_)},
