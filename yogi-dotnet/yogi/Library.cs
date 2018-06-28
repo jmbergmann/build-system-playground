@@ -85,6 +85,13 @@ static public partial class Yogi
 
         static Library()
         {
+            // if (IntPtr.Size == 4) {
+            //     throw new Exception("HELLO DUDE");
+            // }
+            // else if (IntPtr.Size == 8) {
+            //     throw new Exception("OMG");
+            // }
+
             utils = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
                            ? (LibUtils)new WindowsLibUtils()
                            : (LibUtils)new UnixLibUtils();
