@@ -54,6 +54,13 @@ file (STRINGS "${CMAKE_SOURCE_DIR}/yogi-python/setup.py" python_version
 string (REGEX MATCH "[0-9]+\\.[0-9]+" python_version ${python_version})
 find_package (PythonInterp ${python_version} REQUIRED)
 
+# Determine if compile for 32 or 64 bit architectures
+if (CMAKE_SIZEOF_VOID_P EQUAL 8)
+  set (target_architecture "x64")
+elseif (CMAKE_SIZEOF_VOID_P EQUAL 4)
+  set (target_architecture "x86")
+endif ()
+
 # Testing
 enable_testing ()
 find_package (GTest REQUIRED)

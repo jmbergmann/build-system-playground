@@ -77,6 +77,12 @@ if (WIN32)
   )
 endif ()
 
+if (WIN32)
+  set_target_properties (yogi-core PROPERTIES
+    OUTPUT_NAME "yogi-core-${target_architecture}"
+  )
+endif()
+
 cotire (yogi-core)
 run_clang_tidy (yogi-core)
 

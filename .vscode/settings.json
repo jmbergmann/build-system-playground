@@ -87,7 +87,7 @@
     "**/.idea": true,
     "**/bin/": true,
     "**/obj/": true,
-    "build/": true,
+    "build*/": true,
     "**/.exe/": true,
     "**/__pycache__/": true,
     "**/*.dll": true

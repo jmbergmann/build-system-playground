@@ -7,11 +7,11 @@ add_custom_target (yogi-dotnet
 
 # Tests
 add_test (
-  NAME yogi-dotnet
-  COMMAND dotnet test
+  NAME yogi-dotnet-test
+  COMMAND dotnet test --no-restore
   WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/test
 )
 
-set_property (TEST yogi-dotnet PROPERTY
+set_property (TEST yogi-dotnet-test PROPERTY
   ENVIRONMENT "YOGI_CORE_LIBRARY=$<TARGET_FILE:yogi-core>"
 )
