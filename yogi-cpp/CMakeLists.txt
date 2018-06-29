@@ -29,6 +29,10 @@ export (TARGETS yogi-cpp
 )
 
 # Tests
+find_package (GTest REQUIRED)
+include_directories (${GTEST_INCLUDE_DIRS})
+add_definitions (-D_SILENCE_TR1_NAMESPACE_DEPRECATION_WARNING)
+
 add_executable (yogi-cpp-test
   test/library_test.cc
 )

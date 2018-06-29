@@ -31,6 +31,10 @@ cotire (yogi-hub)
 run_clang_tidy (yogi-hub)
 
 # Tests
+find_package (GTest REQUIRED)
+include_directories (${GTEST_INCLUDE_DIRS})
+add_definitions (-D_SILENCE_TR1_NAMESPACE_DEPRECATION_WARNING)
+
 add_executable (yogi-hub-test
   test/yogi_hub_test.cc
 )

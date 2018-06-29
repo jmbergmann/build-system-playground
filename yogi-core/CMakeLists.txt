@@ -2,6 +2,13 @@
 if (WIN32)
   set (CMAKE_CXX_FLAGS "/EHsc /permissive- /W4 /w14640")
   use_static_windows_runtime ()
+
+  add_definitions(
+    -D_WIN32_WINNT=0x0601 # Windows 7
+    -D_SCL_SECURE_NO_WARNINGS
+    -D_CRT_SECURE_NO_WARNINGS
+    -D_WINSOCK_DEPRECATED_NO_WARNINGS
+  )
 else ()
   set (warnings                  "-Wall -Wextra -Wnon-virtual-dtor -pedantic -Wold-style-cast -Wcast-align -Wunused -Woverloaded-virtual -Wconversion -Wsign-conversion -Wduplicated-cond -Wlogical-op -Wnull-dereference")
   set (ignored_warnings          "-Wno-unused-variable -Wno-unused-function -Wno-overloaded-virtual -Wno-unused-value -Wno-shadow -Wno-trigraphs")
@@ -12,6 +19,23 @@ else ()
   set (CMAKE_CXX_FLAGS_RELEASE   "-O2 -DNDEBUG")
   set (CMAKE_SHARED_LINKER_FLAGS "${export_map}")
 endif ()
+
+# OpenSSL
+set (OPENSSL_USE_STATIC_LIBS ON)
+find_package (OpenSSL REQUIRED)
+
+# Boost
+set (Boost_USE_STATIC_LIBS ON)
+set (Boost_USE_STATIC_RUNTIME OFF)
+set (Boost_USE_DEBUG_RUNTIME ON)
+set (Boost_MULTITHREADED ON)
+find_package (Boost 1.66
+  COMPONENTS system filesystem thread date_time program_options
+  REQUIRED)
+add_library (boost INTERFACE IMPORTED)
+set_property (TARGET boost
+  PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIR})
+find_package (Threads REQUIRED)
 
 # Static library
 add_library (yogi-core-static STATIC
@@ -44,6 +68,10 @@ add_library (yogi-core-static STATIC
   src/utils/socket.cc
   src/utils/system.cc
   src/utils/timestamp.cc
+)
+
+target_include_directories (yogi-core-static
+  PUBLIC ${Boost_INCLUDE_DIR}
 )
 
 cotire (yogi-core-static)
@@ -79,7 +107,7 @@ endif ()
 
 if (WIN32)
   set_target_properties (yogi-core PROPERTIES
-    OUTPUT_NAME "yogi-core-${target_architecture}"
+    OUTPUT_NAME "yogi-core-${TARGET_ARCHITECTURE}"
   )
 endif()
 
@@ -108,6 +136,10 @@ export (TARGETS yogi-core-header
 )
 
 # Tests
+find_package (GTest REQUIRED)
+include_directories (${GTEST_INCLUDE_DIRS})
+add_definitions (-D_SILENCE_TR1_NAMESPACE_DEPRECATION_WARNING)
+
 add_executable (yogi-core-test
   test/api/constants_test.cc
   test/api/errors_test.cc
