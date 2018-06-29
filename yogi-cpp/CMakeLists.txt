@@ -44,7 +44,6 @@ target_link_libraries (yogi-cpp-test
 )
 
 cotire (yogi-cpp-test)
-run_clang_tidy (yogi-cpp-test)
 
 add_test (
   NAME yogi-cpp-test

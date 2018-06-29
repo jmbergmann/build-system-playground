@@ -75,7 +75,6 @@ target_include_directories (yogi-core-static
 )
 
 cotire (yogi-core-static)
-run_clang_tidy (yogi-core-static)
 
 export (TARGETS yogi-core-static
   FILE YogiCoreStaticConfig.cmake
@@ -112,7 +111,6 @@ if (WIN32)
 endif()
 
 cotire (yogi-core)
-run_clang_tidy (yogi-core)
 
 target_include_directories (yogi-core PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
@@ -168,7 +166,6 @@ target_link_libraries (yogi-core-test
 )
 
 cotire (yogi-core-test)
-run_clang_tidy (yogi-core-test)
 
 add_test (yogi-core-test yogi-core-test)
 

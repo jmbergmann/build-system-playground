@@ -12,7 +12,6 @@ include (GNUInstallDirs)
 include (static_windows_runtime)
 include (python_interpreter)
 include (dotnet_cli)
-include (clang_tidy)
 
 enable_testing ()
 
