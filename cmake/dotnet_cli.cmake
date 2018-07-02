@@ -1,6 +1,6 @@
 # Dotnet CLI
 
-set (DOTNET_EXECUTABLE "dotnet")  # TODO
+find_program (DOTNET_EXECUTABLE "dotnet")
 
 execute_process (
   COMMAND ${DOTNET_EXECUTABLE} --info
