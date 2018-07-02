@@ -41,13 +41,13 @@ class TestConstants(TestCase):
 
     def test_default_adv_interval(self):
         c = yogi.Constants.DEFAULT_ADV_INTERVAL
-        self.assertIsInstance(c, int)
-        self.assertGreaterEqual(c, 1000000)
+        self.assertIsInstance(c, float)
+        self.assertAlmostEqual(c, 1.0, delta=10.0)
 
     def test_default_connection_timeout(self):
         c = yogi.Constants.DEFAULT_CONNECTION_TIMEOUT
-        self.assertIsInstance(c, int)
-        self.assertGreaterEqual(c, 1000000)
+        self.assertIsInstance(c, float)
+        self.assertAlmostEqual(c, 1.0, delta=10.0)
 
     def test_default_logger_verbosity(self):
         c = yogi.Constants.DEFAULT_LOGGER_VERBOSITY
@@ -64,7 +64,7 @@ class TestConstants(TestCase):
         self.assertGreater(len(c), 5)
 
     def test_max_message_size(self):
-        c = yogi.Constants.DEFAULT_ADV_INTERVAL
+        c = yogi.Constants.MAX_MESSAGE_SIZE
         self.assertIsInstance(c, int)
         self.assertGreaterEqual(c, 1000)
 

@@ -43,8 +43,10 @@ class Constants:
     VERSION_PATCH = get_constant(4, c_int)  # type: int
     DEFAULT_ADV_ADDRESS = get_constant(5, c_char_p)  # type: str
     DEFAULT_ADV_PORT = get_constant(6, c_int)  # type: int
-    DEFAULT_ADV_INTERVAL = get_constant(7, c_longlong)  # type: int
-    DEFAULT_CONNECTION_TIMEOUT = get_constant(8, c_longlong)  # type: int
+    DEFAULT_ADV_INTERVAL = float(
+        get_constant(7, c_longlong)) / 1e9  # type: int
+    DEFAULT_CONNECTION_TIMEOUT = float(
+        get_constant(8, c_longlong)) / 1e9  # type: int
     DEFAULT_LOGGER_VERBOSITY = Verbosity(
         get_constant(9, c_int))  # type: Verbosity
     DEFAULT_LOG_TIME_FORMAT = get_constant(10, c_char_p)  # type: str
