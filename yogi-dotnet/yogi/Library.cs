@@ -79,19 +79,12 @@ static public partial class Yogi
             private static extern IntPtr dlerror();
         }
 
-        static public LibUtils utils;
-        static public string filename;
-        static public IntPtr dll;
+        static private LibUtils utils;
+        static private string filename;
+        static private IntPtr dll;
 
         static Library()
         {
-            // if (IntPtr.Size == 4) {
-            //     throw new Exception("HELLO DUDE");
-            // }
-            // else if (IntPtr.Size == 8) {
-            //     throw new Exception("OMG");
-            // }
-
             utils = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
                            ? (LibUtils)new WindowsLibUtils()
                            : (LibUtils)new UnixLibUtils();
@@ -115,6 +108,17 @@ static public partial class Yogi
             {
                 throw new DllNotFoundException($"Could not load library {filename}");
             }
+        }
+
+        public static T GetDelegateForFunction<T>(string functionName) where T : class
+        {
+            IntPtr fn = utils.GetProcAddress(dll, functionName);
+            if (fn == IntPtr.Zero)
+            {
+                throw new MissingMethodException($"Function {functionName} is missing in {filename}");
+            }
+
+            return Marshal.GetDelegateForFunctionPointer(fn, typeof(T)) as T;
         }
     }
 }

@@ -1,31 +1,18 @@
 using System;
 using System.Runtime.InteropServices;
-using System.Runtime.CompilerServices;
 
 static public partial class Yogi
 {
-    internal partial class LibraryFunctions
+    internal partial class Api
     {
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public delegate IntPtr GetVersionDelegate();
-        public static GetVersionDelegate YOGI_GetVersion;
-
-        static LibraryFunctions()
-        {
-            RuntimeHelpers.RunClassConstructor(typeof(Library).TypeHandle);
-
-            IntPtr fn = Library.utils.GetProcAddress(Library.dll, "YOGI_GetVersion");
-            if (fn == IntPtr.Zero)
-            {
-                throw new MissingMethodException($"Function YOGI_GetVersion is missing in {Library.filename}");
-            }
-
-            YOGI_GetVersion = Marshal.GetDelegateForFunctionPointer(fn, typeof(GetVersionDelegate)) as GetVersionDelegate;
-        }
+        public static GetVersionDelegate YOGI_GetVersion
+            = Library.GetDelegateForFunction<GetVersionDelegate>("YOGI_GetVersion");
     }
 
     public static string GetVersion()
     {
-        return Marshal.PtrToStringAnsi(LibraryFunctions.YOGI_GetVersion());
+        return Marshal.PtrToStringAnsi(Api.YOGI_GetVersion());
     }
 }
