@@ -12,12 +12,22 @@ include (GNUInstallDirs)
 include (static_windows_runtime)
 include (python_interpreter)
 include (dotnet_cli)
+include (nodejs)
 
 enable_testing ()
 
 add_subdirectory (yogi-core)
 add_subdirectory (yogi-cpp)
 add_subdirectory (yogi-hub)
-add_subdirectory (yogi-python)
-add_subdirectory (yogi-dotnet)
-add_subdirectory (yogi-javascript)
+
+if (PYTHON_EXECUTABLE)
+  add_subdirectory (yogi-python)
+endif ()
+
+if (DOTNET_EXECUTABLE)
+  add_subdirectory (yogi-dotnet)
+endif ()
+
+if (NODEJS_EXECUTABLE AND NPM_EXECUTABLE)
+  add_subdirectory (yogi-javascript)
+endif ()

@@ -1,13 +1,20 @@
 # Tests
 add_test (
   NAME yogi-python-test
-  COMMAND ${PYTHON_EXECUTABLE} -m unittest
+  COMMAND "${PYTHON_EXECUTABLE}" -m unittest
   WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
 )
 
 set_property (TEST yogi-python-test PROPERTY
   ENVIRONMENT "YOGI_CORE_LIBRARY=$<TARGET_FILE:yogi-core>"
 )
+
+if (NOT PYTHON_ARCHITECTURE STREQUAL TARGET_ARCHITECTURE)
+  message (STATUS "Python architecture (${PYTHON_ARCHITECTURE}) does not match Yogi Core architecture (${TARGET_ARCHITECTURE}). Python tests disabled.")
+  set_property (TEST yogi-python-test PROPERTY
+    DISABLED TRUE
+  )
+endif ()
 
 # Pycodestyle (PEP8)
 set (pycodestyle_ok_file
@@ -22,7 +29,7 @@ file (GLOB_RECURSE src_files
 
 add_custom_command (
   OUTPUT ${pycodestyle_ok_file}
-  COMMAND pycodestyle ${src_files}
+  COMMAND ${PYCODESTYLE_EXECUTABLE} ${src_files}
   COMMAND echo > ${pycodestyle_ok_file}
   DEPENDS ${src_files}
   WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}

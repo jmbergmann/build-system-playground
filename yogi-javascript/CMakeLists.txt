@@ -4,7 +4,7 @@ set (npm_ok_file
 
 add_custom_command (
   OUTPUT ${npm_ok_file}
-  COMMAND npm install && echo > ${npm_ok_file}
+  COMMAND ${NPM_EXECUTABLE} install && echo > ${npm_ok_file}
   WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
 )
 
@@ -21,7 +21,7 @@ file (GLOB_RECURSE src_files
 
 add_custom_command (
   OUTPUT ${bundle_files}
-  COMMAND npm run build -- --output-path=${CMAKE_CURRENT_BINARY_DIR}
+  COMMAND "${NPM_EXECUTABLE}" run build -- --output-path=${CMAKE_CURRENT_BINARY_DIR}
   DEPENDS ${src_files} ${npm_ok_file}
   WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
 )
@@ -37,7 +37,7 @@ if (WIN32)
 
   file (
     WRITE ${run_npm_test_script}
-    "npm test"
+    "\"${NPM_EXECUTABLE}\" test"
   )
 
   add_test (
@@ -48,7 +48,7 @@ if (WIN32)
 else ()
   add_test (
     NAME yogi-javascript
-    COMMAND npm test
+    COMMAND "${NPM_EXECUTABLE}" test
     WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
   )
 endif ()

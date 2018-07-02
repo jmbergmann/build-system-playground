@@ -170,12 +170,18 @@ cotire (yogi-core-test)
 add_test (yogi-core-test yogi-core-test)
 
 # Valgrind
-add_custom_target(yogi-core-test-valgrind
-  COMMAND valgrind --leak-check=yes $<TARGET_FILE:yogi-core-test>
-  DEPENDS yogi-core-test
-)
+find_program (VALGRIND_EXECUTABLE, "valgrind")
 
-add_custom_target(yogi-core-test-helgrind
-  COMMAND valgrind --tool=helgrind $<TARGET_FILE:yogi-core-test>
-  DEPENDS yogi-core-test
-)
+if (VALGRIND_EXECUTABLE)
+  add_custom_target(yogi-core-test-valgrind
+    COMMAND ${VALGRIND_EXECUTABLE} --leak-check=yes $<TARGET_FILE:yogi-core-test>
+    DEPENDS yogi-core-test
+  )
+
+  add_custom_target(yogi-core-test-helgrind
+    COMMAND ${VALGRIND_EXECUTABLE} --tool=helgrind $<TARGET_FILE:yogi-core-test>
+    DEPENDS yogi-core-test
+  )
+else ()
+  message (STATUS "Valgrind not found. Targets disabled.")
+endif ()
