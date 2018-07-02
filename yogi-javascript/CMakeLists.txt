@@ -41,13 +41,13 @@ if (WIN32)
   )
 
   add_test (
-    NAME yogi-javascript
+    NAME yogi-javascript-test
     COMMAND ${run_npm_test_script}
     WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
   )
 else ()
   add_test (
-    NAME yogi-javascript
+    NAME yogi-javascript-test
     COMMAND "${NPM_EXECUTABLE}" test
     WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
   )
