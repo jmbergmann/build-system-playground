@@ -99,7 +99,15 @@ static public partial class Yogi
             filename = Environment.GetEnvironmentVariable("YOGI_CORE_LIBRARY");
             if (filename == null)
             {
-                filename = "yogi-core.dll";
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                {
+                    string architecture = System.Environment.Is64BitProcess ? "x64" : "x86";
+                    filename = $"yogi-core-{architecture}.dll";
+                }
+                else
+                {
+                    filename = "libyogi-core.so";
+                }
             }
 
             dll = utils.LoadLibrary(filename);
