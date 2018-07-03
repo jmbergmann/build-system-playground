@@ -10,28 +10,32 @@ namespace test
         public void VersionNumber()
         {
             Assert.IsType<string>(Yogi.Constants.VersionNumber);
-            Assert.Equal(Yogi.Constants.VersionNumber, Yogi.GetVersion());
+            Assert.Equal(Yogi.Constants.VersionNumber,
+                Helpers.GetCoreMacroString("YOGI_HDR_VERSION"));
         }
 
         [Fact]
         public void VersionMajor()
         {
             Assert.IsType<int>(Yogi.Constants.VersionMajor);
-            Assert.True(Yogi.Constants.VersionMajor >= 0);
+            Assert.Equal(Yogi.Constants.VersionMajor,
+                Helpers.GetCoreMacroInt("YOGI_HDR_VERSION_MAJOR"));
         }
 
         [Fact]
         public void VersionMinor()
         {
             Assert.IsType<int>(Yogi.Constants.VersionMinor);
-            Assert.True(Yogi.Constants.VersionMinor >= 0);
+            Assert.Equal(Yogi.Constants.VersionMinor,
+                Helpers.GetCoreMacroInt("YOGI_HDR_VERSION_MINOR"));
         }
 
         [Fact]
         public void VersionPatch()
         {
             Assert.IsType<int>(Yogi.Constants.VersionPatch);
-            Assert.True(Yogi.Constants.VersionPatch >= 0);
+            Assert.Equal(Yogi.Constants.VersionPatch,
+                Helpers.GetCoreMacroInt("YOGI_HDR_VERSION_PATCH"));
         }
 
         [Fact]
