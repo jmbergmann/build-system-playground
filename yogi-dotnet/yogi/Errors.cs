@@ -209,7 +209,7 @@ static public partial class Yogi
         /// Constructor.
         /// </summary>
         /// <param name="failure">The wrapped Failure or DescriptiveFailure object.</param>
-        public Exception(Failure failure)
+        public Exception(Failure failure) : base(failure.ToString())
         {
             Failure = failure;
         }

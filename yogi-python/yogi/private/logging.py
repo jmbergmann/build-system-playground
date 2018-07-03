@@ -95,7 +95,7 @@ def log_to_console(verbosity: Union[Verbosity, None],
     Args:
         verbosity: Maximum verbosity of messages to log.
         stream:    The stream to use.
-        color:    Use colours in output.
+        color:     Use colours in output.
         timefmt:   Format of the timestamp (see above for placeholders).
         fmt:       Format of a log entry (see above for placeholders).
     """
@@ -319,10 +319,10 @@ class Logger(Object):
         set to the file and line of the calling function.
 
         Args:
-            severity: Severity (verbosity) of the entry
-            msg:      Log message
-            file:     Source file name
-            line:     Source file line number
+            severity: Severity (verbosity) of the entry.
+            msg:      Log message.
+            file:     Source file name.
+            line:     Source file line number.
         """
         if file is None and line is None:
             caller = inspect.getframeinfo(inspect.stack()[1][0])
