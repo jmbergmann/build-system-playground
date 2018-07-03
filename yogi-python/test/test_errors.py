@@ -34,6 +34,7 @@ class TestErrors(TestCase):
 
     def test_descriptive_failure(self):
         self.assertEqual(yogi.DescriptiveFailure(-4, "ab").description, "ab")
+        self.assertIsInstance(yogi.DescriptiveFailure(-1, "ab"), yogi.Failure)
 
     def test_success(self):
         self.assertTrue(yogi.Success(1))

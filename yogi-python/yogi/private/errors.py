@@ -54,9 +54,9 @@ yogi.YOGI_GetErrorString.argtypes = [c_int]
 class Result:
     """Represents a result of an operation.
 
-    This is a wrapper around the result code returned by the function from the
-    Yogi Core library. A result is represented by a number which is >= 0 in
-    case of success and < 0 in case of a failure.
+    This is a wrapper around the result code returned by the functions from
+    the Yogi Core library. A result is represented by a number which is >= 0
+    in case of success and < 0 in case of a failure.
     """
 
     def __init__(self, value: int):
@@ -105,7 +105,7 @@ class Failure(Exception, Result):
 
 
 class DescriptiveFailure(Failure):
-    """A failure of an operation which includes a description."""
+    """A failure of an operation that includes a description."""
 
     def __init__(self, value: int, description: str):
         Failure.__init__(self, value)
@@ -113,7 +113,7 @@ class DescriptiveFailure(Failure):
 
     @property
     def description(self) -> str:
-        """More detailed information of the error."""
+        """More detailed information about the error."""
         return self._description
 
     def __str__(self) -> str:
@@ -128,7 +128,7 @@ class Success(Result):
         Result.__init__(self, value)
 
 
-def api_result_handler(result: int) -> Result:
+def api_result_handler(result: int) -> Success:
     if result < 0:
         raise Failure(result)
     else:

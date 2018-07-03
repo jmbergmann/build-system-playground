@@ -59,7 +59,7 @@ static public partial class Yogi
                 var errPtr = dlerror();
                 if (errPtr != IntPtr.Zero)
                 {
-                    throw new Exception("dlsym: " + Marshal.PtrToStringAnsi(errPtr));
+                    throw new System.Exception("dlsym: " + Marshal.PtrToStringAnsi(errPtr));
                 }
                 return res;
             }

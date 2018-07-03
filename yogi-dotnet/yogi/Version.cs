@@ -11,6 +11,10 @@ static public partial class Yogi
             = Library.GetDelegateForFunction<GetVersionDelegate>("YOGI_GetVersion");
     }
 
+    /// <summary>
+    /// Retrieve the Yogi Core version.
+    /// </summary>
+    /// <returns>Version string of the loaded Yogi Core library.</returns>
     public static string GetVersion()
     {
         return Marshal.PtrToStringAnsi(Api.YOGI_GetVersion());

@@ -15,12 +15,12 @@ class Verbosity(IntEnum):
     """Levels of how verbose logging output is.
 
     Attributes:
-        FATAL   Fatal errors are error that requires a process restart.
+        FATAL   Fatal errors are errors that require a process restart.
         ERROR   Errors that the system can recover from.
         WARNING Warnings.
         INFO    Useful general information about the system state.
         DEBUG   Information for debugging.
-        TRACE   Detailed debugging.
+        TRACE   Detailed debugging information.
     """
     FATAL = 0
     ERROR = 1

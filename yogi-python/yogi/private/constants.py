@@ -26,13 +26,13 @@ class Constants:
         VERSION_PATCH              Yogi Core patch version number.
         DEFAULT_ADV_ADDRESS        Default IP address for advertising.
         DEFAULT_ADV_PORT           Default UDP port for advertising.
-        DEFAULT_ADV_INTERVAL       Default time between two advertising.
+        DEFAULT_ADV_INTERVAL       Default time between two advertising
                                    messages.
-        DEFAULT_CONNECTION_TIMEOUT Default timeout for connections between.
+        DEFAULT_CONNECTION_TIMEOUT Default timeout for connections between
                                    two branches.
         DEFAULT_LOGGER_VERBOSITY   Default verbosity for newly created
                                    loggers.
-        DEFAULT_LOG_TIME_FORMAT    Default format of the time string in log.
+        DEFAULT_LOG_TIME_FORMAT    Default format of the time string in log
                                    entries.
         DEFAULT_LOG_FORMAT         Default format of a log entry.
         MAX_MESSAGE_SIZE           Maximum size of a message between branches.
