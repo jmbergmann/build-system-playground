@@ -1,4 +1,6 @@
 using System;
+using System.Diagnostics;
+using System.Runtime.ConstrainedExecution;
 using System.Runtime.InteropServices;
 using System.Collections.Generic;
 
@@ -10,6 +12,48 @@ static public partial class Yogi
         public delegate int DestroyDelegate(IntPtr handle);
         public static DestroyDelegate YOGI_Destroy
             = Library.GetDelegateForFunction<DestroyDelegate>("YOGI_Destroy");
+    }
+
+    public class SafeObjectHandle : SafeHandle
+    {
+        public SafeObjectHandle(string objectTypeName, IntPtr handle) : base(IntPtr.Zero, true)
+        {
+            this.ObjectTypeName = objectTypeName;
+            this.handle = handle;
+        }
+
+        public string ObjectTypeName { get; }
+
+        public override bool IsInvalid
+        {
+            get { return handle == IntPtr.Zero; }
+        }
+
+        [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
+        protected override bool ReleaseHandle()
+        {
+            Result err = ErrorCodeToResult(Api.YOGI_Destroy(handle));
+            if (err)
+            {
+                string info = "";
+                if (err.ErrorCode == ErrorCode.ObjectStillUsed)
+                {
+                    info = " Check that you don't have circular dependencies on Yogi objects.";
+                }
+
+                string s = $"Could not destroy {ObjectTypeName}: {err}.{info}";
+                Console.Error.WriteLine(s);
+
+                return false;
+            }
+
+            return true;
+        }
+
+        public override string ToString()
+        {
+            return ObjectTypeName + (IsInvalid ? " [INVALID]" : $" {handle.ToInt64(),10:0x}");
+        }
     }
 
     /// <summary>
@@ -26,45 +70,75 @@ static public partial class Yogi
         /// the following case:
         ///    var timer = new Yogi.Timer(new Yogi.Context())
         /// </summary>
-        /// <param name="handle">Native handle representing the object.</param>
+        /// <param name="nativeHandle">Native handle representing the object.</param>
         /// <param name="dependencies">Other objects that this object depends on.</param>
-        public Object(IntPtr handle, [Optional] List<Object> dependencies)
+        protected Object(IntPtr nativeHandle, [Optional] Object[] dependencies)
         {
-            Handle = handle;
+            this.handle = new SafeObjectHandle(GetType().Name, nativeHandle);
             this.dependencies = dependencies;
+            Disposed = false;
+            refCounter = 1;
+
+            if (dependencies != null)
+            {
+                foreach (var dependency in dependencies)
+                {
+                    dependency.IncRefCounter();
+                }
+            }
         }
 
         ~Object()
         {
-            Destroy();
+            Dispose(false);
         }
 
+        private void IncRefCounter()
+        {
+            lock (handle)
+            {
+                Debug.Assert(refCounter > 0);
+                ++refCounter;
+            }
+        }
+
+        private void DecRefCounter()
+        {
+
+            lock (handle)
+            {
+                Debug.Assert(refCounter > 0);
+                --refCounter;
+                if (refCounter == 0)
+                {
+                    handle.Dispose();
+                }
+            }
+
+            if (dependencies != null)
+            {
+                foreach (var dependency in dependencies)
+                {
+                    dependency.DecRefCounter();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Disposes the object.
+        /// </summary>
         public void Dispose()
         {
-            Destroy();
+            Dispose(true);
             GC.SuppressFinalize(this);
         }
 
-        private void Destroy()
+        private void Dispose(bool disposing)
         {
-            if (Handle == IntPtr.Zero) return;
+            if (Disposed) return;
+            Disposed = true;
 
-            try
-            {
-                CheckErrorCode(Api.YOGI_Destroy(Handle));
-            }
-            catch (Exception e)
-            {
-                string info = "";
-                if (e.Failure.ErrorCode == ErrorCode.ObjectStillUsed)
-                {
-                    info = " Check that you don't have circular dependencies on Yogi objects.";
-                }
-
-                throw new System.Exception($"Could not destroy {ToString()}: {e.Message}.{info}");
-            }
-
-            Handle = IntPtr.Zero;
+            DecRefCounter();
         }
 
         /// <summary>
@@ -73,13 +147,36 @@ static public partial class Yogi
         /// <returns>String representation of the object.</returns>
         public override string ToString()
         {
-            string s = GetType().Name;
-            s += Handle == IntPtr.Zero ? " [INVALID]" : $" {Handle.ToInt64(),10:0x}";
-            return s;
+            return handle.ToString();
         }
 
-        protected IntPtr Handle { get; private set; }
+        protected SafeObjectHandle Handle
+        {
+            get
+            {
+                if (Disposed)
+                {
+                    return new SafeObjectHandle(GetType().Name, IntPtr.Zero);
+                }
+                else
+                {
+                    return handle;
+                }
+            }
 
-        private List<Object> dependencies;
+            private set
+            {
+                handle = value;
+            }
+        }
+
+        /// <summary>
+        /// Returns true if the Dispose() function has been called for this object.
+        /// </summary>
+        public bool Disposed { get; private set; }
+
+        private SafeObjectHandle handle;
+        private Object[] dependencies;
+        private volatile int refCounter;
     }
 }

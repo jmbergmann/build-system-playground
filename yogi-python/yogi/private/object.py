@@ -1,6 +1,7 @@
 from .library import yogi
 from .errors import Failure, ErrorCode, api_result_handler
 
+import sys
 from ctypes import c_void_p
 from typing import List, Any
 
@@ -41,9 +42,10 @@ class Object:
                 info = " Check that you don't have circular dependencies on" \
                     " Yogi objects."
 
-            raise AssertionError("Could not destroy {} instance: {}.{}"
-                                 .format(self.__class__.__name__, failure,
-                                         info))
+            print("Could not destroy {} instance: {}.{}".format(
+                self.__class__.__name__, failure, info), file=sys.stderr)
+
+            assert(False)
 
     def __str__(self):
         s = self.__class__.__name__
