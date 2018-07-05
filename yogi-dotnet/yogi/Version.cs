@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 
 static public partial class Yogi
 {
-    internal partial class Api
+    partial class Api
     {
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public delegate IntPtr GetVersionDelegate();

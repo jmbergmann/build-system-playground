@@ -30,13 +30,13 @@ static public partial class Yogi
             }
 
             [DllImport("kernel32")]
-            private static extern IntPtr LoadLibrary(string fileName);
+            static extern IntPtr LoadLibrary(string fileName);
 
             [DllImport("kernel32.dll")]
-            private static extern int FreeLibrary(IntPtr handle);
+            static extern int FreeLibrary(IntPtr handle);
 
             [DllImport("kernel32.dll")]
-            private static extern IntPtr GetProcAddress(IntPtr handle, string procedureName);
+            static extern IntPtr GetProcAddress(IntPtr handle, string procedureName);
         }
 
         public class UnixLibUtils : LibUtils
@@ -67,21 +67,21 @@ static public partial class Yogi
             const int RTLD_NOW = 2;
 
             [DllImport("libdl.so")]
-            private static extern IntPtr dlopen(String fileName, int flags);
+            static extern IntPtr dlopen(String fileName, int flags);
 
             [DllImport("libdl.so")]
-            private static extern IntPtr dlsym(IntPtr handle, String symbol);
+            static extern IntPtr dlsym(IntPtr handle, String symbol);
 
             [DllImport("libdl.so")]
-            private static extern int dlclose(IntPtr handle);
+            static extern int dlclose(IntPtr handle);
 
             [DllImport("libdl.so")]
-            private static extern IntPtr dlerror();
+            static extern IntPtr dlerror();
         }
 
-        static private LibUtils utils;
-        static private string filename;
-        static private IntPtr dll;
+        static LibUtils utils;
+        static string filename;
+        static IntPtr dll;
 
         static Library()
         {

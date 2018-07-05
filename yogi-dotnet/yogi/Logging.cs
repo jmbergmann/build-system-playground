@@ -1,58 +1,73 @@
 using System;
 using System.Runtime.InteropServices;
+using System.Runtime.CompilerServices;
+using System.IO;
+using System.Text;
 
 static public partial class Yogi
 {
-    internal partial class Api
+    partial class Api
     {
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        public delegate int LogToConsoleDelegate(int verbosity, int stream, int color,
-            IntPtr timefmt, IntPtr fmt);
+        public delegate int LogToConsoleDelegate(Verbosity verbosity, Stream stream,
+            int color,
+            [MarshalAs(UnmanagedType.LPStr)] string timefmt,
+            [MarshalAs(UnmanagedType.LPStr)] string fmt);
         public static LogToConsoleDelegate YOGI_LogToConsole
             = Library.GetDelegateForFunction<LogToConsoleDelegate>("YOGI_LogToConsole");
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        public delegate void LogToHookFnDelegate(int severity, long timestamp, int tid,
-            IntPtr comp, IntPtr msg, IntPtr userarg);
+        public delegate void LogToHookFnDelegate(Verbosity severity, long timestamp,
+            int tid, [MarshalAs(UnmanagedType.LPStr)] string file, int line,
+            [MarshalAs(UnmanagedType.LPStr)] string comp,
+            [MarshalAs(UnmanagedType.LPStr)] string msg, IntPtr userarg);
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        public delegate int LogToHookDelegate(int verbosity, LogToHookFnDelegate fn,
+        public delegate int LogToHookDelegate(Verbosity verbosity, LogToHookFnDelegate fn,
             IntPtr userarg);
         public static LogToHookDelegate YOGI_LogToHook
             = Library.GetDelegateForFunction<LogToHookDelegate>("YOGI_LogToHook");
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        public delegate int LogToFileDelegate(int verbosity, IntPtr filename, IntPtr genFn,
-            int genfnsize, IntPtr timefmt, IntPtr fmt);
+        public delegate int LogToFileDelegate(Verbosity verbosity,
+            [MarshalAs(UnmanagedType.LPStr)] string filename,
+            [MarshalAs(UnmanagedType.LPStr)] StringBuilder genFn, int genfnsize,
+            [MarshalAs(UnmanagedType.LPStr)] string timefmt,
+            [MarshalAs(UnmanagedType.LPStr)] string fmt);
         public static LogToFileDelegate YOGI_LogToFile
             = Library.GetDelegateForFunction<LogToFileDelegate>("YOGI_LogToFile");
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        public delegate int LoggerCreateDelegate(ref IntPtr logger, IntPtr component);
+        public delegate int LoggerCreateDelegate(ref IntPtr logger,
+            [MarshalAs(UnmanagedType.LPStr)] string component);
         public static LoggerCreateDelegate YOGI_LoggerCreate
             = Library.GetDelegateForFunction<LoggerCreateDelegate>("YOGI_LoggerCreate");
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        public delegate int LoggerGetVerbosityDelegate(IntPtr logger, ref int verbosity);
+        public delegate int LoggerGetVerbosityDelegate(SafeObjectHandle logger,
+            ref Verbosity verbosity);
         public static LoggerGetVerbosityDelegate YOGI_LoggerGetVerbosity
             = Library.GetDelegateForFunction<LoggerGetVerbosityDelegate>(
                 "YOGI_LoggerGetVerbosity");
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        public delegate int LoggerSetVerbosityDelegate(IntPtr logger, int verbosity);
+        public delegate int LoggerSetVerbosityDelegate(SafeObjectHandle logger,
+            Verbosity verbosity);
         public static LoggerSetVerbosityDelegate YOGI_LoggerSetVerbosity
             = Library.GetDelegateForFunction<LoggerSetVerbosityDelegate>(
                 "YOGI_LoggerSetVerbosity");
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        public delegate int LoggerSetComponentsVerbosityDelegate(IntPtr components, int verbosity,
+        public delegate int LoggerSetComponentsVerbosityDelegate(
+            [MarshalAs(UnmanagedType.LPStr)] string components, Verbosity verbosity,
             ref int count);
         public static LoggerSetComponentsVerbosityDelegate YOGI_LoggerSetComponentsVerbosity
             = Library.GetDelegateForFunction<LoggerSetComponentsVerbosityDelegate>(
                 "YOGI_LoggerSetComponentsVerbosity");
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        public delegate int LoggerLogDelegate(IntPtr logger, int severity, IntPtr file,
-            int line, IntPtr msg);
+        public delegate int LoggerLogDelegate(SafeObjectHandle logger, Verbosity severity,
+            [MarshalAs(UnmanagedType.LPStr)] string file, int line,
+            [MarshalAs(UnmanagedType.LPStr)] string msg);
         public static LoggerLogDelegate YOGI_LoggerLog
             = Library.GetDelegateForFunction<LoggerLogDelegate>("YOGI_LoggerLog");
     }
@@ -147,6 +162,8 @@ static public partial class Yogi
                                     [Optional] bool color, [Optional] string timefmt,
                                     [Optional] string fmt)
     {
+        int res = Api.YOGI_LogToConsole(verbosity, stream, color ? 1 : 0, timefmt, fmt);
+        CheckErrorCode(res);
     }
 
     /// <summary>
@@ -176,7 +193,22 @@ static public partial class Yogi
     public static void LogToHook([Optional] Verbosity verbosity,
                                  [Optional] LogToHookFnDelegate fn)
     {
+        lock (logToHookFnLock)
+        {
+            Api.LogToHookFnDelegate wrapper =
+            (severity, timestamp, tid, file, line, comp, msg, userarg) => {
+                fn(severity, CoreTimestampToDateTime(timestamp), tid, file, line, comp, msg);
+            };
+
+            int res = Api.YOGI_LogToHook(verbosity, wrapper, IntPtr.Zero);
+            logToHookFn = null;
+            CheckErrorCode(res);
+            logToHookFn = wrapper;  // Make sure it does not get GC'd
+        }
     }
+
+    static object logToHookFnLock = new object();
+    static Api.LogToHookFnDelegate logToHookFn;
 
     /// <summary>
     /// Creates log file.
@@ -224,7 +256,10 @@ static public partial class Yogi
     public static string LogToFile([Optional] Verbosity verbosity, [Optional] string filename,
                                    [Optional] string timefmt, [Optional] string fmt)
     {
-        return "";
+        var genFn = new StringBuilder(256);
+        int res = Api.YOGI_LogToFile(verbosity, filename, genFn, genFn.Capacity, timefmt, fmt);
+        CheckErrorCode(res);
+        return genFn.ToString();
     }
 
     /// <summary>
@@ -256,7 +291,10 @@ static public partial class Yogi
         /// <returns>Number of matching loggers.</returns>
         public static int SetComponentsVerbosity(string components, Verbosity verbosity)
         {
-            return 0;
+            int n = -1;
+            int res = Api.YOGI_LoggerSetComponentsVerbosity(components, verbosity, ref n);
+            CheckErrorCode(res);
+            return n;
         }
 
         /// <summary>
@@ -265,7 +303,14 @@ static public partial class Yogi
         /// The verbosity of new loggers is Verbosity.Info by default.
         /// </summary>
         /// <param name="component">The component tag to use.</param>
-        public Logger(string component) : base(IntPtr.Zero)
+        public Logger(string component)
+        : base(Create(component))
+        {
+        }
+
+        // For the AppLogger
+        internal Logger()
+        : base(IntPtr.Zero)
         {
         }
 
@@ -274,8 +319,18 @@ static public partial class Yogi
         /// </summary>
         public Verbosity Verbosity
         {
-            get;
-            set;
+            get
+            {
+                Verbosity vb = Verbosity.Trace;
+                int res = Api.YOGI_LoggerGetVerbosity(Handle, ref vb);
+                CheckErrorCode(res);
+                return vb;
+            }
+            set
+            {
+                int res = Api.YOGI_LoggerSetVerbosity(Handle, value);
+                CheckErrorCode(res);
+            }
         }
 
         /// <summary>
@@ -288,9 +343,24 @@ static public partial class Yogi
         /// <param name="msg">Log message.</param>
         /// <param name="file">Source file name.</param>
         /// <param name="line">Source file line number.</param>
-        public void Log(Verbosity severity, string msg, [Optional] string file,
-                        [Optional] int line)
+        public void Log(Verbosity severity, string msg, [CallerFilePath] string file = null,
+                        [CallerLineNumber] int line = 0)
         {
+            if (file != null)
+            {
+                file = Path.GetFileName(file);
+            }
+
+            int res = Api.YOGI_LoggerLog(Handle, severity, file, line, msg);
+            CheckErrorCode(res);
+        }
+
+        static IntPtr Create(string component)
+        {
+            var handle = new IntPtr();
+            int res = Api.YOGI_LoggerCreate(ref handle, component);
+            CheckErrorCode(res);
+            return handle;
         }
     }
 
@@ -302,22 +372,17 @@ static public partial class Yogi
     /// the same logger, i.e. changing its verbosity will change the verbosity of
     /// every AppLogger instance.
     /// </summary>
-    public class AppLogger : Logger
+    public class AppLoggerType : Logger
     {
-        /// <summary>
-        /// Constructor.
-        /// </summary>
-        public AppLogger() : base(null)
-        {
-        }
-
         /// <summary>
         /// Returns the class name as a string.
         /// </summary>
         /// <returns></returns>
         public override string ToString()
         {
-            return GetType().Name;
+            return "AppLogger";
         }
     }
+
+    public static readonly AppLoggerType AppLogger = new AppLoggerType();
 }

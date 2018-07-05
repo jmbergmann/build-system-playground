@@ -117,6 +117,7 @@ void TextBasedLogSink::WriteEntry(Verbosity severity,
     pos = fmt_.find('$', old_pos);
   }
 
+  ss << fmt_.substr(old_pos);
   ss << std::endl;
   WritePartialOutput(ss.str());
   if (!colour_cleared) {

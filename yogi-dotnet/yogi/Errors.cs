@@ -4,7 +4,7 @@ using System.Diagnostics;
 
 static public partial class Yogi
 {
-    internal partial class Api
+    partial class Api
     {
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public delegate IntPtr GetErrorStringDelegate(int err);
@@ -136,15 +136,18 @@ static public partial class Yogi
             return lhs.Value >= rhs.Value;
         }
 
-        public static bool operator true(Result res) {
+        public static bool operator true(Result res)
+        {
             return res.Value >= 0;
         }
 
-        public static bool operator false(Result res) {
+        public static bool operator false(Result res)
+        {
             return res.Value < 0;
         }
 
-        public static implicit operator bool(Result res) {
+        public static implicit operator bool(Result res)
+        {
             return res.Value >= 0;
         }
 
@@ -163,10 +166,19 @@ static public partial class Yogi
         /// Constructor.
         /// </summary>
         /// <param name="value">Number as returned by the Yogi Core library function.</param>
-        /// <returns></returns>
-        public Failure(int value) : base(value)
+        public Failure(int value)
+        : base(value)
         {
             Debug.Assert(value < 0);
+        }
+
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        /// <param name="ec">Associated error code.</param>
+        public Failure(ErrorCode ec)
+        : this((int)ec)
+        {
         }
     }
 
@@ -181,7 +193,8 @@ static public partial class Yogi
         /// <param name="value">Number as returned by the Yogi Core library function.</param>
         /// <param name="description">More detailed information about the error.</param>
         /// <returns></returns>
-        public DescriptiveFailure(int value, string description) : base(value)
+        public DescriptiveFailure(int value, string description)
+        : base(value)
         {
             Description = description;
         }
@@ -209,9 +222,29 @@ static public partial class Yogi
         /// Constructor.
         /// </summary>
         /// <param name="failure">The wrapped Failure or DescriptiveFailure object.</param>
-        public Exception(Failure failure) : base(failure.ToString())
+        public Exception(Failure failure)
+        : base(failure.ToString())
         {
             Failure = failure;
+        }
+
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        /// <param name="ec">Error code associated with the failure.</param>
+        public Exception(ErrorCode ec)
+        : this(new Failure((int)ec))
+        {
+        }
+
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        /// <param name="ec">Error code associated with the failure.</param>
+        /// <param name="description">Detailed description of the failure.</param>
+        public Exception(ErrorCode ec, string description)
+        : this(new DescriptiveFailure((int)ec, description))
+        {
         }
 
         /// <summary>
@@ -230,13 +263,14 @@ static public partial class Yogi
         /// </summary>
         /// <param name="value">Number as returned by the Yogi Core library function.</param>
         /// <returns></returns>
-        public Success(int value) : base(value)
+        public Success(int value)
+        : base(value)
         {
             Debug.Assert(value >= 0);
         }
     }
 
-    internal static void CheckErrorCode(int result)
+    static void CheckErrorCode(int result)
     {
         if (result < 0)
         {
@@ -244,7 +278,7 @@ static public partial class Yogi
         }
     }
 
-    internal static Result ErrorCodeToResult(int result)
+    static Result ErrorCodeToResult(int result)
     {
         if (result < 0)
         {

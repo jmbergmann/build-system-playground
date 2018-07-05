@@ -2,6 +2,7 @@ from .errors import api_result_handler
 from .library import yogi
 from .object import Object
 from .time import timestamp_to_datetime
+from .errors import ErrorCode, Failure
 
 import datetime
 import inspect

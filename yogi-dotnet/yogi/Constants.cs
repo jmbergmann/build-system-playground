@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 
 static public partial class Yogi
 {
-    internal partial class Api
+    partial class Api
     {
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public delegate int GetIntConstantDelegate(ref int dest, int constant);
@@ -80,10 +80,10 @@ static public partial class Yogi
 
             long t = -1;
             CheckErrorCode(Api.YOGI_GetLongLongConstant(ref t, 7));
-            DefaultAdvInterval = TimeSpan.FromMilliseconds(Convert.ToDouble(t) / 1e6);
+            DefaultAdvInterval = CoreDurationToTimeSpan(t);
 
             CheckErrorCode(Api.YOGI_GetLongLongConstant(ref t, 8));
-            DefaultConnectionTimeout = TimeSpan.FromMilliseconds(Convert.ToDouble(t) / 1e6);
+            DefaultConnectionTimeout = CoreDurationToTimeSpan(t);
 
             int n = -1;
             CheckErrorCode(Api.YOGI_GetIntConstant(ref n, 9));

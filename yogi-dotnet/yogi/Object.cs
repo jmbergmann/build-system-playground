@@ -6,17 +6,18 @@ using System.Collections.Generic;
 
 static public partial class Yogi
 {
-    internal partial class Api
+    partial class Api
     {
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        public delegate int DestroyDelegate(IntPtr handle);
+        public delegate int DestroyDelegate(SafeObjectHandle handle);
         public static DestroyDelegate YOGI_Destroy
             = Library.GetDelegateForFunction<DestroyDelegate>("YOGI_Destroy");
     }
 
     public class SafeObjectHandle : SafeHandle
     {
-        public SafeObjectHandle(string objectTypeName, IntPtr handle) : base(IntPtr.Zero, true)
+        public SafeObjectHandle(string objectTypeName, IntPtr handle)
+        : base(IntPtr.Zero, true)
         {
             this.ObjectTypeName = objectTypeName;
             this.handle = handle;
@@ -29,10 +30,15 @@ static public partial class Yogi
             get { return handle == IntPtr.Zero; }
         }
 
+        public override string ToString()
+        {
+            return ObjectTypeName + (IsInvalid ? " [INVALID]" : $" {handle.ToInt64(),10:0x}");
+        }
+
         [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
         protected override bool ReleaseHandle()
         {
-            Result err = ErrorCodeToResult(Api.YOGI_Destroy(handle));
+            Result err = ErrorCodeToResult(Api.YOGI_Destroy(this));
             if (err)
             {
                 string info = "";
@@ -49,11 +55,6 @@ static public partial class Yogi
 
             return true;
         }
-
-        public override string ToString()
-        {
-            return ObjectTypeName + (IsInvalid ? " [INVALID]" : $" {handle.ToInt64(),10:0x}");
-        }
     }
 
     /// <summary>
@@ -61,6 +62,29 @@ static public partial class Yogi
     /// </summary>
     public class Object : IDisposable
     {
+        /// <summary>
+        /// Disposes the object.
+        /// </summary>
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        /// <summary>
+        /// Returns a string representation of the object.
+        /// </summary>
+        /// <returns>String representation of the object.</returns>
+        public override string ToString()
+        {
+            return handle.ToString();
+        }
+
+        /// <summary>
+        /// Returns true if the Dispose() function has been called for this object.
+        /// </summary>
+        public bool Disposed { get; private set; }
+
         /// <summary>
         /// Constructs the object.
         ///
@@ -83,71 +107,10 @@ static public partial class Yogi
             {
                 foreach (var dependency in dependencies)
                 {
+                    Debug.Assert(!dependency.Disposed);
                     dependency.IncRefCounter();
                 }
             }
-        }
-
-        ~Object()
-        {
-            Dispose(false);
-        }
-
-        private void IncRefCounter()
-        {
-            lock (handle)
-            {
-                Debug.Assert(refCounter > 0);
-                ++refCounter;
-            }
-        }
-
-        private void DecRefCounter()
-        {
-
-            lock (handle)
-            {
-                Debug.Assert(refCounter > 0);
-                --refCounter;
-                if (refCounter == 0)
-                {
-                    handle.Dispose();
-                }
-            }
-
-            if (dependencies != null)
-            {
-                foreach (var dependency in dependencies)
-                {
-                    dependency.DecRefCounter();
-                }
-            }
-        }
-
-        /// <summary>
-        /// Disposes the object.
-        /// </summary>
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        private void Dispose(bool disposing)
-        {
-            if (Disposed) return;
-            Disposed = true;
-
-            DecRefCounter();
-        }
-
-        /// <summary>
-        /// Returns a string representation of the object.
-        /// </summary>
-        /// <returns>String representation of the object.</returns>
-        public override string ToString()
-        {
-            return handle.ToString();
         }
 
         protected SafeObjectHandle Handle
@@ -170,13 +133,52 @@ static public partial class Yogi
             }
         }
 
-        /// <summary>
-        /// Returns true if the Dispose() function has been called for this object.
-        /// </summary>
-        public bool Disposed { get; private set; }
+        ~Object()
+        {
+            Dispose(false);
+        }
 
-        private SafeObjectHandle handle;
-        private Object[] dependencies;
-        private volatile int refCounter;
+        void IncRefCounter()
+        {
+            lock (handle)
+            {
+                Debug.Assert(refCounter > 0);
+                ++refCounter;
+            }
+        }
+
+        void DecRefCounter()
+        {
+
+            lock (handle)
+            {
+                Debug.Assert(refCounter > 0);
+                --refCounter;
+                if (refCounter == 0)
+                {
+                    handle.Dispose();
+                }
+            }
+
+            if (dependencies != null)
+            {
+                foreach (var dependency in dependencies)
+                {
+                    dependency.DecRefCounter();
+                }
+            }
+        }
+
+        void Dispose(bool disposing)
+        {
+            if (Disposed) return;
+            Disposed = true;
+
+            DecRefCounter();
+        }
+
+        SafeObjectHandle handle;
+        Object[] dependencies;
+        volatile int refCounter;
     }
 }
