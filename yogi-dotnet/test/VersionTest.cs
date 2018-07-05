@@ -9,7 +9,7 @@ namespace test
         [Fact]
         public void Version()
         {
-            Assert.True(Yogi.GetVersion().Length > 4);
+            Assert.True(Yogi.Version.Length > 4);
         }
 
         [Fact]
@@ -17,7 +17,7 @@ namespace test
         {
             var v = Assembly.GetAssembly(typeof(Yogi)).GetName().Version;
             var s = string.Format("{0}.{1}.{2}", v.Major, v.Minor, v.Build);
-            Assert.Equal(Yogi.GetVersion(), s);
+            Assert.Equal(Yogi.Version, s);
         }
     }
 }

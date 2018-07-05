@@ -12,11 +12,13 @@ static public partial class Yogi
     }
 
     /// <summary>
-    /// Retrieve the Yogi Core version.
+    /// Version string of the loaded Yogi Core library.
     /// </summary>
-    /// <returns>Version string of the loaded Yogi Core library.</returns>
-    public static string GetVersion()
+    public static string Version
     {
-        return Marshal.PtrToStringAnsi(Api.YOGI_GetVersion());
+        get
+        {
+            return Marshal.PtrToStringAnsi(Api.YOGI_GetVersion());
+        }
     }
 }
