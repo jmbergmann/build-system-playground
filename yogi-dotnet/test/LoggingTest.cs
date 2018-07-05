@@ -59,7 +59,7 @@ namespace test
                     Assert.IsType<Yogi.Verbosity>(severity);
                     Assert.Equal(Yogi.Verbosity.Warning, severity);
                     Assert.IsType<DateTime>(timestamp);
-                    Assert.True(timestamp <= DateTime.Now);
+                    Assert.True(timestamp <= Yogi.CurrentTime);
                     Assert.IsType<int>(tid);
                     Assert.True(tid > 0);
                     Assert.IsType<string>(file);
