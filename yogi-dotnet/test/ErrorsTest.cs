@@ -3,7 +3,7 @@ using Xunit;
 
 namespace test
 {
-    public class ErrorsTest
+    public class ErrorsTest : TestCase
     {
         [Fact]
         public void ErrorCodeEnum()
@@ -12,7 +12,7 @@ namespace test
             {
                 var prefix = "YOGI_";
                 if (ec != (int)Yogi.ErrorCode.Ok) prefix += "ERR_";
-                Helpers.AssertEnumElementMatches<Yogi.ErrorCode>(prefix, ec);
+                AssertEnumElementMatches<Yogi.ErrorCode>(prefix, ec);
             }
         }
 

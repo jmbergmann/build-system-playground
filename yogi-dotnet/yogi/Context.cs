@@ -261,7 +261,7 @@ static public partial class Yogi
             var wrapperHandle = GCHandle.Alloc(wrapper);
 
             try {
-                int res = Api.YOGI_ContextPost(Handle, wrapper, IntPtr.Zero);
+                int res = Api.YOGI_ContextPost(Handle, wrapper, GCHandle.ToIntPtr(wrapperHandle));
                 CheckErrorCode(res);
             }
             catch

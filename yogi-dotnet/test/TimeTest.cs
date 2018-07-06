@@ -3,7 +3,7 @@ using Xunit;
 
 namespace test
 {
-    public class TimeTest
+    public class TimeTest : TestCase
     {
         [Fact]
         public void CurrentTime()

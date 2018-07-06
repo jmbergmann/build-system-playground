@@ -3,38 +3,34 @@ using Xunit;
 
 namespace test
 {
-    public class ConstantsTest
+    public class ConstantsTest : TestCase
     {
         [Fact]
         public void VersionNumber()
         {
             Assert.IsType<string>(Yogi.Constants.VersionNumber);
-            Assert.Equal(Yogi.Constants.VersionNumber,
-                Helpers.GetCoreMacroString("YOGI_HDR_VERSION"));
+            Assert.Equal(Yogi.Constants.VersionNumber, GetCoreMacroString("YOGI_HDR_VERSION"));
         }
 
         [Fact]
         public void VersionMajor()
         {
             Assert.IsType<int>(Yogi.Constants.VersionMajor);
-            Assert.Equal(Yogi.Constants.VersionMajor,
-                Helpers.GetCoreMacroInt("YOGI_HDR_VERSION_MAJOR"));
+            Assert.Equal(Yogi.Constants.VersionMajor, GetCoreMacroInt("YOGI_HDR_VERSION_MAJOR"));
         }
 
         [Fact]
         public void VersionMinor()
         {
             Assert.IsType<int>(Yogi.Constants.VersionMinor);
-            Assert.Equal(Yogi.Constants.VersionMinor,
-                Helpers.GetCoreMacroInt("YOGI_HDR_VERSION_MINOR"));
+            Assert.Equal(Yogi.Constants.VersionMinor, GetCoreMacroInt("YOGI_HDR_VERSION_MINOR"));
         }
 
         [Fact]
         public void VersionPatch()
         {
             Assert.IsType<int>(Yogi.Constants.VersionPatch);
-            Assert.Equal(Yogi.Constants.VersionPatch,
-                Helpers.GetCoreMacroInt("YOGI_HDR_VERSION_PATCH"));
+            Assert.Equal(Yogi.Constants.VersionPatch, GetCoreMacroInt("YOGI_HDR_VERSION_PATCH"));
         }
 
         [Fact]

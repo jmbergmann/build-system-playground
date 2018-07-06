@@ -17,4 +17,8 @@
     <ProjectReference Include="..\yogi\yogi.csproj" />
   </ItemGroup>
 
+  <Target Name="CopyXunitConfigFile" AfterTargets="AfterBuild">
+    <Copy SourceFiles="xunit.runner.json" DestinationFolder="$(OutDir)" />
+  </Target>
+
 </Project>

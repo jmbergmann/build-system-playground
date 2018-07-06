@@ -5,11 +5,11 @@ using Xunit;
 
 namespace test
 {
-    static class Helpers
+    public class TestCase : IDisposable
     {
         static string yogiCoreH;
 
-        static Helpers()
+        static TestCase()
         {
             string filename = new System.Diagnostics.StackTrace(true).GetFrame(0).GetFileName();
             string path = Path.Combine(new FileInfo(filename).Directory.ToString(),
@@ -70,6 +70,13 @@ namespace test
         public static void AssertFlagMatches<T>(string macroPrefix, int enumElement)
         {
             AssertEnumElementMatches<T>(macroPrefix, enumElement);
+        }
+
+        public void Dispose()
+        {
+            Yogi.LogToConsole();
+            Yogi.LogToHook();
+            Yogi.LogToFile();
         }
     }
 }

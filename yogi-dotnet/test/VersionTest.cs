@@ -4,7 +4,7 @@ using Xunit;
 
 namespace test
 {
-    public class VersionTest
+    public class VersionTest : TestCase
     {
         [Fact]
         public void Version()

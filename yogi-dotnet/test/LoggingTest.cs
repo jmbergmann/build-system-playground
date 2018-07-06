@@ -5,7 +5,7 @@ using Xunit;
 
 namespace test
 {
-    public class LoggingTest : IDisposable
+    public class LoggingTest : TestCase
     {
         public LoggingTest()
         {
@@ -13,13 +13,10 @@ namespace test
             Directory.CreateDirectory(tempDir);
         }
 
-        public void Dispose()
+        public new void Dispose()
         {
-            Yogi.LogToConsole();
-            Yogi.LogToHook();
-            Yogi.LogToFile();
-
             Directory.Delete(tempDir, true);
+            base.Dispose();
         }
 
         string GetMyFilename([CallerFilePath] string filename = null)
@@ -32,13 +29,13 @@ namespace test
         [Fact]
         public void VerbosityEnum()
         {
-            Helpers.AssertEnumMatches<Yogi.Verbosity>("YOGI_VB_");
+            AssertEnumMatches<Yogi.Verbosity>("YOGI_VB_");
         }
 
         [Fact]
         public void StreamEnum()
         {
-            Helpers.AssertEnumMatches<Yogi.Stream>("YOGI_ST_");
+            AssertEnumMatches<Yogi.Stream>("YOGI_ST_");
         }
 
         [Fact]
