@@ -8,6 +8,7 @@ static public partial class Yogi
 {
     partial class Api
     {
+        /// === YOGI_Destroy ===
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public delegate int DestroyDelegate(SafeObjectHandle handle);
         public static DestroyDelegate YOGI_Destroy

@@ -7,6 +7,7 @@ include (yogi_version)
 
 project (yogi VERSION ${YOGI_VERSION} LANGUAGES CXX)
 
+include (build_type)
 include (cotire)
 include (GNUInstallDirs)
 include (static_windows_runtime)

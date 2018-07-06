@@ -193,7 +193,7 @@ class Context(Object):
 
         Returns:
             True if the context's event processing loop is not running within
-            within the specified duration and False otherwise.
+            the specified duration and False otherwise.
         """
         t = -1 if duration == float("inf") else int(duration * 1e9)
         try:

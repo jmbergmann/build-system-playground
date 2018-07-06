@@ -8,6 +8,7 @@ static public partial class Yogi
 {
     partial class Api
     {
+        /// === YOGI_GetLicense ===
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public delegate int LogToConsoleDelegate(Verbosity verbosity, Stream stream,
             int color,
@@ -16,6 +17,7 @@ static public partial class Yogi
         public static LogToConsoleDelegate YOGI_LogToConsole
             = Library.GetDelegateForFunction<LogToConsoleDelegate>("YOGI_LogToConsole");
 
+        /// === YOGI_LogToHook ===
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public delegate void LogToHookFnDelegate(Verbosity severity, long timestamp,
             int tid, [MarshalAs(UnmanagedType.LPStr)] string file, int line,
@@ -27,21 +29,24 @@ static public partial class Yogi
         public static LogToHookDelegate YOGI_LogToHook
             = Library.GetDelegateForFunction<LogToHookDelegate>("YOGI_LogToHook");
 
+        /// === YOGI_LogToFile ===
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public delegate int LogToFileDelegate(Verbosity verbosity,
             [MarshalAs(UnmanagedType.LPStr)] string filename,
-            [MarshalAs(UnmanagedType.LPStr)] StringBuilder genFn, int genfnsize,
+            [MarshalAs(UnmanagedType.LPStr)] StringBuilder genfn, int genfnsize,
             [MarshalAs(UnmanagedType.LPStr)] string timefmt,
             [MarshalAs(UnmanagedType.LPStr)] string fmt);
         public static LogToFileDelegate YOGI_LogToFile
             = Library.GetDelegateForFunction<LogToFileDelegate>("YOGI_LogToFile");
 
+        /// === YOGI_LoggerCreate ===
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public delegate int LoggerCreateDelegate(ref IntPtr logger,
             [MarshalAs(UnmanagedType.LPStr)] string component);
         public static LoggerCreateDelegate YOGI_LoggerCreate
             = Library.GetDelegateForFunction<LoggerCreateDelegate>("YOGI_LoggerCreate");
 
+        /// === YOGI_LoggerGetVerbosity ===
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public delegate int LoggerGetVerbosityDelegate(SafeObjectHandle logger,
             ref Verbosity verbosity);
@@ -49,6 +54,7 @@ static public partial class Yogi
             = Library.GetDelegateForFunction<LoggerGetVerbosityDelegate>(
                 "YOGI_LoggerGetVerbosity");
 
+        /// === YOGI_LoggerSetVerbosity ===
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public delegate int LoggerSetVerbosityDelegate(SafeObjectHandle logger,
             Verbosity verbosity);
@@ -56,6 +62,7 @@ static public partial class Yogi
             = Library.GetDelegateForFunction<LoggerSetVerbosityDelegate>(
                 "YOGI_LoggerSetVerbosity");
 
+        /// === YOGI_LoggerSetComponentsVerbosity ===
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public delegate int LoggerSetComponentsVerbosityDelegate(
             [MarshalAs(UnmanagedType.LPStr)] string components, Verbosity verbosity,
@@ -64,6 +71,7 @@ static public partial class Yogi
             = Library.GetDelegateForFunction<LoggerSetComponentsVerbosityDelegate>(
                 "YOGI_LoggerSetComponentsVerbosity");
 
+        /// === YOGI_LoggerLog ===
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public delegate int LoggerLogDelegate(SafeObjectHandle logger, Verbosity severity,
             [MarshalAs(UnmanagedType.LPStr)] string file, int line,

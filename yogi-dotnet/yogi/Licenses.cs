@@ -5,11 +5,13 @@ static public partial class Yogi
 {
     partial class Api
     {
+        /// === YOGI_GetLicense ===
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public delegate IntPtr GetLicenseDelegate();
         public static GetLicenseDelegate YOGI_GetLicense
             = Library.GetDelegateForFunction<GetLicenseDelegate>("YOGI_GetLicense");
 
+        /// === YOGI_Get3rdPartyLicenses ===
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public delegate IntPtr Get3rdPartyLicensesDelegate();
         public static Get3rdPartyLicensesDelegate YOGI_Get3rdPartyLicenses

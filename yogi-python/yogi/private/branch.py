@@ -18,11 +18,12 @@ class BranchEvents(IntEnum):
     """Events that can be observed on a branch.
 
     Attributes:
-        NONE              No events
+        NONE              No events.
         BRANCH_DISCOVERED A new branch has been discovered.
         BRANCH_QUERIED    Querying a new branch for information finished.
         CONNECT_FINISHED  Connecting to a branch finished.
         CONNECTION_LOST   The connection to a branch was lost.
+        ALL               Combination of all flags.
     """
     NONE = 0
     BRANCH_DISCOVERED = (1 << 0)

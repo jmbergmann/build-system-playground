@@ -6,6 +6,7 @@ static public partial class Yogi
 {
     partial class Api
     {
+        /// === YOGI_GetErrorString ===
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public delegate IntPtr GetErrorStringDelegate(int err);
         public static GetErrorStringDelegate YOGI_GetErrorString

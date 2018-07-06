@@ -5,6 +5,7 @@ static public partial class Yogi
 {
     partial class Api
     {
+        /// === YOGI_GetConstant ===
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public delegate int GetIntConstantDelegate(ref int dest, int constant);
         public static GetIntConstantDelegate YOGI_GetIntConstant
