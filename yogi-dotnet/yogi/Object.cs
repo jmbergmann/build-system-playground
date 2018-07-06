@@ -10,7 +10,7 @@ static public partial class Yogi
     {
         /// === YOGI_Destroy ===
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        public delegate int DestroyDelegate(SafeObjectHandle handle);
+        public delegate int DestroyDelegate(IntPtr handle);
         public static DestroyDelegate YOGI_Destroy
             = Library.GetDelegateForFunction<DestroyDelegate>("YOGI_Destroy");
     }
@@ -39,16 +39,16 @@ static public partial class Yogi
         [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
         protected override bool ReleaseHandle()
         {
-            Result err = ErrorCodeToResult(Api.YOGI_Destroy(this));
-            if (err)
+            Result res = ErrorCodeToResult(Api.YOGI_Destroy(DangerousGetHandle()));
+            if (!res)
             {
                 string info = "";
-                if (err.ErrorCode == ErrorCode.ObjectStillUsed)
+                if (res.ErrorCode == ErrorCode.ObjectStillUsed)
                 {
                     info = " Check that you don't have circular dependencies on Yogi objects.";
                 }
 
-                string s = $"Could not destroy {ObjectTypeName}: {err}.{info}";
+                string s = $"Could not destroy {ObjectTypeName}: {res}.{info}";
                 Console.Error.WriteLine(s);
 
                 return false;

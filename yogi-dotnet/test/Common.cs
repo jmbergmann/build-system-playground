@@ -77,6 +77,8 @@ namespace test
             Yogi.LogToConsole();
             Yogi.LogToHook();
             Yogi.LogToFile();
+
+            GC.Collect();
         }
     }
 }
