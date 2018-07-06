@@ -1,6 +1,9 @@
 using System;
 using System.IO;
 using System.Text.RegularExpressions;
+using System.Collections.Generic;
+using System.Runtime.InteropServices;
+using System.Linq;
 using Xunit;
 
 namespace test
@@ -50,26 +53,55 @@ namespace test
             return int.Parse(str);
         }
 
-        public static void AssertEnumElementMatches<T>(string macroPrefix, int enumElement)
+        public static IEnumerable<T> GetEnumElements<T>()
+        {
+            var type = typeof(T);
+            return from name in Enum.GetNames(type) select (T)Enum.Parse(type, name);
+        }
+
+        public static void AssertEnumElementMatches<T>(string macroPrefix, T enumElement)
         {
             var enumElementName = Enum.GetName(typeof(T), enumElement);
             var macroName = macroPrefix + Regex.Replace(enumElementName,
                 "(?<=.)([A-Z])", "_$0").ToUpper();
             var macroVal = GetCoreMacroInt(macroName);
-            Assert.Equal(enumElement, macroVal);
+            Assert.Equal((int)(object)enumElement, macroVal);
         }
 
         public static void AssertEnumMatches<T>(string macroPrefix)
         {
-            foreach (int val in Enum.GetValues(typeof(T)))
+            foreach (var elem in GetEnumElements<T>())
             {
-                AssertEnumElementMatches<T>(macroPrefix, val);
+                AssertEnumElementMatches<T>(macroPrefix, elem);
             }
         }
 
-        public static void AssertFlagMatches<T>(string macroPrefix, int enumElement)
+        public static void AssertFlagMatches<T>(string macroPrefix, T enumElement)
         {
             AssertEnumElementMatches<T>(macroPrefix, enumElement);
+        }
+
+        public static void AssertFlagCombinationMatches<T>(string macroPrefix, T enumElement,
+                                                           [Optional] IEnumerable<T> exceptions)
+        {
+            var enumElementName = Enum.GetName(typeof(T), enumElement);
+            var macroName = macroPrefix + Regex.Replace(enumElementName,
+                "(?<=.)([A-Z])", "_$0").ToUpper();
+            GetCoreMacroString(macroName);
+
+            if (exceptions == null) exceptions = new List<T>();
+            exceptions.Append(enumElement);
+
+            var expected = 0;
+            foreach (var elem in GetEnumElements<T>())
+            {
+                if (!exceptions.Contains(elem))
+                {
+                    expected |= (int)(object)elem;
+                }
+            }
+
+            Assert.Equal(expected, (int)(object)enumElement);
         }
 
         public void Dispose()

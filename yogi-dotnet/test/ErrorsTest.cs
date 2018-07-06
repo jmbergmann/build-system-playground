@@ -8,11 +8,10 @@ namespace test
         [Fact]
         public void ErrorCodeEnum()
         {
-            foreach (int ec in Enum.GetValues(typeof(Yogi.ErrorCode)))
+            foreach (var elem in GetEnumElements<Yogi.ErrorCode>())
             {
-                var prefix = "YOGI_";
-                if (ec != (int)Yogi.ErrorCode.Ok) prefix += "ERR_";
-                AssertEnumElementMatches<Yogi.ErrorCode>(prefix, ec);
+                var prefix = (elem == Yogi.ErrorCode.Ok) ? "YOGI_" : "YOGI_ERR_";
+                AssertEnumElementMatches(prefix, elem);
             }
         }
 
