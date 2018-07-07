@@ -1,6 +1,7 @@
 using System;
 using System.Runtime.InteropServices;
 using System.Text;
+using Newtonsoft.Json;
 
 static public partial class Yogi
 {
@@ -88,18 +89,75 @@ static public partial class Yogi
         All = BranchDiscovered | BranchQueried | ConnectFinished | ConnectionLost
     }
 
+    /// <summary>
+    /// Entry point into a Yogi network.
+    ///
+    /// A branch represents an entry point into a YOGI network. It advertises
+    /// itself via IP broadcasts/multicasts with its unique ID and information
+    /// required for establishing a connection. If a branch detects other branches
+    /// on the network, it connects to them via TCP to retrieve further
+    /// information such as their name, description and network name. If the
+    /// network names match, two branches attempt to authenticate with each other
+    /// by securely comparing passwords. Once authentication succeeds and there is
+    /// no other known branch with the same path then the branches can actively
+    /// communicate as part of the Yogi network.
+    ///
+    /// Note: Even though the authentication process via passwords is done in a
+    ///       secure manner, any further communication is done in plain text.
+    /// </summary>
     public class Branch : Object
     {
-        public Branch()
-        : base(Create())
+        /// <summary>
+        /// Creates the branch.
+        ///
+        /// Advertising and establishing connections can be limited to certain
+        /// network interfaces via the interface parameter. The default is to use
+        /// all available interfaces.
+        ///
+        /// Setting the advint parameter to infinity prevents the branch from
+        /// actively participating in the Yogi network, i.e. the branch will not
+        /// advertise itself and it will not authenticate in order to join a
+        /// network. However, the branch will temporarily connect to other
+        /// branches in order to obtain more detailed information such as name,
+        /// description, network name and so on. This is useful for obtaining
+        /// information about active branches without actually becoming part of
+        /// the Yogi network.
+        /// </summary>
+        /// <param name="context">The context to use.</param>
+        /// <param name="name">Name of the branch (by default, the format PID@hostname
+        /// with PID being the process ID will be used).</param>
+        /// <param name="description">Description of the branch.</param>
+        /// <param name="netname">Name of the network to join (by default, the
+        /// machine's hostname will be used as the network name).</param>
+        /// <param name="password">Password for the network.</param>
+        /// <param name="path">Path of the branch in the network (by default, the
+        /// format /name where name is the branch's name will be used).</param>
+        /// <param name="advaddr">Multicast address to use; e.g. 239.255.0.1 for IPv4
+        /// or ff31::8000:1234 for IPv6.</param>
+        /// <param name="advport">Advertising port.</param>
+        /// <param name="advint">Advertising interval (must be at least 1 ms).</param>
+        /// <param name="timeout">Maximum time of inactivity before a remote branch is
+        /// considered to be dead (must be at least 1 ms).</param>
+        /// <returns></returns>
+        public Branch(Context context, string name, [Optional] string description,
+            [Optional] string netname, [Optional] string password, [Optional] string path,
+            [Optional] string advaddr, [Optional] int advport, [Optional] TimeSpan? advint,
+            [Optional] TimeSpan? timeout)
+        : base(Create(context, name, description, netname, password, path, advaddr, advport,
+            advint, timeout), new Object[]{context})
         {
         }
 
-        static IntPtr Create()
+        static IntPtr Create(Context context, string name, [Optional] string description,
+            [Optional] string netname, [Optional] string password, [Optional] string path,
+            [Optional] string advaddr, [Optional] int advport, [Optional] TimeSpan? advint,
+            [Optional] TimeSpan? timeout)
         {
             var handle = new IntPtr();
-            // int res = Api.YOGI_LoggerCreate(ref handle);
-            // CheckErrorCode(res);
+            int res = Api.YOGI_BranchCreate(ref handle, context.Handle, name, description, netname,
+                password, path, advaddr, advport, TimeSpanToCoreDuration(advint),
+                TimeSpanToCoreDuration(timeout));
+            CheckErrorCode(res);
             return handle;
         }
     }

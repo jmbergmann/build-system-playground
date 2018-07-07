@@ -114,7 +114,7 @@ static public partial class Yogi
             }
         }
 
-        protected SafeObjectHandle Handle
+        internal SafeObjectHandle Handle
         {
             get
             {

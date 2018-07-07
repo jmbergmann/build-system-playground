@@ -1,4 +1,7 @@
-from .private.branch import BranchEvents, Branch
+from .private.branch import BranchEvents, Branch, BasicBranchInfo, \
+    LocalBranchInfo, RemoteBranchInfo, BranchEventInfo, \
+    BranchDiscoveredEventInfo, BranchQueriedEventInfo, \
+    ConnectFinishedEventInfo, ConnectionLostEventInfo
 from .private.context import Context
 from .private.configuration import ConfigurationFlags, CommandLineOptions, \
     Configuration

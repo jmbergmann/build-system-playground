@@ -9,7 +9,7 @@ from .time import string_to_datetime
 import json
 import datetime
 from enum import IntEnum
-from typing import Callable, Any, Optional
+from typing import Callable, Any, Optional, Dict
 from ctypes import c_int, c_longlong, c_void_p, c_char_p, CFUNCTYPE, \
     POINTER, byref, create_string_buffer, sizeof
 
@@ -41,8 +41,151 @@ def convert_info_fields(info):
     if info["timeout"] == -1:
         info["timeout"] = float("inf")
 
-    info["start_time"] = string_to_datetime(
-        info["start_time"])
+    info["start_time"] = string_to_datetime(info["start_time"])
+
+
+class BasicBranchInfo:
+    """Information about a branch."""
+
+    def __init__(self, info_string: str):
+        self._info = json.loads(info_string)
+        convert_info_fields(self._info)
+
+    @property
+    def uuid(self) -> str:
+        """UUID of the branch."""
+        return self._info["uuid"]
+
+    @property
+    def name(self) -> str:
+        """Name of the branch."""
+        return self._info["name"]
+
+    @property
+    def description(self) -> str:
+        """Description of the branch."""
+        return self._info["description"]
+
+    @property
+    def net_name(self) -> str:
+        """Name of the network."""
+        return self._info["net_name"]
+
+    @property
+    def path(self) -> str:
+        """Path of the branch."""
+        return self._info["path"]
+
+    @property
+    def hostname(self) -> str:
+        """The machine's hostname."""
+        return self._info["hostname"]
+
+    @property
+    def pid(self) -> int:
+        """ID of the process."""
+        return self._info["pid"]
+
+    @property
+    def advertising_interval(self) -> float:
+        """Advertising interval."""
+        return self._info["advertising_interval"]
+
+    @property
+    def tcp_server_address(self) -> str:
+        """Address of the TCP server for incoming connections."""
+        return self._info["tcp_server_address"]
+
+    @property
+    def tcp_server_port(self) -> int:
+        """Listening port of the TCP server for incoming connections."""
+        return self._info["tcp_server_port"]
+
+    @property
+    def start_time(self) -> datetime.datetime:
+        """Time when the branch was started."""
+        return self._info["start_time"]
+
+    @property
+    def timeout(self) -> float:
+        """Connection timeout."""
+        return self._info["timeout"]
+
+
+class RemoteBranchInfo(BasicBranchInfo):
+    """Information about a remote branch."""
+
+    def __init__(self, info_string: str):
+        BasicBranchInfo.__init__(self, info_string)
+
+
+class LocalBranchInfo(BasicBranchInfo):
+    """Information about a local branch."""
+
+    def __init__(self, info_string: str):
+        BasicBranchInfo.__init__(self, info_string)
+
+    @property
+    def advertising_address(self) -> str:
+        """Advertising IP address."""
+        return self._info["advertising_address"]
+
+    @property
+    def advertising_port(self) -> int:
+        """Advertising port."""
+        return self._info["advertising_port"]
+
+
+class BranchEventInfo:
+    """Information associated with a branch event."""
+
+    def __init__(self, info_string: str):
+        self._info = json.loads(info_string)
+        convert_info_fields(self._info)
+
+    @property
+    def uuid(self) -> str:
+        """UUID of the branch."""
+        return self._info["uuid"]
+
+
+class BranchDiscoveredEventInfo(BranchEventInfo):
+    """Information associated with the BRANCH_DISCOVERED event."""
+
+    def __init__(self, info_string: str):
+        BranchEventInfo.__init__(self, info_string)
+
+    @property
+    def tcp_server_address(self) -> str:
+        """Address of the TCP server for incoming connections."""
+        return self._info["tcp_server_address"]
+
+    @property
+    def tcp_server_port(self) -> int:
+        """Listening port of the TCP server for incoming connections."""
+        return self._info["tcp_server_port"]
+
+
+class BranchQueriedEventInfo(BranchEventInfo, RemoteBranchInfo):
+    """Information associated with the BRANCH_QUERIED event."""
+
+    def __init__(self, info_string: str):
+        BranchEventInfo.__init__(self, info_string)
+        # No need to call RemoteBranchInfo's constructor here
+
+
+class ConnectFinishedEventInfo(BranchEventInfo):
+    """Information associated with the CONNECT_FINISHED event."""
+
+    def __init__(self, info_string: str):
+        BranchEventInfo.__init__(self, info_string)
+
+
+class ConnectionLostEventInfo(BranchEventInfo):
+    """Information associated with the CONNECTION_LOST event."""
+
+    def __init__(self, info_string: str):
+        BranchEventInfo.__init__(self, info_string)
 
 
 yogi.YOGI_BranchCreate.restype = api_result_handler
@@ -147,29 +290,11 @@ class Branch(Object):
         self._info = None
 
     @property
-    def info(self) -> dict:
+    def info(self) -> LocalBranchInfo:
         """Information about the local branch.
 
-        The returned information has the following structure:
-            {
-              "uuid":                 "6ba7b810-9dad-11d1-80b4-00c04fd430c8",
-              "name":                 "Fan Controller",
-              "description":          "Controls a fan via PWM",
-              "net_name":             "Hardware Control",
-              "path":                 "/Cooling System/Fan Controller",
-              "hostname":             "beaglebone",
-              "pid":                  4124,
-              "advertising_address":  "ff31::8000:2439",
-              "advertising_port":     13531,
-              "advertising_interval": 1.0,
-              "tcp_server_address":   "::",
-              "tcp_server_port":      53332,
-              "start_time":           <instance of datetime.datetime>,
-              "timeout":              3.0
-            }
-
         Returns:
-            Dictionary containing constant information about the branch.
+            Object containing information about the branch.
         """
         if not self._info:
             s = create_string_buffer(1024)
@@ -183,82 +308,81 @@ class Branch(Object):
                     else:
                         raise
 
-            self._info = json.loads(s.value.decode("utf-8"))
-            convert_info_fields(self._info)
+            self._info = LocalBranchInfo(s.value.decode("utf-8"))
 
         return self._info
 
     @property
     def uuid(self) -> str:
         """UUID of the branch."""
-        return self.info["uuid"]
+        return self.info.uuid
 
     @property
     def name(self) -> str:
         """Name of the branch."""
-        return self.info["name"]
+        return self.info.name
 
     @property
     def description(self) -> str:
         """Description of the branch."""
-        return self.info["description"]
+        return self.info.description
 
     @property
     def net_name(self) -> str:
         """Name of the network."""
-        return self.info["net_name"]
+        return self.info.net_name
 
     @property
     def path(self) -> str:
         """Path of the branch."""
-        return self.info["path"]
+        return self.info.path
 
     @property
     def hostname(self) -> str:
         """The machine's hostname."""
-        return self.info["hostname"]
+        return self.info.hostname
 
     @property
     def pid(self) -> int:
         """ID of the process."""
-        return self.info["pid"]
+        return self.info.pid
 
     @property
     def advertising_address(self) -> str:
         """Advertising IP address."""
-        return self.info["advertising_address"]
+        return self.info.advertising_address
 
     @property
     def advertising_port(self) -> int:
         """Advertising port."""
-        return self.info["advertising_port"]
+        return self.info.advertising_port
 
     @property
     def advertising_interval(self) -> float:
         """Advertising interval."""
-        return self.info["advertising_interval"]
+        return self.info.advertising_interval
 
     @property
     def tcp_server_address(self) -> str:
         """Address of the TCP server for incoming connections."""
-        return self.info["tcp_server_address"]
+        return self.info.tcp_server_address
 
     @property
     def tcp_server_port(self) -> int:
         """Listening port of the TCP server for incoming connections."""
-        return self.info["tcp_server_port"]
+        return self.info.tcp_server_port
 
     @property
     def start_time(self) -> datetime.datetime:
         """Time when the branch was started."""
-        return self.info["start_time"]
+        return self.info.start_time
 
     @property
     def timeout(self) -> float:
         """Connection timeout."""
-        return self.info["timeout"]
+        return self.info.timeout
 
-    def get_connected_branches(self) -> dict:
+    def get_connected_branches(self) -> Dict[str, RemoteBranchInfo]:
         """Retrieves information about all connected remote branches.
 
         This function returns a dictionary where each is the UUID of the
@@ -306,15 +430,14 @@ class Branch(Object):
 
         branches = {}
         for string in strings:
-            info = json.loads(string)
-            convert_info_fields(info)
-            branches[info["uuid"]] = info
+            info = RemoteBranchInfo(string)
+            branches[info.uuid] = info
 
         return branches
 
     def await_event(self, events: BranchEvents,
-                    fn: Callable[[Result, BranchEvents, Result, Optional[dict]
-                                  ], Any]) -> None:
+                    fn: Callable[[Result, BranchEvents, Result,
+                                  Optional[BranchEventInfo]], Any]) -> None:
         """Wait for a branch event to occur.
 
         This function will register the handler fn to be executed once one of
@@ -357,8 +480,17 @@ class Branch(Object):
         def wrapped_fn(res, event, evres):
             info = None
             if res == Success():
-                info = json.loads(s.value.decode("utf-8"))
-                convert_info_fields(info)
+                string = s.value.decode("utf-8")
+                if event == BranchEvents.BRANCH_DISCOVERED:
+                    info = BranchDiscoveredEventInfo(string)
+                elif event == BranchEvents.BRANCH_QUERIED:
+                    info = BranchQueriedEventInfo(string)
+                elif event == BranchEvents.CONNECT_FINISHED:
+                    info = ConnectFinishedEventInfo(string)
+                elif event == BranchEvents.CONNECTION_LOST:
+                    info = ConnectionLostEventInfo(string)
+                else:
+                    info = BranchEventInfo(string)
 
             fn(res, BranchEvents(event), error_code_to_result(evres), info)
 

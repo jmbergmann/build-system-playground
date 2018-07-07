@@ -22,23 +22,24 @@ class TestBranches(TestCase):
                              "Password", "/some/path", "239.255.0.1", 12345,
                              7.0, float("inf"))
         info = branch.info
-        self.assertEqual(len(info["uuid"]), 36)
-        self.assertEqual(info["name"], "My Branch")
-        self.assertEqual(info["description"], "Stuff")
-        self.assertEqual(info["net_name"], "My Network")
-        self.assertEqual(info["path"], "/some/path")
-        self.assertEqual(info["hostname"], socket.gethostname())
-        self.assertEqual(info["pid"], os.getpid())
-        self.assertEqual(info["advertising_address"], "239.255.0.1")
-        self.assertEqual(info["advertising_port"], 12345)
-        self.assertEqual(info["advertising_interval"], 7.0)
-        self.assertGreater(len(info["tcp_server_address"]), 1)
-        self.assertGreater(info["tcp_server_port"], 0)
-        self.assertLessEqual(info["start_time"], yogi.get_current_time())
-        self.assertEqual(info["timeout"], float("inf"))
+        self.assertIsInstance(info, yogi.LocalBranchInfo)
+        self.assertEqual(len(info.uuid), 36)
+        self.assertEqual(info.name, "My Branch")
+        self.assertEqual(info.description, "Stuff")
+        self.assertEqual(info.net_name, "My Network")
+        self.assertEqual(info.path, "/some/path")
+        self.assertEqual(info.hostname, socket.gethostname())
+        self.assertEqual(info.pid, os.getpid())
+        self.assertEqual(info.advertising_address, "239.255.0.1")
+        self.assertEqual(info.advertising_port, 12345)
+        self.assertEqual(info.advertising_interval, 7.0)
+        self.assertGreater(len(info.tcp_server_address), 1)
+        self.assertGreater(info.tcp_server_port, 0)
+        self.assertLessEqual(info.start_time, yogi.get_current_time())
+        self.assertEqual(info.timeout, float("inf"))
 
-        for key in info:
-            self.assertEqual(getattr(branch, key), info[key])
+        for key in info._info:
+            self.assertEqual(getattr(branch, key), info._info[key])
 
     def test_get_connected_branches(self):
         branch = yogi.Branch(self.context, "My Branch")
@@ -51,8 +52,8 @@ class TestBranches(TestCase):
 
         for brn in [branch_a, branch_b]:
             self.assertTrue(brn.uuid in branches)
-            self.assertEqual(branches[brn.uuid]["name"], brn.name)
-            self.assertGreater(len(branches[brn.uuid]), 10)
+            self.assertEqual(branches[brn.uuid].name, brn.name)
+            self.assertIsInstance(branches[brn.uuid], yogi.RemoteBranchInfo)
 
     def test_await_event(self):
         branch = yogi.Branch(self.context, "My Branch")
@@ -61,7 +62,7 @@ class TestBranches(TestCase):
         fn_res = None
         fn_event = None
         fn_evres = None
-        fn_info = {}
+        fn_info = None
         fn_called = False
 
         def fn(res, event, evres, info):
@@ -83,10 +84,10 @@ class TestBranches(TestCase):
         self.assertEqual(fn_event, yogi.BranchEvents.BRANCH_QUERIED)
         self.assertIsInstance(fn_evres, yogi.Success)
         self.assertEqual(fn_evres.error_code, yogi.ErrorCode.OK)
-        self.assertIsInstance(fn_info, dict)
-        self.assertEqual(fn_info["uuid"], branch_a.uuid)
-        self.assertEqual(fn_info["start_time"], branch_a.start_time)
-        self.assertEqual(fn_info["timeout"], branch_a.timeout)
+        self.assertIsInstance(fn_info, yogi.BranchQueriedEventInfo)
+        self.assertEqual(fn_info.uuid, branch_a.uuid)
+        self.assertEqual(fn_info.start_time, branch_a.start_time)
+        self.assertEqual(fn_info.timeout, branch_a.timeout)
 
     def test_cancel_await_event(self):
         branch = yogi.Branch(self.context, "My Branch")
