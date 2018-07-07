@@ -2,6 +2,7 @@ import yogi
 import unittest
 import socket
 import os
+import uuid
 
 from .common import TestCase
 
@@ -23,7 +24,7 @@ class TestBranches(TestCase):
                              7.0, float("inf"))
         info = branch.info
         self.assertIsInstance(info, yogi.LocalBranchInfo)
-        self.assertEqual(len(info.uuid), 36)
+        self.assertIsInstance(info.uuid, uuid.UUID)
         self.assertEqual(info.name, "My Branch")
         self.assertEqual(info.description, "Stuff")
         self.assertEqual(info.net_name, "My Network")

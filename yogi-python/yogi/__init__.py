@@ -1,4 +1,4 @@
-from .private.branch import BranchEvents, Branch, BasicBranchInfo, \
+from .private.branch import BranchEvents, Branch, BranchInfo, \
     LocalBranchInfo, RemoteBranchInfo, BranchEventInfo, \
     BranchDiscoveredEventInfo, BranchQueriedEventInfo, \
     ConnectFinishedEventInfo, ConnectionLostEventInfo

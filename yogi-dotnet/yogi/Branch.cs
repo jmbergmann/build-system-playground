@@ -89,6 +89,160 @@ static public partial class Yogi
         All = BranchDiscovered | BranchQueried | ConnectFinished | ConnectionLost
     }
 
+    public class BranchInfo
+    {
+        public BranchInfo(string json)
+        {
+        }
+
+        /// <summary>UUID of the branch.</summary>
+        public Guid Uuid { get; }
+
+        /// <summary>Name of the branch.</summary>
+        public string Name { get; }
+
+        /// <summary>Description of the branch.</summary>
+        public string Description { get; }
+
+        /// <summary>Name of the network.</summary>
+        public string NetName { get; }
+
+        /// <summary>Path of the branch.</summary>
+        public string Path { get; }
+
+        /// <summary>The machine's hostname..</summary>
+        public string Hostname { get; }
+
+        /// <summary>ID of the process.</summary>
+        public int Pid { get; }
+
+        /// <summary>Advertising interval.</summary>
+        public TimeSpan AdvertisingInterval { get; }
+
+        /// <summary>Address of the TCP server for incoming connections.</summary>
+        public string TcpServerAddress { get; }
+
+        /// <summary>Listening port of the TCP server for incoming connections.</summary>
+        public int TcpServerPort { get; }
+
+        /// <summary>Time when the branch was started.</summary>
+        public DateTime StartTime { get; }
+
+        /// <summary>Connection timeout.</summary>
+        public TimeSpan Timeout { get; }
+    }
+
+    public class RemoteBranchInfo : BranchInfo
+    {
+        public RemoteBranchInfo(string json)
+        : base(json)
+        {
+        }
+    }
+
+    public class LocalBranchInfo : BranchInfo
+    {
+        public LocalBranchInfo(string json)
+        : base(json)
+        {
+        }
+
+        /// <summary>Advertising IP address.</summary>
+        public string AdvertisingAddress { get; }
+
+        /// <summary>Advertising port.</summary>
+        public int AdvertisingPort { get; }
+    }
+
+    public class BranchEventInfo
+    {
+        public BranchEventInfo(string json)
+        {
+        }
+
+        /// <summary>UUID of the branch.</summary>
+        public Guid Uuid { get; }
+    }
+
+    public class BranchDiscoveredEventInfo : BranchEventInfo
+    {
+        public BranchDiscoveredEventInfo(string json)
+        : base(json)
+        {
+        }
+
+        /// <summary>Address of the TCP server for incoming connections.</summary>
+        public string TcpServerAddress { get; }
+
+        /// <summary>Listening port of the TCP server for incoming connections.</summary>
+        public int TcpServerPort { get; }
+    }
+
+    public class BranchQueriedEventInfo : BranchEventInfo
+    {
+        public BranchQueriedEventInfo(string json)
+        : base(json)
+        {
+            info = new RemoteBranchInfo(json);
+        }
+
+        /// <summary>Name of the branch.</summary>
+        public string Name { get { return info.Name; } }
+
+        /// <summary>Description of the branch.</summary>
+        public string Description { get { return info.Description; } }
+
+        /// <summary>Name of the network.</summary>
+        public string NetName { get { return info.NetName; } }
+
+        /// <summary>Path of the branch.</summary>
+        public string Path { get { return info.Path; } }
+
+        /// <summary>The machine's hostname..</summary>
+        public string Hostname { get { return info.Hostname; } }
+
+        /// <summary>ID of the process.</summary>
+        public int Pid { get { return info.Pid; } }
+
+        /// <summary>Advertising interval.</summary>
+        public TimeSpan AdvertisingInterval { get { return info.AdvertisingInterval; } }
+
+        /// <summary>Address of the TCP server for incoming connections.</summary>
+        public string TcpServerAddress { get { return info.TcpServerAddress; } }
+
+        /// <summary>Listening port of the TCP server for incoming connections.</summary>
+        public int TcpServerPort { get { return info.TcpServerPort; } }
+
+        /// <summary>Time when the branch was started.</summary>
+        public DateTime StartTime { get { return info.StartTime; } }
+
+        /// <summary>Connection timeout.</summary>
+        public TimeSpan Timeout { get { return info.Timeout; } }
+
+        public RemoteBranchInfo ToRemoteBranchInfo()
+        {
+            return info;
+        }
+
+        RemoteBranchInfo info;
+    }
+
+    public class ConnectFinishedEventInfo : BranchEventInfo
+    {
+        public ConnectFinishedEventInfo(string json)
+        : base(json)
+        {
+        }
+    }
+
+    public class ConnectionLostEventInfo : BranchEventInfo
+    {
+        public ConnectionLostEventInfo(string json)
+        : base(json)
+        {
+        }
+    }
+
     /// <summary>
     /// Entry point into a Yogi network.
     ///
@@ -148,6 +302,30 @@ static public partial class Yogi
         {
         }
 
+        /// <summary>
+        /// Information about the local branch.
+        /// </summary>
+        public LocalBranchInfo Info
+        {
+            get
+            {
+                if (info == null)
+                {
+                    var json = new StringBuilder(128);
+                    int res;
+                    do {
+                        json = new StringBuilder(json.Capacity * 2);
+                        res = Api.YOGI_BranchGetInfo(Handle, IntPtr.Zero, json, json.Capacity);
+                    }
+                    while (res == (int)ErrorCode.BufferTooSmall);
+                    CheckErrorCode(res);
+                    info = new LocalBranchInfo(json.ToString());
+                }
+
+                return info;
+            }
+        }
+
         static IntPtr Create(Context context, string name, [Optional] string description,
             [Optional] string netname, [Optional] string password, [Optional] string path,
             [Optional] string advaddr, [Optional] int advport, [Optional] TimeSpan? advint,
@@ -160,5 +338,7 @@ static public partial class Yogi
             CheckErrorCode(res);
             return handle;
         }
+
+        LocalBranchInfo info;
     }
 }

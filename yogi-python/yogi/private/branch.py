@@ -9,6 +9,7 @@ from .time import string_to_datetime
 import json
 import datetime
 from enum import IntEnum
+from uuid import UUID
 from typing import Callable, Any, Optional, Dict
 from ctypes import c_int, c_longlong, c_void_p, c_char_p, CFUNCTYPE, \
     POINTER, byref, create_string_buffer, sizeof
@@ -41,18 +42,22 @@ def convert_info_fields(info):
     if info["timeout"] == -1:
         info["timeout"] = float("inf")
 
+    info["uuid"] = UUID(info["uuid"])
     info["start_time"] = string_to_datetime(info["start_time"])
 
 
-class BasicBranchInfo:
+class BranchInfo:
     """Information about a branch."""
 
     def __init__(self, info_string: str):
         self._info = json.loads(info_string)
         convert_info_fields(self._info)
 
+    def __str__(self) -> str:
+        return str(self._info)
+
     @property
-    def uuid(self) -> str:
+    def uuid(self) -> UUID:
         """UUID of the branch."""
         return self._info["uuid"]
 
@@ -112,18 +117,18 @@ class BasicBranchInfo:
         return self._info["timeout"]
 
 
-class RemoteBranchInfo(BasicBranchInfo):
+class RemoteBranchInfo(BranchInfo):
     """Information about a remote branch."""
 
     def __init__(self, info_string: str):
-        BasicBranchInfo.__init__(self, info_string)
+        BranchInfo.__init__(self, info_string)
 
 
-class LocalBranchInfo(BasicBranchInfo):
+class LocalBranchInfo(BranchInfo):
     """Information about a local branch."""
 
     def __init__(self, info_string: str):
-        BasicBranchInfo.__init__(self, info_string)
+        BranchInfo.__init__(self, info_string)
 
     @property
     def advertising_address(self) -> str:
@@ -143,8 +148,11 @@ class BranchEventInfo:
         self._info = json.loads(info_string)
         convert_info_fields(self._info)
 
+    def __str__(self) -> str:
+        return str(self._info)
+
     @property
-    def uuid(self) -> str:
+    def uuid(self) -> UUID:
         """UUID of the branch."""
         return self._info["uuid"]
 
@@ -313,7 +321,7 @@ class Branch(Object):
         return self._info
 
     @property
-    def uuid(self) -> str:
+    def uuid(self) -> UUID:
         """UUID of the branch."""
         return self.info.uuid
 
@@ -385,27 +393,9 @@ class Branch(Object):
     def get_connected_branches(self) -> Dict[str, RemoteBranchInfo]:
         """Retrieves information about all connected remote branches.
 
-        This function returns a dictionary where each is the UUID of the
-        connected remote branch and the value is another dictionary with the
-        following structure:
-            {
-              "uuid":                 "123e4567-e89b-12d3-a456-426655440000",
-              "name":                 "Pump Safety Logic",
-              "description":          "Monitors the pump for safety",
-              "net_name":             "Hardware Control",
-              "path":                 "/Cooling System/Pump/Safety",
-              "hostname":             "beaglebone",
-              "pid":                  3321,
-              "tcp_server_address":   "fe80::f086:b106:2c1b:c45",
-              "tcp_server_port":      43384,
-              "start_time":           <instance of datetime.datetime>,
-              "timeout":              3.0,
-              "advertising_interval": 1.0
-            }
-
         Returns:
-            Dictionary mapping the UUID of each connected remote branch to
-            another dictionary with detailed information.
+            Dictionary mapping the UUID of each connected remote branch to an
+            object containing detailed information.
         """
         s = create_string_buffer(1024)
         strings = []
@@ -452,24 +442,7 @@ class Branch(Object):
         error.
 
         If successful, the event information passed to the handler function fn
-        contains at least the UUID of the remote branch. For newly discovered
-        branches, both address and port of the remote TCP server are included
-        and when querying a remote branch succeeds, all of the available
-        branch information is included:
-            {
-              "uuid":                 "123e4567-e89b-12d3-a456-426655440000",
-              "name":                 "Pump Safety Logic",
-              "description":          "Monitors the pump for safety",
-              "net_name":             "Hardware Control",
-              "path":                 "/Cooling System/Pump/Safety",
-              "hostname":             "beaglebone",
-              "pid":                  3321,
-              "tcp_server_address":   "fe80::f086:b106:2c1b:c45",
-              "tcp_server_port":      43384,
-              "start_time":           <instance of datetime.datetime>,
-              "timeout":              3.0,
-              "advertising_interval": 1.0
-            }
+        contains at least the UUID of the remote branch.
 
         Args:
             events: Events to observe.
