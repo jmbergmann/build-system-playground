@@ -1,7 +1,10 @@
 using System;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Net;
+using System.IO;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 static public partial class Yogi
 {
@@ -93,7 +96,34 @@ static public partial class Yogi
     {
         public BranchInfo(string json)
         {
+            this.json = json;
+
+            JsonReader reader = new JsonTextReader(new StringReader(json));
+            reader.DateParseHandling = DateParseHandling.None;
+            Data = JObject.Load(reader);
+
+            Uuid = Guid.Parse((string)Data["uuid"]);
+            Name = (string)Data["name"];
+            Description = (string)Data["description"];
+            NetName = (string)Data["net_name"];
+            Path = (string)Data["path"];
+            Hostname = (string)Data["hostname"];
+            Pid = (int)Data["pid"];
+            AdvertisingInterval = DoubleToTimeSpan((double)Data["advertising_interval"]);
+            TcpServerAddress = IPAddress.Parse((string)Data["tcp_server_address"]);
+            TcpServerPort = (int)Data["tcp_server_port"];
+            StartTime = StringToDateTime((string)Data["start_time"]);
+            Timeout = DoubleToTimeSpan((double)Data["timeout"]);
         }
+
+        public override string ToString()
+        {
+            return json;
+        }
+
+        string json;
+
+        protected JObject Data { get; }
 
         /// <summary>UUID of the branch.</summary>
         public Guid Uuid { get; }
@@ -120,7 +150,7 @@ static public partial class Yogi
         public TimeSpan AdvertisingInterval { get; }
 
         /// <summary>Address of the TCP server for incoming connections.</summary>
-        public string TcpServerAddress { get; }
+        public IPAddress TcpServerAddress { get; }
 
         /// <summary>Listening port of the TCP server for incoming connections.</summary>
         public int TcpServerPort { get; }
@@ -145,10 +175,12 @@ static public partial class Yogi
         public LocalBranchInfo(string json)
         : base(json)
         {
+            AdvertisingAddress = IPAddress.Parse((string)Data["advertising_address"]);
+            AdvertisingPort = (int)Data["advertising_port"];
         }
 
         /// <summary>Advertising IP address.</summary>
-        public string AdvertisingAddress { get; }
+        public IPAddress AdvertisingAddress { get; }
 
         /// <summary>Advertising port.</summary>
         public int AdvertisingPort { get; }
@@ -158,7 +190,20 @@ static public partial class Yogi
     {
         public BranchEventInfo(string json)
         {
+            this.json = json;
+            Data = JObject.Parse(json);
+
+            Uuid = Guid.Parse((string)Data["uuid"]);
         }
+
+        public override string ToString()
+        {
+            return json;
+        }
+
+        string json;
+
+        protected JObject Data { get; }
 
         /// <summary>UUID of the branch.</summary>
         public Guid Uuid { get; }
@@ -169,10 +214,12 @@ static public partial class Yogi
         public BranchDiscoveredEventInfo(string json)
         : base(json)
         {
+            TcpServerAddress = IPAddress.Parse((string)Data["tcp_server_address"]);
+            TcpServerPort = (int)Data["tcp_server_port"];
         }
 
         /// <summary>Address of the TCP server for incoming connections.</summary>
-        public string TcpServerAddress { get; }
+        public IPAddress TcpServerAddress { get; }
 
         /// <summary>Listening port of the TCP server for incoming connections.</summary>
         public int TcpServerPort { get; }
@@ -208,7 +255,7 @@ static public partial class Yogi
         public TimeSpan AdvertisingInterval { get { return info.AdvertisingInterval; } }
 
         /// <summary>Address of the TCP server for incoming connections.</summary>
-        public string TcpServerAddress { get { return info.TcpServerAddress; } }
+        public IPAddress TcpServerAddress { get { return info.TcpServerAddress; } }
 
         /// <summary>Listening port of the TCP server for incoming connections.</summary>
         public int TcpServerPort { get { return info.TcpServerPort; } }

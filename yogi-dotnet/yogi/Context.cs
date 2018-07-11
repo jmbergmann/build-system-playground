@@ -150,6 +150,8 @@ static public partial class Yogi
         /// <returns>Number of executed handlers.</returns>
         public int Run([Optional] TimeSpan? duration)
         {
+            if (!duration.HasValue) duration = InfiniteTimeSpan;
+
             int count = -1;
             int res = Api.YOGI_ContextRun(Handle, ref count, TimeSpanToCoreDuration(duration));
             CheckErrorCode(res);
@@ -170,8 +172,10 @@ static public partial class Yogi
         /// </summary>
         /// <param name="duration">Duration.</param>
         /// <returns>Number of executed handlers.</returns>
-        public int RunOne([Optional] TimeSpan duration)
+        public int RunOne([Optional] TimeSpan? duration)
         {
+            if (!duration.HasValue) duration = InfiniteTimeSpan;
+
             int count = -1;
             int res = Api.YOGI_ContextRunOne(Handle, ref count, TimeSpanToCoreDuration(duration));
             CheckErrorCode(res);
@@ -220,6 +224,8 @@ static public partial class Yogi
         /// specified duration and false otherwise.</returns>
         public bool WaitForRunning([Optional] TimeSpan? duration)
         {
+            if (!duration.HasValue) duration = InfiniteTimeSpan;
+
             int res = Api.YOGI_ContextWaitForRunning(Handle, TimeSpanToCoreDuration(duration));
             if ((ErrorCode)res == ErrorCode.Timeout) return false;
             CheckErrorCode(res);
@@ -238,6 +244,8 @@ static public partial class Yogi
         /// specified duration and false otherwise.</returns>
         public bool WaitForStopped([Optional] TimeSpan? duration)
         {
+            if (!duration.HasValue) duration = InfiniteTimeSpan;
+
             int res = Api.YOGI_ContextWaitForStopped(Handle, TimeSpanToCoreDuration(duration));
             if ((ErrorCode)res == ErrorCode.Timeout) return false;
             CheckErrorCode(res);

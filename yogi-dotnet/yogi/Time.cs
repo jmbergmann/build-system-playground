@@ -3,6 +3,8 @@ using System.Runtime.InteropServices;
 
 static public partial class Yogi
 {
+    public static readonly TimeSpan InfiniteTimeSpan = TimeSpan.MaxValue;
+
     partial class Api
     {
         /// === YOGI_GetCurrentTime ===
@@ -24,7 +26,20 @@ static public partial class Yogi
 
     static long TimeSpanToCoreDuration(TimeSpan? duration)
     {
-        return duration.HasValue ? duration.Value.Ticks * 100 : -1;
+        if (!duration.HasValue) return 0;
+        if (duration.Value == InfiniteTimeSpan) return -1;
+        return duration.Value.Ticks * 100;
+    }
+
+    static TimeSpan DoubleToTimeSpan(double dur)
+    {
+        if (dur == -1) return InfiniteTimeSpan;
+        return TimeSpan.FromSeconds(dur);
+    }
+
+    static DateTime StringToDateTime(string s)
+    {
+        return DateTime.Parse(s, null, System.Globalization.DateTimeStyles.RoundtripKind);
     }
 
     /// <summary>
