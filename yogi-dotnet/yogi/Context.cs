@@ -267,9 +267,11 @@ static public partial class Yogi
                 GCHandle.FromIntPtr(userarg).Free();
             };
             var wrapperHandle = GCHandle.Alloc(wrapper);
+            var wrapperPtr = GCHandle.ToIntPtr(wrapperHandle);
 
-            try {
-                int res = Api.YOGI_ContextPost(Handle, wrapper, GCHandle.ToIntPtr(wrapperHandle));
+            try
+            {
+                int res = Api.YOGI_ContextPost(Handle, wrapper, wrapperPtr);
                 CheckErrorCode(res);
             }
             catch

@@ -427,8 +427,9 @@ class Branch(Object):
 
     def await_event(self, events: BranchEvents,
                     fn: Callable[[Result, BranchEvents, Result,
-                                  Optional[BranchEventInfo]], Any]) -> None:
-        """Wait for a branch event to occur.
+                                  Optional[BranchEventInfo]], Any],
+                    buffer_size: int = 1024) -> None:
+        """Waits for a branch event to occur.
 
         This function will register the handler fn to be executed once one of
         the given branch events occurs. The handler's parameters are, from
@@ -444,11 +445,18 @@ class Branch(Object):
         If successful, the event information passed to the handler function fn
         contains at least the UUID of the remote branch.
 
+        In case that the internal buffer for reading the event information is
+        too small, fn will be called with the corresponding error and the
+        event information is lost. You can set the size of this buffer via the
+        bufferSize parameter.
+
         Args:
-            events: Events to observe.
-            fn:     Handler to call.
+            events:      Events to observe.
+            fn:          Handler function to call.
+            buffer_size: Size of the internal buffer for reading the event
+                         information.
         """
-        s = create_string_buffer(10240)
+        s = create_string_buffer(buffer_size)
 
         def wrapped_fn(res, event, evres):
             info = None

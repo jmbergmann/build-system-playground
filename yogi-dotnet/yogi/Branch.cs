@@ -48,8 +48,8 @@ static public partial class Yogi
 
         // === YOGI_BranchAwaitEvent ===
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        public delegate void BranchAwaitEventFnDelegate(ErrorCode res, BranchEvents evnt,
-            ErrorCode evres, IntPtr userarg);
+        public delegate void BranchAwaitEventFnDelegate(int res, BranchEvents ev, int evres,
+                                                        IntPtr userarg);
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public delegate int BranchAwaitEventDelegate(SafeObjectHandle branch,
@@ -359,11 +359,13 @@ static public partial class Yogi
             {
                 if (info == null)
                 {
-                    var json = new StringBuilder(256);
+                    var size = 1024;
+                    StringBuilder json;;
                     int res;
                     do
                     {
-                        json = new StringBuilder(json.Capacity * 2);
+                        json = new StringBuilder(size);
+                        size *= 2;
                         res = Api.YOGI_BranchGetInfo(Handle, IntPtr.Zero, json, json.Capacity);
                     }
                     while (res == (int)ErrorCode.BufferTooSmall);
@@ -432,6 +434,7 @@ static public partial class Yogi
             {
                 branches.Clear();
                 var json = Marshal.AllocHGlobal(size);
+                size *= 2;
 
                 Api.BranchGetConnectedBranchesFnDelegate fn = (ec, userarg) =>
                 {
@@ -448,6 +451,72 @@ static public partial class Yogi
             CheckErrorCode(res);
 
             return branches;
+        }
+
+        /// <summary>
+        /// Delegate for the await event handler function.
+        /// </summary>
+        /// <param name="res">Result of the wait operation.</param>
+        /// <param name="ev">The event that occurred.</param>
+        /// <param name="evres">Result associated with the event.</param>
+        /// <param name="info">Event information.</param>
+        public delegate void AwaitEventFnDelegate(Result res, BranchEvents ev, Result evres,
+                                                  [Optional] BranchEventInfo info);
+
+        /// <summary>
+        /// Waits for a branch event to occur.
+        ///
+        /// This function will register the handler fn to be executed once one of the given branch
+        /// events occurs. If this function is called while a previous wait operation is still
+        /// active then the previous opertion will be canceled, i.e. the handler fn for the
+        /// previous operation will be called with a cancellation error.
+        ///
+        /// If successful, the event information passed to the handler function fn contains at
+        /// least the UUID of the remote branch.
+        ///
+        /// In case that the internal buffer for reading the event information is too small, fn
+        /// will be called with the corresponding error and the event information is lost. You can
+        /// set the size of this buffer via the bufferSize parameter.
+        /// </summary>
+        /// <param name="events">Events to observe.</param>
+        /// <param name="fn">Handler function to call.</param>
+        /// <param name="bufferSize">Size of the internal buffer for reading the event
+        /// information.</param>
+        public void AwaitEvent(BranchEvents events, AwaitEventFnDelegate fn, int bufferSize = 1024)
+        {
+            var json = new StringBuilder(bufferSize);
+
+            Api.BranchAwaitEventFnDelegate wrapper = (res, ev, evres, userarg) => {
+                var result = ErrorCodeToResult(res);
+                BranchEventInfo info = result ? new BranchEventInfo(json.ToString()) : null;
+                fn(result, ev, ErrorCodeToResult(evres), info);
+                GCHandle.FromIntPtr(userarg).Free();
+            };
+            var wrapperHandle = GCHandle.Alloc(wrapper);
+
+            try
+            {
+                var wrapperPtr = GCHandle.ToIntPtr(wrapperHandle);
+                int res = Api.YOGI_BranchAwaitEvent(Handle, events, IntPtr.Zero, json,
+                                                    json.Capacity, wrapper, wrapperPtr);
+                CheckErrorCode(res);
+            }
+            catch
+            {
+                wrapperHandle.Free();
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Cancels waiting for a branch event.
+        ///
+        /// Calling this function will cause the handler registered via AwaitEvent() to be called
+        /// with a cancellation error.
+        /// </summary>
+        public void CancelAwaitEvent()
+        {
+            Api.YOGI_BranchCancelAwaitEvent(Handle);
         }
 
         static IntPtr Create(Context context, string name, [Optional] string description,
