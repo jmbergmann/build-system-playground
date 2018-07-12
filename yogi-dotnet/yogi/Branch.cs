@@ -3,6 +3,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Net;
 using System.IO;
+using System.Collections.Generic;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -38,8 +39,8 @@ static public partial class Yogi
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public delegate int BranchGetConnectedBranchesDelegate(SafeObjectHandle branch,
-            IntPtr uuid, [MarshalAs(UnmanagedType.LPStr)] StringBuilder json, int jsonsize,
-            BranchGetConnectedBranchesFnDelegate fn, IntPtr userarg);
+            IntPtr uuid, IntPtr json, int jsonsize, BranchGetConnectedBranchesFnDelegate fn,
+            IntPtr userarg);
 
         public static BranchGetConnectedBranchesDelegate YOGI_BranchGetConnectedBranches
             = Library.GetDelegateForFunction<BranchGetConnectedBranchesDelegate>(
@@ -345,7 +346,7 @@ static public partial class Yogi
             [Optional] string advaddr, [Optional] int advport, [Optional] TimeSpan? advint,
             [Optional] TimeSpan? timeout)
         : base(Create(context, name, description, netname, password, path, advaddr, advport,
-            advint, timeout), new Object[]{context})
+            advint, timeout), new Object[] { context })
         {
         }
 
@@ -358,9 +359,10 @@ static public partial class Yogi
             {
                 if (info == null)
                 {
-                    var json = new StringBuilder(128);
+                    var json = new StringBuilder(256);
                     int res;
-                    do {
+                    do
+                    {
                         json = new StringBuilder(json.Capacity * 2);
                         res = Api.YOGI_BranchGetInfo(Handle, IntPtr.Zero, json, json.Capacity);
                     }
@@ -371,6 +373,81 @@ static public partial class Yogi
 
                 return info;
             }
+        }
+
+        /// <summary>UUID of the branch.</summary>
+        public Guid Uuid { get { return Info.Uuid; } }
+
+        /// <summary>Name of the branch.</summary>
+        public string Name { get { return Info.Name; } }
+
+        /// <summary>Description of the branch.</summary>
+        public string Description { get { return Info.Description; } }
+
+        /// <summary>Name of the network.</summary>
+        public string NetName { get { return Info.NetName; } }
+
+        /// <summary>Path of the branch.</summary>
+        public string Path { get { return Info.Path; } }
+
+        /// <summary>The machine's hostname..</summary>
+        public string Hostname { get { return Info.Hostname; } }
+
+        /// <summary>ID of the process.</summary>
+        public int Pid { get { return Info.Pid; } }
+
+        /// <summary>Advertising interval.</summary>
+        public TimeSpan AdvertisingInterval { get { return Info.AdvertisingInterval; } }
+
+        /// <summary>Address of the TCP server for incoming connections.</summary>
+        public IPAddress TcpServerAddress { get { return Info.TcpServerAddress; } }
+
+        /// <summary>Listening port of the TCP server for incoming connections.</summary>
+        public int TcpServerPort { get { return Info.TcpServerPort; } }
+
+        /// <summary>Time when the branch was started.</summary>
+        public DateTime StartTime { get { return Info.StartTime; } }
+
+        /// <summary>Connection timeout.</summary>
+        public TimeSpan Timeout { get { return Info.Timeout; } }
+
+        /// <summary>Advertising IP address.</summary>
+        public IPAddress AdvertisingAddress { get { return Info.AdvertisingAddress; } }
+
+        /// <summary>Advertising port.</summary>
+        public int AdvertisingPort { get { return Info.AdvertisingPort; } }
+
+        /// <summary>
+        /// Retrieves information about all connected remote branches.
+        /// </summary>
+        /// <returns>Dictionary mapping the UUID of each connected remote branch to a
+        /// RemoteBranchInfo object with detailed information about the branch.</returns>
+        public Dictionary<Guid, RemoteBranchInfo> GetConnectedBranches()
+        {
+            var branches = new Dictionary<Guid, RemoteBranchInfo>();
+            var size = 1024;
+
+            int res;
+            do
+            {
+                branches.Clear();
+                var json = Marshal.AllocHGlobal(size);
+
+                Api.BranchGetConnectedBranchesFnDelegate fn = (ec, userarg) =>
+                {
+                    if (ec != ErrorCode.Ok) return;
+                    var info = new RemoteBranchInfo(Marshal.PtrToStringAnsi(json));
+                    branches.Add(info.Uuid, info);
+                };
+
+                res = Api.YOGI_BranchGetConnectedBranches(Handle, IntPtr.Zero, json, size,
+                                                          fn, IntPtr.Zero);
+                Marshal.FreeHGlobal(json);
+            }
+            while (res == (int)ErrorCode.BufferTooSmall);
+            CheckErrorCode(res);
+
+            return branches;
         }
 
         static IntPtr Create(Context context, string name, [Optional] string description,

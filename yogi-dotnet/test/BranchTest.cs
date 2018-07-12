@@ -52,6 +52,24 @@ namespace test
         [Fact]
         public void GetConnectedBranches()
         {
+            var branch = new Yogi.Branch(context, "My Branch");
+            var branch_a = new Yogi.Branch(context, "A");
+            var branch_b = new Yogi.Branch(context, "B");
+
+            while (!branch.GetConnectedBranches().ContainsKey(branch_a.Uuid)
+                || !branch.GetConnectedBranches().ContainsKey(branch_b.Uuid))
+            {
+                context.RunOne();
+            }
+            var branches = branch.GetConnectedBranches();
+
+            Assert.True(branches.ContainsKey(branch_a.Uuid));
+            Assert.Equal(branches[branch_a.Uuid].Name, branch_a.Name);
+            Assert.IsType<Yogi.RemoteBranchInfo>(branches[branch_a.Uuid]);
+
+            Assert.True(branches.ContainsKey(branch_b.Uuid));
+            Assert.Equal(branches[branch_b.Uuid].Name, branch_b.Name);
+            Assert.IsType<Yogi.RemoteBranchInfo>(branches[branch_b.Uuid]);
         }
 
         [Fact]
