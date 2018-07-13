@@ -263,14 +263,20 @@ static public partial class Yogi
         public void Post(Action fn)
         {
             Api.ContextPostFnDelegate wrapper = (userarg) => {
-                fn();
-                GCHandle.FromIntPtr(userarg).Free();
+                try
+                {
+                    fn();
+                }
+                finally
+                {
+                    GCHandle.FromIntPtr(userarg).Free();
+                }
             };
             var wrapperHandle = GCHandle.Alloc(wrapper);
-            var wrapperPtr = GCHandle.ToIntPtr(wrapperHandle);
 
             try
             {
+                var wrapperPtr = GCHandle.ToIntPtr(wrapperHandle);
                 int res = Api.YOGI_ContextPost(Handle, wrapper, wrapperPtr);
                 CheckErrorCode(res);
             }

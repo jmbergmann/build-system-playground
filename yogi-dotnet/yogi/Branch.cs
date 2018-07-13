@@ -53,8 +53,8 @@ static public partial class Yogi
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public delegate int BranchAwaitEventDelegate(SafeObjectHandle branch,
-            BranchEvents events, IntPtr uuid, [MarshalAs(UnmanagedType.LPStr)] StringBuilder json,
-            int jsonsize, BranchAwaitEventFnDelegate fn, IntPtr userarg);
+            BranchEvents events, IntPtr uuid, IntPtr json, int jsonsize,
+            BranchAwaitEventFnDelegate fn, IntPtr userarg);
 
         public static BranchAwaitEventDelegate YOGI_BranchAwaitEvent
             = Library.GetDelegateForFunction<BranchAwaitEventDelegate>("YOGI_BranchAwaitEvent");
@@ -360,7 +360,7 @@ static public partial class Yogi
                 if (info == null)
                 {
                     var size = 1024;
-                    StringBuilder json;;
+                    StringBuilder json; ;
                     int res;
                     do
                     {
@@ -484,13 +484,45 @@ static public partial class Yogi
         /// information.</param>
         public void AwaitEvent(BranchEvents events, AwaitEventFnDelegate fn, int bufferSize = 1024)
         {
-            var json = new StringBuilder(bufferSize);
+            var json = Marshal.AllocHGlobal(bufferSize);
 
-            Api.BranchAwaitEventFnDelegate wrapper = (res, ev, evres, userarg) => {
+            Api.BranchAwaitEventFnDelegate wrapper = (res, ev, evres, userarg) =>
+            {
                 var result = ErrorCodeToResult(res);
-                BranchEventInfo info = result ? new BranchEventInfo(json.ToString()) : null;
-                fn(result, ev, ErrorCodeToResult(evres), info);
-                GCHandle.FromIntPtr(userarg).Free();
+                BranchEventInfo info = null;
+                if (result)
+                {
+                    var jsonStr = Marshal.PtrToStringAnsi(json);
+                    Marshal.FreeHGlobal(json);
+
+                    switch (ev)
+                    {
+                        case BranchEvents.BranchDiscovered:
+                            info = new BranchDiscoveredEventInfo(jsonStr);
+                            break;
+
+                        case BranchEvents.BranchQueried:
+                            info = new BranchQueriedEventInfo(jsonStr);
+                            break;
+
+                        case BranchEvents.ConnectFinished:
+                            info = new ConnectFinishedEventInfo(jsonStr);
+                            break;
+
+                        case BranchEvents.ConnectionLost:
+                            info = new ConnectionLostEventInfo(jsonStr);
+                            break;
+                    }
+                }
+
+                try
+                {
+                    fn(result, ev, ErrorCodeToResult(evres), info);
+                }
+                finally
+                {
+                    GCHandle.FromIntPtr(userarg).Free();
+                }
             };
             var wrapperHandle = GCHandle.Alloc(wrapper);
 
@@ -498,12 +530,13 @@ static public partial class Yogi
             {
                 var wrapperPtr = GCHandle.ToIntPtr(wrapperHandle);
                 int res = Api.YOGI_BranchAwaitEvent(Handle, events, IntPtr.Zero, json,
-                                                    json.Capacity, wrapper, wrapperPtr);
+                                                    bufferSize, wrapper, wrapperPtr);
                 CheckErrorCode(res);
             }
             catch
             {
                 wrapperHandle.Free();
+                Marshal.FreeHGlobal(json);
                 throw;
             }
         }

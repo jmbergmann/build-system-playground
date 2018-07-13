@@ -75,11 +75,60 @@ namespace test
         [Fact]
         public void AwaitEvent()
         {
+            var branch = new Yogi.Branch(context, "My Branch");
+            var branch_a = new Yogi.Branch(context, "A");
+
+            var events = Yogi.BranchEvents.BranchQueried | Yogi.BranchEvents.ConnectionLost;
+            bool called = false;
+            branch.AwaitEvent(events, (res, ev, evres, info) => {
+                Assert.IsType<Yogi.Success>(res);
+                Assert.Equal(Yogi.ErrorCode.Ok, res.ErrorCode);
+                Assert.IsType<Yogi.BranchEvents>(ev);
+                Assert.Equal(Yogi.BranchEvents.BranchQueried, ev);
+                Assert.IsType<Yogi.Success>(evres);
+                Assert.Equal(Yogi.ErrorCode.Ok, evres.ErrorCode);
+                Assert.IsType<Yogi.BranchQueriedEventInfo>(info);
+                Assert.Equal(branch_a.Uuid, info.Uuid);
+                Assert.Equal(branch_a.StartTime, (info as Yogi.BranchQueriedEventInfo).StartTime);
+                Assert.Equal(branch_a.Timeout, (info as Yogi.BranchQueriedEventInfo).Timeout);
+                called = true;
+            });
+
+            GC.Collect();
+
+            while (!called)
+            {
+                context.RunOne();
+            }
+
+            Assert.True(called);
+
+            GC.KeepAlive(branch);
+            GC.KeepAlive(branch_a);
         }
 
         [Fact]
         public void CancelAwaitEvent()
         {
+            var branch = new Yogi.Branch(context, "My Branch");
+
+            bool called = false;
+            branch.AwaitEvent(Yogi.BranchEvents.All, (res, ev, evres, info) => {
+                Assert.IsType<Yogi.Failure>(res);
+                Assert.Equal(Yogi.ErrorCode.Canceled, res.ErrorCode);
+                Assert.IsType<Yogi.BranchEvents>(ev);
+                Assert.Equal(Yogi.BranchEvents.None, ev);
+                Assert.IsType<Yogi.Success>(evres);
+                Assert.Equal(Yogi.ErrorCode.Ok, evres.ErrorCode);
+                Assert.Null(info);
+                called = true;
+            });
+
+            branch.CancelAwaitEvent();
+            context.Poll();
+            Assert.True(called);
+
+            GC.KeepAlive(branch);
         }
     }
 }
