@@ -41,8 +41,8 @@ class CommandLineOptions(IntEnum):
         BRANCH_TIMEOUT     Include branch timeout configuration.
         FILES              Parse configuration files given on the command
                            line.
-        FILES_REQUIRED     Same as YOGI_CLO_FILES but at least one
-                           configuration must be given.
+        FILES_REQUIRED     Same as FILES but at least one configuration file
+                           must be given.
         OVERRIDES          Allow overriding arbitrary configuration sections.
         VARIABLES          Allow setting variables via a dedicated switch.
         BRANCH_ALL         Combination of all branch flags.

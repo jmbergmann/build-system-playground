@@ -10,21 +10,24 @@ static public partial class Yogi
         public delegate int ContextCreateDelegate(ref IntPtr context);
 
         public static ContextCreateDelegate YOGI_ContextCreate
-            = Library.GetDelegateForFunction<ContextCreateDelegate>("YOGI_ContextCreate");
+            = Library.GetDelegateForFunction<ContextCreateDelegate>(
+                "YOGI_ContextCreate");
 
         // === YOGI_ContextPoll ===
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public delegate int ContextPollDelegate(SafeObjectHandle context, ref int count);
 
         public static ContextPollDelegate YOGI_ContextPoll
-            = Library.GetDelegateForFunction<ContextPollDelegate>("YOGI_ContextPoll");
+            = Library.GetDelegateForFunction<ContextPollDelegate>(
+                "YOGI_ContextPoll");
 
         // === YOGI_ContextPollOne ===
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public delegate int ContextPollOneDelegate(SafeObjectHandle context, ref int count);
 
         public static ContextPollOneDelegate YOGI_ContextPollOne
-            = Library.GetDelegateForFunction<ContextPollOneDelegate>("YOGI_ContextPollOne");
+            = Library.GetDelegateForFunction<ContextPollOneDelegate>(
+                "YOGI_ContextPollOne");
 
         // === YOGI_ContextRun ===
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
@@ -32,7 +35,8 @@ static public partial class Yogi
             long duration);
 
         public static ContextRunDelegate YOGI_ContextRun
-            = Library.GetDelegateForFunction<ContextRunDelegate>("YOGI_ContextRun");
+            = Library.GetDelegateForFunction<ContextRunDelegate>(
+                "YOGI_ContextRun");
 
         // === YOGI_ContextRunOne ===
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
@@ -40,7 +44,8 @@ static public partial class Yogi
             long duration);
 
         public static ContextRunOneDelegate YOGI_ContextRunOne
-            = Library.GetDelegateForFunction<ContextRunOneDelegate>("YOGI_ContextRunOne");
+            = Library.GetDelegateForFunction<ContextRunOneDelegate>(
+                "YOGI_ContextRunOne");
 
         // === YOGI_ContextRunInBackground ===
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
@@ -55,7 +60,8 @@ static public partial class Yogi
         public delegate int ContextStopDelegate(SafeObjectHandle context);
 
         public static ContextStopDelegate YOGI_ContextStop
-            = Library.GetDelegateForFunction<ContextStopDelegate>("YOGI_ContextStop");
+            = Library.GetDelegateForFunction<ContextStopDelegate>(
+                "YOGI_ContextStop");
 
         // === YOGI_ContextWaitForRunning ===
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
@@ -82,7 +88,8 @@ static public partial class Yogi
             ContextPostFnDelegate fn, IntPtr userarg);
 
         public static ContextPostDelegate YOGI_ContextPost
-            = Library.GetDelegateForFunction<ContextPostDelegate>("YOGI_ContextPost");
+            = Library.GetDelegateForFunction<ContextPostDelegate>(
+                "YOGI_ContextPost");
     }
 
     /// <summary>

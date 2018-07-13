@@ -1294,7 +1294,7 @@ YOGI_API int YOGI_SignalSetCancelAwaitSignal(void* sigset);
 YOGI_API int YOGI_TimerCreate(void** timer, void* context);
 
 /***************************************************************************//**
- * Starts the given timer in single shot mode.
+ * Starts the given timer.
  *
  * If the timer is already running, the timer will be canceled first, as if
  * YOGI_TimerCancel() were called explicitly.

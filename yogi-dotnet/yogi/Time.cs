@@ -7,11 +7,13 @@ static public partial class Yogi
 
     partial class Api
     {
-        /// === YOGI_GetCurrentTime ===
+        // === YOGI_GetCurrentTime ===
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public delegate int GetCurrentTimeDelegate(ref long timestamp);
+
         public static GetCurrentTimeDelegate YOGI_GetCurrentTime
-            = Library.GetDelegateForFunction<GetCurrentTimeDelegate>("YOGI_GetCurrentTime");
+            = Library.GetDelegateForFunction<GetCurrentTimeDelegate>(
+                "YOGI_GetCurrentTime");
     }
 
     static DateTime CoreTimestampToDateTime(long timestamp)

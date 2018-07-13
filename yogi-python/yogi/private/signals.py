@@ -14,18 +14,18 @@ class Signals(IntEnum):
     """Signals.
 
     Attributes:
-        NONE No signal
-        INT  Interrupt (e.g. by receiving SIGINT or pressing STRG + C)
-        TERM Termination request (e.g. by receiving SIGTERM)
-        USR1 User-defined signal 1
-        USR2 User-defined signal 2
-        USR3 User-defined signal 3
-        USR4 User-defined signal 4
-        USR5 User-defined signal 5
-        USR6 User-defined signal 6
-        USR7 User-defined signal 7
-        USR8 User-defined signal 8
-        ALL  All signals
+        NONE No signal.
+        INT  Interrupt (e.g. by receiving SIGINT or pressing STRG + C).
+        TERM Termination request (e.g. by receiving SIGTERM).
+        USR1 User-defined signal 1.
+        USR2 User-defined signal 2.
+        USR3 User-defined signal 3.
+        USR4 User-defined signal 4.
+        USR5 User-defined signal 5.
+        USR6 User-defined signal 6.
+        USR7 User-defined signal 7.
+        USR8 User-defined signal 8.
+        ALL  All signals.
     """
     NONE = 0
     INT = (1 << 0)

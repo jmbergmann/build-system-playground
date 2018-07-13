@@ -23,7 +23,8 @@ static public partial class Yogi
             long timeout);
 
         public static BranchCreateDelegate YOGI_BranchCreate
-            = Library.GetDelegateForFunction<BranchCreateDelegate>("YOGI_BranchCreate");
+            = Library.GetDelegateForFunction<BranchCreateDelegate>(
+                "YOGI_BranchCreate");
 
         // === YOGI_BranchGetInfo ===
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
@@ -31,7 +32,8 @@ static public partial class Yogi
             IntPtr uuid, [MarshalAs(UnmanagedType.LPStr)] StringBuilder json, int jsonsize);
 
         public static BranchGetInfoDelegate YOGI_BranchGetInfo
-            = Library.GetDelegateForFunction<BranchGetInfoDelegate>("YOGI_BranchGetInfo");
+            = Library.GetDelegateForFunction<BranchGetInfoDelegate>(
+                "YOGI_BranchGetInfo");
 
         // === YOGI_BranchGetConnectedBranches ===
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
@@ -57,7 +59,8 @@ static public partial class Yogi
             BranchAwaitEventFnDelegate fn, IntPtr userarg);
 
         public static BranchAwaitEventDelegate YOGI_BranchAwaitEvent
-            = Library.GetDelegateForFunction<BranchAwaitEventDelegate>("YOGI_BranchAwaitEvent");
+            = Library.GetDelegateForFunction<BranchAwaitEventDelegate>(
+                "YOGI_BranchAwaitEvent");
 
         // === YOGI_BranchCancelAwaitEvent ===
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
@@ -346,7 +349,7 @@ static public partial class Yogi
             [Optional] string advaddr, [Optional] int advport, [Optional] TimeSpan? advint,
             [Optional] TimeSpan? timeout)
         : base(Create(context, name, description, netname, password, path, advaddr, advport,
-            advint, timeout), new Object[] { context })
+            advint, timeout), new Object[] {context})
         {
         }
 
@@ -549,7 +552,8 @@ static public partial class Yogi
         /// </summary>
         public void CancelAwaitEvent()
         {
-            Api.YOGI_BranchCancelAwaitEvent(Handle);
+            int res = Api.YOGI_BranchCancelAwaitEvent(Handle);
+            CheckErrorCode(res);
         }
 
         static IntPtr Create(Context context, string name, [Optional] string description,

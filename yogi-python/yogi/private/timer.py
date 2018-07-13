@@ -34,7 +34,7 @@ class Timer(Object):
         Object.__init__(self, handle, [context])
 
     def start(self, duration: float, fn: Callable[[Result], Any]) -> None:
-        """Starts the timer in single shot mode.
+        """Starts the timer.
 
         If the timer is already running, the timer will be canceled first, as
         if stop() were called explicitly.

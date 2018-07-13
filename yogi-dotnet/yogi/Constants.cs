@@ -5,21 +5,27 @@ static public partial class Yogi
 {
     partial class Api
     {
-        /// === YOGI_GetConstant ===
+        // === YOGI_GetConstant ===
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public delegate int GetIntConstantDelegate(ref int dest, int constant);
+
         public static GetIntConstantDelegate YOGI_GetIntConstant
-            = Library.GetDelegateForFunction<GetIntConstantDelegate>("YOGI_GetConstant");
+            = Library.GetDelegateForFunction<GetIntConstantDelegate>(
+                "YOGI_GetConstant");
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public delegate int GetLongLongConstantDelegate(ref long dest, int constant);
+
         public static GetLongLongConstantDelegate YOGI_GetLongLongConstant
-            = Library.GetDelegateForFunction<GetLongLongConstantDelegate>("YOGI_GetConstant");
+            = Library.GetDelegateForFunction<GetLongLongConstantDelegate>(
+                "YOGI_GetConstant");
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public delegate int GetStringConstantDelegate(ref IntPtr dest, int constant);
+
         public static GetStringConstantDelegate YOGI_GetStringConstant
-            = Library.GetDelegateForFunction<GetStringConstantDelegate>("YOGI_GetConstant");
+            = Library.GetDelegateForFunction<GetStringConstantDelegate>(
+                "YOGI_GetConstant");
     }
 
     /// <summary>

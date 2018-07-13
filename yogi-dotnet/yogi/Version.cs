@@ -5,11 +5,13 @@ static public partial class Yogi
 {
     partial class Api
     {
-        /// === YOGI_GetVersion ===
+        // === YOGI_GetVersion ===
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public delegate IntPtr GetVersionDelegate();
+
         public static GetVersionDelegate YOGI_GetVersion
-            = Library.GetDelegateForFunction<GetVersionDelegate>("YOGI_GetVersion");
+            = Library.GetDelegateForFunction<GetVersionDelegate>(
+                "YOGI_GetVersion");
     }
 
     /// <summary>

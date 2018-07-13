@@ -110,7 +110,7 @@ static public partial class Yogi
             }
         }
 
-        public static T GetDelegateForFunction<T>(string functionName) where T : class
+        internal static T GetDelegateForFunction<T>(string functionName) where T : class
         {
             IntPtr fn = utils.GetProcAddress(dll, functionName);
             if (fn == IntPtr.Zero)
