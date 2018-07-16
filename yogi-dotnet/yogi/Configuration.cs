@@ -1,6 +1,8 @@
 using System;
 using System.Runtime.InteropServices;
 using System.Text;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 static public partial class Yogi
 {
@@ -139,5 +141,133 @@ static public partial class Yogi
 
         /// <summary>Combination of all flags.</summary>
         All = Logging | BranchAll | Files | FilesRequired | Overrides | Variables,
+    }
+
+    /// <summary>
+    /// A configuration represents a set of parameters that usually remain constant
+    /// throughout the runtime of a program. Parameters can come from different
+    /// sources such as the command line or a file. Configurations are used for
+    /// other parts of the library such as application objects, however, they are
+    /// also intended to store user-defined parameters.
+    /// </summary>
+    class Configuration : Object
+    {
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        /// <param name="flags">Flags for behaviour adjustments.</param>
+        public Configuration(ConfigurationFlags flags)
+        : base(Create(flags))
+        {
+            Flags = flags;
+        }
+
+        /// <summary>
+        /// Updates the configuration from command line options.
+        ///
+        /// If parsing the command line, files or any given JSON string fails, or
+        /// if help is requested (e.g. by using the --help switch) then a
+        /// DescriptiveFailure exception will be raised containing detailed
+        /// information about the error or the help text.
+        /// </summary>
+        /// <param name="args">List of command line arguments including the script name.</param>
+        /// <param name="options">Options to provide on the command line.</param>
+        public void UpdateFromCommandLine(string[] args,
+            CommandLineOptions options = CommandLineOptions.None)
+        {
+        }
+
+        /// <summary>
+        /// Updates the configuration from a JSON object serialized to a string.
+        ///
+        /// If parsing fails then a DescriptiveFailure exception will be raised
+        /// containing detailed information about the error.
+        /// </summary>
+        /// <param name="json">Serialized JSON object.</param>
+        public void UpdateFromJson(string json)
+        {
+        }
+
+        /// <summary>
+        /// Updates the configuration from a JSON object.
+        /// ///
+        /// If parsing fails then a DescriptiveFailure exception will be raised
+        /// containing detailed information about the error.
+        /// </summary>
+        /// <param name="json">JSON object.</param>
+        public void UpdateFromJson(JObject json)
+        {
+            UpdateFromJson(JsonConvert.SerializeObject(json));
+        }
+
+        /// <summary>
+        /// Updates the configuration from a JSON file.
+        ///
+        /// If parsing the file fails then a DescriptiveFailure exception will be raised
+        /// containing detailed information about the error.
+        /// </summary>
+        /// <param name="filename">Path to the JSON file.</param>
+        public void UpdateFromFile(string filename)
+        {
+        }
+
+        /// <summary>
+        /// Retrieves the configuration as a JSON-formatted string.
+        /// </summary>
+        /// <param name="resolveVariables">Resolve all configuration variables.
+        /// By default, variables get resolved if the configuration supports them.</param>
+        /// <param name="identation">Number of space characters to use for indentation.
+        /// By default, no spaces are used and new lines are omitted as well.</param>
+        /// <returns>The configuration serialized to a string.</returns>
+        public string Dump([Optional] bool? resolveVariables, [Optional] int? identation)
+        {
+            return "";
+        }
+
+        /// <summary>
+        /// Retrieves the configuration as a JSON object.
+        /// </summary>
+        /// <param name="resolveVariables">Resolve all configuration variables.
+        /// By default, variables get resolved if the configuration supports them.</param>
+        /// <returns>JSON object representing the configuration.</returns>
+        public JObject ToJson([Optional] bool? resolveVariables)
+        {
+            return JObject.Parse(Dump(resolveVariables));
+        }
+
+        /// <summary>
+        /// Writes the configuration to a file in JSON format.
+        /// </summary>
+        /// <param name="filename">Path to the output file.</param>
+        /// <param name="resolveVariables">Resolve all configuration variables.
+        /// By default, variables get resolved if the configuration supports them.</param>
+        /// <param name="identation">Number of space characters to use for indentation.
+        /// By default, no spaces are used and new lines are omitted as well.</param>
+        public void WriteToFile(string filename, [Optional] bool? resolveVariables,
+            [Optional] int? identation)
+        {
+        }
+
+        /// <summary>
+        /// Configuration flags.
+        /// </summary>
+        public readonly ConfigurationFlags Flags;
+
+        /// <summary>
+        /// Serializes the configuration to a string.
+        /// </summary>
+        /// <returns>Configuration serialized to a string.</returns>
+        public override string ToString()
+        {
+            return Dump();
+        }
+
+        static IntPtr Create(ConfigurationFlags flags)
+        {
+            var handle = new IntPtr();
+            int res = Api.YOGI_ConfigurationCreate(ref handle, flags);
+            CheckErrorCode(res);
+            return handle;
+        }
     }
 }

@@ -72,6 +72,15 @@ class TestConfigurations(TestCase):
         self.assertTrue(" " in cfg.dump(indentation=2))
         self.assertTrue("\n" in cfg.dump(indentation=2))
 
+    def test_to_json(self):
+        cfg = yogi.Configuration(yogi.ConfigurationFlags.DISABLE_VARIABLES)
+        cfg.update_from_json({"age": 42})
+
+        self.assertRaises(yogi.Failure, lambda: cfg.to_json(True))
+
+        jsn = cfg.to_json();
+        self.assertEqual(jsn["age"], 42)
+
     def test_write_to_file(self):
         filename = os.path.join(self.temp_dir, "dump.json")
 

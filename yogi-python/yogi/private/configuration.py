@@ -5,7 +5,7 @@ from .library import yogi
 
 from enum import IntEnum
 import json
-from typing import List, Union, Optional
+from typing import List, Union, Optional, Dict
 from ctypes import c_int, c_char_p, c_char, c_void_p, POINTER, byref, \
     create_string_buffer, sizeof
 
@@ -155,13 +155,14 @@ class Configuration(Object):
                 self._handle, len(args) - 1, args, options, err, sizeof(err)))
 
     def update_from_json(self, jsn: Union[str, object]) -> None:
-        """Updates the configuration from a JSON data.
+        """Updates the configuration from a JSON object or a JSON object
+        serialized to a string.
 
         If parsing fails then a DescriptiveFailure exception will be raised
         containing detailed information about the error.
 
         Args:
-            jsn: Serializable object or JSON-formatted string.
+            jsn: Serializable object or already serialized JSON object.
         """
         if not isinstance(jsn, str):
             jsn = json.dumps(jsn)
@@ -188,7 +189,9 @@ class Configuration(Object):
         """Retrieves the configuration as a JSON-formatted string.
 
         Args:
-            resolve_variables: Resolve all configuration variables.
+            resolve_variables: Resolve all configuration variables. If this is
+                               None then variables will be resolved if and
+                               only if the configuration supports variables.
             indentation:       Number of space characters to use for
                                indentation. A value of None uses no spaces
                                and omits new lines as well.
@@ -219,22 +222,34 @@ class Configuration(Object):
 
         return s.value.decode("utf-8")
 
+    def to_json(self, resolve_variables: Optional[bool] = None) -> Dict[str, object]:
+        """Retrieves the configuration as a JSON object.
+
+        Args:
+            resolve_variables: Resolve all configuration variables. If this is
+                               None then variables will be resolved if and
+                               only if the configuration supports variables.
+
+        Returns:
+            Dictionary representing the configuration.
+        """
+        return json.loads(self.dump(resolve_variables))
+
     def write_to_file(self, filename: str,
                       resolve_variables: Optional[bool] = None,
-                      indentation: Optional[int] = None) -> str:
+                      indentation: Optional[int] = None) -> None:
         """Writes the configuration to a file in JSON format.
 
         This is useful for debugging purposes.
 
         Args:
             filename:          Path to the output file.
-            resolve_variables: Resolve all configuration variables.
+            resolve_variables: Resolve all configuration variables. If this is
+                               None then variables will be resolved if and
+                               only if the configuration supports variables.
             indentation:       Number of space characters to use for
                                indentation. A value of None uses no spaces
                                and omits new lines as well.
-
-        Returns:
-            The configuration as a JSON-formatted string.
         """
         if resolve_variables is None:
             if self._flags & ConfigurationFlags.DISABLE_VARIABLES:
