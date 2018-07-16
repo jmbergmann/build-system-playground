@@ -66,11 +66,11 @@ static public partial class Yogi
         /// <param name="fn">Handler function to call after the given time passed.</param>
         public void Start(TimeSpan duration, StartFnDelegate fn)
         {
-            Api.TimerStartFnDelegate wrapper = (err, userarg) =>
+            Api.TimerStartFnDelegate wrapper = (ec, userarg) =>
             {
                 try
                 {
-                    fn(ErrorCodeToResult(err));
+                    fn(ErrorCodeToResult(ec));
                 }
                 finally
                 {

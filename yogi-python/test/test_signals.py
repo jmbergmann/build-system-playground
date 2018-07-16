@@ -60,7 +60,7 @@ class TestSignals(TestCase):
             fn_sigarg = sigarg
             fn_called = True
 
-        sigset = yogi.SignalSet(self.context, yogi.Signals.TERM)
+        sigset = yogi.SignalSet(self.context, yogi.Signals.TERM | yogi.Signals.USR5)
         sigset.await_signal(fn)
         yogi.raise_signal(yogi.Signals.TERM, 123)
         self.context.poll()
