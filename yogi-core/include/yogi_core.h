@@ -366,7 +366,7 @@
 //!
 //! By default, configuration options given direclty on the command line are
 //! immutable, i.e. they will never be updated from another source.
-#define YOGI_CFG_MUTABLE_CMDLINE (1<<1)
+#define YOGI_CFG_MUTABLE_CMD_LINE (1<<1)
 
 //! @}
 //!
@@ -412,17 +412,17 @@
 //! Include branch advertising address configuration
 //!
 //! Adds the *--adv-addr* switch.
-#define YOGI_CLO_BRANCH_ADVADDR (1<<6)
+#define YOGI_CLO_BRANCH_ADV_ADDR (1<<6)
 
 //! Include branch advertising port configuration
 //!
 //! Adds the *--adv-port* switch.
-#define YOGI_CLO_BRANCH_ADVPORT (1<<7)
+#define YOGI_CLO_BRANCH_ADV_PORT (1<<7)
 
 //! Include branch advertising interval configuration
 //!
 //! Adds the *--adv-int* switch.
-#define YOGI_CLO_BRANCH_ADVINT (1<<8)
+#define YOGI_CLO_BRANCH_ADV_INT (1<<8)
 
 //! Include branch timeout configuration
 //!
