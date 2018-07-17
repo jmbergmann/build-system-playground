@@ -32,8 +32,8 @@ class TestConfigurations(TestCase):
                 self.assertFlagMatches("YOGI_CLO_", opt)
 
     def test_flags_property(self):
-        cfg = yogi.Configuration(yogi.ConfigurationFlags.MUTABLE_CMDLINE)
-        self.assertEqual(cfg.flags, yogi.ConfigurationFlags.MUTABLE_CMDLINE)
+        cfg = yogi.Configuration(yogi.ConfigurationFlags.MUTABLE_CMD_LINE)
+        self.assertEqual(cfg.flags, yogi.ConfigurationFlags.MUTABLE_CMD_LINE)
 
     def test_update_from_command_line(self):
         cfg = yogi.Configuration()

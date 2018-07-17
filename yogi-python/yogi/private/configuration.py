@@ -21,7 +21,7 @@ class ConfigurationFlags(IntEnum):
     """
     NONE = 0
     DISABLE_VARIABLES = (1 << 0)
-    MUTABLE_CMDLINE = (1 << 1)
+    MUTABLE_CMD_LINE = (1 << 1)
 
 
 class CommandLineOptions(IntEnum):
@@ -35,9 +35,9 @@ class CommandLineOptions(IntEnum):
         BRANCH_NETWORK     Include network name configuration.
         BRANCH_PASSWORD    Include network password configuration.
         BRANCH_PATH        Include branch path configuration.
-        BRANCH_ADVADDR     Include branch advertising address configuration.
-        BRANCH_ADVPORT     Include branch advertising port configuration.
-        BRANCH_ADVINT      Include branch advertising interval configuration.
+        BRANCH_ADV_ADDR    Include branch advertising address configuration.
+        BRANCH_ADV_PORT    Include branch advertising port configuration.
+        BRANCH_ADV_INT     Include branch advertising interval configuration.
         BRANCH_TIMEOUT     Include branch timeout configuration.
         FILES              Parse configuration files given on the command
                            line.
@@ -55,17 +55,17 @@ class CommandLineOptions(IntEnum):
     BRANCH_NETWORK = (1 << 3)
     BRANCH_PASSWORD = (1 << 4)
     BRANCH_PATH = (1 << 5)
-    BRANCH_ADVADDR = (1 << 6)
-    BRANCH_ADVPORT = (1 << 7)
-    BRANCH_ADVINT = (1 << 8)
+    BRANCH_ADV_ADDR = (1 << 6)
+    BRANCH_ADV_PORT = (1 << 7)
+    BRANCH_ADV_INT = (1 << 8)
     BRANCH_TIMEOUT = (1 << 9)
     FILES = (1 << 10)
     FILES_REQUIRED = (1 << 11)
     OVERRIDES = (1 << 12)
     VARIABLES = (1 << 13)
     BRANCH_ALL = BRANCH_NAME | BRANCH_DESCRIPTION | BRANCH_NETWORK \
-        | BRANCH_PASSWORD | BRANCH_PATH | BRANCH_ADVADDR \
-        | BRANCH_ADVPORT | BRANCH_ADVINT | BRANCH_TIMEOUT
+        | BRANCH_PASSWORD | BRANCH_PATH | BRANCH_ADV_ADDR \
+        | BRANCH_ADV_PORT | BRANCH_ADV_INT | BRANCH_TIMEOUT
     ALL = LOGGING | BRANCH_ALL | FILES | FILES_REQUIRED | OVERRIDES \
         | VARIABLES
 
