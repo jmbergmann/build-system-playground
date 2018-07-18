@@ -76,7 +76,10 @@
     "xxatomic": "cpp",
     "deque": "cpp",
     "queue": "cpp",
-    "bitset": "cpp"
+    "bitset": "cpp",
+    "future": "cpp",
+    "typeindex": "cpp",
+    "stack": "cpp"
   },
   "files.exclude": {
     "**/.git": true,

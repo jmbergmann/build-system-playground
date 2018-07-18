@@ -4,19 +4,11 @@
 
 
 namespace yogi {
-namespace internal {
-namespace api {
 
-static const char* GetVersion() {
-  static auto fn = Library::GetFunctionAddress<const char* (*)()>("YOGI_GetVersion");
-  return fn();
-}
-
-}  // namespace api
-}  // namespace internal
+YOGI_DEFINE_API_FN(const char*, YOGI_GetVersion, ())
 
 inline const std::string& GetVersion() {
-  static std::string s = internal::api::GetVersion();
+  static std::string s = internal::YOGI_GetVersion();
   return s;
 }
 

@@ -35,6 +35,8 @@ add_definitions (-D_SILENCE_TR1_NAMESPACE_DEPRECATION_WARNING)
 
 add_executable (yogi-cpp-test
   test/library_test.cc
+  test/licenses_test.cc
+  test/version_test.cc
 )
 
 target_link_libraries (yogi-cpp-test
