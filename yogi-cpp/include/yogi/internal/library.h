@@ -1,7 +1,5 @@
 #pragma once
 
-#include <yogi_core.h>
-
 #include <cstdlib>
 #include <string>
 #include <iostream>

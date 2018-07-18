@@ -75,7 +75,8 @@
     "fstream": "cpp",
     "xxatomic": "cpp",
     "deque": "cpp",
-    "queue": "cpp"
+    "queue": "cpp",
+    "bitset": "cpp"
   },
   "files.exclude": {
     "**/.git": true,
