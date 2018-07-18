@@ -146,13 +146,13 @@ class Configuration(Object):
             argv:    List of command line arguments including the script name.
             options: Options to provide on the command line.
         """
-        args = (POINTER(c_char) * (len(argv) + 1))()
+        args = (POINTER(c_char) * (len(argv)))()
         for i, arg in enumerate(argv):
             args[i] = create_string_buffer(arg.encode("utf-8"))
 
         run_with_discriptive_failure_awareness(
             lambda err: yogi.YOGI_ConfigurationUpdateFromCommandLine(
-                self._handle, len(args) - 1, args, options, err, sizeof(err)))
+                self._handle, len(args), args, options, err, sizeof(err)))
 
     def update_from_json(self, jsn: Union[str, object]) -> None:
         """Updates the configuration from a JSON object or a JSON object

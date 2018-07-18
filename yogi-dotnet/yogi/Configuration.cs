@@ -1,6 +1,7 @@
 using System;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Collections.Generic;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -20,7 +21,7 @@ static public partial class Yogi
         // === YOGI_ConfigurationUpdateFromCommandLine ===
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public delegate int ConfigurationUpdateFromCommandLineDelegate(SafeObjectHandle config,
-            int argc, IntPtr[] argv, CommandLineOptions options,
+            int argc, string[] argv, CommandLineOptions options,
             [MarshalAs(UnmanagedType.LPStr)] StringBuilder err, int errsize);
 
         public static ConfigurationUpdateFromCommandLineDelegate
@@ -150,13 +151,13 @@ static public partial class Yogi
     /// other parts of the library such as application objects, however, they are
     /// also intended to store user-defined parameters.
     /// </summary>
-    class Configuration : Object
+    public class Configuration : Object
     {
         /// <summary>
         /// Constructor.
         /// </summary>
         /// <param name="flags">Flags for behaviour adjustments.</param>
-        public Configuration(ConfigurationFlags flags)
+        public Configuration(ConfigurationFlags flags = ConfigurationFlags.None)
         : base(Create(flags))
         {
             Flags = flags;
@@ -170,11 +171,18 @@ static public partial class Yogi
         /// DescriptiveFailure exception will be raised containing detailed
         /// information about the error or the help text.
         /// </summary>
-        /// <param name="args">List of command line arguments including the script name.</param>
+        /// <param name="argv">List of command line arguments including the script name.</param>
         /// <param name="options">Options to provide on the command line.</param>
-        public void UpdateFromCommandLine(string[] args,
+        public void UpdateFromCommandLine(IEnumerable<string> argv,
             CommandLineOptions options = CommandLineOptions.None)
         {
+            var args = new List<string>();
+            args.AddRange(argv);
+
+            CheckDescriptiveErrorCode((err) => {
+                return Api.YOGI_ConfigurationUpdateFromCommandLine(Handle, args.Count,
+                    args.ToArray(), options, err, err.Capacity);
+            });
         }
 
         /// <summary>
@@ -186,6 +194,9 @@ static public partial class Yogi
         /// <param name="json">Serialized JSON object.</param>
         public void UpdateFromJson(string json)
         {
+            CheckDescriptiveErrorCode((err) => {
+                return Api.YOGI_ConfigurationUpdateFromJson(Handle, json, err, err.Capacity);
+            });
         }
 
         /// <summary>
@@ -209,6 +220,9 @@ static public partial class Yogi
         /// <param name="filename">Path to the JSON file.</param>
         public void UpdateFromFile(string filename)
         {
+            CheckDescriptiveErrorCode((err) => {
+                return Api.YOGI_ConfigurationUpdateFromFile(Handle, filename, err, err.Capacity);
+            });
         }
 
         /// <summary>
@@ -216,12 +230,36 @@ static public partial class Yogi
         /// </summary>
         /// <param name="resolveVariables">Resolve all configuration variables.
         /// By default, variables get resolved if the configuration supports them.</param>
-        /// <param name="identation">Number of space characters to use for indentation.
+        /// <param name="indentation">Number of space characters to use for indentation.
         /// By default, no spaces are used and new lines are omitted as well.</param>
         /// <returns>The configuration serialized to a string.</returns>
-        public string Dump([Optional] bool? resolveVariables, [Optional] int? identation)
+        public string Dump([Optional] bool? resolveVariables, [Optional] int? indentation)
         {
-            return "";
+            if (resolveVariables == null)
+            {
+                resolveVariables = (Flags & ConfigurationFlags.DisableVariables)
+                                    != ConfigurationFlags.DisableVariables;
+            }
+
+            if (indentation == null)
+            {
+                indentation = -1;
+            }
+
+            StringBuilder json;
+            var size = 512;
+            int res;
+            do
+            {
+                json = new StringBuilder(size);
+                size *= 2;
+                res = Api.YOGI_ConfigurationDump(Handle, json, json.Capacity,
+                    resolveVariables == true ? 1 : 0, (int)indentation);
+            }
+            while (res == (int)ErrorCode.BufferTooSmall);
+            CheckErrorCode(res);
+
+            return json.ToString();
         }
 
         /// <summary>
@@ -241,11 +279,25 @@ static public partial class Yogi
         /// <param name="filename">Path to the output file.</param>
         /// <param name="resolveVariables">Resolve all configuration variables.
         /// By default, variables get resolved if the configuration supports them.</param>
-        /// <param name="identation">Number of space characters to use for indentation.
+        /// <param name="indentation">Number of space characters to use for indentation.
         /// By default, no spaces are used and new lines are omitted as well.</param>
         public void WriteToFile(string filename, [Optional] bool? resolveVariables,
-            [Optional] int? identation)
+            [Optional] int? indentation)
         {
+            if (resolveVariables == null)
+            {
+                resolveVariables = (Flags & ConfigurationFlags.DisableVariables)
+                                    != ConfigurationFlags.DisableVariables;
+            }
+
+            if (indentation == null)
+            {
+                indentation = -1;
+            }
+
+            int res = Api.YOGI_ConfigurationWriteToFile(Handle, filename,
+                resolveVariables == true ? 1 : 0, (int)indentation);
+            CheckErrorCode(res);
         }
 
         /// <summary>

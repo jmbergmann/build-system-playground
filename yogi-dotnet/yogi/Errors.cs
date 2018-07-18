@@ -1,5 +1,6 @@
 using System;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Diagnostics;
 
 static public partial class Yogi
@@ -278,6 +279,16 @@ static public partial class Yogi
         if (result < 0)
         {
             throw new Exception(new Failure(result));
+        }
+    }
+
+    static void CheckDescriptiveErrorCode(Func<StringBuilder, int> fn)
+    {
+        var err = new StringBuilder(256);
+        int res = fn(err);
+        if (res != (int)ErrorCode.Ok)
+        {
+            throw new Exception(new DescriptiveFailure(res, err.ToString()));
         }
     }
 

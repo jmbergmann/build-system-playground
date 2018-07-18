@@ -362,8 +362,8 @@ static public partial class Yogi
             {
                 if (info == null)
                 {
+                    StringBuilder json;
                     var size = 1024;
-                    StringBuilder json; ;
                     int res;
                     do
                     {
