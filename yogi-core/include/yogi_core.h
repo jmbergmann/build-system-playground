@@ -463,9 +463,9 @@
                             | YOGI_CLO_BRANCH_NETWORK     \
                             | YOGI_CLO_BRANCH_PASSWORD    \
                             | YOGI_CLO_BRANCH_PATH        \
-                            | YOGI_CLO_BRANCH_ADVADDR     \
-                            | YOGI_CLO_BRANCH_ADVPORT     \
-                            | YOGI_CLO_BRANCH_ADVINT      \
+                            | YOGI_CLO_BRANCH_ADV_ADDR    \
+                            | YOGI_CLO_BRANCH_ADV_PORT    \
+                            | YOGI_CLO_BRANCH_ADV_INT     \
                             | YOGI_CLO_BRANCH_TIMEOUT     \
                             )
 

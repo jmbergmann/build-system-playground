@@ -78,7 +78,7 @@ class TestConfigurations(TestCase):
 
         self.assertRaises(yogi.Failure, lambda: cfg.to_json(True))
 
-        jsn = cfg.to_json();
+        jsn = cfg.to_json()
         self.assertEqual(jsn["age"], 42)
 
     def test_write_to_file(self):

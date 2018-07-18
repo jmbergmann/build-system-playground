@@ -19,8 +19,8 @@ class Configuration
   enum ConfigurationFlags {
     kNoFlags = YOGI_CFG_NONE,
     kDisableVariables = YOGI_CFG_DISABLE_VARIABLES,
-    kMutableCmdline = YOGI_CFG_MUTABLE_CMDLINE,
-    kAllFlags = kDisableVariables | kMutableCmdline,
+    kMutableCmdLine = YOGI_CFG_MUTABLE_CMD_LINE,
+    kAllFlags = kDisableVariables | kMutableCmdLine,
   };
 
   using CommandLineOptions = detail::CommandLineParser::CommandLineOptions;

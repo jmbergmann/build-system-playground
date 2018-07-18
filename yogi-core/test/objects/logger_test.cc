@@ -41,7 +41,7 @@ class LoggerTest : public Test {
     boost::replace_all(re, "#", "\\d");
     re += std::to_string(utils::GetProcessId()) + "_";
     re += std::to_string(utils::GetCurrentThreadId()) + "_";
-    re += "ERR_Hello_myfile\\.cc_123_My\\.Component___\\$";
+    re += "ERR_Hello_myfile\\.cc_123_My\\.Component___\\$_";
     re += "$";
 
     std::smatch m;

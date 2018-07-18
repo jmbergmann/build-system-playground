@@ -10,7 +10,7 @@ namespace objects {
 
 Configuration::Configuration(ConfigurationFlags flags)
     : variables_supported_(!(flags & kDisableVariables)),
-      mutable_cmdline_(flags & kMutableCmdline),
+      mutable_cmdline_(flags & kMutableCmdLine),
       json_({}),
       immutable_json_({}) {}
 

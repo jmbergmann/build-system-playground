@@ -222,7 +222,8 @@ class Configuration(Object):
 
         return s.value.decode("utf-8")
 
-    def to_json(self, resolve_variables: Optional[bool] = None) -> Dict[str, object]:
+    def to_json(self, resolve_variables: Optional[bool] = None) \
+            -> Dict[str, object]:
         """Retrieves the configuration as a JSON object.
 
         Args:

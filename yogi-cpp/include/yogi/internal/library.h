@@ -13,6 +13,7 @@
 #endif
 
 namespace yogi {
+namespace internal {
 
 class Library final {
  public:
@@ -26,12 +27,6 @@ class Library final {
     // Unload DLL
   }
 
-  static const char* GetVersion() {
-    static auto fn = GetFunctionAddress<const char* (*)()>("YOGI_GetVersion");
-    return fn();
-  }
-
- private:
   template <typename Fn>
   static Fn GetFunctionAddress(const char* name) {
     using namespace std::string_literals;
@@ -120,9 +115,7 @@ std::string Library::GetLastErrorString() {
 
 Library::LibraryHandle __declspec(selectany) Library::lib_handle_;
 
-namespace internal {
 Library __declspec(selectany) library;
-}  // namespace internal
 
 #else
 
@@ -153,10 +146,9 @@ std::string Library::GetLastErrorString() {
 
 Library::LibraryHandle __attribute__((weak)) Library::lib_handle_;
 
-namespace internal {
 Library __attribute__((weak)) library;
-}  // namespace internal
 
 #endif
 
+}  // namespace internal
 }  // namespace yogi

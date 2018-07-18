@@ -51,8 +51,8 @@ class Timer(Object):
         """Cancels the given timer.
 
         Canceling a timer will result in the handler function registered via
-        start() to be called with an cancellation error. Note that if the
-        handler is already scheduled for executing, it will be called without
+        start() to be called with a cancellation error. Note that if the
+        handler is already scheduled for execution, it will be called without
         an error.
 
         Returns:

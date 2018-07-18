@@ -263,7 +263,7 @@ TEST_F(ConfigurationTest, ImmutableCommandLine) {
   EXPECT_EQ(json["branch"].value("name", "NOT FOUND"), "My Branch");
 
   // Mutable command line
-  void* cfg2 = MakeConfiguration(YOGI_CFG_MUTABLE_CMDLINE);
+  void* cfg2 = MakeConfiguration(YOGI_CFG_MUTABLE_CMD_LINE);
   res = YOGI_ConfigurationUpdateFromCommandLine(
       cfg2, cmdline.argc, cmdline.argv, YOGI_CLO_ALL, nullptr, 0);
   EXPECT_EQ(res, YOGI_OK);
