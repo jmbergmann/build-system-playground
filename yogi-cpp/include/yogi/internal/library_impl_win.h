@@ -15,7 +15,7 @@ const char* Library::GetFilename() {
 }
 
 Library::LibraryHandle Library::LoadLibrary(const char* filename) {
-  return ::LoadLibrary(filename);
+  return ::LoadLibraryA(filename);
 }
 
 Library::ProcAddress Library::GetProcAddress(LibraryHandle handle,
