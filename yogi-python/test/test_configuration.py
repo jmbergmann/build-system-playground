@@ -65,7 +65,7 @@ class TestConfigurations(TestCase):
         cfg = yogi.Configuration(yogi.ConfigurationFlags.DISABLE_VARIABLES)
         cfg.update_from_json({"age": 42})
 
-        self.assertRaises(yogi.Failure, lambda: cfg.dump(True))
+        self.assertRaises(yogi.FailureException, lambda: cfg.dump(True))
 
         self.assertFalse(" " in cfg.dump())
         self.assertFalse("\n" in cfg.dump())
@@ -76,7 +76,7 @@ class TestConfigurations(TestCase):
         cfg = yogi.Configuration(yogi.ConfigurationFlags.DISABLE_VARIABLES)
         cfg.update_from_json({"age": 42})
 
-        self.assertRaises(yogi.Failure, lambda: cfg.to_json(True))
+        self.assertRaises(yogi.FailureException, lambda: cfg.to_json(True))
 
         jsn = cfg.to_json()
         self.assertEqual(jsn["age"], 42)
@@ -87,8 +87,8 @@ class TestConfigurations(TestCase):
         cfg = yogi.Configuration(yogi.ConfigurationFlags.DISABLE_VARIABLES)
         cfg.update_from_json({"age": 11})
 
-        self.assertRaises(yogi.Failure, lambda: cfg.write_to_file(filename,
-                                                                  True))
+        self.assertRaises(yogi.FailureException, lambda: cfg.write_to_file(
+            filename, True))
 
         cfg.write_to_file(filename)
         with open(filename) as f:

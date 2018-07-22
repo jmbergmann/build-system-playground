@@ -1,5 +1,5 @@
 from .object import Object
-from .errors import Failure, ErrorCode, api_result_handler
+from .errors import FailureException, ErrorCode, api_result_handler
 from .library import yogi
 from .handler import inc_ref_cnt, dec_ref_cnt
 
@@ -173,8 +173,8 @@ class Context(Object):
         t = -1 if duration == float("inf") else int(duration * 1e9)
         try:
             yogi.YOGI_ContextWaitForRunning(self._handle, t)
-        except Failure as failure:
-            if failure.error_code is ErrorCode.TIMEOUT:
+        except FailureException as e:
+            if e.failure.error_code is ErrorCode.TIMEOUT:
                 return False
             else:
                 raise
@@ -198,8 +198,8 @@ class Context(Object):
         t = -1 if duration == float("inf") else int(duration * 1e9)
         try:
             yogi.YOGI_ContextWaitForStopped(self._handle, t)
-        except Failure as failure:
-            if failure.error_code is ErrorCode.TIMEOUT:
+        except FailureException as e:
+            if e.failure.error_code is ErrorCode.TIMEOUT:
                 return False
             else:
                 raise

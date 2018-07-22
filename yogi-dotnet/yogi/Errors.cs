@@ -171,6 +171,23 @@ static public partial class Yogi
     }
 
     /// <summary>
+    /// Represents the success of an operation.
+    /// </summary>
+    public class Success : Result
+    {
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        /// <param name="value">Number as returned by the Yogi Core library function.</param>
+        /// <returns></returns>
+        public Success(int value = 0)
+        : base(value)
+        {
+            Debug.Assert(value >= 0);
+        }
+    }
+
+    /// <summary>
     /// Represents the failure of an operation.
     /// </summary>
     public class Failure : Result
@@ -218,67 +235,71 @@ static public partial class Yogi
     }
 
     /// <summary>
-    /// Exception wrapping a Failure or DescriptiveFailure object.
+    /// Base class for all Yogi exceptions.
     /// </summary>
-    public class Exception : System.Exception
+    public abstract class Exception : System.Exception
+    {
+        /// <summary>
+        /// The wrapped Failure or DescriptiveFailure object.
+        /// </summary>
+        public abstract Failure Failure { get; }
+
+        /// <summary>
+        /// The exception message.
+        /// </summary>
+        public override string Message
+        {
+            get
+            {
+                return Failure.ToString();
+            }
+        }
+    }
+
+    /// <summary>
+    /// Exception wrapping a Failure object.
+    ///
+    /// This exception type is used for failures without a detailed description.
+    /// </summary>
+    public class FailureException : Exception
     {
         /// <summary>
         /// Constructor.
         /// </summary>
-        /// <param name="failure">The wrapped Failure or DescriptiveFailure object.</param>
-        public Exception(Failure failure)
-        : base(failure.ToString())
-        {
-            Failure = failure;
-        }
-
-        /// <summary>
-        /// Constructor.
-        /// </summary>
         /// <param name="ec">Error code associated with the failure.</param>
-        public Exception(ErrorCode ec)
-        : this(new Failure(ec))
+        public FailureException(ErrorCode ec)
         {
+            Failure = new Failure(ec);
         }
 
+        public override Failure Failure { get; }
+    }
+
+    /// <summary>
+    /// Exception wrapping a DescriptiveFailure object.
+    ///
+    /// This exception type is used for failures that have detailed information available.
+    /// </summary>
+    public class DescriptiveFailureException : Exception
+    {
         /// <summary>
         /// Constructor.
         /// </summary>
         /// <param name="ec">Error code associated with the failure.</param>
         /// <param name="description">Detailed description of the failure.</param>
-        public Exception(ErrorCode ec, string description)
-        : this(new DescriptiveFailure(ec, description))
+        public DescriptiveFailureException(ErrorCode ec, string description)
         {
+            Failure = new DescriptiveFailure(ec, description);
         }
 
-        /// <summary>
-        /// The wrapped Failure or DescriptiveFailure object.
-        /// </summary>
-        public Failure Failure { get; }
-    }
-
-    /// <summary>
-    /// Represents the success of an operation.
-    /// </summary>
-    public class Success : Result
-    {
-        /// <summary>
-        /// Constructor.
-        /// </summary>
-        /// <param name="value">Number as returned by the Yogi Core library function.</param>
-        /// <returns></returns>
-        public Success(int value)
-        : base(value)
-        {
-            Debug.Assert(value >= 0);
-        }
+        public override Failure Failure { get; }
     }
 
     static void CheckErrorCode(int result)
     {
         if (result < 0)
         {
-            throw new Exception(new Failure((ErrorCode)result));
+            throw new FailureException((ErrorCode)result);
         }
     }
 
@@ -288,7 +309,7 @@ static public partial class Yogi
         int res = fn(err);
         if (res != (int)ErrorCode.Ok)
         {
-            throw new Exception(new DescriptiveFailure((ErrorCode)res, err.ToString()));
+            throw new DescriptiveFailureException((ErrorCode)res, err.ToString());
         }
     }
 

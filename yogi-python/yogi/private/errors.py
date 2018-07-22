@@ -1,7 +1,8 @@
 from .library import yogi
 
-from ctypes import c_char_p, c_int
+from ctypes import c_char_p, c_int, create_string_buffer
 from enum import IntEnum
+from typing import Callable, Union
 
 
 class ErrorCode(IntEnum):
@@ -59,13 +60,16 @@ class Result:
     in case of success and < 0 in case of a failure.
     """
 
-    def __init__(self, value: int):
+    def __init__(self, value_or_ec: Union[int, ErrorCode]):
         """Constructs the result.
 
         Args:
             value: Number as returned by the Yogi Core library functions.
         """
-        self._value = value
+        if isinstance(value_or_ec, int):
+            self._value = value_or_ec
+        else:
+            self._value = value_or_ec.value
 
     @property
     def value(self) -> int:
@@ -93,12 +97,24 @@ class Result:
         return self._value
 
 
-class Failure(Exception, Result):
+class Success(Result):
+    """Represents the success of an operation."""
+
+    def __init__(self, value: int = 0):
+        assert value >= 0
+        Result.__init__(self, value)
+
+
+class Failure(Result):
     """Represents the failure of an operation."""
 
-    def __init__(self, value: int):
-        assert value < 0
-        Result.__init__(self, value)
+    def __init__(self, ec: ErrorCode):
+        """Constructs the Failure.
+
+        Args:
+            ec: Error code.
+        """
+        Result.__init__(self, ec.value)
 
     def __str__(self) -> str:
         return Result.__str__(self)
@@ -107,8 +123,14 @@ class Failure(Exception, Result):
 class DescriptiveFailure(Failure):
     """A failure of an operation that includes a description."""
 
-    def __init__(self, value: int, description: str):
-        Failure.__init__(self, value)
+    def __init__(self, ec: ErrorCode, description: str):
+        """Constructs the DescriptiveFailure.
+
+        Args:
+            ec: Error code.
+            description: Additional information about the failure.
+        """
+        Failure.__init__(self, ec)
         self._description = description
 
     @property
@@ -120,23 +142,73 @@ class DescriptiveFailure(Failure):
         return Failure.__str__(self) + ". Description: " + self._description
 
 
-class Success(Result):
-    """Represents the success of an operation."""
+class Exception(Exception):
+    """Base class for all Yogi exceptions."""
+    @property
+    def failure(self) -> Failure:
+        """Wrapped Failure or DescriptiveFailure object."""
+        raise NotImplementedError()
 
-    def __init__(self, value: int = 0):
-        assert value >= 0
-        Result.__init__(self, value)
+
+class FailureException(Exception):
+    """Exception wrapping a Failure object.
+
+    This exception type is used for failures without a detailed description.
+    """
+    def __init__(self, ec: ErrorCode):
+        """Constructs the exception.
+
+        Args:
+            ec: Error code.
+        """
+        self._failure = Failure(ec)
+
+    @property
+    def failure(self) -> Failure:
+        """Wrapped Failure object."""
+        return self._failure
+
+
+class DescriptiveFailureException(Exception):
+    """Exception wrapping a DescriptiveFailure object.
+
+    This exception type is used for failures that have detailed information
+    available
+    """
+    def __init__(self, ec: ErrorCode, description: str):
+        """Constructs the exception.
+
+        Args:
+            ec: Error code.
+            description: Additional information about the failure.
+        """
+        self._failure = DescriptiveFailure(ec, description)
+
+    @property
+    def failure(self) -> DescriptiveFailure:
+        """Wrapped DescriptiveFailure object."""
+        return self._failure
 
 
 def api_result_handler(result: int) -> Success:
     if result < 0:
-        raise Failure(result)
+        raise FailureException(ErrorCode(result))
     else:
         return Success(result)
 
 
 def error_code_to_result(result: int) -> Result:
     if result < 0:
-        return Failure(result)
+        return Failure(ErrorCode(result))
     else:
         return Success(result)
+
+def run_with_discriptive_failure_awareness(fn: Callable[[any], int]) -> None:
+    err = create_string_buffer(256)
+    result = fn(err)
+    if result < 0:
+        description = err.value.decode("utf-8")
+        if len(description):
+            raise DescriptiveFailureException(ErrorCode(result), description)
+        else:
+            raise FailureException(ErrorCode(result))

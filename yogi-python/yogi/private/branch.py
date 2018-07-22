@@ -1,6 +1,6 @@
 from .object import Object
-from .errors import Result, Failure, Success, ErrorCode, api_result_handler, \
-    error_code_to_result
+from .errors import Result, FailureException, Success, ErrorCode, \
+    api_result_handler, error_code_to_result
 from .library import yogi
 from .handler import Handler
 from .context import Context
@@ -310,8 +310,8 @@ class Branch(Object):
                 try:
                     yogi.YOGI_BranchGetInfo(self._handle, None, s, sizeof(s))
                     break
-                except Failure as failure:
-                    if failure.error_code is ErrorCode.BUFFER_TOO_SMALL:
+                except FailureException as e:
+                    if e.failure.error_code is ErrorCode.BUFFER_TOO_SMALL:
                         s = create_string_buffer(sizeof(s) * 2)
                     else:
                         raise
@@ -411,8 +411,8 @@ class Branch(Object):
                 yogi.YOGI_BranchGetConnectedBranches(
                     self._handle, None, s, sizeof(s), c_append_string, None)
                 break
-            except Failure as failure:
-                if failure.error_code is ErrorCode.BUFFER_TOO_SMALL:
+            except FailureException as e:
+                if e.failure.error_code is ErrorCode.BUFFER_TOO_SMALL:
                     strings = []
                     s = create_string_buffer(sizeof(s) * 2)
                 else:

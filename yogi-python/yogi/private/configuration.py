@@ -1,6 +1,6 @@
 from .object import Object
-from .errors import DescriptiveFailure, Failure, ErrorCode, \
-    api_result_handler
+from .errors import DescriptiveFailure, FailureException, ErrorCode, \
+    api_result_handler, run_with_discriptive_failure_awareness
 from .library import yogi
 
 from enum import IntEnum
@@ -73,15 +73,15 @@ class CommandLineOptions(IntEnum):
 yogi.YOGI_ConfigurationCreate.restype = api_result_handler
 yogi.YOGI_ConfigurationCreate.argtypes = [POINTER(c_void_p), c_int]
 
-yogi.YOGI_ConfigurationUpdateFromCommandLine.restype = api_result_handler
+yogi.YOGI_ConfigurationUpdateFromCommandLine.restype = int
 yogi.YOGI_ConfigurationUpdateFromCommandLine.argtypes = [
     c_void_p, c_int, POINTER(POINTER(c_char)), c_int, c_char_p, c_int]
 
-yogi.YOGI_ConfigurationUpdateFromJson.restype = api_result_handler
+yogi.YOGI_ConfigurationUpdateFromJson.restype = int
 yogi.YOGI_ConfigurationUpdateFromJson.argtypes = [c_void_p, c_char_p,
                                                   c_char_p, c_int]
 
-yogi.YOGI_ConfigurationUpdateFromFile.restype = api_result_handler
+yogi.YOGI_ConfigurationUpdateFromFile.restype = int
 yogi.YOGI_ConfigurationUpdateFromFile.argtypes = [c_void_p, c_char_p,
                                                   c_char_p, c_int]
 
@@ -92,18 +92,6 @@ yogi.YOGI_ConfigurationDump.argtypes = [c_void_p, c_char_p, c_int, c_int,
 yogi.YOGI_ConfigurationWriteToFile.restype = api_result_handler
 yogi.YOGI_ConfigurationWriteToFile.argtypes = [c_void_p, c_char_p, c_int,
                                                c_int]
-
-
-def run_with_discriptive_failure_awareness(fn):
-    err = create_string_buffer(256)
-    try:
-        fn(err)
-    except Failure as failure:
-        description = err.value.decode("utf-8")
-        if len(description):
-            raise DescriptiveFailure(failure.value, description)
-        else:
-            raise
 
 
 class Configuration(Object):
@@ -214,8 +202,8 @@ class Configuration(Object):
                 yogi.YOGI_ConfigurationDump(self._handle, s, sizeof(s),
                                             resolve_variables, indentation)
                 break
-            except Failure as failure:
-                if failure.error_code is ErrorCode.BUFFER_TOO_SMALL:
+            except FailureException as e:
+                if e.failure.error_code is ErrorCode.BUFFER_TOO_SMALL:
                     s = create_string_buffer(sizeof(s) * 2)
                 else:
                     raise

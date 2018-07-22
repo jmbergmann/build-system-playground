@@ -194,12 +194,12 @@ class Result {
   //! Constructor
   //!
   //! \param value Result code as returned by the Yogi Core library function.
-  constexpr explicit Result(int value) : value_(value) {}
+  explicit Result(int value) : value_(value) {}
 
   //! Constructor
   //!
   //! \param ec Error code.
-  constexpr explicit Result(ErrorCode ec) : Result(static_cast<int>(ec)) {}
+  explicit Result(ErrorCode ec) : Result(static_cast<int>(ec)) {}
 
   //! Destructor
   virtual ~Result() {}
@@ -207,12 +207,12 @@ class Result {
   //! Returns the result code.
   //!
   //! \returns The number as returned by the Yogi Core library function.
-  constexpr int GetValue() const { return value_; }
+  int GetValue() const { return value_; }
 
   //! Error code associated with this result.
   //!
   //! \returns Associated error code.
-  constexpr ErrorCode GetErrorCode() const {
+  ErrorCode GetErrorCode() const {
     return value_ >= 0 ? ErrorCode::kOk : static_cast<ErrorCode>(value_);
   }
 
@@ -223,33 +223,14 @@ class Result {
     return internal::YOGI_GetErrorString(value_);
   }
 
-  constexpr explicit operator bool() const { return value_ >= 0; }
-
-  constexpr bool operator!() const { return value_ < 0; }
-
-  constexpr bool operator==(const Result& rhs) const {
-    return value_ == rhs.value_;
-  }
-
-  constexpr bool operator!=(const Result& rhs) const {
-    return value_ != rhs.value_;
-  }
-
-  constexpr bool operator<(const Result& rhs) const {
-    return value_ < rhs.value_;
-  }
-
-  constexpr bool operator<=(const Result& rhs) const {
-    return value_ <= rhs.value_;
-  }
-
-  constexpr bool operator>(const Result& rhs) const {
-    return value_ > rhs.value_;
-  }
-
-  constexpr bool operator>=(const Result& rhs) const {
-    return value_ >= rhs.value_;
-  }
+  explicit operator bool() const { return value_ >= 0; }
+  bool operator!() const { return value_ < 0; }
+  bool operator==(const Result& rhs) const { return value_ == rhs.value_; }
+  bool operator!=(const Result& rhs) const { return value_ != rhs.value_; }
+  bool operator<(const Result& rhs) const { return value_ < rhs.value_; }
+  bool operator<=(const Result& rhs) const { return value_ <= rhs.value_; }
+  bool operator>(const Result& rhs) const { return value_ > rhs.value_; }
+  bool operator>=(const Result& rhs) const { return value_ >= rhs.value_; }
 
  private:
   const int value_;
@@ -263,12 +244,12 @@ class Success : public Result {
   //! Constructor
   //!
   //! \param value Result code as returned by the Yogi Core library function.
-  constexpr explicit Success(int value) : Result(value) {
+  explicit Success(int value) : Result(value) {
     assert(value >= 0);  // The result code for Success must be >= 0.
   }
 
   //! Constructor
-  constexpr Success() : Success(static_cast<int>(ErrorCode::kOk)) {}
+  Success() : Success(static_cast<int>(ErrorCode::kOk)) {}
 };
 
 //! Represents the failure of an operation.
@@ -316,7 +297,7 @@ class DescriptiveFailure : public Failure {
   const std::string description_;
 };
 
-//! Base class for any exceptions.
+//! Base class for all Yogi exceptions.
 //!
 //! All exceptions thrown by Yogi functions are derived from this class.
 //!
@@ -328,9 +309,9 @@ class Exception : public std::exception {
   //! \returns The wrapped Failure object.
   virtual const Failure& GetFailure() const = 0;
 
-  //! Returns a description of the error
+  //! Returns a description of the error.
   //!
-  //! \returns Description of the error
+  //! \returns Description of the error.
   virtual const char* what() const noexcept override {
     if (what_.empty()) {
       what_ = GetFailure().ToString();
@@ -343,6 +324,9 @@ class Exception : public std::exception {
   mutable std::string what_;
 };
 
+//! Exception wrapping a Failure object.
+//!
+//! This exception type is used for failures without a detailed description.
 class FailureException : public Exception {
  public:
   //! Constructor
@@ -356,6 +340,10 @@ class FailureException : public Exception {
   const Failure failure_;
 };
 
+//! Exception wrapping a DescriptiveFailure object.
+//!
+//! This exception type is used for failures that have detailed information
+//! available.
 class DescriptiveFailureException : public Exception {
  public:
   //! Constructor

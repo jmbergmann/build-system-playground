@@ -14,7 +14,7 @@
     return os;                                                               \
   }
 
-YOGI_DEFINE_OSTREAM_OPERATOR(enum class, ErrorCode);
-YOGI_DEFINE_OSTREAM_OPERATOR(class, Result);
+YOGI_DEFINE_OSTREAM_OPERATOR(enum class, ErrorCode)
+YOGI_DEFINE_OSTREAM_OPERATOR(class, Result)
 
 #undef YOGI_DEFINE_OSTREAM_OPERATOR

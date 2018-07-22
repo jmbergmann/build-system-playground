@@ -107,7 +107,7 @@ namespace test
             var cfg = new Yogi.Configuration(Yogi.ConfigurationFlags.DisableVariables);
             cfg.UpdateFromJson("{\"age\": 42}");
 
-            Assert.Throws<Yogi.Exception>(() => cfg.Dump(true));
+            Assert.Throws<Yogi.FailureException>(() => cfg.Dump(true));
 
             Assert.DoesNotContain(" ", cfg.Dump());
             Assert.DoesNotContain("\n", cfg.Dump());
@@ -121,7 +121,7 @@ namespace test
             var cfg = new Yogi.Configuration(Yogi.ConfigurationFlags.DisableVariables);
             cfg.UpdateFromJson("{\"age\": 42}");
 
-            Assert.Throws<Yogi.Exception>(() => cfg.ToJson(true));
+            Assert.Throws<Yogi.FailureException>(() => cfg.ToJson(true));
 
             Assert.Equal(42, (int)cfg.ToJson()["age"]);
         }
@@ -134,7 +134,7 @@ namespace test
             var cfg = new Yogi.Configuration(Yogi.ConfigurationFlags.DisableVariables);
             cfg.UpdateFromJson("{\"age\": 11}");
 
-            Assert.Throws<Yogi.Exception>(() => cfg.WriteToFile(filename, true));
+            Assert.Throws<Yogi.FailureException>(() => cfg.WriteToFile(filename, true));
 
             cfg.WriteToFile(filename);
             var content = File.ReadAllText(filename);

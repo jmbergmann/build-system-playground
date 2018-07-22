@@ -7,7 +7,7 @@ from .private.configuration import ConfigurationFlags, CommandLineOptions, \
     Configuration
 from .private.constants import Constants
 from .private.errors import ErrorCode, Result, Failure, DescriptiveFailure, \
-    Success
+    Success, Exception, FailureException, DescriptiveFailureException
 from .private.licenses import get_license, get_3rd_party_licenses
 from .private.logging import Verbosity, Stream, Logger, AppLogger, \
     app_logger, log_to_console, log_to_file, log_to_hook

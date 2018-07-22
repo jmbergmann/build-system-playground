@@ -89,14 +89,18 @@ TEST(ErrorsTest, DescriptiveFailure) {
 
 TEST(ErrorsTest, Exception) {
   EXPECT_TRUE((std::is_base_of<std::exception, yogi::Exception>::value));
+}
 
+TEST(ErrorsTest, FailureException) {
   EXPECT_TRUE(
       (std::is_base_of<yogi::Exception, yogi::FailureException>::value));
   EXPECT_EQ(yogi::FailureException(yogi::ErrorCode::kBusy).what(),
             yogi::Failure(yogi::ErrorCode::kBusy).ToString());
   EXPECT_EQ(yogi::FailureException(yogi::ErrorCode::kBusy).GetFailure(),
             yogi::Failure(yogi::ErrorCode::kBusy));
+}
 
+TEST(ErrorsTest, DescriptiveFailureException) {
   EXPECT_TRUE((std::is_base_of<yogi::Exception,
                                yogi::DescriptiveFailureException>::value));
   EXPECT_EQ(

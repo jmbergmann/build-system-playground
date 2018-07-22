@@ -11,7 +11,7 @@
 namespace yogi {
 
 YOGI_DEFINE_SFINAE_METHOD_TESTER(HasToStringMethod,
-                                 .ToString() == std::string());
+                                 .ToString() == std::string())
 
 /***************************************************************************//**
  * Converts a given Yogi enum value or object to a string.

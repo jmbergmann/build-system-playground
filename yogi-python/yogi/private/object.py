@@ -1,5 +1,5 @@
 from .library import yogi
-from .errors import Failure, ErrorCode, api_result_handler
+from .errors import FailureException, ErrorCode, api_result_handler
 
 import sys
 from ctypes import c_void_p
@@ -36,14 +36,14 @@ class Object:
 
         try:
             yogi.YOGI_Destroy(self._handle)
-        except Failure as failure:
+        except FailureException as e:
             info = ""
-            if failure.error_code is ErrorCode.OBJECT_STILL_USED:
+            if e.failure.error_code is ErrorCode.OBJECT_STILL_USED:
                 info = " Check that you don't have circular dependencies on" \
                     " Yogi objects."
 
             print("Could not destroy {} instance: {}.{}".format(
-                self.__class__.__name__, failure, info), file=sys.stderr)
+                self.__class__.__name__, e.failure, info), file=sys.stderr)
 
             assert(False)
 

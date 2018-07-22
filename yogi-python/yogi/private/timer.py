@@ -1,5 +1,5 @@
 from .object import Object
-from .errors import Result, Failure, ErrorCode, api_result_handler
+from .errors import Result, FailureException, ErrorCode, api_result_handler
 from .library import yogi
 from .handler import Handler
 from .context import Context
@@ -61,8 +61,8 @@ class Timer(Object):
         """
         try:
             yogi.YOGI_TimerCancel(self._handle)
-        except Failure as failure:
-            if failure.error_code is ErrorCode.TIMER_EXPIRED:
+        except FailureException as e:
+            if e.failure.error_code is ErrorCode.TIMER_EXPIRED:
                 return False
             else:
                 raise

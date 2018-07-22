@@ -50,11 +50,23 @@ namespace test
         public void Exception()
         {
             Assert.True(typeof(Yogi.Exception).IsSubclassOf(typeof(System.Exception)));
+        }
 
-            var failure = new Yogi.DescriptiveFailure(Yogi.ErrorCode.Busy, "ab");
-            var exception = new Yogi.Exception(failure);
-            Assert.Equal(failure, exception.Failure);
-            Assert.Equal(exception.Message, failure.ToString());
+        [Fact]
+        public void FailureException()
+        {
+            Assert.True(typeof(Yogi.FailureException).IsSubclassOf(typeof(Yogi.Exception)));
+            Assert.Equal(new Yogi.FailureException(Yogi.ErrorCode.Busy).Message,
+                new Yogi.Failure(Yogi.ErrorCode.Busy).ToString());
+        }
+
+        [Fact]
+        public void DescriptiveFailureException()
+        {
+            Assert.True(typeof(Yogi.DescriptiveFailureException)
+                .IsSubclassOf(typeof(Yogi.Exception)));
+            Assert.Equal(new Yogi.DescriptiveFailureException(Yogi.ErrorCode.Busy, "ab").Message,
+                new Yogi.DescriptiveFailure(Yogi.ErrorCode.Busy, "ab").ToString());
         }
 
         [Fact]
