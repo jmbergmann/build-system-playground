@@ -295,11 +295,11 @@ static public partial class Yogi
         public override Failure Failure { get; }
     }
 
-    static void CheckErrorCode(int result)
+    static void CheckErrorCode(int res)
     {
-        if (result < 0)
+        if (res < 0)
         {
-            throw new FailureException((ErrorCode)result);
+            throw new FailureException((ErrorCode)res);
         }
     }
 
@@ -307,21 +307,21 @@ static public partial class Yogi
     {
         var err = new StringBuilder(256);
         int res = fn(err);
-        if (res != (int)ErrorCode.Ok)
+        if (res < 0)
         {
             throw new DescriptiveFailureException((ErrorCode)res, err.ToString());
         }
     }
 
-    static Result ErrorCodeToResult(int result)
+    static Result ErrorCodeToResult(int res)
     {
-        if (result < 0)
+        if (res < 0)
         {
-            return new Failure((ErrorCode)result);
+            return new Failure((ErrorCode)res);
         }
         else
         {
-            return new Success(result);
+            return new Success(res);
         }
     }
 }

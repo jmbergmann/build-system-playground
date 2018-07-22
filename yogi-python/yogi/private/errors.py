@@ -190,25 +190,25 @@ class DescriptiveFailureException(Exception):
         return self._failure
 
 
-def api_result_handler(result: int) -> Success:
-    if result < 0:
-        raise FailureException(ErrorCode(result))
+def api_result_handler(res: int) -> Success:
+    if res < 0:
+        raise FailureException(ErrorCode(res))
     else:
-        return Success(result)
+        return Success(res)
 
 
-def error_code_to_result(result: int) -> Result:
-    if result < 0:
-        return Failure(ErrorCode(result))
+def error_code_to_result(res: int) -> Result:
+    if res < 0:
+        return Failure(ErrorCode(res))
     else:
-        return Success(result)
+        return Success(res)
 
 def run_with_discriptive_failure_awareness(fn: Callable[[any], int]) -> None:
     err = create_string_buffer(256)
-    result = fn(err)
-    if result < 0:
+    res = fn(err)
+    if res < 0:
         description = err.value.decode("utf-8")
         if len(description):
-            raise DescriptiveFailureException(ErrorCode(result), description)
+            raise DescriptiveFailureException(ErrorCode(res), description)
         else:
-            raise FailureException(ErrorCode(result))
+            raise FailureException(ErrorCode(res))
