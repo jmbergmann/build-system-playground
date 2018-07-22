@@ -81,6 +81,15 @@ static public partial class Yogi
         }
 
         /// <summary>
+        /// Constructor.
+        /// </summary>
+        /// <param name="ec">Error code.</param>
+        public Result(ErrorCode ec)
+        {
+            Value = (int)ec;
+        }
+
+        /// <summary>
         /// The number as returned by the Yogi Core library function.
         /// </summary>
         public int Value { get; }
@@ -166,22 +175,13 @@ static public partial class Yogi
     /// </summary>
     public class Failure : Result
     {
-        /// <summary>
-        /// Constructor.
-        /// </summary>
-        /// <param name="value">Number as returned by the Yogi Core library function.</param>
-        public Failure(int value)
-        : base(value)
-        {
-            Debug.Assert(value < 0);
-        }
 
         /// <summary>
         /// Constructor.
         /// </summary>
         /// <param name="ec">Associated error code.</param>
         public Failure(ErrorCode ec)
-        : this((int)ec)
+        : base(ec)
         {
         }
     }
@@ -194,11 +194,11 @@ static public partial class Yogi
         /// <summary>
         /// Constructor.
         /// </summary>
-        /// <param name="value">Number as returned by the Yogi Core library function.</param>
+        /// <param name="ec">Error code.</param>
         /// <param name="description">More detailed information about the error.</param>
         /// <returns></returns>
-        public DescriptiveFailure(int value, string description)
-        : base(value)
+        public DescriptiveFailure(ErrorCode ec, string description)
+        : base(ec)
         {
             Description = description;
         }
@@ -237,7 +237,7 @@ static public partial class Yogi
         /// </summary>
         /// <param name="ec">Error code associated with the failure.</param>
         public Exception(ErrorCode ec)
-        : this(new Failure((int)ec))
+        : this(new Failure(ec))
         {
         }
 
@@ -247,7 +247,7 @@ static public partial class Yogi
         /// <param name="ec">Error code associated with the failure.</param>
         /// <param name="description">Detailed description of the failure.</param>
         public Exception(ErrorCode ec, string description)
-        : this(new DescriptiveFailure((int)ec, description))
+        : this(new DescriptiveFailure(ec, description))
         {
         }
 
@@ -278,7 +278,7 @@ static public partial class Yogi
     {
         if (result < 0)
         {
-            throw new Exception(new Failure(result));
+            throw new Exception(new Failure((ErrorCode)result));
         }
     }
 
@@ -288,7 +288,7 @@ static public partial class Yogi
         int res = fn(err);
         if (res != (int)ErrorCode.Ok)
         {
-            throw new Exception(new DescriptiveFailure(res, err.ToString()));
+            throw new Exception(new DescriptiveFailure((ErrorCode)res, err.ToString()));
         }
     }
 
@@ -296,7 +296,7 @@ static public partial class Yogi
     {
         if (result < 0)
         {
-            return new Failure(result);
+            return new Failure((ErrorCode)result);
         }
         else
         {

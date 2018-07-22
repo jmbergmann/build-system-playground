@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 #include <yogi.h>
 
-TEST(LibraryTest, CoreHeaderNotIncluded) {
+TEST(YogiHeaderTest, CoreHeaderNotIncluded) {
   bool core_header_included = false;
 
 #ifdef YOGI_HDR_VERSION

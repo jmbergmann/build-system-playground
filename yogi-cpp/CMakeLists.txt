@@ -34,9 +34,18 @@ include_directories (${GTEST_INCLUDE_DIRS})
 add_definitions (-D_SILENCE_TR1_NAMESPACE_DEPRECATION_WARNING)
 
 add_executable (yogi-cpp-test
-  test/library_test.cc
+  test/common.cc
+  test/errors_compile_test.cc
+  test/errors_test.cc
+  test/io_compile_test.cc
+  test/io_test.cc
+  test/licenses_compile_test.cc
   test/licenses_test.cc
+  test/stream_io_compile_test.cc
+  test/stream_io_test.cc
+  test/version_compile_test.cc
   test/version_test.cc
+  test/yogi_header_test.cc
 )
 
 target_link_libraries (yogi-cpp-test

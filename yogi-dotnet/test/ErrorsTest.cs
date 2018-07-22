@@ -33,16 +33,16 @@ namespace test
         [Fact]
         public void Failure()
         {
-            Assert.False(new Yogi.Failure(-1));
-            Assert.Equal(new Yogi.Failure(-1).ToString(), new Yogi.Result(-1).ToString());
-            Assert.Equal(new Yogi.Failure(-1), new Yogi.Result(-1));
+            Assert.False(new Yogi.Failure(Yogi.ErrorCode.Busy));
+            Assert.Equal(new Yogi.Failure(Yogi.ErrorCode.Busy).ToString(), new Yogi.Result(Yogi.ErrorCode.Busy).ToString());
+            Assert.Equal(new Yogi.Failure(Yogi.ErrorCode.Busy), new Yogi.Result(Yogi.ErrorCode.Busy));
             Assert.True(typeof(Yogi.Failure).IsSubclassOf(typeof(Yogi.Result)));
         }
 
         [Fact]
         public void DescriptiveFailure()
         {
-            Assert.Equal("ab", new Yogi.DescriptiveFailure(-4, "ab").Description);
+            Assert.Equal("ab", new Yogi.DescriptiveFailure(Yogi.ErrorCode.Busy, "ab").Description);
             Assert.True(typeof(Yogi.DescriptiveFailure).IsSubclassOf(typeof(Yogi.Failure)));
         }
 
@@ -51,7 +51,7 @@ namespace test
         {
             Assert.True(typeof(Yogi.Exception).IsSubclassOf(typeof(System.Exception)));
 
-            var failure = new Yogi.DescriptiveFailure(-4, "ab");
+            var failure = new Yogi.DescriptiveFailure(Yogi.ErrorCode.Busy, "ab");
             var exception = new Yogi.Exception(failure);
             Assert.Equal(failure, exception.Failure);
             Assert.Equal(exception.Message, failure.ToString());

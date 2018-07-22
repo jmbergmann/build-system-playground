@@ -83,8 +83,8 @@
 //!
 //! @defgroup EC Error Codes
 //!
-//! Yogi error codes are always < 0 and a human-readable description of an
-//! error code can be obtained by calling YOGI_GetErrorString().
+//! Yogi error codes indicating failures are always < 0. A human-readable
+//! description can be obtained by calling YOGI_GetErrorString().
 //!
 //! @{
 
@@ -209,7 +209,7 @@
 //!
 //! @defgroup VB Log verbosity/severity
 //!
-//! Verbosity/severity levels for logging
+//! Verbosity/severity levels for logging.
 //!
 //! @{
 
@@ -238,7 +238,7 @@
 //!
 //! @defgroup BC Boolean Constants
 //!
-//! Definitions for true and false
+//! Definitions for true and false.
 //!
 //! @{
 
@@ -252,7 +252,7 @@
 //!
 //! @defgroup ST Stream Constants
 //!
-//! Constants for differentiating between stdout and stderr
+//! Constants for differentiating between stdout and stderr.
 //!
 //! @{
 

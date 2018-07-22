@@ -54,7 +54,7 @@ def raise_signal(signal: Signals, sigarg: T = None,
                  ) -> None:
     """Raises a signal.
 
-    Signals in Yogi are intended to be used similar to POSIX signals. They
+    Signals in Yogi are intended to be used similarly to POSIX signals. They
     have to be raised explicitly by the user (e.g. when receiving an actual
     POSIX signal like SIGINT) via this function. A signal will be received by
     all signal sets containing that signal.

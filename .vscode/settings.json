@@ -79,7 +79,19 @@
     "bitset": "cpp",
     "future": "cpp",
     "typeindex": "cpp",
-    "stack": "cpp"
+    "stack": "cpp",
+    "cctype": "cpp",
+    "codecvt": "cpp",
+    "complex": "cpp",
+    "csignal": "cpp",
+    "cstdarg": "cpp",
+    "cwctype": "cpp",
+    "optional": "cpp",
+    "shared_mutex": "cpp",
+    "string_view": "cpp",
+    "strstream": "cpp",
+    "variant": "cpp",
+    "*.ipp": "cpp"
   },
   "files.exclude": {
     "**/.git": true,

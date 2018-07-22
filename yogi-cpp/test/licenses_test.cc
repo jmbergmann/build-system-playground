@@ -1,5 +1,4 @@
-#include <gtest/gtest.h>
-#include <yogi.h>
+#include "common.h"
 
 TEST(LicensesTest, GetLicense) {
   EXPECT_GT(yogi::GetLicense().size(), 100);

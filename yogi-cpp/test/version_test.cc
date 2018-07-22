@@ -1,5 +1,4 @@
-#include <gtest/gtest.h>
-#include <yogi.h>
+#include "common.h"
 #include <yogi_core.h>
 
 TEST(LibraryTest, GetVersion) {
