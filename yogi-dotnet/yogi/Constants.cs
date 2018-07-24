@@ -71,7 +71,6 @@ static public partial class Yogi
 
         static Constants()
         {
-            // TODO: Handle return value
             IntPtr str = new IntPtr();
             CheckErrorCode(Api.YOGI_GetStringConstant(ref str, 1));
             VersionNumber = Marshal.PtrToStringAnsi(str);

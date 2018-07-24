@@ -18,3 +18,7 @@ TEST(StreamIoTest, Result) {
 TEST(StreamIoTest, Object) {
   Check(yogi::Context());
 }
+
+TEST(StreamIoTest, Verbosity) {
+  Check(yogi::Verbosity::kWarning);
+}
