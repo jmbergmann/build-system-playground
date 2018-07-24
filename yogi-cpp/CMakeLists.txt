@@ -35,6 +35,8 @@ add_definitions (-D_SILENCE_TR1_NAMESPACE_DEPRECATION_WARNING)
 
 add_executable (yogi-cpp-test
   test/common.cc
+  test/context_compile_test.cc
+  test/context_test.cc
   test/errors_compile_test.cc
   test/errors_test.cc
   test/io_compile_test.cc

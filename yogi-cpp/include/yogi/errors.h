@@ -11,127 +11,127 @@ namespace yogi {
 
 YOGI_DEFINE_API_FN(const char*, YOGI_GetErrorString, (int err))
 
-//! Error codes
-//!
-//! Yogi error codes indicating failures are always < 0. A human-readable
-//! description can be obtained via the Result class.
+/// Error codes
+///
+/// Yogi error codes indicating failures are always < 0. A human-readable
+/// description can be obtained via the Result class.
 enum class ErrorCode {
-  //! Operation completed successfully
+  /// Operation completed successfully
   kOk = 0,
 
-  //! Unknown internal error occured
+  /// Unknown internal error occured
   kUnknown = -1,
 
-  //! The object is still being used by another object
+  /// The object is still being used by another object
   kObjectStillUsed = -2,
 
-  //! Insufficient memory to complete the operation
+  /// Insufficient memory to complete the operation
   kBadAlloc = -3,
 
-  //! Invalid parameter
+  /// Invalid parameter
   kInvalidParam = -4,
 
-  //! Invalid Handle
+  /// Invalid Handle
   kInvalidHandle = -5,
 
-  //! Object is of the wrong type
+  /// Object is of the wrong type
   kWrongObjectType = -6,
 
-  //! The operation has been canceled
+  /// The operation has been canceled
   kCanceled = -7,
 
-  //! Operation failed because the object is busy
+  /// Operation failed because the object is busy
   kBusy = -8,
 
-  //! The operation timed out
+  /// The operation timed out
   kTimeout = -9,
 
-  //! The timer has not been started or already expired
+  /// The timer has not been started or already expired
   kTimerExpired = -10,
 
-  //! The supplied buffer is too small
+  /// The supplied buffer is too small
   kBufferTooSmall = -11,
 
-  //! Could not open a socket
+  /// Could not open a socket
   kOpenSocketFailed = -12,
 
-  //! Could not bind a socket
+  /// Could not bind a socket
   kBindSocketFailed = -13,
 
-  //! Could not listen on socket
+  /// Could not listen on socket
   kListenSocketFailed = -14,
 
-  //! Could not set a socket option
+  /// Could not set a socket option
   kSetSocketOptionFailed = -15,
 
-  //! Invalid regular expression
+  /// Invalid regular expression
   kInvalidRegex = -16,
 
-  //! Could not open file
+  /// Could not open file
   kOpenFileFailed = -17,
 
-  //! Could not read from or write to socket
+  /// Could not read from or write to socket
   kRwSocketFailed = -18,
 
-  //! Could not connect a socket
+  /// Could not connect a socket
   kConnectSocketFailed = -19,
 
-  //! The magic prefix sent when establishing a connection is wrong
+  /// The magic prefix sent when establishing a connection is wrong
   kInvalidMagicPrefix = -20,
 
-  //! The local and remote branches use incompatible Yogi versions
+  /// The local and remote branches use incompatible Yogi versions
   kIncompatibleVersion = -21,
 
-  //! Could not deserialize a message
+  /// Could not deserialize a message
   kDeserializeMsgFailed = -22,
 
-  //! Could not accept a socket
+  /// Could not accept a socket
   kAcceptSocketFailed = -23,
 
-  //! Attempting to connect branch to itself
+  /// Attempting to connect branch to itself
   kLoopbackConnection = -24,
 
-  //! The passwords of the local and remote branch don't match
+  /// The passwords of the local and remote branch don't match
   kPasswordMismatch = -25,
 
-  //! The net names of the local and remote branch don't match
+  /// The net names of the local and remote branch don't match
   kNetNameMismatch = -26,
 
-  //! A branch with the same name is already active
+  /// A branch with the same name is already active
   kDuplicateBranchName = -27,
 
-  //! A branch with the same path is already active
+  /// A branch with the same path is already active
   kDuplicateBranchPath = -28,
 
-  //! Message is too large
+  /// Message is too large
   kMessageTooLarge = -29,
 
-  //! Parsing the command line failed
+  /// Parsing the command line failed
   kParsingCmdlineFailed = -30,
 
-  //! Parsing a JSON string failed
+  /// Parsing a JSON string failed
   kParsingJsonFailed = -31,
 
-  //! Parsing a configuration file failed
+  /// Parsing a configuration file failed
   kParsingFileFailed = -32,
 
-  //! The configuration is not valid
+  /// The configuration is not valid
   kConfigNotValid = -33,
 
-  //! Help/usage text requested
+  /// Help/usage text requested
   kHelpRequested = -34,
 
-  //! Could not write to file
+  /// Could not write to file
   kWriteToFileFailed = -35,
 
-  //! One or more configuration variables are undefined or could not be
-  //! resolved
+  /// One or more configuration variables are undefined or could not be
+  /// resolved
   kUndefinedVariables = -36,
 
-  //! Support for configuration variables has been disabled
+  /// Support for configuration variables has been disabled
   kNoVariableSupport = -37,
 
-  //! A configuration variable has been used in a key
+  /// A configuration variable has been used in a key
   kVariableUsedInKey = -38
 };
 
@@ -184,41 +184,41 @@ inline std::string ToString<ErrorCode>(const ErrorCode& ec) {
   return {};
 }
 
-//! Represents a result of an operation.
-//!
-//! This is a wrapper around the result code returned by the functions from
-//! the Yogi Core library. A result is represented by a number which is >= 0
-//! in case of success and < 0 in case of a failure.
+/// Represents a result of an operation.
+///
+/// This is a wrapper around the result code returned by the functions from
+/// the Yogi Core library. A result is represented by a number which is >= 0
+/// in case of success and < 0 in case of a failure.
 class Result {
  public:
-  //! Constructor
-  //!
-  //! \param value Result code as returned by the Yogi Core library function.
+  /// Constructor
+  ///
+  /// \param value Result code as returned by the Yogi Core library function.
   explicit Result(int value) : value_(value) {}
 
-  //! Constructor
-  //!
-  //! \param ec Error code.
+  /// Constructor
+  ///
+  /// \param ec Error code.
   explicit Result(ErrorCode ec) : Result(static_cast<int>(ec)) {}
 
-  //! Destructor
+  /// Destructor
   virtual ~Result() {}
 
-  //! Returns the result code.
-  //!
-  //! \returns The number as returned by the Yogi Core library function.
+  /// Returns the result code.
+  ///
+  /// \returns The number as returned by the Yogi Core library function.
   int GetValue() const { return value_; }
 
-  //! Error code associated with this result.
-  //!
-  //! \returns Associated error code.
+  /// Error code associated with this result.
+  ///
+  /// \returns Associated error code.
   ErrorCode GetErrorCode() const {
     return value_ >= 0 ? ErrorCode::kOk : static_cast<ErrorCode>(value_);
   }
 
-  //! Returns a human-readable string describing the result.
-  //!
-  //! \return Description of the result.
+  /// Returns a human-readable string describing the result.
+  ///
+  /// \return Description of the result.
   virtual std::string ToString() const {
     return internal::YOGI_GetErrorString(value_);
   }
@@ -236,59 +236,59 @@ class Result {
   const int value_;
 };
 
-//! Represents the failure of an operation.
-//!
-//! The success of an operation is associated with a result code >= 0.
+/// Represents the failure of an operation.
+///
+/// The success of an operation is associated with a result code >= 0.
 class Success : public Result {
  public:
-  //! Constructor
-  //!
-  //! \param value Result code as returned by the Yogi Core library function.
+  /// Constructor
+  ///
+  /// \param value Result code as returned by the Yogi Core library function.
   explicit Success(int value) : Result(value) {
     assert(value >= 0);  // The result code for Success must be >= 0.
   }
 
-  //! Constructor
+  /// Constructor
   Success() : Success(static_cast<int>(ErrorCode::kOk)) {}
 };
 
-//! Represents the failure of an operation.
-//!
-//! The failure of an operation is associated with a result code < 0.
+/// Represents the failure of an operation.
+///
+/// The failure of an operation is associated with a result code < 0.
 class Failure : public Result {
  public:
-  //! Constructor
-  //!
-  //! \param ec Error code.
+  /// Constructor
+  ///
+  /// \param ec Error code.
   explicit Failure(ErrorCode ec) : Result(ec) {}
 };
 
-//! A failure of an operation that includes a description.
-//!
-//! Some functions in the Yogi Core library provide information in addition to
-//! the error code in case of a failure. This class contains both the error
-//! code and the additional information.
+/// A failure of an operation that includes a description.
+///
+/// Some functions in the Yogi Core library provide information in addition to
+/// the error code in case of a failure. This class contains both the error
+/// code and the additional information.
 class DescriptiveFailure : public Failure {
  public:
-  //! Constructor
-  //!
-  //! \tparam String String type (for perfect forwarding).
-  //!
-  //! \param ec Error code.
-  //! \param description Description of the error.
+  /// Constructor
+  ///
+  /// \tparam String String type (for perfect forwarding).
+  ///
+  /// \param ec Error code.
+  /// \param description Description of the error.
   template <typename String>
   DescriptiveFailure(ErrorCode ec, String&& description)
       : Failure(ec), description_(std::forward<String>(description)) {}
 
-  //! Returns a detailed description of the error.
-  //!
-  //! \returns Detailed error description.
+  /// Returns a detailed description of the error.
+  ///
+  /// \returns Detailed error description.
   const std::string& GetDescription() const { return description_; }
 
-  //! Returns a human-readable string describing the failure, including the
-  //! additional error description.
-  //!
-  //! \return Detailed description of the failure.
+  /// Returns a human-readable string describing the failure, including the
+  /// additional error description.
+  ///
+  /// \return Detailed description of the failure.
   virtual std::string ToString() const override {
     return Failure::ToString() + ". Description: " + description_;
   }
@@ -297,21 +297,21 @@ class DescriptiveFailure : public Failure {
   const std::string description_;
 };
 
-//! Base class for all Yogi exceptions.
-//!
-//! All exceptions thrown by Yogi functions are derived from this class.
-//!
-//! \warning Not thread safe!
+/// Base class for all Yogi exceptions.
+///
+/// All exceptions thrown by Yogi functions are derived from this class.
+///
+/// \warning Not thread safe!
 class Exception : public std::exception {
  public:
-  //! Returns the wrapped Failure object.
-  //!
-  //! \returns The wrapped Failure object.
+  /// Returns the wrapped Failure object.
+  ///
+  /// \returns The wrapped Failure object.
   virtual const Failure& GetFailure() const = 0;
 
-  //! Returns a description of the error.
-  //!
-  //! \returns Description of the error.
+  /// Returns a description of the error.
+  ///
+  /// \returns Description of the error.
   virtual const char* what() const noexcept override {
     if (what_.empty()) {
       what_ = GetFailure().ToString();
@@ -324,14 +324,14 @@ class Exception : public std::exception {
   mutable std::string what_;
 };
 
-//! Exception wrapping a Failure object.
-//!
-//! This exception type is used for failures without a detailed description.
+/// Exception wrapping a Failure object.
+///
+/// This exception type is used for failures without a detailed description.
 class FailureException : public Exception {
  public:
-  //! Constructor
-  //!
-  //! \param ec Error code.
+  /// Constructor
+  ///
+  /// \param ec Error code.
   FailureException(ErrorCode ec) : failure_(ec) {}
 
   virtual const Failure& GetFailure() const override { return failure_; }
@@ -340,18 +340,18 @@ class FailureException : public Exception {
   const Failure failure_;
 };
 
-//! Exception wrapping a DescriptiveFailure object.
-//!
-//! This exception type is used for failures that have detailed information
-//! available.
+/// Exception wrapping a DescriptiveFailure object.
+///
+/// This exception type is used for failures that have detailed information
+/// available.
 class DescriptiveFailureException : public Exception {
  public:
-  //! Constructor
-  //!
-  //! \tparam String String type (for perfect forwarding).
-  //!
-  //! \param ec Error code.
-  //! \param description Description of the error.
+  /// Constructor
+  ///
+  /// \tparam String String type (for perfect forwarding).
+  ///
+  /// \param ec Error code.
+  /// \param description Description of the error.
   template <typename String>
   DescriptiveFailureException(ErrorCode ec, String&& description)
       : failure_(ec, std::forward<String>(description)) {}

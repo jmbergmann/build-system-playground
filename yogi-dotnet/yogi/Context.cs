@@ -116,8 +116,8 @@ static public partial class Yogi
         /// registered through Post()) that are ready to run, without blocking, until
         /// the Stop() function has been called or there are no more ready handlers.
         ///
-        /// This function must be called from outside any handler functions that are being
-        /// executed through the context.
+        /// This function must be called from outside any handler functions that are
+        /// being executed through the context.
         /// </summary>
         /// <returns>Number of executed handlers.</returns>
         public int Poll()

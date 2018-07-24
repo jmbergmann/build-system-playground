@@ -24,15 +24,15 @@ inline void* CallApiCreate(Fn fn, Args&&... args) {
 
 YOGI_DEFINE_API_FN(int, YOGI_Destroy, (void* object))
 
-//! Base class for all "creatable" objects.
-//!
-//! "Creatable" Yogi objects are objects that get instantiated and live until
-//! they are destroyed by the user.
+/// Base class for all "creatable" objects.
+///
+/// "Creatable" Yogi objects are objects that get instantiated and live until
+/// they are destroyed by the user.
 class Object {
  public:
-  //! Constructs the object.
-  //!
-  //! \param handle Yogi handle representing the object.
+  /// Constructs the object.
+  ///
+  /// \param handle Yogi handle representing the object.
   Object(void* handle) : handle_(handle) {}
 
   virtual ~Object() {
@@ -40,19 +40,27 @@ class Object {
     assert(res == 0);
   }
 
-  //! Returns the name of the object type (e.g. "Context").
-  //!
-  //! \returns Object type name.
+  /// Returns the name of the object type (e.g. "Context").
+  ///
+  /// \returns Object type name.
   virtual const std::string& GetObjectTypeName() const = 0;
 
-  //! Returns a human-readable string identifying the object.
-  //!
-  //! \returns Human-readable string identifying the object.
+  /// Returns a human-readable string identifying the object.
+  ///
+  /// \returns Human-readable string identifying the object.
   std::string ToString() const {
     std::stringstream ss;
     ss << GetObjectTypeName() << " [" << std::hex
        << reinterpret_cast<long long>(handle_) << "]";
     return ss.str();
+  }
+
+protected:
+  /// Returns the Yogi handle for this object.
+  ///
+  /// \returns The Yogi handle for this object.
+  void* GetHandle() const {
+    return handle_;
   }
 
  private:

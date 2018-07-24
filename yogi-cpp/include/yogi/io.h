@@ -13,13 +13,13 @@ namespace yogi {
 YOGI_DEFINE_SFINAE_METHOD_TESTER(HasToStringMethod,
                                  .ToString() == std::string())
 
-//! Converts a given Yogi enum value or object to a string.
-//!
-//! \tparam T Type of the enum or object.
-//!
-//! \param printable The object to convert to a string.
-//!
-//! \returns Human-readable string name or description of the object.
+/// Converts a given Yogi enum value or object to a string.
+///
+/// \tparam T Type of the enum or object.
+///
+/// \param printable The object to convert to a string.
+///
+/// \returns Human-readable string name or description of the object.
 template <typename T>
 inline std::string ToString(const T& printable) {
   static_assert(internal::HasToStringMethod<T>::value,

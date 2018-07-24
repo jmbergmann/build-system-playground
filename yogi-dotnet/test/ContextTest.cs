@@ -70,6 +70,7 @@ namespace test
                 context.WaitForRunning();
                 context.Stop();
             });
+
             th.Start();
             context.Run();
             th.Join();
