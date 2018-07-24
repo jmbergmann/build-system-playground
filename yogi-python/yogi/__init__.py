@@ -11,6 +11,7 @@ from .private.errors import ErrorCode, Result, Failure, DescriptiveFailure, \
 from .private.licenses import get_license, get_3rd_party_licenses
 from .private.logging import Verbosity, Stream, Logger, AppLogger, \
     app_logger, log_to_console, log_to_file, log_to_hook
+from .private.object import Object
 from .private.signals import Signals, raise_signal, SignalSet
 from .private.time import get_current_time
 from .private.timer import Timer

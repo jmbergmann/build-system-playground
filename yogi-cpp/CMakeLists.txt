@@ -41,6 +41,8 @@ add_executable (yogi-cpp-test
   test/io_test.cc
   test/licenses_compile_test.cc
   test/licenses_test.cc
+  test/object_compile_test.cc
+  test/object_test.cc
   test/stream_io_compile_test.cc
   test/stream_io_test.cc
   test/time_compile_test.cc

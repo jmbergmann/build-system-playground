@@ -14,3 +14,7 @@ TEST(StreamIoTest, ErrorCode) {
 TEST(StreamIoTest, Result) {
   Check(yogi::Failure(yogi::ErrorCode::kBadAlloc));
 }
+
+TEST(StreamIoTest, Object) {
+  Check(yogi::Context());
+}

@@ -94,6 +94,10 @@ static public partial class Yogi
 
     /// <summary>
     /// Scheduler for the execution of asynchronous operations.
+    ///
+    /// Once an asynchronous operation finishes, the corresponding handler function
+    /// is added to the context's event queue and executed through once of the
+    /// Poll... or Run... functions.
     /// </summary>
     public class Context : Object
     {

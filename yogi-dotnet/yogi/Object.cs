@@ -35,7 +35,7 @@ static public partial class Yogi
 
         public override string ToString()
         {
-            return ObjectTypeName + (IsInvalid ? " [INVALID]" : $" {handle.ToInt64(),10:0x}");
+            return ObjectTypeName + (IsInvalid ? " [INVALID]" : $" [{handle.ToInt64(),1:x}]");
         }
 
         [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]

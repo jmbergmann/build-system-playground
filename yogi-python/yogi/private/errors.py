@@ -203,6 +203,7 @@ def error_code_to_result(res: int) -> Result:
     else:
         return Success(res)
 
+
 def run_with_discriptive_failure_awareness(fn: Callable[[any], int]) -> None:
     err = create_string_buffer(256)
     res = fn(err)

@@ -50,7 +50,7 @@ class Object:
     def __str__(self):
         s = self.__class__.__name__
         if self._handle.value:
-            s += " {:#010x}".format(self._handle.value)
+            s += " [{:x}]".format(self._handle.value)
         else:
             s += " [INVALID]"
         return s

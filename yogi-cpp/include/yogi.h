@@ -1,6 +1,8 @@
+#include "yogi/context.h"
 #include "yogi/errors.h"
 #include "yogi/io.h"
 #include "yogi/licenses.h"
+#include "yogi/object.h"
 #include "yogi/stream_io.h"
 #include "yogi/time.h"
 #include "yogi/version.h"
