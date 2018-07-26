@@ -96,8 +96,15 @@ static public partial class Yogi
         All = BranchDiscovered | BranchQueried | ConnectFinished | ConnectionLost
     }
 
+    /// <summary>
+    /// Information about about a branch.
+    /// </summary>
     public class BranchInfo
     {
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        /// <param name="json">JSON string to parse.</param>
         public BranchInfo(string json)
         {
             this.json = json;
@@ -166,16 +173,30 @@ static public partial class Yogi
         public TimeSpan Timeout { get; }
     }
 
+    /// <summary>
+    /// Information about a remote branch.
+    /// </summary>
     public class RemoteBranchInfo : BranchInfo
     {
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        /// <param name="json">JSON string to parse.</param>
         public RemoteBranchInfo(string json)
         : base(json)
         {
         }
     }
 
+    /// <summary>
+    /// Information about a local branch.
+    /// </summary>
     public class LocalBranchInfo : BranchInfo
     {
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        /// <param name="json">JSON string to parse.</param>
         public LocalBranchInfo(string json)
         : base(json)
         {
@@ -190,8 +211,15 @@ static public partial class Yogi
         public int AdvertisingPort { get; }
     }
 
+    /// <summary>
+    /// Information associated with a branch event.
+    /// </summary>
     public class BranchEventInfo
     {
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        /// <param name="json">JSON string to parse.</param>
         public BranchEventInfo(string json)
         {
             this.json = json;
@@ -213,8 +241,15 @@ static public partial class Yogi
         public Guid Uuid { get; }
     }
 
+    /// <summary>
+    /// Information associated with the BranchDiscovered branch event.
+    /// </summary>
     public class BranchDiscoveredEventInfo : BranchEventInfo
     {
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        /// <param name="json">JSON string to parse.</param>
         public BranchDiscoveredEventInfo(string json)
         : base(json)
         {
@@ -229,8 +264,15 @@ static public partial class Yogi
         public int TcpServerPort { get; }
     }
 
+    /// <summary>
+    /// Information associated with the BranchQueried branch event.
+    /// </summary>
     public class BranchQueriedEventInfo : BranchEventInfo
     {
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        /// <param name="json">JSON string to parse.</param>
         public BranchQueriedEventInfo(string json)
         : base(json)
         {
@@ -278,16 +320,30 @@ static public partial class Yogi
         RemoteBranchInfo info;
     }
 
+    /// <summary>
+    /// Information associated with the ConnectFinished branch event.
+    /// </summary>
     public class ConnectFinishedEventInfo : BranchEventInfo
     {
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        /// <param name="json">JSON string to parse.</param>
         public ConnectFinishedEventInfo(string json)
         : base(json)
         {
         }
     }
 
+    /// <summary>
+    /// Information associated with the ConnectionLost branch event.
+    /// </summary>
     public class ConnectionLostEventInfo : BranchEventInfo
     {
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        /// <param name="json">JSON string to parse.</param>
         public ConnectionLostEventInfo(string json)
         : base(json)
         {

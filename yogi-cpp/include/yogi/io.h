@@ -8,6 +8,11 @@
   case enum_type::enum_element:                           \
     return #enum_element;
 
+#define YOGI_TO_STRING_FLAG_APPENDER(var, enum_type, enum_element) \
+  if ((var & enum_type::enum_element) != enum_type::kNone) {       \
+    s += " | " #enum_element;                                      \
+  }
+
 namespace yogi {
 
 YOGI_DEFINE_SFINAE_METHOD_TESTER(HasToStringMethod,

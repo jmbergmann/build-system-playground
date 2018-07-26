@@ -26,3 +26,7 @@ TEST(StreamIoTest, Verbosity) {
 TEST(StreamIoTest, Stream) {
   Check(yogi::Stream::kStderr);
 }
+
+TEST(StreamIoTest, BranchEvents) {
+  Check(yogi::BranchEvents::kBranchDiscovered);
+}
