@@ -34,7 +34,7 @@ include_directories (${GTEST_INCLUDE_DIRS})
 add_definitions (-D_SILENCE_TR1_NAMESPACE_DEPRECATION_WARNING)
 
 find_package (Boost 1.66
-  COMPONENTS filesystem
+  COMPONENTS filesystem system
   REQUIRED)
 
 add_executable (yogi-cpp-test

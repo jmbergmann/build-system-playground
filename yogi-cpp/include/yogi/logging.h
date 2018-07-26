@@ -110,16 +110,24 @@
 ///  yogi::Logger logger("Engine");
 ///  YOGI_LOG(kWarning, logger, "Speed exceeded " << rpm << " RPM")
 /// \endcode
-#define YOGI_LOG(severity, ...)                                              \
-  _YOGI_LOG_CAT(_YOGI_LOG_SEL, (__VA_ARGS__, _YOGI_LOG_IMPL, _YOGI_LOG_APP)) \
-  (severity, __VA_ARGS__)
+#define YOGI_LOG(severity, ...)                                               \
+  _YOGI_LOG_EXPAND(_YOGI_LOG_IMPL(                                            \
+      severity, _YOGI_LOG_SELECT(_YOGI_LOG_LOGGER, __VA_ARGS__)(__VA_ARGS__), \
+      _YOGI_LOG_SELECT(_YOGI_LOG_STREAM, __VA_ARGS__)(__VA_ARGS__)))
 
-#define _YOGI_LOG_CAT(a, b) a##b
+#define _YOGI_LOG_EXPAND(x) x
+#define _YOGI_LOG_CAT(a, b) _YOGI_LOG_CAT2(a, b)
+#define _YOGI_LOG_CAT2(a, b) a##b
 
-#define _YOGI_LOG_SEL(_1, _2, macro, ...) macro
+#define _YOGI_LOG_SELECT(macro, ...)                                  \
+  _YOGI_LOG_CAT(macro, _YOGI_LOG_SELECT2(__VA_ARGS__, _CUSTOM_LOGGER, \
+                                         _APP_LOGGER, _INVALID))
 
-#define _YOGI_LOG_APP(severity, stream) \
-  _YOGI_LOG_IMPL(severity, ::yogi::app_logger, stream)
+#define _YOGI_LOG_SELECT2(_0, _1, suffix, ...) suffix
+#define _YOGI_LOG_LOGGER_CUSTOM_LOGGER(logger, stream) logger
+#define _YOGI_LOG_LOGGER_APP_LOGGER(stream) ::yogi::app_logger
+#define _YOGI_LOG_STREAM_CUSTOM_LOGGER(logger, stream) stream
+#define _YOGI_LOG_STREAM_APP_LOGGER(stream) stream
 
 #define _YOGI_LOG_IMPL(severity, logger, stream)                               \
   {                                                                            \

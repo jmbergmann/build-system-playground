@@ -190,7 +190,7 @@ TEST_F(LoggingTest, Macros) {
   std::string file = __FILE__;
   file = file.substr(file.find_last_of("\\/") + 1);
 
-  for (auto i = 0; i < entries.size(); ++i) {
+  for (std::size_t i = 0; i < entries.size(); ++i) {
     auto entry = entries[i];
     EXPECT_EQ(entry.file, file);
     EXPECT_GT(entry.line, 0);
