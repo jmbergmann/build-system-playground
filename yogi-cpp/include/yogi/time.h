@@ -1,7 +1,8 @@
 #pragma once
 
-#include "internal/library.h"
+#include "internal/conversion.h"
 #include "internal/error_code_helpers.h"
+#include "internal/library.h"
 
 #include <chrono>
 
@@ -18,11 +19,7 @@ inline std::chrono::system_clock::time_point GetCurrentTime() {
   int res = internal::YOGI_GetCurrentTime(&timestamp);
   internal::CheckErrorCode(res);
 
-  std::chrono::system_clock::time_point tp;
-  tp += std::chrono::duration_cast<std::chrono::system_clock::duration>(
-    std::chrono::nanoseconds(timestamp));
-
-  return tp;
+  return internal::CoreTimestampToTimestamp(timestamp);
 }
 
 }  // namespace yogi

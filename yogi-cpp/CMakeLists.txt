@@ -33,6 +33,10 @@ find_package (GTest REQUIRED)
 include_directories (${GTEST_INCLUDE_DIRS})
 add_definitions (-D_SILENCE_TR1_NAMESPACE_DEPRECATION_WARNING)
 
+find_package (Boost 1.66
+  COMPONENTS filesystem
+  REQUIRED)
+
 add_executable (yogi-cpp-test
   test/common.cc
   test/constants_compile_test.cc
@@ -61,6 +65,7 @@ add_executable (yogi-cpp-test
 target_link_libraries (yogi-cpp-test
   yogi-cpp
   ${GTEST_BOTH_LIBRARIES}
+  ${Boost_LIBRARIES}
   Threads::Threads
 )
 

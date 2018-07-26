@@ -3,7 +3,7 @@
 #include <regex>
 
 class ObjectTest : public ::testing::Test {
- public:
+ protected:
   yogi::Context object_;
 };
 

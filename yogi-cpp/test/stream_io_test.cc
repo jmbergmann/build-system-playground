@@ -22,3 +22,7 @@ TEST(StreamIoTest, Object) {
 TEST(StreamIoTest, Verbosity) {
   Check(yogi::Verbosity::kWarning);
 }
+
+TEST(StreamIoTest, Stream) {
+  Check(yogi::Stream::kStderr);
+}

@@ -36,6 +36,7 @@ class Object {
   Object(void* handle) : handle_(handle) {}
 
   virtual ~Object() {
+    if (handle_ == nullptr) return;
     int res = internal::YOGI_Destroy(handle_);
     assert(res == 0);
   }
@@ -48,7 +49,7 @@ class Object {
   /// Returns a human-readable string identifying the object.
   ///
   /// \returns Human-readable string identifying the object.
-  std::string ToString() const {
+  virtual std::string ToString() const {
     std::stringstream ss;
     ss << GetObjectTypeName() << " [" << std::hex
        << reinterpret_cast<long long>(handle_) << "]";

@@ -10,7 +10,7 @@ static public partial class Yogi
     {
         // === YOGI_GetLicense ===
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        public delegate int LogToConsoleDelegate(Verbosity verbosity, Stream stream,
+        public delegate int LogToConsoleDelegate(int verbosity, Stream stream,
             int color,
             [MarshalAs(UnmanagedType.LPStr)] string timefmt,
             [MarshalAs(UnmanagedType.LPStr)] string fmt);
@@ -27,7 +27,7 @@ static public partial class Yogi
             [MarshalAs(UnmanagedType.LPStr)] string msg, IntPtr userarg);
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 
-        public delegate int LogToHookDelegate(Verbosity verbosity, LogToHookFnDelegate fn,
+        public delegate int LogToHookDelegate(int verbosity, LogToHookFnDelegate fn,
             IntPtr userarg);
 
         public static LogToHookDelegate YOGI_LogToHook
@@ -36,7 +36,7 @@ static public partial class Yogi
 
         // === YOGI_LogToFile ===
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        public delegate int LogToFileDelegate(Verbosity verbosity,
+        public delegate int LogToFileDelegate(int verbosity,
             [MarshalAs(UnmanagedType.LPStr)] string filename,
             [MarshalAs(UnmanagedType.LPStr)] StringBuilder genfn, int genfnsize,
             [MarshalAs(UnmanagedType.LPStr)] string timefmt,
@@ -102,7 +102,7 @@ static public partial class Yogi
         /// <summary>Fatal errors are errors that require a process restart.</summary>
         Fatal = 0,
 
-        /// <summary>Errors that the system can recover from..</summary>
+        /// <summary>Errors that the system can recover from.</summary>
         Error = 1,
 
         /// <summary>Warnings.</summary>
@@ -180,11 +180,14 @@ static public partial class Yogi
     /// <param name="color">Use colours in output.</param>
     /// <param name="timefmt">Format of the timestamp (see above for placeholders).</param>
     /// <param name="fmt">Format of a log entry (see above for placeholders).</param>
-    public static void LogToConsole([Optional] Verbosity verbosity, [Optional] Stream stream,
-                                    [Optional] bool color, [Optional] string timefmt,
+    public static void LogToConsole([Optional] Verbosity? verbosity, [Optional] Stream? stream,
+                                    [Optional] bool? color, [Optional] string timefmt,
                                     [Optional] string fmt)
     {
-        int res = Api.YOGI_LogToConsole(verbosity, stream, color ? 1 : 0, timefmt, fmt);
+        int vb = verbosity.HasValue ? (int)verbosity.Value : -1;
+        int col = color.HasValue ? (color.Value ? 1 : 0) : 1;
+        int res = Api.YOGI_LogToConsole(vb, stream.GetValueOrDefault(Stream.Stderr), col, timefmt,
+            fmt);
         CheckErrorCode(res);
     }
 
@@ -211,18 +214,20 @@ static public partial class Yogi
     /// Calling this function without any parameters disables the hook.
     /// </summary>
     /// <param name="verbosity">Maximum verbosity of messages to log.</param>
-    /// <param name="fn">Callback function (see above for parameters).</param>
-    public static void LogToHook([Optional] Verbosity verbosity,
+    /// <param name="fn">Callback function.</param>
+    public static void LogToHook([Optional] Verbosity? verbosity,
                                  [Optional] LogToHookFnDelegate fn)
     {
         lock (logToHookFnLock)
         {
             Api.LogToHookFnDelegate wrapper =
-            (severity, timestamp, tid, file, line, comp, msg, userarg) => {
+            (severity, timestamp, tid, file, line, comp, msg, userarg) =>
+            {
                 fn(severity, CoreTimestampToDateTime(timestamp), tid, file, line, comp, msg);
             };
 
-            int res = Api.YOGI_LogToHook(verbosity, wrapper, IntPtr.Zero);
+            int vb = verbosity.HasValue ? (int)verbosity.Value : -1;
+            int res = Api.YOGI_LogToHook(vb, wrapper, IntPtr.Zero);
             logToHookFn = null;
             CheckErrorCode(res);
             logToHookFn = wrapper;  // Make sure it does not get GC'd
@@ -233,7 +238,7 @@ static public partial class Yogi
     static Api.LogToHookFnDelegate logToHookFn;
 
     /// <summary>
-    /// Creates log file.
+    /// Creates a log file.
     ///
     /// This function opens a file to write library-internal and user logging
     /// information to. If the file with the given filename already exists then it
@@ -275,11 +280,12 @@ static public partial class Yogi
     /// <param name="timefmt">Format of the timestamp (see above for placeholders).</param>
     /// <param name="fmt">Format of a log entry (see above for placeholders).</param>
     /// <returns>The generated filename with all placeholders resolved.</returns>
-    public static string LogToFile([Optional] Verbosity verbosity, [Optional] string filename,
+    public static string LogToFile([Optional] Verbosity? verbosity, [Optional] string filename,
                                    [Optional] string timefmt, [Optional] string fmt)
     {
+        int vb = verbosity.HasValue ? (int)verbosity.Value : -1;
         var genFn = new StringBuilder(256);
-        int res = Api.YOGI_LogToFile(verbosity, filename, genFn, genFn.Capacity, timefmt, fmt);
+        int res = Api.YOGI_LogToFile(vb, filename, genFn, genFn.Capacity, timefmt, fmt);
         CheckErrorCode(res);
         return genFn.ToString();
     }
