@@ -151,7 +151,7 @@ static public partial class Yogi
         /// <summary>Path of the branch.</summary>
         public string Path { get; }
 
-        /// <summary>The machine's hostname..</summary>
+        /// <summary>The machine's hostname.</summary>
         public string Hostname { get; }
 
         /// <summary>ID of the process.</summary>

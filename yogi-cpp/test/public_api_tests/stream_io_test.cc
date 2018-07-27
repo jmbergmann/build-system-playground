@@ -1,4 +1,4 @@
-#include "common.h"
+#include "../common.h"
 
 template <typename T>
 void Check(const T& val) {
@@ -29,4 +29,8 @@ TEST(StreamIoTest, Stream) {
 
 TEST(StreamIoTest, BranchEvents) {
   Check(yogi::BranchEvents::kBranchDiscovered);
+}
+
+TEST(StreamIoTest, Timestamp) {
+  Check(yogi::Timestamp::Now());
 }

@@ -38,32 +38,36 @@ find_package (Boost 1.66
   REQUIRED)
 
 add_executable (yogi-cpp-test
-  test/branch_compile_test.cc
-  test/branch_test.cc
+  test/compile_tests/branch_compile_test.cc
+  test/compile_tests/constants_compile_test.cc
+  test/compile_tests/context_compile_test.cc
+  test/compile_tests/errors_compile_test.cc
+  test/compile_tests/io_compile_test.cc
+  test/compile_tests/licenses_compile_test.cc
+  test/compile_tests/logging_compile_test.cc
+  test/compile_tests/object_compile_test.cc
+  test/compile_tests/stream_io_compile_test.cc
+  test/compile_tests/time_compile_test.cc
+  test/compile_tests/timestamp_compile_test.cc
+  test/compile_tests/uuid_compile_test.cc
+  test/compile_tests/version_compile_test.cc
+  test/internal_tests/conversion_test.cc
+  test/internal_tests/json_test.cc
+  test/public_api_tests/branch_test.cc
+  test/public_api_tests/constants_test.cc
+  test/public_api_tests/context_test.cc
+  test/public_api_tests/errors_test.cc
+  test/public_api_tests/io_test.cc
+  test/public_api_tests/licenses_test.cc
+  test/public_api_tests/logging_test.cc
+  test/public_api_tests/object_test.cc
+  test/public_api_tests/stream_io_test.cc
+  test/public_api_tests/time_test.cc
+  test/public_api_tests/timestamp_test.cc
+  test/public_api_tests/uuid_test.cc
+  test/public_api_tests/version_test.cc
+  test/public_api_tests/yogi_header_test.cc
   test/common.cc
-  test/constants_compile_test.cc
-  test/constants_test.cc
-  test/context_compile_test.cc
-  test/context_test.cc
-  test/errors_compile_test.cc
-  test/errors_test.cc
-  test/io_compile_test.cc
-  test/io_test.cc
-  test/licenses_compile_test.cc
-  test/licenses_test.cc
-  test/logging_compile_test.cc
-  test/logging_test.cc
-  test/object_compile_test.cc
-  test/object_test.cc
-  test/stream_io_compile_test.cc
-  test/stream_io_test.cc
-  test/time_compile_test.cc
-  test/time_test.cc
-  test/uuid_compile_test.cc
-  test/uuid_test.cc
-  test/version_compile_test.cc
-  test/version_test.cc
-  test/yogi_header_test.cc
 )
 
 target_link_libraries (yogi-cpp-test

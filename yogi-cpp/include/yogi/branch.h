@@ -2,8 +2,11 @@
 
 #include "object.h"
 #include "io.h"
+#include "uuid.h"
+#include "timestamp.h"
 #include "internal/library.h"
 #include "internal/flags.h"
+#include "internal/json.h"
 
 namespace yogi {
 
@@ -44,7 +47,8 @@ enum class BranchEvents {
   kConnectionLost = (1 << 3),
 
   /// Combination of all flags.
-  kAll = kBranchDiscovered | kBranchQueried | kConnectFinished | kConnectionLost,
+  kAll =
+      kBranchDiscovered | kBranchQueried | kConnectFinished | kConnectionLost,
 };
 
 YOGI_DEFINE_FLAG_OPERATORS(BranchEvents)
@@ -70,42 +74,145 @@ inline std::string ToString<BranchEvents>(const BranchEvents& events) {
 
 /// Information about about a branch.
 class BranchInfo {
+ public:
+  /// Constructor.
+  ///
+  /// \tparam String String type.
+  ///
+  /// \param uuid UUID of the branch.
+  /// \param json JSON string to parse.
+  template <typename String>
+  BranchInfo(const Uuid& uuid, String json)
+      : uuid_(uuid),
+        json_(internal::StringToCoreString(json)),
+        name_(internal::ExtractFromJson<std::string>(json_, "name")),
+        description_(
+            internal::ExtractFromJson<std::string>(json_, "description")),
+        net_name_(internal::ExtractFromJson<std::string>(json_, "net_name")),
+        path_(internal::ExtractFromJson<std::string>(json_, "path")),
+        hostname_(internal::ExtractFromJson<std::string>(json_, "hostname")),
+        pid_(internal::ExtractFromJson<int>(json_, "pid")),
+        adv_internal_(internal::ExtractFromJson<std::chrono::nanoseconds>(
+            json_, "advertising_interval")),
+        tcp_server_address_(internal::ExtractFromJson<std::string>(
+            json_, "tcp_server_address")),
+        tcp_server_port_(
+            internal::ExtractFromJson<int>(json_, "tcp_server_port")),
+        start_time_(
+            internal::ExtractFromJson<Timestamp>(
+                json_, "start_time")),
+        timeout_(internal::ExtractFromJson<std::chrono::nanoseconds>(
+            json_, "timeout")) {}
+
+  /// UUID of the branch.
+  const Uuid& GetUuid() const { return uuid_; }
+
+  /// Name of the branch.
+  const std::string& GetName() const { return name_; }
+
+  /// Description of the branch.
+  const std::string& GetDescription() const { return description_; }
+
+  /// Name of the network.
+  const std::string& GetNetName() const { return net_name_; }
+
+  /// Path of the branch.
+  const std::string& GetPath() const { return path_; }
+
+  /// The machine's hostname..
+  const std::string& GetHostname() const { return hostname_; }
+
+  /// ID of the process.
+  int GetPid() const { return pid_; }
+
+  /// Advertising interval.
+  const std::chrono::nanoseconds& GetAdvertisingInterval() const {
+    return adv_interval_;
+  }
+
+  /// Address of the TCP server for incoming connections.
+  const std::string& GetTcpServerAddress() const { return tcp_server_address_; }
+
+  /// Listening port of the TCP server for incoming connections.
+  int GetTcpServerPort() const { return tcp_server_port_; }
+
+  /// Time when the branch was started (UTC time).
+  const Timestamp& GetStartTime() const {
+    return start_time_;
+  }
+
+  /// Connection timeout.
+  const std::chrono::nanoseconds& GetTimeout() const { return timeout_; }
+
+  /// Returns the branch information as JSON-encoded string.
+  ///
+  /// \returns Branch information as JSON-encoded string.
+  const std::string& ToString() const { return json_; }
+
+ private:
+  const Uuid uuid_;
+  const std::string json_;
+  const std::string name_;
+  const std::string description_;
+  const std::string net_name_;
+  const std::string path_;
+  const std::string hostname_;
+  const int pid_;
+  const std::chrono::nanoseconds adv_interval_;
+  const std::string tcp_server_address_;
+  const int tcp_server_port_;
+  const Timestamp start_time_;
+  const std::chrono::nanoseconds timeout_;
 };
 
 /// Information about a remote branch.
 class RemoteBranchInfo : public BranchInfo {
-
+ public:
+  using BranchInfo::BranchInfo;
 };
 
 /// Information about a local branch.
 class LocalBranchInfo : public BranchInfo {
+ public:
+  /// Constructor.
+  ///
+  /// \tparam String String type.
+  ///
+  /// \param uuid UUID of the branch.
+  /// \param json JSON string to parse.
+  template <typename String>
+  LocalBranchInfo(const Uuid& uuid, String json)
+      : BranchInfo(uuid, json),
+        adv_address_(internal::ExtractFromJson<std::string>(
+            ToString(), "advertising_address")),
+        adv_port_(
+            internal::ExtractFromJson<int>(ToString(), "advertising_port")) {}
 
+  /// Advertising IP address.
+  const std::string& GetAdvertisingAddress() const { return adv_address_; }
+
+  /// Advertising port.
+  int GetAdvertisingPort() const { return adv_port_; }
+
+ private:
+  const std::string adv_address_;
+  const int adv_port_;
 };
 
 /// Information associated with a branch event.
-class BranchEventInfo {
-
-};
+class BranchEventInfo {};
 
 /// Information associated with the BranchDiscovered branch event.
-class BranchDiscoveredEventInfo : public BranchEventInfo {
-
-};
+class BranchDiscoveredEventInfo : public BranchEventInfo {};
 
 /// Information associated with the BranchQueried branch event.
-class BranchQueriedEventInfo : public BranchEventInfo {
-
-};
+class BranchQueriedEventInfo : public BranchEventInfo {};
 
 /// Information associated with the ConnectFinished branch event.
-class ConnectFinishedEventInfo : public BranchEventInfo {
-
-};
+class ConnectFinishedEventInfo : public BranchEventInfo {};
 
 /// Information associated with the ConnectionLost branch event.
-class ConnectionLostEventInfo : public BranchEventInfo {
-
-};
+class ConnectionLostEventInfo : public BranchEventInfo {};
 
 ///
 class Branch : public Object {};

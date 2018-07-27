@@ -2,6 +2,7 @@
 
 #include "io.h"
 #include "object.h"
+#include "time.h"
 #include "internal/conversion.h"
 #include "internal/library.h"
 
@@ -289,9 +290,9 @@ inline void LogToConsole() {
 ///  -# *line*: Source file line number.
 ///  -# *comp*: Component that created the entry.
 ///  -# *msg*: Log message.
-typedef std::function<void(
-    Verbosity severity, std::chrono::system_clock::time_point timestamp,
-    int tid, std::string file, int line, std::string comp, std::string msg)>
+typedef std::function<void(Verbosity severity, Timestamp timestamp, int tid,
+                           std::string file, int line, std::string comp,
+                           std::string msg)>
     LogHookFn;
 
 namespace internal {
@@ -321,7 +322,7 @@ inline void LogToHook(Verbosity verbosity, LogHookFn fn) {
                            const char* msg, void* userarg) {
     auto fn_ptr = (static_cast<LogHookFn*>(userarg));
     (*fn_ptr)(static_cast<Verbosity>(severity),
-              internal::CoreTimestampToTimestamp(timestamp), tid,
+              Timestamp(std::chrono::nanoseconds(timestamp)), tid,
               file ? file : "", line, comp, msg ? msg : "");
   };
   std::lock_guard<std::mutex> lock(internal::LogToHookData::mutex);

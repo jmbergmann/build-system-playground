@@ -8,5 +8,6 @@
 #include "yogi/object.h"
 #include "yogi/stream_io.h"
 #include "yogi/time.h"
+#include "yogi/timestamp.h"
 #include "yogi/uuid.h"
 #include "yogi/version.h"

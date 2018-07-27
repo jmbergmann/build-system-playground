@@ -6,6 +6,7 @@
 #include "logging.h"
 #include "branch.h"
 #include "uuid.h"
+#include "time.h"
 
 #include <sstream>
 
@@ -25,6 +26,7 @@ YOGI_DEFINE_OSTREAM_OPERATOR(enum class, Verbosity)
 YOGI_DEFINE_OSTREAM_OPERATOR(enum class, Stream)
 YOGI_DEFINE_OSTREAM_OPERATOR(enum class, BranchEvents)
 YOGI_DEFINE_OSTREAM_OPERATOR(class, Uuid)
+YOGI_DEFINE_OSTREAM_OPERATOR(class, Timestamp)
 
 
 #undef YOGI_DEFINE_OSTREAM_OPERATOR
