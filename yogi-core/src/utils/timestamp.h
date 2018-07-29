@@ -11,7 +11,7 @@ class Timestamp {
   static Timestamp Now();
 
   Timestamp() {}
-  Timestamp(const std::chrono::nanoseconds& nanoseconds_since_epoch)
+  explicit Timestamp(const std::chrono::nanoseconds& nanoseconds_since_epoch)
       : time_(TimePoint() + nanoseconds_since_epoch){};
 
   std::chrono::nanoseconds NanosecondsSinceEpoch() const {
@@ -30,30 +30,31 @@ class Timestamp {
     return static_cast<int>((NanosecondsSinceEpoch().count() / 1000000) % 1000);
   }
 
+  static Timestamp Parse(const std::string& str, const std::string& fmt);
   std::string ToFormattedString(std::string fmt) const;
   std::string ToJavaScriptString() const;
 
-  Timestamp operator+ (const std::chrono::nanoseconds& ns) const {
+  Timestamp operator+(const std::chrono::nanoseconds& ns) const {
     return Timestamp(NanosecondsSinceEpoch() + ns);
   }
 
-  Timestamp operator- (const std::chrono::nanoseconds& ns) const {
+  Timestamp operator-(const std::chrono::nanoseconds& ns) const {
     return Timestamp(NanosecondsSinceEpoch() - ns);
   }
 
-  bool operator== (const Timestamp& rhs) const {
+  bool operator==(const Timestamp& rhs) const {
     return NanosecondsSinceEpoch() == rhs.NanosecondsSinceEpoch();
   }
 
-  bool operator!= (const Timestamp& rhs) const {
+  bool operator!=(const Timestamp& rhs) const {
     return NanosecondsSinceEpoch() != rhs.NanosecondsSinceEpoch();
   }
 
-  bool operator< (const Timestamp& rhs) const {
+  bool operator<(const Timestamp& rhs) const {
     return NanosecondsSinceEpoch() < rhs.NanosecondsSinceEpoch();
   }
 
-  bool operator> (const Timestamp& rhs) const {
+  bool operator>(const Timestamp& rhs) const {
     return NanosecondsSinceEpoch() > rhs.NanosecondsSinceEpoch();
   }
 
@@ -61,6 +62,13 @@ class Timestamp {
   typedef std::chrono::time_point<std::chrono::system_clock,
                                   std::chrono::nanoseconds>
       TimePoint;
+
+  template <int Width>
+  static int ParseNumber(const std::string& str,
+                         std::string::const_iterator* it, int min, int max);
+
+  static void MatchChar(const std::string& str, std::string::const_iterator* it,
+                        char ch);
 
   Timestamp(const TimePoint& time) : time_(time) {}
 

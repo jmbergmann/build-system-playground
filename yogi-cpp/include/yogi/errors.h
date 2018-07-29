@@ -132,7 +132,13 @@ enum class ErrorCode {
   kNoVariableSupport = -37,
 
   /// A configuration variable has been used in a key
-  kVariableUsedInKey = -38
+  kVariableUsedInKey = -38,
+
+  /// Invalid time format
+  kInvalidTimeFormat = -39,
+
+  /// Could not parse time string
+  kParsingTimeFailed = -40
 };
 
 template <>
@@ -177,6 +183,8 @@ inline std::string ToString<ErrorCode>(const ErrorCode& ec) {
     YOGI_TO_STRING_ENUM_CASE(ErrorCode, kUndefinedVariables)
     YOGI_TO_STRING_ENUM_CASE(ErrorCode, kNoVariableSupport)
     YOGI_TO_STRING_ENUM_CASE(ErrorCode, kVariableUsedInKey)
+    YOGI_TO_STRING_ENUM_CASE(ErrorCode, kInvalidTimeFormat)
+    YOGI_TO_STRING_ENUM_CASE(ErrorCode, kParsingTimeFailed)
   }
 
   bool should_never_get_here = false;

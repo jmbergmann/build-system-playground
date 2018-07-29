@@ -7,4 +7,5 @@ cmake .. -DCMAKE_BUILD_TYPE=Debug  -DCMAKE_TOOLCHAIN_FILE=~/vcpkg/scripts/builds
 cd "/c/Documents and Settings/commu_000/Documents/Projects/build-system-playground/yogi-python"
 YOGI_CORE_LIBRARY=../build/yogi-core/yogi-core-x86.dll python -m unittest
 
+cd ../../yogi-dotnet
 YOGI_CORE_LIBRARY="/c/Documents and Settings/commu_000/Documents/Projects/build-system-playground/build-x64/yogi-core/yogi-core-x64.dll" dotnet test

@@ -17,6 +17,7 @@ SCC int       kDefaultLoggerVerbosity   = YOGI_VB_INFO;
 SCC char*     kDefaultLogTimeFormat     = "%F %T.%3";
 SCC char*     kDefaultLogFormat         = "$t [T$T] $<$s $c: $m$>";
 SCC int       kMaxMessageSize           = 100'000;
+SCC char*     kDefaultTimeFormat        = "%FT%T.%3Z";
 #undef SCC
 
 void GetConstant(void* dest, int constant);

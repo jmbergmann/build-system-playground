@@ -79,6 +79,9 @@
 //! Maximum size of a message (int)
 #define YOGI_CONST_MAX_MESSAGE_SIZE 12
 
+//! Default textual format for timestamps
+#define YOGI_CONST_DEFAULT_TIME_FORMAT 13
+
 //! @}
 //!
 //! @defgroup EC Error Codes
@@ -204,6 +207,12 @@
 
 //! A configuration variable has been used in a key
 #define YOGI_ERR_VARIABLE_USED_IN_KEY -38
+
+//! Invalid time format
+#define YOGI_ERR_INVALID_TIME_FORMAT -39
+
+//! Could not parse time string
+#define YOGI_ERR_PARSING_TIME_FAILED -40
 
 //! @}
 //!
@@ -645,6 +654,67 @@ YOGI_API int YOGI_GetConstant(void* dest, int constant);
  * \returns [<0] An error code in case of a failure (see \ref EC)
  ******************************************************************************/
 YOGI_API int YOGI_GetCurrentTime(long long* timestamp);
+
+/***************************************************************************//**
+ * Converts a timestamp into a string.
+ *
+ * The \p timefmt parameter describes the format of the conversion. The
+ * following placeholders are supported:
+ *  - *%Y*: Four digit year
+ *  - *%m*: Month name as a decimal 01 to 12
+ *  - *%d*: Day of the month as decimal 01 to 31
+ *  - *%F*: Equivalent to %Y-%m-%d (the ISO 8601 date format)
+ *  - *%H*: The hour as a decimal number using a 24-hour clock (range 00 to 23)
+ *  - *%M*: The minute as a decimal 00 to 59
+ *  - *%S*: Seconds as a decimal 00 to 59
+ *  - *%T*: Equivalent to %H:%M:%S (the ISO 8601 time format)
+ *  - *%3*: Milliseconds as decimal number 000 to 999
+ *  - *%6*: Microseconds as decimal number 000 to 999
+ *  - *%9*: Nanoseconds as decimal number 000 to 999
+ *
+ * If \p timefmt is set to NULL, then the timestamp will be formatted in
+ * the format "2009-02-11T12:53:09.123Z".
+ *
+ * \param[in]  timestamp Timestamp in nanoseconds since 01/01/1970 UTC
+ * \param[out] str       Pointer to a string for storing the result.
+ * \param[in]  strsize   Maximum number of bytes to write to \p str
+ * \param[in]  timefmt   Format of the timestamp (set to NULL for default)
+ *
+ * \returns [=0] #YOGI_OK if successful
+ * \returns [<0] An error code in case of a failure (see \ref EC)
+ ******************************************************************************/
+YOGI_API int YOGI_FormatTime(long long timestamp, char* str, int strsize,
+                             const char* timefmt);
+
+/***************************************************************************//**
+ * Converts a string into a timestamp.
+ *
+ * The \p timefmt parameter describes the format of the conversion. The
+ * following placeholders are supported:
+ *  - *%Y*: Four digit year
+ *  - *%m*: Month name as a decimal 01 to 12
+ *  - *%d*: Day of the month as decimal 01 to 31
+ *  - *%F*: Equivalent to %Y-%m-%d (the ISO 8601 date format)
+ *  - *%H*: The hour as a decimal number using a 24-hour clock (range 00 to 23)
+ *  - *%M*: The minute as a decimal 00 to 59
+ *  - *%S*: Seconds as a decimal 00 to 59
+ *  - *%T*: Equivalent to %H:%M:%S (the ISO 8601 time format)
+ *  - *%3*: Milliseconds as decimal number 000 to 999
+ *  - *%6*: Microseconds as decimal number 000 to 999
+ *  - *%9*: Nanoseconds as decimal number 000 to 999
+ *
+ * If \p timefmt is set to NULL, then the timestamp will be parsed in
+ * the format "2009-02-11T12:53:09.123Z".
+ *
+ * \param[out] timestamp Resulting in nanoseconds since 01/01/1970 UTC
+ * \param[in]  str       String to parse.
+ * \param[in]  timefmt   Format of the timestamp (set to NULL for default)
+ *
+ * \returns [=0] #YOGI_OK if successful
+ * \returns [<0] An error code in case of a failure (see \ref EC)
+ ******************************************************************************/
+YOGI_API int YOGI_ParseTime(long long* timestamp, const char* str,
+                            const char* timefmt);
 
 /***************************************************************************//**
  * Allows the Yogi to write library-internal and user logging to stdout or

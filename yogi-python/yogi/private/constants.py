@@ -36,6 +36,7 @@ class Constants:
                                    entries.
         DEFAULT_LOG_FORMAT         Default format of a log entry.
         MAX_MESSAGE_SIZE           Maximum size of a message between branches.
+        DEFAULT_TIME_FORMAT        Default textual format for timestamps.
     """
     VERSION_NUMBER = get_constant(1, c_char_p)  # type: str
     VERSION_MAJOR = get_constant(2, c_int)  # type: int
@@ -52,3 +53,4 @@ class Constants:
     DEFAULT_LOG_TIME_FORMAT = get_constant(10, c_char_p)  # type: str
     DEFAULT_LOG_FORMAT = get_constant(11, c_char_p)  # type: str
     MAX_MESSAGE_SIZE = get_constant(12, c_int)  # type: int
+    DEFAULT_TIME_FORMAT = get_constant(13, c_char_p)  # type: str

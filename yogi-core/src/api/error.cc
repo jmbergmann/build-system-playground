@@ -122,6 +122,12 @@ const char* Error::what() const noexcept {
 
     case YOGI_ERR_VARIABLE_USED_IN_KEY:
       return "A configuration variable has been used in a key";
+
+    case YOGI_ERR_INVALID_TIME_FORMAT:
+      return "Invalid time format";
+
+    case YOGI_ERR_PARSING_TIME_FAILED:
+      return "Could not parse time string";
   }
 
   return "Invalid error code";

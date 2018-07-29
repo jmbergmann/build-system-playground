@@ -51,3 +51,7 @@ TEST(ConstantsTest, kDefaultLogFormat) {
 TEST(ConstantsTest, kMaxMessageSize) {
   EXPECT_GE(yogi::constants::kMaxMessageSize, 1000);
 }
+
+TEST(ConstantsTest, kDefaultTimeFormat) {
+  EXPECT_NE(yogi::constants::kDefaultTimeFormat.find(".%3"), std::string::npos);
+}

@@ -55,6 +55,10 @@ void GetConstant(void* dest, int constant) {
       *static_cast<int*>(dest) = kMaxMessageSize;
       break;
 
+    case YOGI_CONST_DEFAULT_TIME_FORMAT:
+      *static_cast<const char**>(dest) = kDefaultTimeFormat;
+      break;
+
     default:
       throw Error(YOGI_ERR_INVALID_PARAM);
   }

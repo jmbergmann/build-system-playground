@@ -46,6 +46,8 @@ class ErrorCode(IntEnum):
     UNDEFINED_VARIABLES = -36
     NO_VARIABLE_SUPPORT = -37
     VARIABLE_USED_IN_KEY = -38
+    INVALID_TIME_FORMAT = -39
+    PARSING_TIME_FAILED = -40
 
 
 yogi.YOGI_GetErrorString.restype = c_char_p

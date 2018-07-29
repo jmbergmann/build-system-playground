@@ -45,4 +45,5 @@ TEST(ConstantsTest, GetEachConstant) {
   check(YOGI_CONST_DEFAULT_LOG_TIME_FORMAT,    kDefaultLogTimeFormat);
   check(YOGI_CONST_DEFAULT_LOG_FORMAT,         kDefaultLogFormat);
   check(YOGI_CONST_MAX_MESSAGE_SIZE,           kMaxMessageSize);
+  check(YOGI_CONST_DEFAULT_TIME_FORMAT,        kDefaultTimeFormat);
 }

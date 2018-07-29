@@ -44,6 +44,8 @@ TEST(ErrorsTest, ErrorCodeEnum) {
   CHECK_ENUM_ELEMENT(ErrorCode, kUndefinedVariables,    YOGI_ERR_UNDEFINED_VARIABLES);
   CHECK_ENUM_ELEMENT(ErrorCode, kNoVariableSupport,     YOGI_ERR_NO_VARIABLE_SUPPORT);
   CHECK_ENUM_ELEMENT(ErrorCode, kVariableUsedInKey,     YOGI_ERR_VARIABLE_USED_IN_KEY);
+  CHECK_ENUM_ELEMENT(ErrorCode, kInvalidTimeFormat,     YOGI_ERR_INVALID_TIME_FORMAT);
+  CHECK_ENUM_ELEMENT(ErrorCode, kParsingTimeFailed,     YOGI_ERR_PARSING_TIME_FAILED);
   // clang-format on
 }
 

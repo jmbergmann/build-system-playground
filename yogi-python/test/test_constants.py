@@ -68,6 +68,11 @@ class TestConstants(TestCase):
         self.assertIsInstance(c, int)
         self.assertGreaterEqual(c, 1000)
 
+    def test_default_time_format(self):
+        c = yogi.Constants.DEFAULT_TIME_FORMAT
+        self.assertIsInstance(c, str)
+        self.assertTrue(".%3" in c)
+
 
 if __name__ == '__main__':
     unittest.main()

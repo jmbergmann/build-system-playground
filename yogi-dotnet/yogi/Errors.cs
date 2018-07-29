@@ -59,7 +59,9 @@ static public partial class Yogi
         WriteToFileFailed = -35,
         UndefinedVariables = -36,
         NoVariableSupport = -37,
-        VariableUsedInKey = -38
+        VariableUsedInKey = -38,
+        InvalidTimeFormat = -39,
+        ParsingTimeFailed = -40
     }
 
     /// <summary>

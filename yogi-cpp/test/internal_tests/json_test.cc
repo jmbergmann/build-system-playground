@@ -52,5 +52,5 @@ using namespace std::string_literals;
 //   auto json = R"({"time":"2009-02-11T12:53:09.123Z")})";
 //   EXPECT_EQ(
 //       ExtractFromJson<yogi::Timestamp>(json, "time").NanosecondsSinceEpoch(),
-//       1234356789123456789ULL);
+//       1234356789123456789LL);
 // }

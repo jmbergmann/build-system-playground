@@ -89,6 +89,7 @@ add_library (yogi-core SHARED
   src/yogi_core/logging.cc
   src/yogi_core/miscellaneous.cc
   src/yogi_core/signals.cc
+  src/yogi_core/time.cc
   src/yogi_core/timers.cc
 )
 

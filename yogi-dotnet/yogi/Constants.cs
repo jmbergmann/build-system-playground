@@ -69,6 +69,9 @@ static public partial class Yogi
         /// <summary>Maximum size of a message between two branches.</summary>
         static public readonly int MaxMessageSize;
 
+        /// <summary>Default textual format for timestamps.</summary>
+        static public readonly string DefaultTimeFormat;
+
         static Constants()
         {
             IntPtr str = new IntPtr();
@@ -102,6 +105,9 @@ static public partial class Yogi
             DefaultLogFormat = Marshal.PtrToStringAnsi(str);
 
             CheckErrorCode(Api.YOGI_GetIntConstant(ref MaxMessageSize, 12));
+
+            CheckErrorCode(Api.YOGI_GetStringConstant(ref str, 13));
+            DefaultTimeFormat = Marshal.PtrToStringAnsi(str);
         }
     }
 }

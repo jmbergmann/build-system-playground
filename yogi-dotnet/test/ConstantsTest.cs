@@ -87,5 +87,12 @@ namespace test
             Assert.IsType<int>(Yogi.Constants.MaxMessageSize);
             Assert.True(Yogi.Constants.MaxMessageSize >= 1000);
         }
+
+        [Fact]
+        public void DefaultTimeFormat()
+        {
+            Assert.IsType<string>(Yogi.Constants.DefaultTimeFormat);
+            Assert.Contains(".%3", Yogi.Constants.DefaultTimeFormat);
+        }
     }
 }
