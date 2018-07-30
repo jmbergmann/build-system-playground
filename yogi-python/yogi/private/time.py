@@ -70,6 +70,7 @@ def format_time(time: datetime.datetime, fmt: str = None) -> str:
     yogi.YOGI_FormatTime(timestamp, s, sizeof(s), fmt)
     return s.value.decode("utf-8")
 
+
 def parse_time(s: str, fmt: str = None) -> datetime.datetime:
     """Converts a string into a timestamp.
 
