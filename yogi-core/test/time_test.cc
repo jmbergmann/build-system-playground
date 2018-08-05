@@ -62,3 +62,28 @@ TEST(TimeTest, ParseTime) {
   res = YOGI_ParseTime(&timestamp, "123", nullptr);
   EXPECT_EQ(res, YOGI_ERR_PARSING_TIME_FAILED);
 }
+
+TEST(TimeTest, FormatDuration) {
+  long long dur = 123456789123456789;
+  char str[32];
+
+  int res = YOGI_FormatDuration(dur, str, sizeof(str), nullptr, nullptr);
+  EXPECT_EQ(res, YOGI_OK);
+  std::string s1 = str;
+  EXPECT_EQ(s1, "1428d 21:33:09.123456789");
+
+  res = YOGI_FormatDuration(dur, str, sizeof(str), "%d%H%M%S%T%3%6%9", "abc");
+  EXPECT_EQ(res, YOGI_OK);
+  std::string s2 = str;
+  EXPECT_EQ(s2, "142821330921:33:09123456789");
+
+  res = YOGI_FormatDuration(-1, str, sizeof(str), nullptr, nullptr);
+  EXPECT_EQ(res, YOGI_OK);
+  std::string s3 = str;
+  EXPECT_EQ(s3, "infinity");
+
+  res = YOGI_FormatDuration(-1, str, sizeof(str), nullptr, "abc");
+  EXPECT_EQ(res, YOGI_OK);
+  std::string s4 = str;
+  EXPECT_EQ(s4, "abc");
+}

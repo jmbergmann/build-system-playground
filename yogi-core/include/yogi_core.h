@@ -82,6 +82,18 @@
 //! Default textual format for timestamps
 #define YOGI_CONST_DEFAULT_TIME_FORMAT 13
 
+//! Default string to denote an infinite duration
+#define YOGI_CONST_DEFAULT_INF_DURATION_STRING 14
+
+//! Default textual format for duration strings
+#define YOGI_CONST_DEFAULT_DURATION_FORMAT 15
+
+//! Default string to denote an invalid object handle
+#define YOGI_CONST_DEFAULT_INVALID_HANDLE_STRING 16
+
+//! Default textual format for strings describing an object
+#define YOGI_CONST_DEFAULT_OBJECT_FORMAT 17
+
 //! @}
 //!
 //! @defgroup EC Error Codes
@@ -672,13 +684,13 @@ YOGI_API int YOGI_GetCurrentTime(long long* timestamp);
  *  - *%6*: Microseconds as decimal number 000 to 999
  *  - *%9*: Nanoseconds as decimal number 000 to 999
  *
- * If \p timefmt is set to NULL, then the timestamp will be formatted in
- * the format "2009-02-11T12:53:09.123Z".
+ * If \p timefmt is set to NULL, then the timestamp will be formatted in the
+ * format "2009-02-11T12:53:09.123Z".
  *
  * \param[in]  timestamp Timestamp in nanoseconds since 01/01/1970 UTC
- * \param[out] str       Pointer to a string for storing the result.
+ * \param[out] str       Pointer to a string for storing the result
  * \param[in]  strsize   Maximum number of bytes to write to \p str
- * \param[in]  timefmt   Format of the timestamp (set to NULL for default)
+ * \param[in]  timefmt   Format of the time string (set to NULL for default)
  *
  * \returns [=0] #YOGI_OK if successful
  * \returns [<0] An error code in case of a failure (see \ref EC)
@@ -703,18 +715,76 @@ YOGI_API int YOGI_FormatTime(long long timestamp, char* str, int strsize,
  *  - *%6*: Microseconds as decimal number 000 to 999
  *  - *%9*: Nanoseconds as decimal number 000 to 999
  *
- * If \p timefmt is set to NULL, then the timestamp will be parsed in
- * the format "2009-02-11T12:53:09.123Z".
+ * If \p timefmt is set to NULL, then the timestamp will be parsed in the
+ * format "2009-02-11T12:53:09.123Z".
  *
  * \param[out] timestamp Resulting in nanoseconds since 01/01/1970 UTC
- * \param[in]  str       String to parse.
- * \param[in]  timefmt   Format of the timestamp (set to NULL for default)
+ * \param[in]  str       String to parse
+ * \param[in]  timefmt   Format of the time string (set to NULL for default)
  *
  * \returns [=0] #YOGI_OK if successful
  * \returns [<0] An error code in case of a failure (see \ref EC)
  ******************************************************************************/
 YOGI_API int YOGI_ParseTime(long long* timestamp, const char* str,
                             const char* timefmt);
+
+/***************************************************************************//**
+ * Converts a duration into a string.
+ *
+ * The \p durfmt parameter describes the format of the conversion. The
+ * following placeholders are supported:
+ *  - *%d*: Total number of days
+ *  - *%H*: Fractional hours (range 00 to 23)
+ *  - *%M*: Fractional minutes (range 00 to 59)
+ *  - *%S*: Fractional seconds (range 00 to 59)
+ *  - *%T*: Equivalent to %H:%M:%S
+ *  - *%3*: Fractional milliseconds (range 000 to 999)
+ *  - *%6*: Fractional microseconds (range 000 to 999)
+ *  - *%9*: Fractional nanoseconds (range 000 to 999)
+ *
+ * If \p durfmt is set to NULL, then the duration will be formatted in the
+ * format "23d 04:19:33.123456789". If \p dur is -1 to indicate an infinite
+ * duration, then \p infstr will be copied to \p str. If \p infstr is set to
+ * NULL, then the string "infinity" will be used.
+ *
+ * \param[in]  dur     Duration in nanoseconds (-1 for infinity or >= 0)
+ * \param[out] str     Pointer to a string for storing the result
+ * \param[in]  strsize Maximum number of bytes to write to \p str
+ * \param[in]  durfmt  Format of the duration string (set to NULL for default)
+ * \param[in]  infstr  String to use for infinity (set to NULL for default)
+ *
+ * \returns [=0] #YOGI_OK if successful
+ * \returns [<0] An error code in case of a failure (see \ref EC)
+ ******************************************************************************/
+YOGI_API int YOGI_FormatDuration(long long dur, char* str, int strsize,
+                                 const char* durfmt, const char* infstr);
+
+/***************************************************************************//**
+ * Creates a string describing an object.
+ *
+ * The \p objfmt parameter describes the format of the string. The following
+ * placeholders are supported:
+ *  - *$T*: Type of the object (e.g. Branch)
+ *  - *$x*: Handle of the object in lower-case hex notation
+ *  - *$X*: Handle of the object in upper-case hex notation
+ *
+ * If \p objfmt is set to NULL, then the object will be formatted in the format
+ * "Branch [44fdde]" with the hex value in brackets being the object's handle,
+ * i.e. the address of the \p obj pointer. If \p obj is NULL then \p nullstr
+ * will be copied to \p str. If \p nullstr is set to NULL, then the string
+ * "INVALID" will be used.
+ *
+ * \param[in]  obj     Handle of the object to print
+ * \param[out] str     Pointer to a string for storing the result
+ * \param[in]  strsize Maximum number of bytes to write to \p str
+ * \param[in]  objfmt  Format of the string (set to NULL for default)
+ * \param[in]  nullstr String to use if \p obj is NULL
+ *
+ * \returns [=0] #YOGI_OK if successful
+ * \returns [<0] An error code in case of a failure (see \ref EC)
+ ******************************************************************************/
+YOGI_API int YOGI_FormatObject(void* obj, char* str, int strsize,
+                               const char* objfmt, const char* nullstr);
 
 /***************************************************************************//**
  * Allows the Yogi to write library-internal and user logging to stdout or

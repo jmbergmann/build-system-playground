@@ -55,3 +55,23 @@ TEST(ConstantsTest, kMaxMessageSize) {
 TEST(ConstantsTest, kDefaultTimeFormat) {
   EXPECT_NE(yogi::constants::kDefaultTimeFormat.find(".%3"), std::string::npos);
 }
+
+TEST(ConstantsTest, kDefaultInfiniteDurationString) {
+  EXPECT_NE(yogi::constants::kDefaultInfiniteDurationString.find("nfinit"),
+            std::string::npos);
+}
+
+TEST(ConstantsTest, kDefaultDurationFormat) {
+  EXPECT_NE(yogi::constants::kDefaultDurationFormat.find(".%3"),
+            std::string::npos);
+}
+
+TEST(ConstantsTest, kDefaultInvalidHandleString) {
+  EXPECT_NE(yogi::constants::kDefaultInvalidHandleString.find("INVALID"),
+            std::string::npos);
+}
+
+TEST(ConstantsTest, kDefaultObjectFormat) {
+  EXPECT_NE(yogi::constants::kDefaultObjectFormat.find("$T"),
+            std::string::npos);
+}

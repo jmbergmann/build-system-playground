@@ -88,6 +88,7 @@ add_library (yogi-core SHARED
   src/yogi_core/helpers.cc
   src/yogi_core/logging.cc
   src/yogi_core/miscellaneous.cc
+  src/yogi_core/objects.cc
   src/yogi_core/signals.cc
   src/yogi_core/time.cc
   src/yogi_core/timers.cc
@@ -149,6 +150,7 @@ add_executable (yogi-core-test
   test/objects/configuration_test.cc
   test/objects/connection_manager_test.cc
   test/objects/context_test.cc
+  test/objects/format_test.cc
   test/objects/logger_test.cc
   test/objects/signal_set_test.cc
   test/objects/timer_test.cc

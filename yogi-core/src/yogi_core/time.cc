@@ -3,6 +3,8 @@
 #include "../api/constants.h"
 #include "../utils/timestamp.h"
 
+#include <boost/algorithm/string.hpp>
+
 YOGI_API int YOGI_GetCurrentTime(long long* timestamp) {
   CHECK_PARAM(timestamp != nullptr);
 
@@ -37,6 +39,44 @@ YOGI_API int YOGI_ParseTime(long long* timestamp, const char* str,
     auto t = utils::Timestamp::Parse(
         str, timefmt ? timefmt : api::kDefaultTimeFormat);
     *timestamp = t.NanosecondsSinceEpoch().count();
+  }
+  CATCH_AND_RETURN;
+}
+
+YOGI_API int YOGI_FormatDuration(long long dur, char* str, int strsize,
+                                 const char* durfmt, const char* infstr) {
+  CHECK_PARAM(dur >= -1);
+  CHECK_PARAM(str != nullptr);
+  CHECK_PARAM(strsize > 0);
+
+  try {
+    std::string s;
+    if (dur == -1) {
+      s = infstr ? infstr : api::kDefaultInfiniteDurationString;
+    } else {
+      s = durfmt ? durfmt : api::kDefaultDurationFormat;
+
+      char tmp[32];
+      sprintf(tmp, "%i", dur / 86'400'000'000'000);
+      boost::replace_all(s, "%d", tmp);
+      boost::replace_all(s, "%T", "%H:%M:%S");
+      sprintf(tmp, "%02i", (dur / 3'600'000'000'000) % 24);
+      boost::replace_all(s, "%H", tmp);
+      sprintf(tmp, "%02i", (dur / 60'000'000'000) % 60);
+      boost::replace_all(s, "%M", tmp);
+      sprintf(tmp, "%02i", (dur / 1'000'000'000) % 60);
+      boost::replace_all(s, "%S", tmp);
+      sprintf(tmp, "%03i", (dur / 1'000'000) % 1000);
+      boost::replace_all(s, "%3", tmp);
+      sprintf(tmp, "%03i", (dur / 1'000) % 1000);
+      boost::replace_all(s, "%6", tmp);
+      sprintf(tmp, "%03i", dur % 1000);
+      boost::replace_all(s, "%9", tmp);
+    }
+
+    if (!CopyStringToUserBuffer(s, str, strsize)) {
+      return YOGI_ERR_BUFFER_TOO_SMALL;
+    }
   }
   CATCH_AND_RETURN;
 }

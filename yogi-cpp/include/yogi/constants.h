@@ -64,6 +64,18 @@ struct constants {
 
   /// Default textual format for timestamps
   static const std::string kDefaultTimeFormat;
+
+  /// Default string to denote an infinite duration
+  static const std::string kDefaultInfiniteDurationString;
+
+  /// Default textual format for duration strings
+  static const std::string kDefaultDurationFormat;
+
+  /// Default string to denote an invalid object handle
+  static const std::string kDefaultInvalidHandleString;
+
+  /// Default textual format for strings describing an object
+  static const std::string kDefaultObjectFormat;
 };
 
 YOGI_WEAK_SYMBOL const std::string constants::kVersionNumber =
@@ -105,5 +117,17 @@ YOGI_WEAK_SYMBOL const int constants::kMaxMessageSize =
 
 YOGI_WEAK_SYMBOL const std::string constants::kDefaultTimeFormat =
     internal::GetConstant<char*>(13);
+
+YOGI_WEAK_SYMBOL const std::string constants::kDefaultInfiniteDurationString =
+    internal::GetConstant<char*>(14);
+
+YOGI_WEAK_SYMBOL const std::string constants::kDefaultDurationFormat =
+    internal::GetConstant<char*>(15);
+
+YOGI_WEAK_SYMBOL const std::string constants::kDefaultInvalidHandleString =
+    internal::GetConstant<char*>(16);
+
+YOGI_WEAK_SYMBOL const std::string constants::kDefaultObjectFormat =
+    internal::GetConstant<char*>(17);
 
 }  // namespace yogi

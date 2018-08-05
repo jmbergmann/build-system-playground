@@ -94,5 +94,33 @@ namespace test
             Assert.IsType<string>(Yogi.Constants.DefaultTimeFormat);
             Assert.Contains(".%3", Yogi.Constants.DefaultTimeFormat);
         }
+
+        [Fact]
+        public void DefaultInfiniteDurationString()
+        {
+            Assert.IsType<string>(Yogi.Constants.DefaultInfiniteDurationString);
+            Assert.Contains("nfinit", Yogi.Constants.DefaultInfiniteDurationString);
+        }
+
+        [Fact]
+        public void DefaultDurationFormat()
+        {
+            Assert.IsType<string>(Yogi.Constants.DefaultDurationFormat);
+            Assert.Contains(".%3", Yogi.Constants.DefaultDurationFormat);
+        }
+
+        [Fact]
+        public void DefaultInvalidHandleString()
+        {
+            Assert.IsType<string>(Yogi.Constants.DefaultInvalidHandleString);
+            Assert.Contains("INVALID", Yogi.Constants.DefaultInvalidHandleString);
+        }
+
+        [Fact]
+        public void DefaultObjectFormat()
+        {
+            Assert.IsType<string>(Yogi.Constants.DefaultObjectFormat);
+            Assert.Contains("$T", Yogi.Constants.DefaultObjectFormat);
+        }
     }
 }

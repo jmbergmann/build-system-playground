@@ -20,23 +20,32 @@ class Constants:
     """Constants built into the Yogi Core library.
 
     Attributes:
-        VERSION_NUMBER             Complete Yogi Core version number.
-        VERSION_MAJOR              Yogi Core major version number.
-        VERSION_MINOR              Yogi Core minor version number.
-        VERSION_PATCH              Yogi Core patch version number.
-        DEFAULT_ADV_ADDRESS        Default IP address for advertising.
-        DEFAULT_ADV_PORT           Default UDP port for advertising.
-        DEFAULT_ADV_INTERVAL       Default time between two advertising
-                                   messages.
-        DEFAULT_CONNECTION_TIMEOUT Default timeout for connections between
-                                   two branches.
-        DEFAULT_LOGGER_VERBOSITY   Default verbosity for newly created
-                                   loggers.
-        DEFAULT_LOG_TIME_FORMAT    Default format of the time string in log
-                                   entries.
-        DEFAULT_LOG_FORMAT         Default format of a log entry.
-        MAX_MESSAGE_SIZE           Maximum size of a message between branches.
-        DEFAULT_TIME_FORMAT        Default textual format for timestamps.
+        VERSION_NUMBER                Complete Yogi Core version number.
+        VERSION_MAJOR                 Yogi Core major version number.
+        VERSION_MINOR                 Yogi Core minor version number.
+        VERSION_PATCH                 Yogi Core patch version number.
+        DEFAULT_ADV_ADDRESS           Default IP address for advertising.
+        DEFAULT_ADV_PORT              Default UDP port for advertising.
+        DEFAULT_ADV_INTERVAL          Default time between two advertising
+                                      messages.
+        DEFAULT_CONNECTION_TIMEOUT    Default timeout for connections between
+                                      two branches.
+        DEFAULT_LOGGER_VERBOSITY      Default verbosity for newly created
+                                      loggers.
+        DEFAULT_LOG_TIME_FORMAT       Default format of the time string in log
+                                      entries.
+        DEFAULT_LOG_FORMAT            Default format of a log entry.
+        MAX_MESSAGE_SIZE              Maximum size of a message between
+                                      branches.
+        DEFAULT_TIME_FORMAT           Default textual format for timestamps.
+        DEFAULT_INF_DURATION_STRING   Default string to denote an infinite
+                                      duration.
+        DEFAULT_DURATION_FORMAT       Default textual format for duration
+                                      strings.
+        DEFAULT_INVALID_HANDLE_STRING Default string to denote an invalid
+                                      object handle.
+        DEFAULT_OBJECT_FORMAT         Default textual format for strings
+                                      describing an object.
     """
     VERSION_NUMBER = get_constant(1, c_char_p)  # type: str
     VERSION_MAJOR = get_constant(2, c_int)  # type: int
@@ -54,3 +63,7 @@ class Constants:
     DEFAULT_LOG_FORMAT = get_constant(11, c_char_p)  # type: str
     MAX_MESSAGE_SIZE = get_constant(12, c_int)  # type: int
     DEFAULT_TIME_FORMAT = get_constant(13, c_char_p)  # type: str
+    DEFAULT_INF_DURATION_STRING = get_constant(14, c_char_p)  # type: str
+    DEFAULT_DURATION_FORMAT = get_constant(15, c_char_p)  # type: str
+    DEFAULT_INVALID_HANDLE_STRING = get_constant(16, c_char_p)  # type: str
+    DEFAULT_OBJECT_FORMAT = get_constant(17, c_char_p)  # type: str

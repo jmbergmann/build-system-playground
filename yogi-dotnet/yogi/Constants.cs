@@ -72,6 +72,18 @@ static public partial class Yogi
         /// <summary>Default textual format for timestamps.</summary>
         static public readonly string DefaultTimeFormat;
 
+        /// <summary>Default string to denote an infinite duration.</summary>
+        static public readonly string DefaultInfiniteDurationString;
+
+        /// <summary>Default textual format for duration strings.</summary>
+        static public readonly string DefaultDurationFormat;
+
+        /// <summary>Default string to denote an invalid object handle.</summary>
+        static public readonly string DefaultInvalidHandleString;
+
+        /// <summary>Default textual format for strings describing an object.</summary>
+        static public readonly string DefaultObjectFormat;
+
         static Constants()
         {
             IntPtr str = new IntPtr();
@@ -108,6 +120,18 @@ static public partial class Yogi
 
             CheckErrorCode(Api.YOGI_GetStringConstant(ref str, 13));
             DefaultTimeFormat = Marshal.PtrToStringAnsi(str);
+
+            CheckErrorCode(Api.YOGI_GetStringConstant(ref str, 14));
+            DefaultInfiniteDurationString = Marshal.PtrToStringAnsi(str);
+
+            CheckErrorCode(Api.YOGI_GetStringConstant(ref str, 15));
+            DefaultDurationFormat = Marshal.PtrToStringAnsi(str);
+
+            CheckErrorCode(Api.YOGI_GetStringConstant(ref str, 16));
+            DefaultInvalidHandleString = Marshal.PtrToStringAnsi(str);
+
+            CheckErrorCode(Api.YOGI_GetStringConstant(ref str, 17));
+            DefaultObjectFormat = Marshal.PtrToStringAnsi(str);
         }
     }
 }

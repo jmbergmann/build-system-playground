@@ -59,6 +59,22 @@ void GetConstant(void* dest, int constant) {
       *static_cast<const char**>(dest) = kDefaultTimeFormat;
       break;
 
+    case YOGI_CONST_DEFAULT_INF_DURATION_STRING:
+      *static_cast<const char**>(dest) = kDefaultInfiniteDurationString;
+      break;
+
+    case YOGI_CONST_DEFAULT_DURATION_FORMAT:
+      *static_cast<const char**>(dest) = kDefaultDurationFormat;
+      break;
+
+    case YOGI_CONST_DEFAULT_INVALID_HANDLE_STRING:
+      *static_cast<const char**>(dest) = kDefaultInvalidHandleString;
+      break;
+
+    case YOGI_CONST_DEFAULT_OBJECT_FORMAT:
+      *static_cast<const char**>(dest) = kDefaultObjectFormat;
+      break;
+
     default:
       throw Error(YOGI_ERR_INVALID_PARAM);
   }

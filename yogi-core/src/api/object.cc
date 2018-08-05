@@ -4,6 +4,45 @@
 
 namespace api {
 
+const std::string& ExposedObject::TypeName() const {
+  switch (Type()) {
+    case ObjectType::kDummy: {
+      static const std::string s = "Dummy";
+      return s;
+    }
+
+    case ObjectType::kContext: {
+      static const std::string s = "Context";
+      return s;
+    }
+
+    case ObjectType::kLogger: {
+      static const std::string s = "Logger";
+      return s;
+    }
+
+    case ObjectType::kTimer: {
+      static const std::string s = "Timer";
+      return s;
+    }
+
+    case ObjectType::kBranch: {
+      static const std::string s = "Branch";
+      return s;
+    }
+
+    case ObjectType::kConfiguration: {
+      static const std::string s = "Configuration";
+      return s;
+    }
+
+    case ObjectType::kSignalSet: {
+      static const std::string s = "SignalSet";
+      return s;
+    }
+  }
+}
+
 std::mutex ObjectRegister::mutex_;
 // NOLINTNEXTLINE(cert-err58-cpp)
 ObjectRegister::ObjectsMap ObjectRegister::objects_;

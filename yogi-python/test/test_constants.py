@@ -73,6 +73,26 @@ class TestConstants(TestCase):
         self.assertIsInstance(c, str)
         self.assertTrue(".%3" in c)
 
+    def test_default_inf_duration_string(self):
+        c = yogi.Constants.DEFAULT_INF_DURATION_STRING
+        self.assertIsInstance(c, str)
+        self.assertTrue("nfinit" in c)
+
+    def test_default_duration_format(self):
+        c = yogi.Constants.DEFAULT_DURATION_FORMAT
+        self.assertIsInstance(c, str)
+        self.assertTrue(".%3" in c)
+
+    def test_default_invalid_handle_string(self):
+        c = yogi.Constants.DEFAULT_INVALID_HANDLE_STRING
+        self.assertIsInstance(c, str)
+        self.assertTrue("INVALID" in c)
+
+    def test_default_object_format(self):
+        c = yogi.Constants.DEFAULT_OBJECT_FORMAT
+        self.assertIsInstance(c, str)
+        self.assertTrue("$T" in c)
+
 
 if __name__ == '__main__':
     unittest.main()

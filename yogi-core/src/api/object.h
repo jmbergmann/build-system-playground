@@ -7,6 +7,7 @@
 #include <mutex>
 #include <unordered_map>
 #include <vector>
+#include <string>
 
 namespace api {
 
@@ -28,6 +29,8 @@ class ExposedObject : public std::enable_shared_from_this<ExposedObject> {
   virtual ~ExposedObject() = default;
 
   virtual ObjectType Type() const = 0;
+
+  const std::string& TypeName() const;
 
   ObjectHandle Handle() { return static_cast<ObjectHandle>(this); }
 
