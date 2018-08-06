@@ -3,6 +3,7 @@
 #include "internal/conversion.h"
 #include "internal/error_code_helpers.h"
 #include "internal/library.h"
+#include "duration.h"
 
 #include <chrono>
 #include <sstream>
@@ -22,6 +23,20 @@ YOGI_DEFINE_API_FN(int, YOGI_ParseTime,
 /// Timestamps are expressed in nanoseconds since 01/01/1970 UTC.
 class Timestamp {
  public:
+  /// Creates a timestamp from a duration since the epoch 01/01/1970 UTC.
+  ///
+  /// \returns Timestamp instance.
+  static Timestamp FromDurationSinceEpoch(const Duration& dur_since_epoch) {
+    if (dur_since_epoch.IsInfinite() || dur_since_epoch < Duration()) {
+      throw ArithmeticException(
+          "Invalid duration range for use as a timestamp");
+    }
+
+    Timestamp t;
+    t.dur_since_epoch_ = dur_since_epoch;
+    return t;
+  }
+
   /// Creates a timestamp from the current time.
   ///
   /// \returns Timestamp corresponding to the current time.
@@ -30,26 +45,7 @@ class Timestamp {
     int res = internal::YOGI_GetCurrentTime(&timestamp);
     internal::CheckErrorCode(res);
 
-    return Timestamp(std::chrono::nanoseconds(timestamp));
-  }
-
-  /// Converts a string into a timestamp.
-  ///
-  /// The string \p str will be parsed in the format
-  /// "2018-04-23T18:25:43.511Z".
-  ///
-  /// \tparam StrString Type of the \p str string.
-  ///
-  /// \param str The string to parse.
-  ///
-  /// \returns The parsed timestamp.
-  template <typename StrString>
-  static Timestamp Parse(const StrString& str) {
-    long long timestamp;
-    int res = internal::YOGI_ParseTime(
-        &timestamp, internal::StringToCoreString(str), nullptr);
-    internal::CheckErrorCode(res);
-    return Timestamp(std::chrono::nanoseconds(timestamp));
+    return FromDurationSinceEpoch(Duration::FromNanoseconds(timestamp));
   }
 
   /// Converts a string into a timestamp.
@@ -68,6 +64,9 @@ class Timestamp {
   ///  - *%6*: Microseconds as decimal number 000 to 999
   ///  - *%9*: Nanoseconds as decimal number 000 to 999
   ///
+  /// By default, the string \p str will be parsed in the format
+  /// "2018-04-23T18:25:43.511Z".
+  ///
   /// \tparam StrString Type of the \p str string.
   /// \tparam FmtString Type of the \p timefmt string.
   ///
@@ -75,65 +74,39 @@ class Timestamp {
   /// \param timefmt Format of the time string.
   ///
   /// \returns The parsed timestamp.
-  template <typename StrString, typename FmtString>
-  static Timestamp Parse(const StrString& str, const FmtString& timefmt) {
+  template <typename StrString, typename FmtString = char*>
+  static Timestamp Parse(const StrString& str,
+                         const FmtString& timefmt = nullptr) {
     long long timestamp;
     int res =
         internal::YOGI_ParseTime(&timestamp, internal::StringToCoreString(str),
                                  internal::StringToCoreString(timefmt));
     internal::CheckErrorCode(res);
-    return Timestamp(std::chrono::nanoseconds(timestamp));
+    return FromDurationSinceEpoch(Duration::FromNanoseconds(timestamp));
   }
 
   /// Constructs the timestamp using the epoch 01/01/1970 UTC.
-  Timestamp() : ns_since_epoch_(0) {}
+  Timestamp() {}
 
-  /// Construct the timestamp from a duration since 01/01/1970 UTC.
-  explicit Timestamp(const std::chrono::nanoseconds& ns_since_epoch)
-      : ns_since_epoch_(ns_since_epoch.count()) {}
-
-  /// Returns the number of nanoseconds since 01/01/1970 UTC.
+  /// Returns the duration since 01/01/1970 UTC.
   ///
-  /// \returns Number of nanoseconds since 01/01/1970 UTC.
-  std::chrono::nanoseconds DurationSinceEpoch() const {
-    return std::chrono::nanoseconds(ns_since_epoch_);
-  }
+  /// \returns Duration since 01/01/1970 UTC.
+  Duration DurationSinceEpoch() const { return dur_since_epoch_; }
 
   /// Returns the nanoseconds fraction of the timestamp.
   ///
   /// \returns Nanoseconds fraction of the timestamp (0-999).
-  int Nanosecond() const {
-    return static_cast<int>((ns_since_epoch_ / 1) % 1000);
-  }
+  int Nanoseconds() const { return dur_since_epoch_.Nanoseconds(); }
 
   /// Returns the microseconds fraction of the timestamp.
   ///
   /// \returns Microseconds fraction of the timestamp (0-999).
-  int Microsecond() const {
-    return static_cast<int>((ns_since_epoch_ / 1000) % 1000);
-  }
+  int Microseconds() const { return dur_since_epoch_.Microseconds(); }
 
   /// Returns the Milliseconds fraction of the timestamp.
   ///
   /// \returns Milliseconds fraction of the timestamp (0-999).
-  int Millisecond() const {
-    return static_cast<int>((ns_since_epoch_ / 1000000) % 1000);
-  }
-
-  /// Converts the timestamp to an ISO-8601 string up to milliseconds.
-  ///
-  /// Example: "2018-04-23T18:25:43.511Z".
-  ///
-  /// \returns The time in ISO-8601 format up to milliseonds.
-  ///
-  /// \returns The formatted time string.
-  std::string Format() const {
-    char str[32];
-    int res =
-        internal::YOGI_FormatTime(ns_since_epoch_, str, sizeof(str), nullptr);
-    internal::CheckErrorCode(res);
-    return str;
-  }
+  int Milliseconds() const { return dur_since_epoch_.Milliseconds(); }
 
   /// Converts the timestamp to a string.
   ///
@@ -151,15 +124,19 @@ class Timestamp {
   ///  - *%6*: Microseconds as decimal number 000 to 999
   ///  - *%9*: Nanoseconds as decimal number 000 to 999
   ///
+  /// By default, the timestamp will be formatted as an ISO-8601 string with
+  /// up to millisecond resolution, e.g. "2018-04-23T18:25:43.511Z".
+  ///
   /// \tparam String Type of the \p timefmt string.
   ///
   /// \param timefmt Format of the time string.
   ///
   /// \returns The formatted time string.
-  template <typename String>
-  std::string Format(const String& timefmt) const {
+  template <typename String = char*>
+  std::string Format(const String& timefmt = nullptr) const {
     char str[128];
-    int res = internal::YOGI_FormatTime(ns_since_epoch_, str, sizeof(str),
+    int res = internal::YOGI_FormatTime(dur_since_epoch_.TotalNanoseconds(),
+                                        str, sizeof(str),
                                         internal::StringToCoreString(timefmt));
     internal::CheckErrorCode(res);
     return str;
@@ -172,50 +149,54 @@ class Timestamp {
   /// \returns The time in ISO-8601 format up to milliseonds.
   std::string ToString() const { return Format(); }
 
-  Timestamp operator+(const std::chrono::nanoseconds& ns) const {
-    return Timestamp(DurationSinceEpoch() + ns);
+  Timestamp operator+(const Duration& dur) const {
+    return FromDurationSinceEpoch(dur_since_epoch_ + dur);
   }
 
-  Timestamp operator-(const std::chrono::nanoseconds& ns) const {
-    return Timestamp(DurationSinceEpoch() - ns);
+  Timestamp operator-(const Duration& dur) const {
+    return FromDurationSinceEpoch(dur_since_epoch_ - dur);
   }
 
-  std::chrono::nanoseconds operator-(const Timestamp& rhs) const {
-    return DurationSinceEpoch() - rhs.DurationSinceEpoch();
+  Duration operator-(const Timestamp& rhs) const {
+    return dur_since_epoch_ - rhs.dur_since_epoch_;
   }
 
-  Timestamp& operator+=(const std::chrono::nanoseconds& ns) {
-    *this = *this + ns;
+  Timestamp& operator+=(const Duration& dur) {
+    *this = *this + dur;
     return *this;
   }
 
-  Timestamp& operator-=(const std::chrono::nanoseconds& ns) {
-    *this = *this - ns;
+  Timestamp& operator-=(const Duration& dur) {
+    *this = *this - dur;
     return *this;
   }
 
   bool operator==(const Timestamp& rhs) const {
-    return DurationSinceEpoch() == rhs.DurationSinceEpoch();
+    return dur_since_epoch_ == rhs.dur_since_epoch_;
   }
 
   bool operator!=(const Timestamp& rhs) const {
-    return DurationSinceEpoch() != rhs.DurationSinceEpoch();
+    return dur_since_epoch_ != rhs.dur_since_epoch_;
   }
 
   bool operator<(const Timestamp& rhs) const {
-    return DurationSinceEpoch() < rhs.DurationSinceEpoch();
+    return dur_since_epoch_ < rhs.dur_since_epoch_;
   }
 
   bool operator>(const Timestamp& rhs) const {
-    return DurationSinceEpoch() > rhs.DurationSinceEpoch();
+    return dur_since_epoch_ > rhs.dur_since_epoch_;
   }
 
-  bool operator<=(const Timestamp& rhs) const { return !(*this > rhs); }
+  bool operator<=(const Timestamp& rhs) const {
+    return dur_since_epoch_ <= rhs.dur_since_epoch_;
+  }
 
-  bool operator>=(const Timestamp& rhs) const { return !(*this < rhs); }
+  bool operator>=(const Timestamp& rhs) const {
+    return dur_since_epoch_ >= rhs.dur_since_epoch_;
+  }
 
  private:
-  std::chrono::nanoseconds::rep ns_since_epoch_;
+  Duration dur_since_epoch_;
 };
 
 }  // namespace yogi

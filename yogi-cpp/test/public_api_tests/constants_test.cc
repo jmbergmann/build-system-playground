@@ -57,7 +57,7 @@ TEST(ConstantsTest, kDefaultTimeFormat) {
 }
 
 TEST(ConstantsTest, kDefaultInfiniteDurationString) {
-  EXPECT_NE(yogi::constants::kDefaultInfiniteDurationString.find("nfinit"),
+  EXPECT_NE(yogi::constants::kDefaultInfiniteDurationString.find("inf"),
             std::string::npos);
 }
 

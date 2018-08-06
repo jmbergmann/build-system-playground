@@ -99,7 +99,7 @@ namespace test
         public void DefaultInfiniteDurationString()
         {
             Assert.IsType<string>(Yogi.Constants.DefaultInfiniteDurationString);
-            Assert.Contains("nfinit", Yogi.Constants.DefaultInfiniteDurationString);
+            Assert.Contains("inf", Yogi.Constants.DefaultInfiniteDurationString);
         }
 
         [Fact]

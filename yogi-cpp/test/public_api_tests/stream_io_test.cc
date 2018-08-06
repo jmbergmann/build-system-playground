@@ -31,6 +31,10 @@ TEST(StreamIoTest, BranchEvents) {
   Check(yogi::BranchEvents::kBranchDiscovered);
 }
 
+TEST(StreamIoTest, Duration) {
+  Check(yogi::Duration());
+}
+
 TEST(StreamIoTest, Timestamp) {
   Check(yogi::Timestamp::Now());
 }

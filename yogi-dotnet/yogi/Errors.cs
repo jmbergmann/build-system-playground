@@ -282,14 +282,14 @@ static public partial class Yogi
     ///
     /// This exception type is used for failures that have detailed information available.
     /// </summary>
-    public class DescriptiveFailureException : Exception
+    public class DescriptiveFailureException : FailureException
     {
         /// <summary>
         /// Constructor.
         /// </summary>
         /// <param name="ec">Error code associated with the failure.</param>
         /// <param name="description">Detailed description of the failure.</param>
-        public DescriptiveFailureException(ErrorCode ec, string description)
+        public DescriptiveFailureException(ErrorCode ec, string description) : base(ec)
         {
             Failure = new DescriptiveFailure(ec, description);
         }

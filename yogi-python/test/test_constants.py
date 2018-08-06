@@ -76,7 +76,7 @@ class TestConstants(TestCase):
     def test_default_inf_duration_string(self):
         c = yogi.Constants.DEFAULT_INF_DURATION_STRING
         self.assertIsInstance(c, str)
-        self.assertTrue("nfinit" in c)
+        self.assertTrue("inf" in c)
 
     def test_default_duration_format(self):
         c = yogi.Constants.DEFAULT_DURATION_FORMAT

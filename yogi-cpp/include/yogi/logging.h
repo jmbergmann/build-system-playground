@@ -321,9 +321,10 @@ inline void LogToHook(Verbosity verbosity, LogHookFn fn) {
                            const char* file, int line, const char* comp,
                            const char* msg, void* userarg) {
     auto fn_ptr = (static_cast<LogHookFn*>(userarg));
-    (*fn_ptr)(static_cast<Verbosity>(severity),
-              Timestamp(std::chrono::nanoseconds(timestamp)), tid,
-              file ? file : "", line, comp, msg ? msg : "");
+    (*fn_ptr)(
+        static_cast<Verbosity>(severity),
+        Timestamp::FromDurationSinceEpoch(Duration::FromNanoseconds(timestamp)),
+        tid, file ? file : "", line, comp, msg ? msg : "");
   };
   std::lock_guard<std::mutex> lock(internal::LogToHookData::mutex);
 

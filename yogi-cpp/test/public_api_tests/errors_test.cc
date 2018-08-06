@@ -104,7 +104,7 @@ TEST(ErrorsTest, FailureException) {
 }
 
 TEST(ErrorsTest, DescriptiveFailureException) {
-  EXPECT_TRUE((std::is_base_of<yogi::Exception,
+  EXPECT_TRUE((std::is_base_of<yogi::FailureException,
                                yogi::DescriptiveFailureException>::value));
   EXPECT_EQ(
       yogi::DescriptiveFailureException(yogi::ErrorCode::kBusy, "xyz").what(),
@@ -120,4 +120,10 @@ TEST(ErrorsTest, Success) {
   EXPECT_EQ(yogi::Success(1).ToString(), yogi::Result(1).ToString());
   EXPECT_EQ(yogi::Success(1), yogi::Result(1));
   EXPECT_TRUE((std::is_base_of<yogi::Result, yogi::Success>::value));
+}
+
+TEST(ErrorsTest, ArithmeticException) {
+  EXPECT_TRUE(
+      (std::is_base_of<yogi::Exception, yogi::ArithmeticException>::value));
+  EXPECT_STREQ(yogi::ArithmeticException("abc").what(), "abc");
 }

@@ -171,7 +171,7 @@ class FailureException(Exception):
         return self._failure
 
 
-class DescriptiveFailureException(Exception):
+class DescriptiveFailureException(FailureException):
     """Exception wrapping a DescriptiveFailure object.
 
     This exception type is used for failures that have detailed information

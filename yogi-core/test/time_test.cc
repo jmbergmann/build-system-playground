@@ -1,13 +1,14 @@
 #include "common.h"
+#include <yogi_core.h>
 
 TEST(TimeTest, GetCurrentTime) {
   long long time_a = 0;
-	int res = YOGI_GetCurrentTime(&time_a);
+  int res = YOGI_GetCurrentTime(&time_a);
   EXPECT_EQ(res, YOGI_OK);
   EXPECT_GT(time_a, 0);
 
   long long time_b = 0;
-	res = YOGI_GetCurrentTime(&time_b);
+  res = YOGI_GetCurrentTime(&time_b);
   EXPECT_EQ(res, YOGI_OK);
   EXPECT_GT(time_b, time_a);
 }
@@ -24,8 +25,7 @@ TEST(TimeTest, FormatTime) {
   res = YOGI_FormatTime(timestamp, str, sizeof(str), "%FT%T.%3Z");
   EXPECT_EQ(res, YOGI_OK);
   std::string s2 = str;
-  EXPECT_EQ(s1, s2);
-
+  EXPECT_EQ(s2, s1);
 
   res = YOGI_FormatTime(timestamp, str, sizeof(str), "%Y%m%d%H%M%S%3%6%9");
   EXPECT_EQ(res, YOGI_OK);
@@ -44,7 +44,8 @@ TEST(TimeTest, ParseTime) {
   EXPECT_EQ(res, YOGI_OK);
   EXPECT_EQ(timestamp, 1234356789123000000LL);
 
-  res = YOGI_ParseTime(&timestamp, "20090211125309123456789", "%Y%m%d%H%M%S%3%6%9");
+  res = YOGI_ParseTime(&timestamp, "20090211125309123456789",
+                       "%Y%m%d%H%M%S%3%6%9");
   EXPECT_EQ(res, YOGI_OK);
   EXPECT_EQ(timestamp, 1234356789123456789LL);
 
@@ -65,25 +66,50 @@ TEST(TimeTest, ParseTime) {
 
 TEST(TimeTest, FormatDuration) {
   long long dur = 123456789123456789;
-  char str[32];
+  char str[48];
 
-  int res = YOGI_FormatDuration(dur, str, sizeof(str), nullptr, nullptr);
+  int res =
+      YOGI_FormatDuration(dur, YOGI_FALSE, str, sizeof(str), nullptr, nullptr);
   EXPECT_EQ(res, YOGI_OK);
-  std::string s1 = str;
-  EXPECT_EQ(s1, "1428d 21:33:09.123456789");
+  EXPECT_STREQ(str, "1428d 21:33:09.123456789");
 
-  res = YOGI_FormatDuration(dur, str, sizeof(str), "%d%H%M%S%T%3%6%9", "abc");
+  res = YOGI_FormatDuration(dur, YOGI_FALSE, str, sizeof(str),
+                            "%+%-%D%d%H%M%S%T%3%6%9", "abc");
   EXPECT_EQ(res, YOGI_OK);
-  std::string s2 = str;
-  EXPECT_EQ(s2, "142821330921:33:09123456789");
+  EXPECT_STREQ(str, "+1428142821330921:33:09123456789");
 
-  res = YOGI_FormatDuration(-1, str, sizeof(str), nullptr, nullptr);
+  res = YOGI_FormatDuration(-1, YOGI_FALSE, str, sizeof(str), nullptr, nullptr);
   EXPECT_EQ(res, YOGI_OK);
-  std::string s3 = str;
-  EXPECT_EQ(s3, "infinity");
+  EXPECT_STREQ(str, "inf");
 
-  res = YOGI_FormatDuration(-1, str, sizeof(str), nullptr, "abc");
+  res = YOGI_FormatDuration(-1, YOGI_TRUE, str, sizeof(str), nullptr, nullptr);
   EXPECT_EQ(res, YOGI_OK);
-  std::string s4 = str;
-  EXPECT_EQ(s4, "abc");
+  EXPECT_STREQ(str, "-inf");
+
+  res = YOGI_FormatDuration(-1, YOGI_FALSE, str, sizeof(str), nullptr, "%+%-abc");
+  EXPECT_EQ(res, YOGI_OK);
+  EXPECT_STREQ(str, "+abc");
+
+  res = YOGI_FormatDuration(-1, YOGI_TRUE, str, sizeof(str), nullptr, "%+%-abc");
+  EXPECT_EQ(res, YOGI_OK);
+  EXPECT_STREQ(str, "--abc");
+
+  res =
+      YOGI_FormatDuration(dur, YOGI_FALSE, str, sizeof(str), "%+%-%D%d", "abc");
+  EXPECT_EQ(res, YOGI_OK);
+  EXPECT_STREQ(str, "+14281428");
+
+  res = YOGI_FormatDuration(dur, YOGI_TRUE, str, sizeof(str), "%+%-%D%d",
+                            nullptr);
+  EXPECT_EQ(res, YOGI_OK);
+  EXPECT_STREQ(str, "--14281428");
+
+  res = YOGI_FormatDuration(dur, YOGI_FALSE, str, sizeof(str), "%+%-%D%d",
+                            nullptr);
+  EXPECT_EQ(res, YOGI_OK);
+  EXPECT_STREQ(str, "+14281428");
+
+  res = YOGI_FormatDuration(123, YOGI_FALSE, str, sizeof(str), "%D%d", nullptr);
+  EXPECT_EQ(res, YOGI_OK);
+  EXPECT_STREQ(str, "0");
 }

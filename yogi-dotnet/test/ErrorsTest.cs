@@ -64,7 +64,7 @@ namespace test
         public void DescriptiveFailureException()
         {
             Assert.True(typeof(Yogi.DescriptiveFailureException)
-                .IsSubclassOf(typeof(Yogi.Exception)));
+                .IsSubclassOf(typeof(Yogi.FailureException)));
             Assert.Equal(new Yogi.DescriptiveFailureException(Yogi.ErrorCode.Busy, "ab").Message,
                 new Yogi.DescriptiveFailure(Yogi.ErrorCode.Busy, "ab").ToString());
         }

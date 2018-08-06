@@ -733,7 +733,10 @@ YOGI_API int YOGI_ParseTime(long long* timestamp, const char* str,
  *
  * The \p durfmt parameter describes the format of the conversion. The
  * following placeholders are supported:
+ *  - *%+*: Plus sign if duration is positive and minus sign if it is negative
+ *  - *%-*: Minus sign (only) if duration is negative
  *  - *%d*: Total number of days
+ *  - *%D*: Total number of days if days > 0
  *  - *%H*: Fractional hours (range 00 to 23)
  *  - *%M*: Fractional minutes (range 00 to 59)
  *  - *%S*: Fractional seconds (range 00 to 59)
@@ -742,22 +745,28 @@ YOGI_API int YOGI_ParseTime(long long* timestamp, const char* str,
  *  - *%6*: Fractional microseconds (range 000 to 999)
  *  - *%9*: Fractional nanoseconds (range 000 to 999)
  *
+ * The \p inffmt parameter describes the format to use for infinite durations.
+ * The following placeholders are supported:
+ *  - *%+*: Plus sign if duration is positive and minus sign if it is negative
+ *  - *%-*: Minus sign (only) if duration is negative
+ *
  * If \p durfmt is set to NULL, then the duration will be formatted in the
- * format "23d 04:19:33.123456789". If \p dur is -1 to indicate an infinite
+ * format "-23d 04:19:33.123456789". If \p dur is -1 to indicate an infinite
  * duration, then \p infstr will be copied to \p str. If \p infstr is set to
- * NULL, then the string "infinity" will be used.
+ * NULL, then the format string "%-inf" will be used.
  *
  * \param[in]  dur     Duration in nanoseconds (-1 for infinity or >= 0)
+ * \param[in]  neg     Duration is negative (#YOGI_TRUE or #YOGI_FALSE)
  * \param[out] str     Pointer to a string for storing the result
  * \param[in]  strsize Maximum number of bytes to write to \p str
  * \param[in]  durfmt  Format of the duration string (set to NULL for default)
- * \param[in]  infstr  String to use for infinity (set to NULL for default)
+ * \param[in]  inffmt  Format to use for infinity (set to NULL for default)
  *
  * \returns [=0] #YOGI_OK if successful
  * \returns [<0] An error code in case of a failure (see \ref EC)
  ******************************************************************************/
-YOGI_API int YOGI_FormatDuration(long long dur, char* str, int strsize,
-                                 const char* durfmt, const char* infstr);
+YOGI_API int YOGI_FormatDuration(long long dur, int neg, char* str, int strsize,
+                                 const char* durfmt, const char* inffmt);
 
 /***************************************************************************//**
  * Creates a string describing an object.
@@ -834,7 +843,7 @@ YOGI_API int YOGI_FormatObject(void* obj, char* str, int strsize,
  *
  * \param[in] verbosity Maximum verbosity of messages to log
  * \param[in] stream    The stream to use (#YOGI_ST_STDOUT or #YOGI_ST_STDERR)
- * \param[in] color    Use colours in output (#YOGI_TRUE or #YOGI_FALSE)
+ * \param[in] color     Use colours in output (#YOGI_TRUE or #YOGI_FALSE)
  * \param[in] timefmt   Format of the timestamp (set to NULL for default)
  * \param[in] fmt       Format of a log entry (set to NULL for default)
  *

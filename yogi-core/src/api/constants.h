@@ -19,8 +19,8 @@ SCC char*     kDefaultLogTimeFormat          = "%F %T.%3";
 SCC char*     kDefaultLogFormat              = "$t [T$T] $<$s $c: $m$>";
 SCC int       kMaxMessageSize                = 100'000;
 SCC char*     kDefaultTimeFormat             = "%FT%T.%3Z";
-SCC char*     kDefaultInfiniteDurationString = "infinity";
-SCC char*     kDefaultDurationFormat         = "%dd %T.%3%6%9";
+SCC char*     kDefaultInfiniteDurationString = "%-inf";
+SCC char*     kDefaultDurationFormat         = "%-%dd %T.%3%6%9";
 SCC char*     kDefaultInvalidHandleString    = "INVALID";
 SCC char*     kDefaultObjectFormat           = "$T [$x]";
 #undef SCC

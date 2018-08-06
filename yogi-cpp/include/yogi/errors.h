@@ -310,12 +310,22 @@ class DescriptiveFailure : public Failure {
 /// All exceptions thrown by Yogi functions are derived from this class.
 ///
 /// \warning Not thread safe!
-class Exception : public std::exception {
+class Exception : public std::exception {};
+
+/// Exception wrapping a Failure object.
+///
+/// This exception type is used for failures without a detailed description.
+class FailureException : public Exception {
  public:
+  /// Constructor
+  ///
+  /// \param ec Error code.
+  FailureException(ErrorCode ec) : failure_(ec) {}
+
   /// Returns the wrapped Failure object.
   ///
   /// \returns The wrapped Failure object.
-  virtual const Failure& GetFailure() const = 0;
+  virtual const Failure& GetFailure() const { return failure_; }
 
   /// Returns a description of the error.
   ///
@@ -329,30 +339,15 @@ class Exception : public std::exception {
   }
 
  private:
-  mutable std::string what_;
-};
-
-/// Exception wrapping a Failure object.
-///
-/// This exception type is used for failures without a detailed description.
-class FailureException : public Exception {
- public:
-  /// Constructor
-  ///
-  /// \param ec Error code.
-  FailureException(ErrorCode ec) : failure_(ec) {}
-
-  virtual const Failure& GetFailure() const override { return failure_; }
-
- private:
   const Failure failure_;
+  mutable std::string what_;
 };
 
 /// Exception wrapping a DescriptiveFailure object.
 ///
 /// This exception type is used for failures that have detailed information
 /// available.
-class DescriptiveFailureException : public Exception {
+class DescriptiveFailureException : public FailureException {
  public:
   /// Constructor
   ///
@@ -362,12 +357,28 @@ class DescriptiveFailureException : public Exception {
   /// \param description Description of the error.
   template <typename String>
   DescriptiveFailureException(ErrorCode ec, String&& description)
-      : failure_(ec, std::forward<String>(description)) {}
+      : FailureException(ec), failure_(ec, std::forward<String>(description)) {}
 
   virtual const Failure& GetFailure() const override { return failure_; }
 
  private:
   const DescriptiveFailure failure_;
+};
+
+/// Exception for arithmetic errors.
+///
+/// This exception type is used when arithmetic errors occur in Yogi classes
+/// such as Duration and Timestamp.
+class ArithmeticException : public Exception {
+ public:
+  ArithmeticException(const char* what) : what_(what) {}
+
+  virtual const char* what() const noexcept override {
+    return what_;
+  }
+
+ private:
+  const char* what_;
 };
 
 }  // namespace yogi

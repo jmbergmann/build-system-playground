@@ -43,9 +43,10 @@ YOGI_API int YOGI_ParseTime(long long* timestamp, const char* str,
   CATCH_AND_RETURN;
 }
 
-YOGI_API int YOGI_FormatDuration(long long dur, char* str, int strsize,
+YOGI_API int YOGI_FormatDuration(long long dur, int neg, char* str, int strsize,
                                  const char* durfmt, const char* infstr) {
   CHECK_PARAM(dur >= -1);
+  CHECK_PARAM(neg == YOGI_TRUE || neg == YOGI_FALSE);
   CHECK_PARAM(str != nullptr);
   CHECK_PARAM(strsize > 0);
 
@@ -53,12 +54,20 @@ YOGI_API int YOGI_FormatDuration(long long dur, char* str, int strsize,
     std::string s;
     if (dur == -1) {
       s = infstr ? infstr : api::kDefaultInfiniteDurationString;
+
+      boost::replace_all(s, "%-", neg == YOGI_TRUE ? "-" : "");
+      boost::replace_all(s, "%+", neg == YOGI_TRUE ? "-" : "+");
     } else {
       s = durfmt ? durfmt : api::kDefaultDurationFormat;
 
+      boost::replace_all(s, "%-", neg == YOGI_TRUE ? "-" : "");
+      boost::replace_all(s, "%+", neg == YOGI_TRUE ? "-" : "+");
+
       char tmp[32];
-      sprintf(tmp, "%i", dur / 86'400'000'000'000);
+      auto days = dur / 86'400'000'000'000;
+      sprintf(tmp, "%i", days);
       boost::replace_all(s, "%d", tmp);
+      boost::replace_all(s, "%D", days > 0 ? tmp : "");
       boost::replace_all(s, "%T", "%H:%M:%S");
       sprintf(tmp, "%02i", (dur / 3'600'000'000'000) % 24);
       boost::replace_all(s, "%H", tmp);
