@@ -116,6 +116,14 @@ namespace test
         }
 
         [Fact]
+        public void ToStringMethod()
+        {
+            var cfg = new Yogi.Configuration();
+            cfg.UpdateFromJson("{\"age\": 42}");
+            Assert.Equal(cfg.Dump(), cfg.ToString());
+        }
+
+        [Fact]
         public void ToJson()
         {
             var cfg = new Yogi.Configuration(Yogi.ConfigurationFlags.DisableVariables);

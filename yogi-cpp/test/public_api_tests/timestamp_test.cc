@@ -33,6 +33,7 @@ TEST(TimestampTest, Constructor) {
 TEST(TimestampTest, DurationSinceEpoch) {
   EXPECT_EQ(Timestamp::FromDurationSinceEpoch(123ns).DurationSinceEpoch(),
             123ns);
+  EXPECT_THROW(Timestamp::FromDurationSinceEpoch(-123ns), ArithmeticException);
 }
 
 TEST(TimestampTest, Nanoseconds) {
@@ -66,12 +67,16 @@ TEST(TimestampTest, Operators) {
   auto t = Timestamp();
   t += 8ns;
   EXPECT_EQ(t.DurationSinceEpoch(), 8ns);
+  EXPECT_THROW(t += -1ms, ArithmeticException);
   t -= 1ns;
   EXPECT_EQ(t.DurationSinceEpoch(), 7ns);
+  EXPECT_THROW(t -= 1ms, ArithmeticException);
 
   EXPECT_EQ(t + 5ns, Timestamp::FromDurationSinceEpoch(12ns));
+  EXPECT_THROW(t + -1ms, ArithmeticException);
   EXPECT_EQ(t - 2ns, Timestamp::FromDurationSinceEpoch(5ns));
   EXPECT_EQ(t - Timestamp::FromDurationSinceEpoch(3ns), 4ns);
+  EXPECT_THROW(t - 1ms, ArithmeticException);
 
   EXPECT_TRUE(t == Timestamp::FromDurationSinceEpoch(7ns));
   EXPECT_FALSE(t == Timestamp::FromDurationSinceEpoch(8ns));

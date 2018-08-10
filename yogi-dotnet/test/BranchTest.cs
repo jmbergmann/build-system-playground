@@ -29,7 +29,7 @@ namespace test
         {
             var branch = new Yogi.Branch(context, "My Branch", "Stuff", "My Network", "Password",
                                          "/some/path", "239.255.0.1", 12345,
-                                         TimeSpan.FromSeconds(7), Yogi.InfiniteTimeSpan);
+                                         Yogi.Duration.FromSeconds(7), Yogi.Duration.Infinity);
 
            Yogi.LocalBranchInfo info = branch.Info;
            Assert.IsType<Guid>(info.Uuid);
@@ -46,7 +46,7 @@ namespace test
            Assert.IsType<IPAddress>(info.TcpServerAddress);
            Assert.True(info.TcpServerPort > 0);
            Assert.True(info.StartTime < Yogi.CurrentTime);
-           Assert.Equal(Yogi.InfiniteTimeSpan, info.Timeout);
+           Assert.Equal(Yogi.Duration.Infinity, info.Timeout);
         }
 
         [Fact]

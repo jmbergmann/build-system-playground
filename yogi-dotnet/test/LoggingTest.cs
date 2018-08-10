@@ -55,7 +55,7 @@ namespace test
                 (severity, timestamp, tid, file, line, comp, msg) => {
                     Assert.IsType<Yogi.Verbosity>(severity);
                     Assert.Equal(Yogi.Verbosity.Warning, severity);
-                    Assert.IsType<DateTime>(timestamp);
+                    Assert.IsType<Yogi.Timestamp>(timestamp);
                     Assert.True(timestamp <= Yogi.CurrentTime);
                     Assert.IsType<int>(tid);
                     Assert.True(tid > 0);

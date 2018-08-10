@@ -4,6 +4,7 @@
 #include "internal/conversion.h"
 #include "internal/error_code_helpers.h"
 #include "internal/library.h"
+#include "duration.h"
 
 #include <string>
 #include <chrono>
@@ -45,10 +46,10 @@ struct constants {
   static const int kDefaultAdvPort;
 
   /// Default time between two advertising messages.
-  static const std::chrono::nanoseconds kDefaultAdvInterval;
+  static const Duration kDefaultAdvInterval;
 
   /// Default timeout for connections between two branches.
-  static const std::chrono::nanoseconds kDefaultConnectionTimeout;
+  static const Duration kDefaultConnectionTimeout;
 
   /// Default verbosity for newly created loggers.
   static const Verbosity kDefaultLoggerVerbosity;
@@ -96,12 +97,12 @@ YOGI_WEAK_SYMBOL const std::string constants::kDefaultAdvAddress =
 YOGI_WEAK_SYMBOL const int constants::kDefaultAdvPort =
     internal::GetConstant<int>(6);
 
-YOGI_WEAK_SYMBOL const std::chrono::nanoseconds constants::kDefaultAdvInterval =
-    internal::CoreDurationToDuration(internal::GetConstant<long long>(7));
+YOGI_WEAK_SYMBOL const Duration constants::kDefaultAdvInterval =
+    Duration::FromNanoseconds(internal::GetConstant<long long>(7));
 
-YOGI_WEAK_SYMBOL const std::chrono::nanoseconds
+YOGI_WEAK_SYMBOL const Duration
     constants::kDefaultConnectionTimeout =
-    internal::CoreDurationToDuration(internal::GetConstant<long long>(8));
+    Duration::FromNanoseconds(internal::GetConstant<long long>(8));
 
 YOGI_WEAK_SYMBOL const Verbosity constants::kDefaultLoggerVerbosity =
     static_cast<Verbosity>(internal::GetConstant<int>(9));

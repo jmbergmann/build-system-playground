@@ -1,7 +1,7 @@
 using System;
 using System.Runtime.InteropServices;
 
-static public partial class Yogi
+public static partial class Yogi
 {
     partial class Api
     {
@@ -64,8 +64,13 @@ static public partial class Yogi
         /// </summary>
         /// <param name="duration">Time when the timer expires.</param>
         /// <param name="fn">Handler function to call after the given time passed.</param>
-        public void Start(TimeSpan duration, StartFnDelegate fn)
+        public void Start(Duration duration, StartFnDelegate fn)
         {
+            if (duration < Duration.Zero)
+            {
+                throw new ArgumentOutOfRangeException("Duration must not be negative");
+            }
+
             Api.TimerStartFnDelegate wrapper = (ec, userarg) =>
             {
                 try
@@ -82,8 +87,8 @@ static public partial class Yogi
             try
             {
                 var wrapperPtr = GCHandle.ToIntPtr(wrapperHandle);
-                int res = Api.YOGI_TimerStart(Handle, TimeSpanToCoreDuration(duration),
-                    wrapper, wrapperPtr);
+                int res = Api.YOGI_TimerStart(Handle,
+                    duration.IsFinite ? duration.NanosecondsCount : -1, wrapper, wrapperPtr);
                 CheckErrorCode(res);
             }
             catch

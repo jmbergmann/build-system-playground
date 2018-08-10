@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Diagnostics;
 
-static public partial class Yogi
+public static partial class Yogi
 {
     partial class Api
     {
@@ -71,7 +71,7 @@ static public partial class Yogi
     /// the Yogi Core library. A result is represented by a number which is >= 0
     /// in case of success and < 0 in case of a failure.
     /// </summary>
-    public class Result
+    public class Result : IComparable
     {
         /// <summary>
         /// Constructor.
@@ -127,18 +127,17 @@ static public partial class Yogi
 
         public static bool operator ==(Result lhs, Result rhs)
         {
-            return lhs.Value == rhs.Value;
+            if (object.ReferenceEquals(lhs, null))
+            {
+                return object.ReferenceEquals(rhs, null);
+            }
+
+            return lhs.Equals(rhs);
         }
 
         public static bool operator !=(Result lhs, Result rhs)
         {
             return lhs.Value != rhs.Value;
-        }
-
-        public override bool Equals(object obj)
-        {
-            if (!(obj is Result)) return false;
-            return this == (Result)obj;
         }
 
         public static bool operator <=(Result lhs, Result rhs)
@@ -149,6 +148,12 @@ static public partial class Yogi
         public static bool operator >=(Result lhs, Result rhs)
         {
             return lhs.Value >= rhs.Value;
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (!(obj is Result)) return false;
+            return Value == ((Result)obj).Value;
         }
 
         public static bool operator true(Result res)
@@ -168,7 +173,14 @@ static public partial class Yogi
 
         public override int GetHashCode()
         {
-            return Value;
+            return Value.GetHashCode();
+        }
+
+        public int CompareTo(object that)
+        {
+            if (!(that is Result)) return -1;
+            if (this == (Result)that) return 0;
+            return this < (Result)that ? -1 : +1;
         }
     }
 

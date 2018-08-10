@@ -1,7 +1,7 @@
 using System;
 using System.Runtime.InteropServices;
 
-static public partial class Yogi
+public static partial class Yogi
 {
     partial class Api
     {

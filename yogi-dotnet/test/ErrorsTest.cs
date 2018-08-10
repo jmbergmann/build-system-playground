@@ -28,6 +28,32 @@ namespace test
             Assert.NotEqual(new Yogi.Result(1).GetHashCode(), new Yogi.Result(2).GetHashCode());
             Assert.IsType<Yogi.ErrorCode>(new Yogi.Result(-1).ErrorCode);
             Assert.Equal(new Yogi.Result(0).ErrorCode, new Yogi.Result(1).ErrorCode);
+
+            Assert.True(new Yogi.Result(-2) < new Yogi.Result(-1));
+            Assert.False(new Yogi.Result(-1) < new Yogi.Result(-2));
+            Assert.False(new Yogi.Result(-2) > new Yogi.Result(-1));
+            Assert.True(new Yogi.Result(-1) > new Yogi.Result(-2));
+            Assert.True(new Yogi.Result(-2) <= new Yogi.Result(-1));
+            Assert.True(new Yogi.Result(-1) <= new Yogi.Result(-1));
+            Assert.False(new Yogi.Result(-2) <= new Yogi.Result(-3));
+            Assert.False(new Yogi.Result(-2) >= new Yogi.Result(-1));
+            Assert.True(new Yogi.Result(-1) >= new Yogi.Result(-1));
+            Assert.True(new Yogi.Result(-2) >= new Yogi.Result(-3));
+            Assert.True(new Yogi.Result(-1) == new Yogi.Result(-1));
+            Assert.False(new Yogi.Result(-1) == new Yogi.Result(-2));
+            Assert.True(new Yogi.Result(-1) != new Yogi.Result(-2));
+            Assert.False(new Yogi.Result(-1) != new Yogi.Result(-1));
+
+            Assert.True(new Yogi.Result(-1).Equals(new Yogi.Result(-1)));
+            Assert.False(new Yogi.Result(-1).Equals(new Yogi.Result(-2)));
+            Assert.False(new Yogi.Result(-1).Equals(""));
+
+            Assert.NotEqual(new Yogi.Result(-1).GetHashCode(), new Yogi.Result(-2).GetHashCode());
+
+            Assert.Equal(new Yogi.Result(-1).CompareTo(""), -1);
+            Assert.Equal(-1, new Yogi.Result(-2).CompareTo(new Yogi.Result(-1)));
+            Assert.Equal(0, new Yogi.Result(-1).CompareTo(new Yogi.Result(-1)));
+            Assert.Equal(+1, new Yogi.Result(-1).CompareTo(new Yogi.Result(-2)));
         }
 
         [Fact]

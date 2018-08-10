@@ -4,7 +4,7 @@ using System.Runtime.CompilerServices;
 using System.IO;
 using System.Text;
 
-static public partial class Yogi
+public static partial class Yogi
 {
     partial class Api
     {
@@ -201,7 +201,7 @@ static public partial class Yogi
     /// <param name="line">Source file line number.</param>
     /// <param name="comp">Component that created the entry.</param>
     /// <param name="msg">Log message.</param>
-    public delegate void LogToHookFnDelegate(Verbosity severity, DateTime timestamp, int tid,
+    public delegate void LogToHookFnDelegate(Verbosity severity, Timestamp timestamp, int tid,
                                              string file, int line, string comp, string msg);
 
     /// <summary>
@@ -223,7 +223,8 @@ static public partial class Yogi
             Api.LogToHookFnDelegate wrapper =
             (severity, timestamp, tid, file, line, comp, msg, userarg) =>
             {
-                fn(severity, CoreTimestampToDateTime(timestamp), tid, file, line, comp, msg);
+                var ts = Timestamp.FromDurationSinceEpoch(Duration.FromNanoseconds(timestamp));
+                fn(severity, ts, tid, file, line, comp, msg);
             };
 
             int vb = verbosity.HasValue ? (int)verbosity.Value : -1;

@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-static public partial class Yogi
+public static partial class Yogi
 {
     partial class Api
     {

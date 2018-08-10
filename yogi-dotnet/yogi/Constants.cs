@@ -1,7 +1,7 @@
 using System;
 using System.Runtime.InteropServices;
 
-static public partial class Yogi
+public static partial class Yogi
 {
     partial class Api
     {
@@ -31,58 +31,58 @@ static public partial class Yogi
     /// <summary>
     /// Constants built into the Yogi Core library.
     /// </summary>
-    static public class Constants
+    public static class Constants
     {
         /// <summary>Complete Yogi Core version number.</summary>
-        static public readonly string VersionNumber;
+        public static readonly string VersionNumber;
 
         /// <summary>Yogi Core major version number.</summary>
-        static public readonly int VersionMajor;
+        public static readonly int VersionMajor;
 
         /// <summary>Yogi Core minor version number.</summary>
-        static public readonly int VersionMinor;
+        public static readonly int VersionMinor;
 
         /// <summary>Yogi Core patch version number.</summary>
-        static public readonly int VersionPatch;
+        public static readonly int VersionPatch;
 
         /// <summary>Default IP address for advertising.</summary>
-        static public readonly string DefaultAdvAddress;
+        public static readonly string DefaultAdvAddress;
 
         /// <summary>Default UDP port for advertising.</summary>
-        static public readonly int DefaultAdvPort;
+        public static readonly int DefaultAdvPort;
 
         /// <summary>Default time between two advertising messages.</summary>
-        static public readonly TimeSpan DefaultAdvInterval;
+        public static readonly Duration DefaultAdvInterval;
 
         /// <summary>Default timeout for connections between two branches.</summary>
-        static public readonly TimeSpan DefaultConnectionTimeout;
+        public static readonly Duration DefaultConnectionTimeout;
 
         /// <summary>Default verbosity for newly created loggers.</summary>
-        static public readonly Verbosity DefaultLoggerVerbosity;
+        public static readonly Verbosity DefaultLoggerVerbosity;
 
         /// <summary>Default format of the time string in log entries.</summary>
-        static public readonly string DefaultLogTimeFormat;
+        public static readonly string DefaultLogTimeFormat;
 
         /// <summary>Default format of a log entry.</summary>
-        static public readonly string DefaultLogFormat;
+        public static readonly string DefaultLogFormat;
 
         /// <summary>Maximum size of a message between two branches.</summary>
-        static public readonly int MaxMessageSize;
+        public static readonly int MaxMessageSize;
 
         /// <summary>Default textual format for timestamps.</summary>
-        static public readonly string DefaultTimeFormat;
+        public static readonly string DefaultTimeFormat;
 
         /// <summary>Default string to denote an infinite duration.</summary>
-        static public readonly string DefaultInfiniteDurationString;
+        public static readonly string DefaultInfiniteDurationString;
 
         /// <summary>Default textual format for duration strings.</summary>
-        static public readonly string DefaultDurationFormat;
+        public static readonly string DefaultDurationFormat;
 
         /// <summary>Default string to denote an invalid object handle.</summary>
-        static public readonly string DefaultInvalidHandleString;
+        public static readonly string DefaultInvalidHandleString;
 
         /// <summary>Default textual format for strings describing an object.</summary>
-        static public readonly string DefaultObjectFormat;
+        public static readonly string DefaultObjectFormat;
 
         static Constants()
         {
@@ -101,10 +101,10 @@ static public partial class Yogi
 
             long t = -1;
             CheckErrorCode(Api.YOGI_GetLongLongConstant(ref t, 7));
-            DefaultAdvInterval = CoreDurationToTimeSpan(t);
+            DefaultAdvInterval = Duration.FromNanoseconds(t);
 
             CheckErrorCode(Api.YOGI_GetLongLongConstant(ref t, 8));
-            DefaultConnectionTimeout = CoreDurationToTimeSpan(t);
+            DefaultConnectionTimeout = Duration.FromNanoseconds(t);
 
             int n = -1;
             CheckErrorCode(Api.YOGI_GetIntConstant(ref n, 9));

@@ -4,7 +4,7 @@ using System.Runtime.ConstrainedExecution;
 using System.Runtime.InteropServices;
 using System.Collections.Generic;
 
-static public partial class Yogi
+public static partial class Yogi
 {
     partial class Api
     {

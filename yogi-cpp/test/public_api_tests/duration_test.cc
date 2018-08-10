@@ -8,77 +8,122 @@ using yogi::Duration;
 
 TEST(DurationTest, Zero) {
   auto dur = Duration::kZero;
-  EXPECT_FALSE(dur.IsInfinite());
-  EXPECT_EQ(dur.TotalNanoseconds(), 0);
+  EXPECT_TRUE(dur.IsFinite());
+  EXPECT_EQ(dur.NanosecondsCount(), 0);
 }
 
 TEST(DurationTest, Infinity) {
   auto dur = Duration::kInfinity;
-  EXPECT_TRUE(dur.IsInfinite());
+  EXPECT_FALSE(dur.IsFinite());
   EXPECT_TRUE(dur > Duration::kZero);
 }
 
 TEST(DurationTest, NegativeInfinity) {
   auto dur = Duration::kNegativeInfinity;
-  EXPECT_TRUE(dur.IsInfinite());
+  EXPECT_FALSE(dur.IsFinite());
   EXPECT_TRUE(dur < Duration::kZero);
 }
 
 TEST(DurationTest, FromNanoseconds) {
   auto dur = Duration::FromNanoseconds(123);
-  EXPECT_FALSE(dur.IsInfinite());
-  EXPECT_EQ(dur.TotalNanoseconds(), 123);
+  EXPECT_TRUE(dur.IsFinite());
+  EXPECT_EQ(dur.NanosecondsCount(), 123);
+
+  dur = Duration::FromNanoseconds(444.56);
+  EXPECT_EQ(dur.NanosecondsCount(), 444);  // Note: no rounding
+
+  dur = Duration::FromNanoseconds(std::numeric_limits<double>::infinity());
+  EXPECT_EQ(dur, Duration::kInfinity);
+
+  dur = Duration::FromNanoseconds(-std::numeric_limits<double>::infinity());
+  EXPECT_EQ(dur, Duration::kNegativeInfinity);
 }
 
 TEST(DurationTest, FromMicroseconds) {
   auto dur = Duration::FromMicroseconds(123);
-  EXPECT_FALSE(dur.IsInfinite());
+  EXPECT_TRUE(dur.IsFinite());
   EXPECT_EQ(dur.TotalMicroseconds(), 123);
+
+  dur = Duration::FromMicroseconds(std::numeric_limits<double>::infinity());
+  EXPECT_EQ(dur, Duration::kInfinity);
+
+  dur = Duration::FromMicroseconds(0.5);
+  EXPECT_EQ(dur.NanosecondsCount(), 500);
 }
 
 TEST(DurationTest, FromMilliseconds) {
   auto dur = Duration::FromMilliseconds(123);
-  EXPECT_FALSE(dur.IsInfinite());
+  EXPECT_TRUE(dur.IsFinite());
   EXPECT_EQ(dur.TotalMilliseconds(), 123);
+
+  dur = Duration::FromMilliseconds(std::numeric_limits<double>::infinity());
+  EXPECT_EQ(dur, Duration::kInfinity);
+
+  dur = Duration::FromMilliseconds(0.5);
+  EXPECT_EQ(dur.TotalMicroseconds(), 500);
 }
 
 TEST(DurationTest, FromSeconds) {
   auto dur = Duration::FromSeconds(123);
-  EXPECT_FALSE(dur.IsInfinite());
+  EXPECT_TRUE(dur.IsFinite());
   EXPECT_EQ(dur.TotalSeconds(), 123);
+
+  dur = Duration::FromSeconds(std::numeric_limits<double>::infinity());
+  EXPECT_EQ(dur, Duration::kInfinity);
+
+  dur = Duration::FromSeconds(0.5);
+  EXPECT_EQ(dur.TotalMilliseconds(), 500);
 }
 
 TEST(DurationTest, FromMinutes) {
   auto dur = Duration::FromMinutes(123);
-  EXPECT_FALSE(dur.IsInfinite());
+  EXPECT_TRUE(dur.IsFinite());
   EXPECT_EQ(dur.TotalMinutes(), 123);
+
+  dur = Duration::FromMinutes(std::numeric_limits<double>::infinity());
+  EXPECT_EQ(dur, Duration::kInfinity);
+
+  dur = Duration::FromMinutes(0.5);
+  EXPECT_EQ(dur.TotalSeconds(), 30);
 }
 
 TEST(DurationTest, FromHours) {
   auto dur = Duration::FromHours(123);
-  EXPECT_FALSE(dur.IsInfinite());
+  EXPECT_TRUE(dur.IsFinite());
   EXPECT_EQ(dur.TotalHours(), 123);
+
+  dur = Duration::FromHours(std::numeric_limits<double>::infinity());
+  EXPECT_EQ(dur, Duration::kInfinity);
+
+  dur = Duration::FromHours(0.5);
+  EXPECT_EQ(dur.TotalMinutes(), 30);
 }
 
 TEST(DurationTest, FromDays) {
   auto dur = Duration::FromDays(123);
-  EXPECT_FALSE(dur.IsInfinite());
+  EXPECT_TRUE(dur.IsFinite());
   EXPECT_EQ(dur.TotalDays(), 123);
+
+  dur = Duration::FromDays(std::numeric_limits<double>::infinity());
+  EXPECT_EQ(dur, Duration::kInfinity);
+
+  dur = Duration::FromDays(0.5);
+  EXPECT_EQ(dur.TotalHours(), 12);
 }
 
 TEST(DurationTest, DefaultConstructor) {
   auto dur = Duration();
-  EXPECT_FALSE(dur.IsInfinite());
-  EXPECT_EQ(dur.TotalNanoseconds(), 0);
+  EXPECT_TRUE(dur.IsFinite());
+  EXPECT_EQ(dur.NanosecondsCount(), 0);
 }
 
 TEST(DurationTest, ChronoConstructor) {
   auto dur = Duration(12s);
-  EXPECT_FALSE(dur.IsInfinite());
+  EXPECT_TRUE(dur.IsFinite());
   EXPECT_EQ(dur.TotalSeconds(), 12);
 
   dur = Duration(33ms);
-  EXPECT_FALSE(dur.IsInfinite());
+  EXPECT_TRUE(dur.IsFinite());
   EXPECT_EQ(dur.TotalMilliseconds(), 33);
 }
 
@@ -117,52 +162,93 @@ TEST(DurationTest, Days) {
   EXPECT_EQ(dur.Days(), 1428);
 }
 
+TEST(DurationTest, NanosecondsCount) {
+  auto dur = Duration(123456789132465887ns);
+  EXPECT_EQ(dur.NanosecondsCount(), 123456789132465887LL);
+}
+
 TEST(DurationTest, TotalNanoseconds) {
   auto dur = Duration(123456789132465887ns);
-  EXPECT_EQ(dur.TotalNanoseconds(), 123456789132465887ll);
+  EXPECT_DOUBLE_EQ(dur.TotalNanoseconds(), 123456789132465887.0);
+
+  EXPECT_EQ(Duration::kInfinity.TotalNanoseconds(),
+            std::numeric_limits<double>::infinity());
+  EXPECT_EQ(Duration::kNegativeInfinity.TotalNanoseconds(),
+            -std::numeric_limits<double>::infinity());
 }
 
 TEST(DurationTest, TotalMicroseconds) {
   auto dur = Duration(123456789132465887ns);
-  EXPECT_EQ(dur.TotalMicroseconds(), 123456789132465ll);
+  EXPECT_DOUBLE_EQ(dur.TotalMicroseconds(), 123456789132465.887);
+
+  EXPECT_EQ(Duration::kInfinity.TotalMicroseconds(),
+            std::numeric_limits<double>::infinity());
+  EXPECT_EQ(Duration::kNegativeInfinity.TotalMicroseconds(),
+            -std::numeric_limits<double>::infinity());
 }
 
 TEST(DurationTest, TotalMilliseconds) {
   auto dur = Duration(123456789132465887ns);
-  EXPECT_EQ(dur.TotalMilliseconds(), 123456789132ll);
+  EXPECT_DOUBLE_EQ(dur.TotalMilliseconds(), 123456789132.465887);
+
+  EXPECT_EQ(Duration::kInfinity.TotalMilliseconds(),
+            std::numeric_limits<double>::infinity());
+  EXPECT_EQ(Duration::kNegativeInfinity.TotalMilliseconds(),
+            -std::numeric_limits<double>::infinity());
 }
 
 TEST(DurationTest, TotalSeconds) {
   auto dur = Duration(123456789132465887ns);
-  EXPECT_EQ(dur.TotalSeconds(), 123456789ll);
+  EXPECT_DOUBLE_EQ(dur.TotalSeconds(), 123456789.132465887);
+
+  EXPECT_EQ(Duration::kInfinity.TotalSeconds(),
+            std::numeric_limits<double>::infinity());
+  EXPECT_EQ(Duration::kNegativeInfinity.TotalSeconds(),
+            -std::numeric_limits<double>::infinity());
 }
 
 TEST(DurationTest, TotalMinutes) {
   auto dur = Duration(123456789132465887ns);
-  EXPECT_EQ(dur.TotalMinutes(), 2057613ll);
+  EXPECT_DOUBLE_EQ(dur.TotalMinutes(), 2057613.1522077648);
+
+  EXPECT_EQ(Duration::kInfinity.TotalMinutes(),
+            std::numeric_limits<double>::infinity());
+  EXPECT_EQ(Duration::kNegativeInfinity.TotalMinutes(),
+            -std::numeric_limits<double>::infinity());
 }
 
 TEST(DurationTest, TotalHours) {
   auto dur = Duration(123456789132465887ns);
-  EXPECT_EQ(dur.TotalHours(), 34293ll);
+  EXPECT_DOUBLE_EQ(dur.TotalHours(), 34293.55253679608);
+
+  EXPECT_EQ(Duration::kInfinity.TotalHours(),
+            std::numeric_limits<double>::infinity());
+  EXPECT_EQ(Duration::kNegativeInfinity.TotalHours(),
+            -std::numeric_limits<double>::infinity());
 }
 
 TEST(DurationTest, TotalDays) {
   auto dur = Duration(123456789132465887ns);
-  EXPECT_EQ(dur.TotalDays(), 1428ll);
+  EXPECT_DOUBLE_EQ(dur.TotalDays(), 1428.8980223665033);
+
+  EXPECT_EQ(Duration::kInfinity.TotalDays(),
+            std::numeric_limits<double>::infinity());
+  EXPECT_EQ(Duration::kNegativeInfinity.TotalDays(),
+            -std::numeric_limits<double>::infinity());
 }
 
 TEST(DurationTest, Negated) {
   auto dur = Duration(123ns);
   auto neg_dur = dur.Negated();
-  EXPECT_EQ(neg_dur.TotalNanoseconds(), -dur.TotalNanoseconds());
-  EXPECT_FALSE(neg_dur.IsInfinite());
+  EXPECT_EQ(neg_dur.NanosecondsCount(), -dur.NanosecondsCount());
+  EXPECT_TRUE(neg_dur.IsFinite());
 }
 
 TEST(DurationTest, ToChronoDuration) {
   auto dur = Duration(123456789132465887ns);
   EXPECT_EQ(dur.ToChronoDuration<>(), 123456789132465887ns);
   EXPECT_EQ(dur.ToChronoDuration<std::chrono::seconds>(), 123456789s);
+
   EXPECT_EQ(Duration::kInfinity.ToChronoDuration<>(),
             (std::chrono::nanoseconds::max)());
   EXPECT_EQ(Duration::kInfinity.ToChronoDuration<std::chrono::minutes>(),
@@ -175,10 +261,10 @@ TEST(DurationTest, ToChronoDuration) {
 }
 
 TEST(DurationTest, IsInfinite) {
-  EXPECT_FALSE(Duration::kZero.IsInfinite());
-  EXPECT_FALSE(Duration(123ns).IsInfinite());
-  EXPECT_TRUE(Duration::kInfinity.IsInfinite());
-  EXPECT_TRUE(Duration::kNegativeInfinity.IsInfinite());
+  EXPECT_TRUE(Duration::kZero.IsFinite());
+  EXPECT_TRUE(Duration(123ns).IsFinite());
+  EXPECT_FALSE(Duration::kInfinity.IsFinite());
+  EXPECT_FALSE(Duration::kNegativeInfinity.IsFinite());
 }
 
 TEST(DurationTest, Format) {
@@ -211,13 +297,13 @@ TEST(DurationTest, ToString) {
 }
 
 TEST(DurationTest, PlusOperator) {
-  auto dur = Duration(10ns);
+  auto dur1 = Duration(10ns);
   auto dur2 = Duration(3us);
-  EXPECT_EQ((dur + dur2).TotalNanoseconds(), 3010);
+  EXPECT_EQ((dur1 + dur2).NanosecondsCount(), 3010);
 
-  EXPECT_EQ(dur + Duration::kInfinity, Duration::kInfinity);
+  EXPECT_EQ(dur1 + Duration::kInfinity, Duration::kInfinity);
   EXPECT_EQ(Duration::kInfinity + Duration::kInfinity, Duration::kInfinity);
-  EXPECT_EQ(dur + Duration::kNegativeInfinity, Duration::kNegativeInfinity);
+  EXPECT_EQ(dur1 + Duration::kNegativeInfinity, Duration::kNegativeInfinity);
   EXPECT_EQ(Duration::kNegativeInfinity + Duration::kNegativeInfinity,
             Duration::kNegativeInfinity);
   EXPECT_THROW(Duration::kInfinity + Duration::kNegativeInfinity,
@@ -227,7 +313,7 @@ TEST(DurationTest, PlusOperator) {
 TEST(DurationTest, MinusOperator) {
   auto dur1 = Duration(10ns);
   auto dur2 = Duration(3us);
-  EXPECT_EQ((dur1 - dur2).TotalNanoseconds(), -2990);
+  EXPECT_EQ((dur1 - dur2).NanosecondsCount(), -2990);
 
   EXPECT_EQ(dur1 - Duration::kInfinity, Duration::kNegativeInfinity);
   EXPECT_EQ(Duration::kInfinity - Duration::kNegativeInfinity,
@@ -242,8 +328,8 @@ TEST(DurationTest, MinusOperator) {
 TEST(DurationTest, MultiplicationOperator) {
   auto dur = Duration(8ns);
 
-  EXPECT_EQ((dur * 3).TotalNanoseconds(), 24);
-  EXPECT_EQ((dur * 3.5).TotalNanoseconds(), 28);
+  EXPECT_EQ((dur * 3).NanosecondsCount(), 24);
+  EXPECT_EQ((dur * 3.5).NanosecondsCount(), 28);
 
   EXPECT_EQ(Duration::kInfinity * 5, Duration::kInfinity);
   EXPECT_EQ(Duration::kInfinity * -5, Duration::kNegativeInfinity);
@@ -253,12 +339,12 @@ TEST(DurationTest, MultiplicationOperator) {
 TEST(DurationTest, DivisionOperator) {
   auto dur = Duration(28ns);
 
-  EXPECT_EQ((dur / 2).TotalNanoseconds(), 14);
-  EXPECT_EQ((dur / 3.5).TotalNanoseconds(), 8);
+  EXPECT_EQ((dur / 2).NanosecondsCount(), 14);
+  EXPECT_EQ((dur / 3.5).NanosecondsCount(), 8);
 
   EXPECT_EQ(Duration::kInfinity / 5, Duration::kInfinity);
   EXPECT_EQ(Duration::kInfinity / -5, Duration::kNegativeInfinity);
-  EXPECT_THROW(Duration::kInfinity / 0, ArithmeticException);
+  EXPECT_THROW(dur / 0, ArithmeticException);
 }
 
 TEST(DurationTest, PlusEqualsOperator) {
@@ -266,7 +352,7 @@ TEST(DurationTest, PlusEqualsOperator) {
   auto dur2 = Duration(3us);
   auto dur3 = dur1 += dur2;
   EXPECT_EQ(dur1, dur3);
-  EXPECT_EQ(dur1.TotalNanoseconds(), 3010);
+  EXPECT_EQ(dur1.NanosecondsCount(), 3010);
 }
 
 TEST(DurationTest, MinusEqualsOperator) {
@@ -274,21 +360,21 @@ TEST(DurationTest, MinusEqualsOperator) {
   auto dur2 = Duration(3us);
   auto dur3 = dur1 -= dur2;
   EXPECT_EQ(dur1, dur3);
-  EXPECT_EQ(dur1.TotalNanoseconds(), -2990);
+  EXPECT_EQ(dur1.NanosecondsCount(), -2990);
 }
 
 TEST(DurationTest, MultiplyEqualsOperator) {
   auto dur1 = Duration(3ns);
   auto dur2 = dur1 *= 3;
   EXPECT_EQ(dur1, dur2);
-  EXPECT_EQ(dur1.TotalNanoseconds(), 9);
+  EXPECT_EQ(dur1.NanosecondsCount(), 9);
 }
 
 TEST(DurationTest, DivideEqualsOperator) {
   auto dur1 = Duration(12ns);
   auto dur2 = dur1 /= 3;
   EXPECT_EQ(dur1, dur2);
-  EXPECT_EQ(dur1.TotalNanoseconds(), 4);
+  EXPECT_EQ(dur1.NanosecondsCount(), 4);
 }
 
 TEST(DurationTest, EqualityOperator) {
@@ -314,6 +400,11 @@ TEST(DurationTest, LessThanOperator) {
   EXPECT_FALSE(dur1 < dur2);
   EXPECT_TRUE(dur2 < dur3);
   EXPECT_FALSE(dur3 < dur1);
+
+  EXPECT_FALSE(Duration::kInfinity < Duration::kInfinity);
+  EXPECT_TRUE(Duration::kNegativeInfinity < Duration::kInfinity);
+  EXPECT_FALSE(Duration::kInfinity < Duration::kZero);
+  EXPECT_TRUE(Duration::kNegativeInfinity < Duration::kZero);
 }
 
 TEST(DurationTest, GreaterThanOperator) {
@@ -323,6 +414,11 @@ TEST(DurationTest, GreaterThanOperator) {
   EXPECT_FALSE(dur1 > dur2);
   EXPECT_FALSE(dur2 > dur3);
   EXPECT_TRUE(dur3 > dur1);
+
+  EXPECT_FALSE(Duration::kInfinity > Duration::kInfinity);
+  EXPECT_FALSE(Duration::kNegativeInfinity > Duration::kInfinity);
+  EXPECT_TRUE(Duration::kInfinity > Duration::kZero);
+  EXPECT_FALSE(Duration::kNegativeInfinity > Duration::kZero);
 }
 
 TEST(DurationTest, LessOrEqualOperator) {
@@ -332,6 +428,11 @@ TEST(DurationTest, LessOrEqualOperator) {
   EXPECT_TRUE(dur1 <= dur2);
   EXPECT_TRUE(dur2 <= dur3);
   EXPECT_FALSE(dur3 <= dur1);
+
+  EXPECT_TRUE(Duration::kInfinity <= Duration::kInfinity);
+  EXPECT_TRUE(Duration::kNegativeInfinity <= Duration::kInfinity);
+  EXPECT_FALSE(Duration::kInfinity <= Duration::kZero);
+  EXPECT_TRUE(Duration::kNegativeInfinity <= Duration::kZero);
 }
 
 TEST(DurationTest, GreaterOrEqualOperator) {
@@ -341,4 +442,9 @@ TEST(DurationTest, GreaterOrEqualOperator) {
   EXPECT_TRUE(dur1 >= dur2);
   EXPECT_FALSE(dur2 >= dur3);
   EXPECT_TRUE(dur3 >= dur1);
+
+  EXPECT_TRUE(Duration::kInfinity >= Duration::kInfinity);
+  EXPECT_FALSE(Duration::kNegativeInfinity >= Duration::kInfinity);
+  EXPECT_TRUE(Duration::kInfinity >= Duration::kZero);
+  EXPECT_FALSE(Duration::kNegativeInfinity >= Duration::kZero);
 }

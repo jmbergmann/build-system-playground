@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-static public partial class Yogi
+public static partial class Yogi
 {
     partial class Api
     {
@@ -120,11 +120,11 @@ static public partial class Yogi
             Path = (string)Data["path"];
             Hostname = (string)Data["hostname"];
             Pid = (int)Data["pid"];
-            AdvertisingInterval = DoubleToTimeSpan((double)Data["advertising_interval"]);
+            AdvertisingInterval = Duration.FromJson(Data["advertising_interval"]);
             TcpServerAddress = IPAddress.Parse((string)Data["tcp_server_address"]);
             TcpServerPort = (int)Data["tcp_server_port"];
-            StartTime = StringToDateTime((string)Data["start_time"]);
-            Timeout = DoubleToTimeSpan((double)Data["timeout"]);
+            StartTime = Timestamp.Parse((string)Data["start_time"]);
+            Timeout = Duration.FromJson(Data["timeout"]);
         }
 
         public override string ToString()
@@ -158,7 +158,7 @@ static public partial class Yogi
         public int Pid { get; }
 
         /// <summary>Advertising interval.</summary>
-        public TimeSpan AdvertisingInterval { get; }
+        public Duration AdvertisingInterval { get; }
 
         /// <summary>Address of the TCP server for incoming connections.</summary>
         public IPAddress TcpServerAddress { get; }
@@ -167,10 +167,10 @@ static public partial class Yogi
         public int TcpServerPort { get; }
 
         /// <summary>Time when the branch was started.</summary>
-        public DateTime StartTime { get; }
+        public Timestamp StartTime { get; }
 
         /// <summary>Connection timeout.</summary>
-        public TimeSpan Timeout { get; }
+        public Duration Timeout { get; }
     }
 
     /// <summary>
@@ -298,7 +298,7 @@ static public partial class Yogi
         public int Pid { get { return info.Pid; } }
 
         /// <summary>Advertising interval.</summary>
-        public TimeSpan AdvertisingInterval { get { return info.AdvertisingInterval; } }
+        public Duration AdvertisingInterval { get { return info.AdvertisingInterval; } }
 
         /// <summary>Address of the TCP server for incoming connections.</summary>
         public IPAddress TcpServerAddress { get { return info.TcpServerAddress; } }
@@ -307,10 +307,10 @@ static public partial class Yogi
         public int TcpServerPort { get { return info.TcpServerPort; } }
 
         /// <summary>Time when the branch was started.</summary>
-        public DateTime StartTime { get { return info.StartTime; } }
+        public Timestamp StartTime { get { return info.StartTime; } }
 
         /// <summary>Connection timeout.</summary>
-        public TimeSpan Timeout { get { return info.Timeout; } }
+        public Duration Timeout { get { return info.Timeout; } }
 
         public RemoteBranchInfo ToRemoteBranchInfo()
         {
@@ -402,8 +402,8 @@ static public partial class Yogi
         /// <returns></returns>
         public Branch(Context context, string name, [Optional] string description,
             [Optional] string netname, [Optional] string password, [Optional] string path,
-            [Optional] string advaddr, [Optional] int advport, [Optional] TimeSpan? advint,
-            [Optional] TimeSpan? timeout)
+            [Optional] string advaddr, [Optional] int advport, [Optional] Duration advint,
+            [Optional] Duration timeout)
         : base(Create(context, name, description, netname, password, path, advaddr, advport,
             advint, timeout), new Object[] {context})
         {
@@ -458,7 +458,7 @@ static public partial class Yogi
         public int Pid { get { return Info.Pid; } }
 
         /// <summary>Advertising interval.</summary>
-        public TimeSpan AdvertisingInterval { get { return Info.AdvertisingInterval; } }
+        public Duration AdvertisingInterval { get { return Info.AdvertisingInterval; } }
 
         /// <summary>Address of the TCP server for incoming connections.</summary>
         public IPAddress TcpServerAddress { get { return Info.TcpServerAddress; } }
@@ -467,10 +467,10 @@ static public partial class Yogi
         public int TcpServerPort { get { return Info.TcpServerPort; } }
 
         /// <summary>Time when the branch was started.</summary>
-        public DateTime StartTime { get { return Info.StartTime; } }
+        public Timestamp StartTime { get { return Info.StartTime; } }
 
         /// <summary>Connection timeout.</summary>
-        public TimeSpan Timeout { get { return Info.Timeout; } }
+        public Duration Timeout { get { return Info.Timeout; } }
 
         /// <summary>Advertising IP address.</summary>
         public IPAddress AdvertisingAddress { get { return Info.AdvertisingAddress; } }
@@ -614,13 +614,15 @@ static public partial class Yogi
 
         static IntPtr Create(Context context, string name, [Optional] string description,
             [Optional] string netname, [Optional] string password, [Optional] string path,
-            [Optional] string advaddr, [Optional] int advport, [Optional] TimeSpan? advint,
-            [Optional] TimeSpan? timeout)
+            [Optional] string advaddr, [Optional] int advport, [Optional] Duration advint,
+            [Optional] Duration timeout)
         {
+            long advintDur = advint == null ? 0 : DurationToApiDuration(advint);
+            long timeoutDur = timeout == null ? 0 : DurationToApiDuration(timeout);
+
             var handle = new IntPtr();
             int res = Api.YOGI_BranchCreate(ref handle, context.Handle, name, description, netname,
-                password, path, advaddr, advport, TimeSpanToCoreDuration(advint),
-                TimeSpanToCoreDuration(timeout));
+                password, path, advaddr, advport, advintDur, timeoutDur);
             CheckErrorCode(res);
             return handle;
         }

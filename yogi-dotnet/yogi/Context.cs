@@ -1,7 +1,7 @@
 using System;
 using System.Runtime.InteropServices;
 
-static public partial class Yogi
+public static partial class Yogi
 {
     partial class Api
     {
@@ -157,14 +157,56 @@ static public partial class Yogi
         /// This function must be called from outside any handler functions that are being
         /// executed through the context.
         /// </summary>
-        /// <param name="duration">Duration.</param>
+        /// <param name="duration">Duration (infinity by default).</param>
         /// <returns>Number of executed handlers.</returns>
-        public int Run([Optional] TimeSpan? duration)
+        public int Run([Optional] Duration duration)
         {
-            if (!duration.HasValue) duration = InfiniteTimeSpan;
+            long dur = duration == null ? -1 : DurationToApiDuration(duration);
 
             int count = -1;
-            int res = Api.YOGI_ContextRun(Handle, ref count, TimeSpanToCoreDuration(duration));
+            int res = Api.YOGI_ContextRun(Handle, ref count, dur);
+            CheckErrorCode(res);
+            return count;
+        }
+
+        /// <summary>
+        /// Runs the context's event processing loop for the specified duration.
+        ///
+        /// This function blocks while running the context's event processing loop and
+        /// calling dispatched handlers (internal and user-supplied such as functions
+        /// registered through Post()) for the specified duration unless Stop() is called
+        /// within that time.
+        ///
+        /// This function must be called from outside any handler functions that are being
+        /// executed through the context.
+        /// </summary>
+        /// <param name="duration">Duration.</param>
+        /// <returns>Number of executed handlers.</returns>
+        public int Run(TimeSpan duration)
+        {
+            return Run(new Duration(duration));
+        }
+
+        /// <summary>
+        /// Runs the context's event processing loop for the specified duration to execute
+        /// at most one handler.
+        ///
+        /// This function blocks while running the context's event processing loop and
+        /// calling dispatched handlers (internal and user-supplied such as functions
+        /// registered through Post()) for the specified duration until a single handler
+        /// function has been executed, unless Stop() is called within that time.
+        ///
+        /// This function must be called from outside any handler functions that are being
+        /// executed through the context.
+        /// </summary>
+        /// <param name="duration">Duration (infinity by default).</param>
+        /// <returns>Number of executed handlers.</returns>
+        public int RunOne([Optional] Duration duration)
+        {
+            long dur = duration == null ? -1 : DurationToApiDuration(duration);
+
+            int count = -1;
+            int res = Api.YOGI_ContextRunOne(Handle, ref count, dur);
             CheckErrorCode(res);
             return count;
         }
@@ -183,14 +225,9 @@ static public partial class Yogi
         /// </summary>
         /// <param name="duration">Duration.</param>
         /// <returns>Number of executed handlers.</returns>
-        public int RunOne([Optional] TimeSpan? duration)
+        public int RunOne(TimeSpan duration)
         {
-            if (!duration.HasValue) duration = InfiniteTimeSpan;
-
-            int count = -1;
-            int res = Api.YOGI_ContextRunOne(Handle, ref count, TimeSpanToCoreDuration(duration));
-            CheckErrorCode(res);
-            return count;
+            return RunOne(new Duration(duration));
         }
 
         /// <summary>
@@ -230,14 +267,49 @@ static public partial class Yogi
         /// This function must be called from outside any handler functions that are being
         /// executed through the context.
         /// </summary>
+        /// <param name="duration">Maximum time to wait (infinity by default).</param>
+        /// <returns>True if the context's event processing loop is running within the
+        /// specified duration and false otherwise.</returns>
+        public bool WaitForRunning([Optional] Duration duration)
+        {
+            long dur = duration == null ? -1 : DurationToApiDuration(duration);
+
+            int res = Api.YOGI_ContextWaitForRunning(Handle, dur);
+            if ((ErrorCode)res == ErrorCode.Timeout) return false;
+            CheckErrorCode(res);
+            return true;
+        }
+
+        /// <summary>
+        /// Blocks until the context's event processing loop is being run or until the
+        /// specified timeout is reached.
+        ///
+        /// This function must be called from outside any handler functions that are being
+        /// executed through the context.
+        /// </summary>
         /// <param name="duration">Maximum time to wait.</param>
         /// <returns>True if the context's event processing loop is running within the
         /// specified duration and false otherwise.</returns>
-        public bool WaitForRunning([Optional] TimeSpan? duration)
+        public bool WaitForRunning(TimeSpan duration)
         {
-            if (!duration.HasValue) duration = InfiniteTimeSpan;
+            return WaitForRunning(new Duration(duration));
+        }
 
-            int res = Api.YOGI_ContextWaitForRunning(Handle, TimeSpanToCoreDuration(duration));
+        /// <summary>
+        /// Blocks until no thread is running the context's event processing
+        /// loop or until the specified timeout is reached.
+        ///
+        /// This function must be called from outside any handler functions that are being
+        /// executed through the context.
+        /// </summary>
+        /// <param name="duration">Maximum time to wait (infinity by default).</param>
+        /// <returns>True if the context's event processing loop is not running within the
+        /// specified duration and false otherwise.</returns>
+        public bool WaitForStopped([Optional] Duration duration)
+        {
+            long dur = duration == null ? -1 : DurationToApiDuration(duration);
+
+            int res = Api.YOGI_ContextWaitForStopped(Handle, dur);
             if ((ErrorCode)res == ErrorCode.Timeout) return false;
             CheckErrorCode(res);
             return true;
@@ -253,14 +325,9 @@ static public partial class Yogi
         /// <param name="duration">Maximum time to wait.</param>
         /// <returns>True if the context's event processing loop is not running within the
         /// specified duration and false otherwise.</returns>
-        public bool WaitForStopped([Optional] TimeSpan? duration)
+        public bool WaitForStopped(TimeSpan duration)
         {
-            if (!duration.HasValue) duration = InfiniteTimeSpan;
-
-            int res = Api.YOGI_ContextWaitForStopped(Handle, TimeSpanToCoreDuration(duration));
-            if ((ErrorCode)res == ErrorCode.Timeout) return false;
-            CheckErrorCode(res);
-            return true;
+            return WaitForStopped(new Duration(duration));
         }
 
         /// <summary>

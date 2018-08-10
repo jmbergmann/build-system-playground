@@ -25,11 +25,13 @@ class Timestamp {
  public:
   /// Creates a timestamp from a duration since the epoch 01/01/1970 UTC.
   ///
+  /// \param dur_since_epoch Duration since the epoch.
+  ///
   /// \returns Timestamp instance.
   static Timestamp FromDurationSinceEpoch(const Duration& dur_since_epoch) {
-    if (dur_since_epoch.IsInfinite() || dur_since_epoch < Duration()) {
+    if (!dur_since_epoch.IsFinite() || dur_since_epoch < Duration::kZero) {
       throw ArithmeticException(
-          "Invalid duration range for use as a timestamp");
+          "Invalid duration value for use as a timestamp");
     }
 
     Timestamp t;
@@ -135,7 +137,7 @@ class Timestamp {
   template <typename String = char*>
   std::string Format(const String& timefmt = nullptr) const {
     char str[128];
-    int res = internal::YOGI_FormatTime(dur_since_epoch_.TotalNanoseconds(),
+    int res = internal::YOGI_FormatTime(dur_since_epoch_.NanosecondsCount(),
                                         str, sizeof(str),
                                         internal::StringToCoreString(timefmt));
     internal::CheckErrorCode(res);
@@ -146,7 +148,7 @@ class Timestamp {
   ///
   /// Example: "2018-04-23T18:25:43.511Z".
   ///
-  /// \returns The time in ISO-8601 format up to milliseonds.
+  /// \returns The time in ISO-8601 format.
   std::string ToString() const { return Format(); }
 
   Timestamp operator+(const Duration& dur) const {

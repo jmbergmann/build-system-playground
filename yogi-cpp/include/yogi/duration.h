@@ -11,11 +11,16 @@
 #include <cmath>
 #include <type_traits>
 
+static_assert(std::numeric_limits<double>::has_infinity,
+              "Yogi needs a platform with support for infinite double values.");
+
 namespace yogi {
 
 YOGI_DEFINE_API_FN(int, YOGI_FormatDuration,
                    (long long dur, int neg, char* str, int strsize,
                     const char* durfmt, const char* infstr))
+
+class Duration;
 
 namespace internal {
 
@@ -55,20 +60,79 @@ enum InfinityType {
   kPositive = 1,
 };
 
+template <long long Multiplicator, typename T>
+inline Duration DurationFromTimeUnitImpl(T val) {
+  static_assert(std::is_arithmetic<T>::value, "T must be an arithmetic type.");
+
+  if (IsNan(val)) {
+    throw ArithmeticException("Cannot construct duration from NaN");
+  }
+
+  if (IsFinite(val)) {
+    auto max_val =
+        static_cast<T>((std::numeric_limits<T>::max)() / Multiplicator);
+    if (std::abs(val) > max_val) {
+      throw ArithmeticException("Duration value overflow");
+    }
+
+    return Duration(std::chrono::nanoseconds(
+          static_cast<std::chrono::nanoseconds::rep>(val * Multiplicator)));
+  }
+
+  // infinite
+  return val < 0 ? Duration::kNegativeInfinity : Duration::kInfinity;
+}
+
+template <bool IsIntegral>
+struct DurationFromTimeUnitSelector {
+  template <long long Multiplicator, typename T>
+  inline static Duration Fn(T val) {
+    return DurationFromTimeUnitImpl<Multiplicator, T>(val);
+  }
+};
+
+template <>
+struct DurationFromTimeUnitSelector<true> {
+  template <long long Multiplicator, typename T>
+  inline static Duration Fn(T val) {
+    return DurationFromTimeUnitImpl<Multiplicator, long long>(val);
+  }
+};
+
+template <long long Multiplicator, typename T>
+inline Duration DurationFromTimeUnit(T val) {
+  return DurationFromTimeUnitSelector<std::is_integral<T>::value>::Fn<
+      Multiplicator>(val);
+}
+
 inline long long AddSafely(long long a, long long b) {
   if (a > 0 && b > (std::numeric_limits<long long>::max)() - a) {
-    throw ArithmeticException("Duration value overflow.");
+    throw ArithmeticException("Duration value overflow");
   } else if (a < 0 && b < (std::numeric_limits<long long>::min)() - a) {
-    throw ArithmeticException("Duration value underflow.");
+    throw ArithmeticException("Duration value underflow");
   }
 
   return a + b;
 }
 
+template <long long Divisor>
+inline double ToTotalTimeUnit(InfinityType inf_type, long long ns_count) {
+  switch (inf_type) {
+    case kPositive:
+      return std::numeric_limits<double>::infinity();
+
+    case kNegative:
+      return -std::numeric_limits<double>::infinity();
+
+    default:
+      return static_cast<double>(ns_count) / Divisor;
+  }
+}
+
 template <typename T>
 inline long long MultiplySafely(long long val, T multiplicator) {
   if (IsNan(multiplicator)) {
-    throw ArithmeticException("Trying to multiply duration value and NaN.");
+    throw ArithmeticException("Trying to multiply duration value and NaN");
   }
 
   if (multiplicator == T{}) {
@@ -78,7 +142,7 @@ inline long long MultiplySafely(long long val, T multiplicator) {
   long long max_val = static_cast<long long>(
       (std::numeric_limits<long long>::max)() / multiplicator);
   if (std::abs(val) > max_val) {
-    throw ArithmeticException("Duration value overflow.");
+    throw ArithmeticException("Duration value overflow");
   }
 
   return static_cast<long long>(val * multiplicator);
@@ -87,11 +151,11 @@ inline long long MultiplySafely(long long val, T multiplicator) {
 template <typename T>
 void CheckDivisor(T divisor) {
   if (IsNan(divisor)) {
-    throw ArithmeticException("Trying to divide duration value by NaN.");
+    throw ArithmeticException("Trying to divide duration value by NaN");
   }
 
   if (divisor == T{}) {
-    throw ArithmeticException("Trying to divide duration value by zero.");
+    throw ArithmeticException("Trying to divide duration value by zero");
   }
 }
 
@@ -118,12 +182,10 @@ inline long long DivideSafely(long long val, T divisor) {
 
 /// Represents a time duration.
 ///
-/// The resolution of a time duration is in nanoseconds.
+/// The resolution of a time duration is in nanoseconds. Durations can be
+/// positive or negative. Exceptions are thrown in case of arithmetic errors.
 class Duration {
  public:
-  /// Integral type used to represent the number of nanoseconds
-  typedef long long value_type;
-
   /// Zero duration
   static const Duration kZero;
 
@@ -135,69 +197,90 @@ class Duration {
 
   /// Construct a duration from a number of nanoseconds
   ///
+  /// \tparam T Arithmetic type of \p ns
+  ///
   /// \param ns Number of nanoseconds
   ///
   /// \returns Duration instance
-  static Duration FromNanoseconds(value_type ns) {
-    return Duration(std::chrono::nanoseconds(ns));
+  template <typename T>
+  static Duration FromNanoseconds(T ns) {
+    return internal::DurationFromTimeUnit<1LL>(ns);
   }
 
   /// Construct a duration from a number of microseconds
   ///
+  /// \tparam T Arithmetic type of \p us
+  ///
   /// \param us Number of microseconds
   ///
   /// \returns Duration instance
-  static Duration FromMicroseconds(value_type us) {
-    return FromNanoseconds(internal::MultiplySafely(us, 1e3));
+  template <typename T>
+  static Duration FromMicroseconds(T us) {
+    return internal::DurationFromTimeUnit<1'000LL>(us);
   }
 
   /// Construct a duration from a number of milliseconds
   ///
+  /// \tparam T Arithmetic type of \p ms
+  ///
   /// \param ms Number of milliseconds
   ///
   /// \returns Duration instance
-  static Duration FromMilliseconds(value_type ms) {
-    return FromNanoseconds(internal::MultiplySafely(ms, 1e6));
+  template <typename T>
+  static Duration FromMilliseconds(T ms) {
+    return internal::DurationFromTimeUnit<1'000'000LL>(ms);
   }
 
   /// Construct a duration from a number of seconds
   ///
+  /// \tparam T Arithmetic type of \p seconds
+  ///
   /// \param seconds Number of seconds
   ///
   /// \returns Duration instance
-  static Duration FromSeconds(value_type seconds) {
-    return FromNanoseconds(internal::MultiplySafely(seconds, 1e9));
+  template <typename T>
+  static Duration FromSeconds(T seconds) {
+    return internal::DurationFromTimeUnit<1'000'000'000LL>(seconds);
   }
 
   /// Construct a duration from a number of minutes
   ///
+  /// \tparam T Arithmetic type of \p minutes
+  ///
   /// \param minutes Number of minutes
   ///
   /// \returns Duration instance
-  static Duration FromMinutes(value_type minutes) {
-    return FromNanoseconds(internal::MultiplySafely(minutes, 60 * 1e9));
+  template <typename T>
+  static Duration FromMinutes(T minutes) {
+    return internal::DurationFromTimeUnit<60 * 1'000'000'000LL>(minutes);
   }
 
   /// Construct a duration from a number of hours
   ///
+  /// \tparam T Arithmetic type of \p hours
+  ///
   /// \param hours Number of hours
   ///
   /// \returns Duration instance
-  static Duration FromHours(value_type hours) {
-    return FromNanoseconds(internal::MultiplySafely(hours, 60 * 60 * 1e9));
+  template <typename T>
+  static Duration FromHours(T hours) {
+    return internal::DurationFromTimeUnit<60 * 60 * 1'000'000'000LL>(hours);
   }
 
   /// Construct a duration from a number of days
   ///
+  /// \tparam T Arithmetic type of \p days
+  ///
   /// \param days Number of days
   ///
   /// \returns Duration instance
-  static Duration FromDays(value_type days) {
-    return FromNanoseconds(internal::MultiplySafely(days, 24 * 60 * 60 * 1e9));
+  template <typename T>
+  static Duration FromDays(T days) {
+    return internal::DurationFromTimeUnit<24 * 60 * 60 * 1'000'000'000LL>(days);
   }
 
-  /// Constructs a zero nanosecond duration
-  Duration() : Duration(internal::InfinityType::kNone) {}
+  /// Constructs a zero nanoseconds duration
+  Duration() : Duration(internal::kNone) {}
 
   /// Constructs a duration from a duration value from the standard library
   ///
@@ -207,7 +290,7 @@ class Duration {
   /// \param dur Duration
   template <typename Rep, typename Period>
   Duration(const std::chrono::duration<Rep, Period>& dur)
-      : Duration(internal::InfinityType::kNone) {
+      : Duration(internal::kNone) {
     ns_count_ =
         std::chrono::duration_cast<std::chrono::nanoseconds>(dur).count();
   }
@@ -218,7 +301,7 @@ class Duration {
   ///
   /// \returns Nanoseconds fraction (0-999)
   int Nanoseconds() const {
-    return static_cast<int>(TotalNanoseconds() % 1000);
+    return static_cast<int>(NanosecondsCount() % 1'000);
   }
 
   /// Microseconds fraction of the duration
@@ -227,7 +310,7 @@ class Duration {
   ///
   /// \returns Microseconds fraction (0-999)
   int Microseconds() const {
-    return static_cast<int>(TotalMicroseconds() % 1000);
+    return static_cast<int>((NanosecondsCount() / 1'000LL) % 1'000);
   }
 
   /// Milliseconds fraction of the duration
@@ -236,7 +319,7 @@ class Duration {
   ///
   /// \returns Milliseconds fraction (0-999)
   int Milliseconds() const {
-    return static_cast<int>(TotalMilliseconds() % 1000);
+    return static_cast<int>((NanosecondsCount() / 1'000'000LL) % 1'000);
   }
 
   /// Seconds fraction of the duration
@@ -244,86 +327,127 @@ class Duration {
   /// If the duration is infinite, this function will return an undefined value.
   ///
   /// \returns Seconds fraction (0-59)
-  int Seconds() const { return static_cast<int>(TotalSeconds() % 60); }
+  int Seconds() const {
+    return static_cast<int>(NanosecondsCount() / 1'000'000'000LL) % 60;
+  }
 
   /// Minutes fraction of the duration
   ///
   /// \returns Minutes fraction (0-59)
-  int Minutes() const { return static_cast<int>(TotalMinutes() % 60); }
+  int Minutes() const {
+    return static_cast<int>(NanosecondsCount() / (60 * 1'000'000'000LL)) % 60;
+  }
 
   /// Hours fraction of the duration
   ///
   /// If the duration is infinite, this function will return an undefined value.
   ///
   /// \returns Hours fraction (0-23)
-  int Hours() const { return static_cast<int>(TotalHours() % 24); }
+  int Hours() const {
+    return static_cast<int>(NanosecondsCount() / (60 * 60 * 1'000'000'000LL)) %
+           24;
+  }
 
   /// Days fraction of the duration
   ///
   /// If the duration is infinite, this function will return an undefined value.
   ///
   /// \returns Days fraction
-  int Days() const { return static_cast<int>(TotalDays()); }
+  int Days() const {
+    return static_cast<int>(NanosecondsCount() /
+                            (24 * 60 * 60 * 1'000'000'000LL));
+  }
 
   /// Total number of nanoseconds
   ///
   /// If the duration is infinite, this function will return an undefined value.
   ///
   /// \returns Total number of nanoseconds
-  value_type TotalNanoseconds() const { return ns_count_; }
+  long long NanosecondsCount() const { return ns_count_; }
+
+  /// Total number of nanoseconds
+  ///
+  /// If the duration is infinite, this function will return the appropriate
+  /// infinite value.
+  ///
+  /// \returns Total number of nanoseconds
+  double TotalNanoseconds() const {
+    return internal::ToTotalTimeUnit<1LL>(inf_type_, ns_count_);
+  }
 
   /// Total number of microseconds
   ///
-  /// If the duration is infinite, this function will return an undefined value.
+  /// If the duration is infinite, this function will return the appropriate
+  /// infinite value.
   ///
   /// \returns Total number of microseconds
-  value_type TotalMicroseconds() const { return ns_count_ / 1'000; }
+  double TotalMicroseconds() const {
+    return internal::ToTotalTimeUnit<1'000LL>(inf_type_, ns_count_);
+  }
 
   /// Total number of milliseconds
   ///
-  /// If the duration is infinite, this function will return an undefined value.
+  /// If the duration is infinite, this function will return the appropriate
+  /// infinite value.
   ///
   /// \returns Total number of milliseconds
-  value_type TotalMilliseconds() const { return ns_count_ / 1'000'000; }
+  double TotalMilliseconds() const {
+    return internal::ToTotalTimeUnit<1'000'000LL>(inf_type_, ns_count_);
+  }
 
   /// Total number of seconds
   ///
-  /// If the duration is infinite, this function will return an undefined value.
+  /// If the duration is infinite, this function will return the appropriate
+  /// infinite value.
   ///
   /// \returns Total number of seconds
-  value_type TotalSeconds() const { return ns_count_ / 1'000'000'000; }
+  double TotalSeconds() const {
+    return internal::ToTotalTimeUnit<1'000'000'000LL>(inf_type_, ns_count_);
+  }
 
   /// Total number of minutes
   ///
-  /// If the duration is infinite, this function will return an undefined value.
+  /// If the duration is infinite, this function will return the appropriate
+  /// infinite value.
   ///
   /// \returns Total number of minutes
-  value_type TotalMinutes() const { return TotalSeconds() / 60; }
+  double TotalMinutes() const {
+    return internal::ToTotalTimeUnit<60 * 1'000'000'000LL>(inf_type_,
+                                                           ns_count_);
+  }
 
   /// Total number of hours
   ///
-  /// If the duration is infinite, this function will return an undefined value.
+  /// If the duration is infinite, this function will return the appropriate
+  /// infinite value.
   ///
   /// \returns Total number of hours
-  value_type TotalHours() const { return TotalMinutes() / 60; }
+  double TotalHours() const {
+    return internal::ToTotalTimeUnit<60 * 60 * 1'000'000'000LL>(inf_type_,
+                                                                ns_count_);
+  }
 
   /// Total number of days
   ///
-  /// If the duration is infinite, this function will return an undefined value.
+  /// If the duration is infinite, this function will return the appropriate
+  /// infinite value.
   ///
   /// \returns Total number of days
-  value_type TotalDays() const { return TotalHours() / 24; }
+  double TotalDays() const {
+    return internal::ToTotalTimeUnit<24 * 60 * 60 * 1'000'000'000LL>(inf_type_,
+                                                                     ns_count_);
+  }
 
   /// Returns the negated duration, i.e. multiplied by -1
   ///
   /// \returns Negated duration
   Duration Negated() const {
     switch (inf_type_) {
-      case internal::InfinityType::kPositive:
-        return Duration(internal::InfinityType::kNegative);
+      case internal::kPositive:
+        return kNegativeInfinity;
 
-      case internal::InfinityType::kNegative:
-        return Duration(internal::InfinityType::kPositive);
+      case internal::kNegative:
+        return kInfinity;
 
       default:
         return FromNanoseconds(-ns_count_);
@@ -353,10 +477,10 @@ class Duration {
     }
   }
 
-  /// Checks if the duration is infinite or not
+  /// Checks if the duration is finite or not
   ///
-  /// \returns True if the duration is infinite
-  bool IsInfinite() const { return inf_type_ != internal::kNone; }
+  /// \returns True if the duration is finite
+  bool IsFinite() const { return inf_type_ == internal::kNone; }
 
   /// Converts the duration to a string.
   ///
@@ -388,7 +512,7 @@ class Duration {
   /// \tparam InfFmtString Type of the \p inf_fmt parameter
   ///
   /// \param[in] dur_fmt Format of the duration string
-  /// \param[in] inf_fmt String to use for infinity
+  /// \param[in] inf_fmt Format to use for infinity
   ///
   /// \returns The formatted duration string
   template <typename DurFmtString = char*, typename InfFmtString = char*>
@@ -396,7 +520,7 @@ class Duration {
                      const InfFmtString& inf_fmt = nullptr) const {
     char str[128];
     int res = internal::YOGI_FormatDuration(
-        IsInfinite() ? -1 : ns_count_, ns_count_ < 0 ? 1 : 0, str, sizeof(str),
+        IsFinite() ? ns_count_ : -1, ns_count_ < 0 ? 1 : 0, str, sizeof(str),
         internal::StringToCoreString(dur_fmt),
         internal::StringToCoreString(inf_fmt));
     internal::CheckErrorCode(res);
@@ -491,8 +615,7 @@ class Duration {
   }
 
   bool operator==(const Duration& rhs) const {
-    if (inf_type_ == rhs.inf_type_ &&
-        inf_type_ != internal::InfinityType::kNone) {
+    if (inf_type_ == rhs.inf_type_ && inf_type_ != internal::kNone) {
       return true;
     }
 
@@ -502,21 +625,19 @@ class Duration {
   bool operator!=(const Duration& rhs) const { return !(*this == rhs); }
 
   bool operator<(const Duration& rhs) const {
-    if (inf_type_ == rhs.inf_type_ &&
-        inf_type_ == internal::InfinityType::kNone) {
+    if (inf_type_ == rhs.inf_type_ && inf_type_ == internal::kNone) {
       return ns_count_ < rhs.ns_count_;
     }
 
-    return inf_type_ < rhs.inf_type_ ? true : false;
+    return inf_type_ < rhs.inf_type_;
   }
 
   bool operator>(const Duration& rhs) const {
-    if (inf_type_ == rhs.inf_type_ &&
-        inf_type_ == internal::InfinityType::kNone) {
+    if (inf_type_ == rhs.inf_type_ && inf_type_ == internal::kNone) {
       return ns_count_ > rhs.ns_count_;
     }
 
-    return inf_type_ > rhs.inf_type_ ? true : false;
+    return inf_type_ > rhs.inf_type_;
   }
 
   bool operator<=(const Duration& rhs) const { return !(*this > rhs); }
@@ -526,28 +647,27 @@ class Duration {
  private:
   explicit Duration(internal::InfinityType inf_type) : inf_type_(inf_type) {
     switch (inf_type) {
-      case internal::InfinityType::kNone:
+      case internal::kPositive:
+        ns_count_ = (std::numeric_limits<long long>::max)();
+        break;
+
+      case internal::kNegative:
+        ns_count_ = (std::numeric_limits<long long>::min)();
+        break;
+
+      default:  // internal::kNone
         ns_count_ = 0;
-        break;
-
-      case internal::InfinityType::kPositive:
-        ns_count_ = (std::numeric_limits<value_type>::max)();
-        break;
-
-      case internal::InfinityType::kNegative:
-        ns_count_ = (std::numeric_limits<value_type>::min)();
         break;
     }
   }
 
   internal::InfinityType inf_type_;
-  value_type ns_count_;
+  long long ns_count_;
 };
 
 YOGI_WEAK_SYMBOL const Duration Duration::kZero;
+YOGI_WEAK_SYMBOL const Duration Duration::kInfinity(internal::kPositive);
 YOGI_WEAK_SYMBOL const Duration
-    Duration::kInfinity(internal::InfinityType::kPositive);
-YOGI_WEAK_SYMBOL const Duration
-    Duration::kNegativeInfinity(internal::InfinityType::kNegative);
+    Duration::kNegativeInfinity(internal::kNegative);
 
 }  // namespace yogi

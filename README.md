@@ -14,5 +14,4 @@ YOGI_CORE_LIBRARY="/c/Documents and Settings/commu_000/Documents/Projects/build-
 
 TODO:
 --------------------------------------------------
-* Add FormatDuration method
-* Add API function to implement ToString() for objects instead of doing it in each language individually
+*

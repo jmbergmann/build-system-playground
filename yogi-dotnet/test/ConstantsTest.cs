@@ -50,14 +50,14 @@ namespace test
         [Fact]
         public void DefaultAdvInterval()
         {
-            Assert.IsType<TimeSpan>(Yogi.Constants.DefaultAdvInterval);
+            Assert.IsType<Yogi.Duration>(Yogi.Constants.DefaultAdvInterval);
             Assert.True(Yogi.Constants.DefaultAdvInterval.TotalSeconds > 0.5);
         }
 
         [Fact]
         public void DefaultConnectionTimeout()
         {
-            Assert.IsType<TimeSpan>(Yogi.Constants.DefaultConnectionTimeout);
+            Assert.IsType<Yogi.Duration>(Yogi.Constants.DefaultConnectionTimeout);
             Assert.True(Yogi.Constants.DefaultConnectionTimeout.TotalSeconds > 0.5);
         }
 
