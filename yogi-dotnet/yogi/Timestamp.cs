@@ -183,7 +183,7 @@ public static partial class Yogi
             return FromDurationSinceEpoch(lhs.durSinceEpoch - rhs);
         }
 
-        public static Duration operator +(Timestamp lhs, Timestamp rhs)
+        public static Duration operator -(Timestamp lhs, Timestamp rhs)
         {
             return lhs.durSinceEpoch - rhs.durSinceEpoch;
         }
