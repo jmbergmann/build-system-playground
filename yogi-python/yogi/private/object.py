@@ -11,8 +11,7 @@ yogi.YOGI_Destroy.argtypes = [c_void_p]
 
 
 class Object:
-    """Base class for all "creatable" objects.
-    """
+    """Base class for all "creatable" objects."""
 
     def __init__(self, handle: c_void_p, dependecies: List[Any] = []):
         """Constructs the object.

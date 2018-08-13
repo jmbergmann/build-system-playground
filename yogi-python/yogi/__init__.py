@@ -3,6 +3,7 @@ from .private.branch import BranchEvents, Branch, BranchInfo, \
     BranchDiscoveredEventInfo, BranchQueriedEventInfo, \
     ConnectFinishedEventInfo, ConnectionLostEventInfo
 from .private.context import Context
+from .private.duration import Duration
 from .private.configuration import ConfigurationFlags, CommandLineOptions, \
     Configuration
 from .private.constants import Constants

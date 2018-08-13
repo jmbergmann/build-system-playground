@@ -346,7 +346,6 @@ namespace test
         public void ToStringMethod()
         {
             var dur = Yogi.Duration.FromNanoseconds(123456789123456789L);
-
             var s = dur.ToString();
             Assert.Equal("1428d 21:33:09.123456789", s);
         }

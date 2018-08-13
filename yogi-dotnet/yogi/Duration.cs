@@ -570,7 +570,7 @@ public static partial class Yogi
             var infTypeSum = (int)lhs.infType + (int)rhs.infType;
             if (infTypeSum == (int)InfinityType.None)
             {
-                throw new ArithmeticException("Trying to add positive and negative infinite duration values.");
+                throw new ArithmeticException("Trying to add positive and negative infinite duration values");
             }
 
             return infTypeSum > 0 ? Infinity : NegativeInfinity;
@@ -585,7 +585,7 @@ public static partial class Yogi
         {
             if (lhs.infType != InfinityType.None && rhs == 0)
             {
-                throw new ArithmeticException("Trying to multiply infinite duration value and zero.");
+                throw new ArithmeticException("Trying to multiply infinite duration value and zero");
             }
 
             if (lhs.infType == InfinityType.None && !double.IsInfinity(rhs) && !double.IsNaN(rhs))

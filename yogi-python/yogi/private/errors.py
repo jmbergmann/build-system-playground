@@ -95,8 +95,8 @@ class Result:
     def __str__(self) -> str:
         return yogi.YOGI_GetErrorString(self._value).decode("utf-8")
 
-    def __hash__(self)-> int:
-        return self._value
+    def __hash__(self) -> int:
+        return hash(self._value)
 
 
 class Success(Result):

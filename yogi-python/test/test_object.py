@@ -1,4 +1,5 @@
 import yogi
+import unittest
 
 from .common import TestCase
 
