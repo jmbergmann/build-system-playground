@@ -6,6 +6,9 @@ import threading
 from .common import TestCase
 
 
+one_ms = yogi.Duration.from_milliseconds(1)
+
+
 class TestContext(TestCase):
     def setUp(self):
         self.context = yogi.Context()
@@ -23,16 +26,16 @@ class TestContext(TestCase):
         self.assertEqual(self.context.poll_one(), 1)
 
     def test_run(self):
-        self.assertEqual(self.context.run(1e-3), 0)
+        self.assertEqual(self.context.run(one_ms), 0)
         self.context.post(lambda: None)
         self.context.post(lambda: None)
-        self.assertEqual(self.context.run(1e-3), 2)
+        self.assertEqual(self.context.run(one_ms), 2)
 
     def test_run_one(self):
-        self.assertEqual(self.context.run_one(1e-3), 0)
+        self.assertEqual(self.context.run_one(one_ms), 0)
         self.context.post(lambda: None)
         self.context.post(lambda: None)
-        self.assertEqual(self.context.run_one(1e-3), 1)
+        self.assertEqual(self.context.run_one(one_ms), 1)
 
     def test_run_in_background(self):
         called = False
@@ -58,14 +61,14 @@ class TestContext(TestCase):
 
     def test_wait_for_running_and_stopped(self):
         self.assertTrue(self.context.wait_for_stopped())
-        self.assertTrue(self.context.wait_for_stopped(1e-3))
-        self.assertFalse(self.context.wait_for_running(1e-3))
+        self.assertTrue(self.context.wait_for_stopped(one_ms))
+        self.assertFalse(self.context.wait_for_running(one_ms))
 
         self.context.run_in_background()
 
         self.assertTrue(self.context.wait_for_running())
-        self.assertTrue(self.context.wait_for_running(1e-3))
-        self.assertFalse(self.context.wait_for_stopped(1e-3))
+        self.assertTrue(self.context.wait_for_running(one_ms))
+        self.assertFalse(self.context.wait_for_stopped(one_ms))
 
         self.context.stop()
 

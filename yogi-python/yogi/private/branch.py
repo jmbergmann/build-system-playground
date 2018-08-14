@@ -4,10 +4,9 @@ from .errors import Result, FailureException, Success, ErrorCode, \
 from .library import yogi
 from .handler import Handler
 from .context import Context
-from .time import string_to_datetime
+from .timestamp import Timestamp
 
 import json
-import datetime
 from enum import IntEnum
 from uuid import UUID
 from typing import Callable, Any, Optional, Dict
@@ -43,7 +42,7 @@ def convert_info_fields(info):
         info["timeout"] = float("inf")
 
     info["uuid"] = UUID(info["uuid"])
-    info["start_time"] = string_to_datetime(info["start_time"])
+    info["start_time"] = Timestamp.parse(info["start_time"])
 
 
 class BranchInfo:
@@ -107,7 +106,7 @@ class BranchInfo:
         return self._info["tcp_server_port"]
 
     @property
-    def start_time(self) -> datetime.datetime:
+    def start_time(self) -> Timestamp:
         """Time when the branch was started."""
         return self._info["start_time"]
 
@@ -381,7 +380,7 @@ class Branch(Object):
         return self.info.tcp_server_port
 
     @property
-    def start_time(self) -> datetime.datetime:
+    def start_time(self) -> Timestamp:
         """Time when the branch was started."""
         return self.info.start_time
 

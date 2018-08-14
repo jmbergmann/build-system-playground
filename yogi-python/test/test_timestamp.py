@@ -18,8 +18,11 @@ class TestTimestamp(TestCase):
                               yogi.Duration.from_days(-1)))
 
     def test_now(self):
-        t = yogi.Timestamp.now()
-        self.assertTrue(t.duration_since_epoch.total_seconds > 1e6)
+        dt = yogi.Timestamp.now().to_datetime()
+        now = datetime.datetime.now(datetime.timezone.utc)
+        delta = datetime.timedelta(seconds=1)
+        self.assertGreater(dt, now - delta)
+        self.assertLess(dt, now + delta)
 
     def test_parse(self):
         t = yogi.Timestamp.parse("2009-02-11T12:53:09.123Z")
@@ -54,6 +57,12 @@ class TestTimestamp(TestCase):
         dur = yogi.Duration.from_nanoseconds(123456789)
         t = yogi.Timestamp.from_duration_since_epoch(dur)
         self.assertEqual(t.milliseconds, 123)
+
+    def test_to_datetime(self):
+        dur = yogi.Duration.from_nanoseconds(1234356789123456789)
+        dt = yogi.Timestamp.from_duration_since_epoch(dur).to_datetime()
+        self.assertIsInstance(dt, datetime.datetime)
+        self.assertEqual(dt.microsecond, 123456)
 
     def test_format(self):
         dur = yogi.Duration.from_nanoseconds(1234356789123456789)

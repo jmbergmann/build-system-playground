@@ -112,6 +112,16 @@ class Timestamp:
         """The milliseconds fraction of the timestamp (0-999)."""
         return self._dur_since_epoch.milliseconds
 
+    def to_datetime(self) -> datetime.datetime:
+        """Converts the timestamp to a datetime object.
+
+        Returns:
+            Timestamp as a datetime object.
+        """
+        epoch = datetime.datetime(1970, 1, 1, tzinfo=datetime.timezone.utc)
+        delta = self._dur_since_epoch.to_timedelta()
+        return epoch + delta
+
     def format(self, fmt: str = None) -> str:
         """Converts the timestamp to a string.
 
@@ -184,3 +194,8 @@ class Timestamp:
 
     def __hash__(self) -> int:
         return hash(self._dur_since_epoch)
+
+
+def api_timestamp_to_timestamp(timestamp: int) -> Timestamp:
+    dur = Duration.from_nanoseconds(timestamp)
+    return Timestamp.from_duration_since_epoch(dur)

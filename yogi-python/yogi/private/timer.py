@@ -3,8 +3,8 @@ from .errors import Result, FailureException, ErrorCode, api_result_handler
 from .library import yogi
 from .handler import Handler
 from .context import Context
+from .duration import Duration, duration_to_api_duration
 
-import datetime
 from typing import Callable, Any
 from ctypes import c_int, c_longlong, c_void_p, CFUNCTYPE, POINTER, byref
 
@@ -33,7 +33,7 @@ class Timer(Object):
         yogi.YOGI_TimerCreate(byref(handle), context._handle)
         Object.__init__(self, handle, [context])
 
-    def start(self, duration: float, fn: Callable[[Result], Any]) -> None:
+    def start(self, duration: Duration, fn: Callable[[Result], Any]) -> None:
         """Starts the timer.
 
         If the timer is already running, the timer will be canceled first, as
@@ -43,9 +43,9 @@ class Timer(Object):
             duration: Time when the timer expires.
             fn:       Handler function to call after the given time passed.
         """
-        t = -1 if duration == float("inf") else int(duration * 1e9)
+        dur = duration_to_api_duration(duration)
         with Handler(yogi.YOGI_TimerStart.argtypes[2], fn) as handler:
-            yogi.YOGI_TimerStart(self._handle, t, handler, None)
+            yogi.YOGI_TimerStart(self._handle, dur, handler, None)
 
     def cancel(self) -> bool:
         """Cancels the given timer.

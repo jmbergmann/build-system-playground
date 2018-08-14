@@ -5,7 +5,7 @@ import datetime
 import math
 from ctypes import c_longlong, c_char_p, c_int, byref, POINTER, \
     create_string_buffer, sizeof
-from typing import Union
+from typing import Union, Optional
 
 
 def add_safely(a: int, b: int) -> int:
@@ -61,14 +61,17 @@ yogi.YOGI_FormatDuration.argtypes = [c_longlong, c_int, c_char_p, c_int,
 class MetaDuration(type):
     @property
     def zero(self) -> 'Duration':
+        """Zero duration."""
         return Duration()
 
     @property
     def infinity(self) -> 'Duration':
+        """Infinite duration."""
         return Duration.from_nanoseconds(math.inf)
 
     @property
     def negative_infinity(self) -> 'Duration':
+        """Negative infinite duration."""
         return Duration.from_nanoseconds(-math.inf)
 
 
@@ -80,14 +83,17 @@ class Duration(metaclass=MetaDuration):
     """
     @property
     def zero(self) -> 'Duration':
+        """Zero duration."""
         return type(self).zero
 
     @property
     def infinity(self) -> 'Duration':
+        """Infinite duration."""
         return type(self).infinity
 
     @property
     def negative_infinity(self) -> 'Duration':
+        """Negative infinite duration."""
         return type(self).negative_infinity
 
     @classmethod
@@ -488,3 +494,14 @@ class Duration(metaclass=MetaDuration):
             return math.inf
         else:
             return self._ns_count / divisor
+
+
+def duration_to_api_duration(duration: Optional[Duration],
+                             default: Duration = None) -> int:
+    if duration is None:
+        duration = default
+
+    if duration.is_finite:
+        return duration.nanoseconds_count
+    else:
+        return -1

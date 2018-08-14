@@ -1,10 +1,9 @@
 from .errors import api_result_handler
 from .library import yogi
 from .object import Object
-from .time import timestamp_to_datetime
 from .errors import ErrorCode, Failure
+from .timestamp import Timestamp, api_timestamp_to_timestamp
 
-import datetime
 import inspect
 from enum import IntEnum
 from typing import Callable, Any, Union
@@ -120,7 +119,7 @@ yogi.YOGI_LogToHook.argtypes = [
 
 
 def log_to_hook(verbosity: Union[Verbosity, None],
-                fn: Callable[[Verbosity, datetime.datetime, int, str, int,
+                fn: Callable[[Verbosity, Timestamp, int, str, int,
                               str, str], Any] = None) -> None:
     """Installs a callback function for receiving log entries.
 
@@ -149,7 +148,7 @@ def log_to_hook(verbosity: Union[Verbosity, None],
         fn = dummy_fn
 
     def wrapped_fn(severity, timestamp, tid, file, line, comp, msg, userdata):
-        fn(Verbosity(severity), timestamp_to_datetime(timestamp), tid,
+        fn(Verbosity(severity), api_timestamp_to_timestamp(timestamp), tid,
            file.decode("utf-8"), line, comp.decode("utf-8"),
            msg.decode("utf-8"))
 

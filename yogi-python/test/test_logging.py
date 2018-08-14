@@ -62,7 +62,7 @@ class TestLogging(TestCase):
         self.assertTrue(fn_called)
         self.assertIsInstance(fn_severity, yogi.Verbosity)
         self.assertEqual(fn_severity, yogi.Verbosity.WARNING)
-        self.assertIsInstance(fn_timestamp, datetime.datetime)
+        self.assertIsInstance(fn_timestamp, yogi.Timestamp)
         self.assertLessEqual(fn_timestamp, yogi.get_current_time())
         self.assertIsInstance(fn_tid, int)
         self.assertGreater(fn_tid, 0)

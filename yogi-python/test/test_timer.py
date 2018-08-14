@@ -19,7 +19,7 @@ class TestTimer(TestCase):
             fn_res = res
             fn_called = True
 
-        self.timer.start(1e-3, fn)
+        self.timer.start(yogi.Duration.from_milliseconds(1), fn)
         while not fn_called:
             self.context.run_one()
 
@@ -36,7 +36,7 @@ class TestTimer(TestCase):
             fn_called = True
 
         self.assertFalse(self.timer.cancel())
-        self.timer.start(float("inf"), fn)
+        self.timer.start(yogi.Duration.infinity, fn)
         self.assertTrue(self.timer.cancel())
         while not fn_called:
             self.context.run_one()

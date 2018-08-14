@@ -1,6 +1,7 @@
 from .errors import api_result_handler
 from .logging import Verbosity
 from .library import yogi
+from .duration import Duration
 
 from ctypes import c_void_p, c_int, c_char_p, c_longlong, byref
 from typing import ClassVar
@@ -16,54 +17,93 @@ def get_constant(api_id, api_type):
     return c.value.decode() if api_type is c_char_p else c.value
 
 
-class Constants:
-    """Constants built into the Yogi Core library.
+class MetaConstants(type):
+    @property
+    def VERSION_NUMBER(self) -> str:
+        """Complete Yogi Core version number."""
+        return get_constant(1, c_char_p)
 
-    Attributes:
-        VERSION_NUMBER                Complete Yogi Core version number.
-        VERSION_MAJOR                 Yogi Core major version number.
-        VERSION_MINOR                 Yogi Core minor version number.
-        VERSION_PATCH                 Yogi Core patch version number.
-        DEFAULT_ADV_ADDRESS           Default IP address for advertising.
-        DEFAULT_ADV_PORT              Default UDP port for advertising.
-        DEFAULT_ADV_INTERVAL          Default time between two advertising
-                                      messages.
-        DEFAULT_CONNECTION_TIMEOUT    Default timeout for connections between
-                                      two branches.
-        DEFAULT_LOGGER_VERBOSITY      Default verbosity for newly created
-                                      loggers.
-        DEFAULT_LOG_TIME_FORMAT       Default format of the time string in log
-                                      entries.
-        DEFAULT_LOG_FORMAT            Default format of a log entry.
-        MAX_MESSAGE_SIZE              Maximum size of a message between
-                                      branches.
-        DEFAULT_TIME_FORMAT           Default textual format for timestamps.
-        DEFAULT_INF_DURATION_STRING   Default string to denote an infinite
-                                      duration.
-        DEFAULT_DURATION_FORMAT       Default textual format for duration
-                                      strings.
-        DEFAULT_INVALID_HANDLE_STRING Default string to denote an invalid
-                                      object handle.
-        DEFAULT_OBJECT_FORMAT         Default textual format for strings
-                                      describing an object.
-    """
-    VERSION_NUMBER = get_constant(1, c_char_p)  # type: str
-    VERSION_MAJOR = get_constant(2, c_int)  # type: int
-    VERSION_MINOR = get_constant(3, c_int)  # type: int
-    VERSION_PATCH = get_constant(4, c_int)  # type: int
-    DEFAULT_ADV_ADDRESS = get_constant(5, c_char_p)  # type: str
-    DEFAULT_ADV_PORT = get_constant(6, c_int)  # type: int
-    DEFAULT_ADV_INTERVAL = float(
-        get_constant(7, c_longlong)) / 1e9  # type: int
-    DEFAULT_CONNECTION_TIMEOUT = float(
-        get_constant(8, c_longlong)) / 1e9  # type: int
-    DEFAULT_LOGGER_VERBOSITY = Verbosity(
-        get_constant(9, c_int))  # type: Verbosity
-    DEFAULT_LOG_TIME_FORMAT = get_constant(10, c_char_p)  # type: str
-    DEFAULT_LOG_FORMAT = get_constant(11, c_char_p)  # type: str
-    MAX_MESSAGE_SIZE = get_constant(12, c_int)  # type: int
-    DEFAULT_TIME_FORMAT = get_constant(13, c_char_p)  # type: str
-    DEFAULT_INF_DURATION_STRING = get_constant(14, c_char_p)  # type: str
-    DEFAULT_DURATION_FORMAT = get_constant(15, c_char_p)  # type: str
-    DEFAULT_INVALID_HANDLE_STRING = get_constant(16, c_char_p)  # type: str
-    DEFAULT_OBJECT_FORMAT = get_constant(17, c_char_p)  # type: str
+    @property
+    def VERSION_MAJOR(self) -> int:
+        """Yogi Core major version number."""
+        return get_constant(2, c_int)
+
+    @property
+    def VERSION_MINOR(self) -> int:
+        """Yogi Core minor version number."""
+        return get_constant(3, c_int)
+
+    @property
+    def VERSION_PATCH(self) -> int:
+        """Yogi Core patch version number."""
+        return get_constant(4, c_int)
+
+    @property
+    def DEFAULT_ADV_ADDRESS(self) -> str:
+        """Default IP address for advertising."""
+        return get_constant(5, c_char_p)
+
+    @property
+    def DEFAULT_ADV_PORT(self) -> int:
+        """Default UDP port for advertising."""
+        return get_constant(6, c_int)
+
+    @property
+    def DEFAULT_ADV_INTERVAL(self) -> Duration:
+        """Default time between two advertising messages."""
+        return Duration.from_nanoseconds(get_constant(7, c_longlong))
+
+    @property
+    def DEFAULT_CONNECTION_TIMEOUT(self) -> Duration:
+        """Default timeout for connections between two branches."""
+        return Duration.from_nanoseconds(get_constant(8, c_longlong))
+
+    @property
+    def DEFAULT_LOGGER_VERBOSITY(self) -> Verbosity:
+        """Default verbosity for newly created loggers."""
+        return Verbosity(get_constant(9, c_int))
+
+    @property
+    def DEFAULT_LOG_TIME_FORMAT(self) -> str:
+        """Default format of the time string in log entries."""
+        return get_constant(10, c_char_p)
+
+    @property
+    def DEFAULT_LOG_FORMAT(self) -> str:
+        """Default format of a log entry."""
+        return  get_constant(11, c_char_p)
+
+    @property
+    def MAX_MESSAGE_SIZE(self) -> int:
+        """Maximum size of a message between branches."""
+        return get_constant(12, c_int)
+
+    @property
+    def DEFAULT_TIME_FORMAT(self) -> str:
+        """Default textual format for timestamps."""
+        return  get_constant(13, c_char_p)
+
+    @property
+    def DEFAULT_INF_DURATION_STRING(self) -> str:
+        """Default string to denote an infinite duration."""
+        return  get_constant(14, c_char_p)
+
+    @property
+    def DEFAULT_DURATION_FORMAT(self) -> str:
+        """Default textual format for duration strings."""
+        return  get_constant(15, c_char_p)
+
+    @property
+    def DEFAULT_INVALID_HANDLE_STRING(self) -> str:
+        """Default string to denote an invalid object handle."""
+        return  get_constant(16, c_char_p)
+
+    @property
+    def DEFAULT_OBJECT_FORMAT(self) -> str:
+        """Default textual format for strings describing an object."""
+        return  get_constant(17, c_char_p)
+
+
+class Constants(metaclass=MetaConstants):
+    """Constants built into the Yogi Core library."""
+    pass
