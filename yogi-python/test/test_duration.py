@@ -8,19 +8,19 @@ from .common import TestCase
 
 class TestDuration(TestCase):
     def test_zero(self):
-        dur = yogi.Duration.ZERO
+        dur = yogi.Duration.zero
         self.assertTrue(dur.is_finite)
         self.assertEqual(dur.nanoseconds_count, 0)
 
     def test_infinity(self):
-        dur = yogi.Duration.INFINITY
+        dur = yogi.Duration.infinity
         self.assertFalse(dur.is_finite)
-        self.assertTrue(dur > yogi.Duration.ZERO)
+        self.assertTrue(dur > yogi.Duration.zero)
 
     def test_negative_infinity(self):
-        dur = yogi.Duration.NEGATIVE_INFINITY
+        dur = yogi.Duration.negative_infinity
         self.assertFalse(dur.is_finite)
-        self.assertTrue(dur < yogi.Duration.ZERO)
+        self.assertTrue(dur < yogi.Duration.zero)
 
     def test_from_nanoseconds(self):
         dur = yogi.Duration.from_nanoseconds(123)
@@ -31,10 +31,10 @@ class TestDuration(TestCase):
         self.assertEqual(dur.nanoseconds_count, 444)  # Note: no rounding
 
         dur = yogi.Duration.from_nanoseconds(math.inf)
-        self.assertEqual(dur, yogi.Duration.INFINITY)
+        self.assertEqual(dur, yogi.Duration.infinity)
 
         dur = yogi.Duration.from_nanoseconds(-math.inf)
-        self.assertEqual(dur, yogi.Duration.NEGATIVE_INFINITY)
+        self.assertEqual(dur, yogi.Duration.negative_infinity)
 
     def test_from_microseconds(self):
         dur = yogi.Duration.from_microseconds(123)
@@ -42,7 +42,7 @@ class TestDuration(TestCase):
         self.assertEqual(dur.total_microseconds, 123)
 
         dur = yogi.Duration.from_microseconds(math.inf)
-        self.assertEqual(dur, yogi.Duration.INFINITY)
+        self.assertEqual(dur, yogi.Duration.infinity)
 
         dur = yogi.Duration.from_microseconds(0.5)
         self.assertEqual(dur.nanoseconds_count, 500)
@@ -53,7 +53,7 @@ class TestDuration(TestCase):
         self.assertEqual(dur.total_milliseconds, 123)
 
         dur = yogi.Duration.from_milliseconds(math.inf)
-        self.assertEqual(dur, yogi.Duration.INFINITY)
+        self.assertEqual(dur, yogi.Duration.infinity)
 
         dur = yogi.Duration.from_milliseconds(0.5)
         self.assertEqual(dur.total_microseconds, 500)
@@ -64,7 +64,7 @@ class TestDuration(TestCase):
         self.assertEqual(dur.total_seconds, 123)
 
         dur = yogi.Duration.from_seconds(math.inf)
-        self.assertEqual(dur, yogi.Duration.INFINITY)
+        self.assertEqual(dur, yogi.Duration.infinity)
 
         dur = yogi.Duration.from_seconds(0.5)
         self.assertEqual(dur.total_milliseconds, 500)
@@ -75,7 +75,7 @@ class TestDuration(TestCase):
         self.assertEqual(dur.total_minutes, 123)
 
         dur = yogi.Duration.from_minutes(math.inf)
-        self.assertEqual(dur, yogi.Duration.INFINITY)
+        self.assertEqual(dur, yogi.Duration.infinity)
 
         dur = yogi.Duration.from_minutes(0.5)
         self.assertEqual(dur.total_seconds, 30)
@@ -86,7 +86,7 @@ class TestDuration(TestCase):
         self.assertEqual(dur.total_hours, 123)
 
         dur = yogi.Duration.from_hours(math.inf)
-        self.assertEqual(dur, yogi.Duration.INFINITY)
+        self.assertEqual(dur, yogi.Duration.infinity)
 
         dur = yogi.Duration.from_hours(0.5)
         self.assertEqual(dur.total_minutes, 30)
@@ -97,7 +97,7 @@ class TestDuration(TestCase):
         self.assertEqual(dur.total_days, 123)
 
         dur = yogi.Duration.from_days(math.inf)
-        self.assertEqual(dur, yogi.Duration.INFINITY)
+        self.assertEqual(dur, yogi.Duration.infinity)
 
         dur = yogi.Duration.from_days(0.5)
         self.assertEqual(dur.total_hours, 12)
@@ -151,56 +151,56 @@ class TestDuration(TestCase):
         dur = yogi.Duration.from_nanoseconds(123456789132465887)
         self.assertAlmostEqual(dur.total_nanoseconds, 123456789132465887)
 
-        self.assertEqual(yogi.Duration.INFINITY.total_nanoseconds, math.inf)
-        self.assertEqual(yogi.Duration.NEGATIVE_INFINITY.total_nanoseconds,
+        self.assertEqual(yogi.Duration.infinity.total_nanoseconds, math.inf)
+        self.assertEqual(yogi.Duration.negative_infinity.total_nanoseconds,
                          -math.inf)
 
     def test_total_microseconds(self):
         dur = yogi.Duration.from_nanoseconds(123456789132465887)
         self.assertAlmostEqual(dur.total_microseconds, 123456789132465.887)
 
-        self.assertEqual(yogi.Duration.INFINITY.total_microseconds, math.inf)
-        self.assertEqual(yogi.Duration.NEGATIVE_INFINITY.total_microseconds,
+        self.assertEqual(yogi.Duration.infinity.total_microseconds, math.inf)
+        self.assertEqual(yogi.Duration.negative_infinity.total_microseconds,
                          -math.inf)
 
     def test_total_milliseconds(self):
         dur = yogi.Duration.from_nanoseconds(123456789132465887)
         self.assertAlmostEqual(dur.total_milliseconds, 123456789132.465887)
 
-        self.assertEqual(yogi.Duration.INFINITY.total_milliseconds, math.inf)
-        self.assertEqual(yogi.Duration.NEGATIVE_INFINITY.total_milliseconds,
+        self.assertEqual(yogi.Duration.infinity.total_milliseconds, math.inf)
+        self.assertEqual(yogi.Duration.negative_infinity.total_milliseconds,
                          -math.inf)
 
     def test_total_seconds(self):
         dur = yogi.Duration.from_nanoseconds(123456789132465887)
         self.assertAlmostEqual(dur.total_seconds, 123456789.132465887)
 
-        self.assertEqual(yogi.Duration.INFINITY.total_seconds, math.inf)
-        self.assertEqual(yogi.Duration.NEGATIVE_INFINITY.total_seconds,
+        self.assertEqual(yogi.Duration.infinity.total_seconds, math.inf)
+        self.assertEqual(yogi.Duration.negative_infinity.total_seconds,
                          -math.inf)
 
     def test_total_minutes(self):
         dur = yogi.Duration.from_nanoseconds(123456789132465887)
         self.assertAlmostEqual(dur.total_minutes, 2057613.1522077648)
 
-        self.assertEqual(yogi.Duration.INFINITY.total_minutes, math.inf)
-        self.assertEqual(yogi.Duration.NEGATIVE_INFINITY.total_minutes,
+        self.assertEqual(yogi.Duration.infinity.total_minutes, math.inf)
+        self.assertEqual(yogi.Duration.negative_infinity.total_minutes,
                          -math.inf)
 
     def test_total_hours(self):
         dur = yogi.Duration.from_nanoseconds(123456789132465887)
         self.assertAlmostEqual(dur.total_hours, 34293.55253679608)
 
-        self.assertEqual(yogi.Duration.INFINITY.total_hours, math.inf)
-        self.assertEqual(yogi.Duration.NEGATIVE_INFINITY.total_hours,
+        self.assertEqual(yogi.Duration.infinity.total_hours, math.inf)
+        self.assertEqual(yogi.Duration.negative_infinity.total_hours,
                          -math.inf)
 
     def test_total_days(self):
         dur = yogi.Duration.from_nanoseconds(123456789132465887)
         self.assertAlmostEqual(dur.total_days, 1428.8980223665033)
 
-        self.assertEqual(yogi.Duration.INFINITY.total_days, math.inf)
-        self.assertEqual(yogi.Duration.NEGATIVE_INFINITY.total_days,
+        self.assertEqual(yogi.Duration.infinity.total_days, math.inf)
+        self.assertEqual(yogi.Duration.negative_infinity.total_days,
                          -math.inf)
 
     def test_negated(self):
@@ -214,16 +214,16 @@ class TestDuration(TestCase):
         self.assertEqual(dur.to_timedelta(),
                          datetime.timedelta(microseconds=123456789132465))
 
-        self.assertEqual(yogi.Duration.INFINITY.to_timedelta(),
+        self.assertEqual(yogi.Duration.infinity.to_timedelta(),
                          datetime.timedelta.max)
-        self.assertEqual(yogi.Duration.NEGATIVE_INFINITY.to_timedelta(),
+        self.assertEqual(yogi.Duration.negative_infinity.to_timedelta(),
                          datetime.timedelta.min)
 
     def test_is_finite(self):
-        self.assertTrue(yogi.Duration.ZERO.is_finite)
+        self.assertTrue(yogi.Duration.zero.is_finite)
         self.assertTrue(yogi.Duration.from_nanoseconds(123).is_finite)
-        self.assertFalse(yogi.Duration.INFINITY.is_finite)
-        self.assertFalse(yogi.Duration.NEGATIVE_INFINITY.is_finite)
+        self.assertFalse(yogi.Duration.infinity.is_finite)
+        self.assertFalse(yogi.Duration.negative_infinity.is_finite)
 
     def test_format(self):
         dur = yogi.Duration.from_nanoseconds(123456789123456789)
@@ -234,16 +234,16 @@ class TestDuration(TestCase):
         s = dur.format("%S")
         self.assertEqual(s, "09")
 
-        s = yogi.Duration.INFINITY.format("%S", "abc")
+        s = yogi.Duration.infinity.format("%S", "abc")
         self.assertEqual(s, "abc")
 
-        s = yogi.Duration.INFINITY.format()
+        s = yogi.Duration.infinity.format()
         self.assertEqual(s, "inf")
 
-        s = yogi.Duration.NEGATIVE_INFINITY.format()
+        s = yogi.Duration.negative_infinity.format()
         self.assertEqual(s, "-inf")
 
-        s = yogi.Duration.INFINITY.format("%9", "%+bla")
+        s = yogi.Duration.infinity.format("%9", "%+bla")
         self.assertEqual(s, "+bla")
 
     def test_str(self):
@@ -256,35 +256,35 @@ class TestDuration(TestCase):
         dur2 = yogi.Duration.from_microseconds(3)
         self.assertEqual((dur1 + dur2).nanoseconds_count, 3010)
 
-        self.assertEqual(dur1 + yogi.Duration.INFINITY, yogi.Duration.INFINITY)
-        self.assertEqual(yogi.Duration.INFINITY + yogi.Duration.INFINITY,
-                         yogi.Duration.INFINITY)
-        self.assertEqual(dur1 + yogi.Duration.NEGATIVE_INFINITY,
-                         yogi.Duration.NEGATIVE_INFINITY)
-        self.assertEqual(yogi.Duration.NEGATIVE_INFINITY +
-                         yogi.Duration.NEGATIVE_INFINITY,
-                         yogi.Duration.NEGATIVE_INFINITY)
-        self.assertRaises(ArithmeticError, lambda: yogi.Duration.INFINITY
-                          + yogi.Duration.NEGATIVE_INFINITY)
+        self.assertEqual(dur1 + yogi.Duration.infinity, yogi.Duration.infinity)
+        self.assertEqual(yogi.Duration.infinity + yogi.Duration.infinity,
+                         yogi.Duration.infinity)
+        self.assertEqual(dur1 + yogi.Duration.negative_infinity,
+                         yogi.Duration.negative_infinity)
+        self.assertEqual(yogi.Duration.negative_infinity +
+                         yogi.Duration.negative_infinity,
+                         yogi.Duration.negative_infinity)
+        self.assertRaises(ArithmeticError, lambda: yogi.Duration.infinity
+                          + yogi.Duration.negative_infinity)
 
     def test_sub(self):
         dur1 = yogi.Duration.from_nanoseconds(10)
         dur2 = yogi.Duration.from_microseconds(3)
         self.assertEqual((dur1 - dur2).nanoseconds_count, -2990)
 
-        self.assertEqual(dur1 - yogi.Duration.INFINITY,
-                         yogi.Duration.NEGATIVE_INFINITY)
-        self.assertEqual(yogi.Duration.INFINITY -
-                         yogi.Duration.NEGATIVE_INFINITY,
-                         yogi.Duration.INFINITY)
-        self.assertEqual(dur1 - yogi.Duration.NEGATIVE_INFINITY,
-                         yogi.Duration.NEGATIVE_INFINITY)
-        self.assertEqual(yogi.Duration.NEGATIVE_INFINITY -
-                         yogi.Duration.INFINITY,
-                         yogi.Duration.NEGATIVE_INFINITY)
+        self.assertEqual(dur1 - yogi.Duration.infinity,
+                         yogi.Duration.negative_infinity)
+        self.assertEqual(yogi.Duration.infinity -
+                         yogi.Duration.negative_infinity,
+                         yogi.Duration.infinity)
+        self.assertEqual(dur1 - yogi.Duration.negative_infinity,
+                         yogi.Duration.negative_infinity)
+        self.assertEqual(yogi.Duration.negative_infinity -
+                         yogi.Duration.infinity,
+                         yogi.Duration.negative_infinity)
         self.assertRaises(ArithmeticError,
-                          lambda: yogi.Duration.NEGATIVE_INFINITY
-                          - yogi.Duration.NEGATIVE_INFINITY)
+                          lambda: yogi.Duration.negative_infinity
+                          - yogi.Duration.negative_infinity)
 
     def test_mul(self):
         dur = yogi.Duration.from_nanoseconds(8)
@@ -292,11 +292,11 @@ class TestDuration(TestCase):
         self.assertEqual((dur * 3).nanoseconds_count, 24)
         self.assertEqual((dur * 3.5).nanoseconds_count, 28)
 
-        self.assertEqual(yogi.Duration.INFINITY * 5, yogi.Duration.INFINITY)
-        self.assertEqual(yogi.Duration.INFINITY * -5,
-                         yogi.Duration.NEGATIVE_INFINITY)
+        self.assertEqual(yogi.Duration.infinity * 5, yogi.Duration.infinity)
+        self.assertEqual(yogi.Duration.infinity * -5,
+                         yogi.Duration.negative_infinity)
 
-        self.assertRaises(ArithmeticError, lambda: yogi.Duration.INFINITY * 0)
+        self.assertRaises(ArithmeticError, lambda: yogi.Duration.infinity * 0)
 
     def test_truediv(self):
         dur = yogi.Duration.from_nanoseconds(28)
@@ -304,9 +304,9 @@ class TestDuration(TestCase):
         self.assertEqual((dur / 2).nanoseconds_count, 14)
         self.assertEqual((dur / 3.5).nanoseconds_count, 8)
 
-        self.assertEqual(yogi.Duration.INFINITY / 5, yogi.Duration.INFINITY)
-        self.assertEqual(yogi.Duration.INFINITY / -5,
-                         yogi.Duration.NEGATIVE_INFINITY)
+        self.assertEqual(yogi.Duration.infinity / 5, yogi.Duration.infinity)
+        self.assertEqual(yogi.Duration.infinity / -5,
+                         yogi.Duration.negative_infinity)
 
         self.assertRaises(ZeroDivisionError, lambda: dur / 0)
 
@@ -332,11 +332,11 @@ class TestDuration(TestCase):
         self.assertTrue(dur2 < dur3)
         self.assertFalse(dur3 < dur1)
 
-        self.assertFalse(yogi.Duration.INFINITY < yogi.Duration.INFINITY)
-        self.assertTrue(yogi.Duration.NEGATIVE_INFINITY <
-                        yogi.Duration.INFINITY)
-        self.assertFalse(yogi.Duration.INFINITY < yogi.Duration.ZERO)
-        self.assertTrue(yogi.Duration.NEGATIVE_INFINITY < yogi.Duration.ZERO)
+        self.assertFalse(yogi.Duration.infinity < yogi.Duration.infinity)
+        self.assertTrue(yogi.Duration.negative_infinity <
+                        yogi.Duration.infinity)
+        self.assertFalse(yogi.Duration.infinity < yogi.Duration.zero)
+        self.assertTrue(yogi.Duration.negative_infinity < yogi.Duration.zero)
 
     def test_gt(self):
         dur1 = yogi.Duration.from_nanoseconds(1)
@@ -346,11 +346,11 @@ class TestDuration(TestCase):
         self.assertFalse(dur2 > dur3)
         self.assertTrue(dur3 > dur1)
 
-        self.assertFalse(yogi.Duration.INFINITY > yogi.Duration.INFINITY)
-        self.assertFalse(yogi.Duration.NEGATIVE_INFINITY >
-                        yogi.Duration.INFINITY)
-        self.assertTrue(yogi.Duration.INFINITY > yogi.Duration.ZERO)
-        self.assertFalse(yogi.Duration.NEGATIVE_INFINITY > yogi.Duration.ZERO)
+        self.assertFalse(yogi.Duration.infinity > yogi.Duration.infinity)
+        self.assertFalse(yogi.Duration.negative_infinity >
+                        yogi.Duration.infinity)
+        self.assertTrue(yogi.Duration.infinity > yogi.Duration.zero)
+        self.assertFalse(yogi.Duration.negative_infinity > yogi.Duration.zero)
 
     def test_le(self):
         dur1 = yogi.Duration.from_nanoseconds(1)
@@ -360,11 +360,11 @@ class TestDuration(TestCase):
         self.assertTrue(dur2 <= dur3)
         self.assertFalse(dur3 <= dur1)
 
-        self.assertTrue(yogi.Duration.INFINITY <= yogi.Duration.INFINITY)
-        self.assertTrue(yogi.Duration.NEGATIVE_INFINITY <=
-                        yogi.Duration.INFINITY)
-        self.assertFalse(yogi.Duration.INFINITY <= yogi.Duration.ZERO)
-        self.assertTrue(yogi.Duration.NEGATIVE_INFINITY <= yogi.Duration.ZERO)
+        self.assertTrue(yogi.Duration.infinity <= yogi.Duration.infinity)
+        self.assertTrue(yogi.Duration.negative_infinity <=
+                        yogi.Duration.infinity)
+        self.assertFalse(yogi.Duration.infinity <= yogi.Duration.zero)
+        self.assertTrue(yogi.Duration.negative_infinity <= yogi.Duration.zero)
 
     def test_ge(self):
         dur1 = yogi.Duration.from_nanoseconds(1)
@@ -374,11 +374,11 @@ class TestDuration(TestCase):
         self.assertFalse(dur2 >= dur3)
         self.assertTrue(dur3 >= dur1)
 
-        self.assertTrue(yogi.Duration.INFINITY >= yogi.Duration.INFINITY)
-        self.assertFalse(yogi.Duration.NEGATIVE_INFINITY >=
-                        yogi.Duration.INFINITY)
-        self.assertTrue(yogi.Duration.INFINITY >= yogi.Duration.ZERO)
-        self.assertFalse(yogi.Duration.NEGATIVE_INFINITY >= yogi.Duration.ZERO)
+        self.assertTrue(yogi.Duration.infinity >= yogi.Duration.infinity)
+        self.assertFalse(yogi.Duration.negative_infinity >=
+                        yogi.Duration.infinity)
+        self.assertTrue(yogi.Duration.infinity >= yogi.Duration.zero)
+        self.assertFalse(yogi.Duration.negative_infinity >= yogi.Duration.zero)
 
     def test_hash(self):
         self.assertNotEqual(hash(yogi.Duration.from_days(1)),

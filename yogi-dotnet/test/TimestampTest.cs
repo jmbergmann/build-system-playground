@@ -45,8 +45,9 @@ namespace test
         [Fact]
         public void DurationSinceEpoch()
         {
-            Assert.Equal(Yogi.Duration.FromDays(123), Yogi.Timestamp.FromDurationSinceEpoch(
-                Yogi.Duration.FromDays(123)).DurationSinceEpoch);
+            var dur = Yogi.Duration.FromDays(123);
+            var t = Yogi.Timestamp.FromDurationSinceEpoch(dur);
+            Assert.Equal(dur, t.DurationSinceEpoch);
         }
 
         [Fact]
@@ -101,6 +102,7 @@ namespace test
             {
                 t += Yogi.Duration.FromMilliseconds(-1);
             });
+
             t -= Yogi.Duration.FromNanoseconds(1);
             Assert.Equal(7, t.DurationSinceEpoch.NanosecondsCount);
             Assert.Throws<ArithmeticException>(() =>
@@ -114,6 +116,7 @@ namespace test
             {
                 var _ = t + Yogi.Duration.FromMilliseconds(-1);
             });
+
             Assert.Equal(5, (t - Yogi.Duration.FromNanoseconds(2)
                 ).DurationSinceEpoch.NanosecondsCount);
             Assert.Equal(4, (t - Yogi.Timestamp.FromDurationSinceEpoch(

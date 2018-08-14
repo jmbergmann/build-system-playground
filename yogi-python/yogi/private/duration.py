@@ -16,6 +16,7 @@ def add_safely(a: int, b: int) -> int:
 
     return a + b
 
+
 def multiply_safely(val: int, multiplicator: float) -> int:
     if math.isnan(multiplicator):
         raise ArithmeticError("Trying to multiply duration value and NaN")
@@ -29,12 +30,14 @@ def multiply_safely(val: int, multiplicator: float) -> int:
 
     return int(val * multiplicator)
 
+
 def check_divisor(divisor: float) -> None:
     if math.isnan(divisor):
         raise ArithmeticError("Trying to divide duration value by NaN")
 
     if divisor == 0:
         raise ZeroDivisionError("Trying to divide duration value by zero")
+
 
 def divide_safetly(val: int, divisor: float) -> int:
     check_divisor(divisor)
@@ -55,20 +58,37 @@ yogi.YOGI_FormatDuration.argtypes = [c_longlong, c_int, c_char_p, c_int,
                                      c_char_p, c_char_p]
 
 
-class Duration:
+class MetaDuration(type):
+    @property
+    def zero(self) -> 'Duration':
+        return Duration()
+
+    @property
+    def infinity(self) -> 'Duration':
+        return Duration.from_nanoseconds(math.inf)
+
+    @property
+    def negative_infinity(self) -> 'Duration':
+        return Duration.from_nanoseconds(-math.inf)
+
+
+class Duration(metaclass=MetaDuration):
     """Represents a time duration.
 
     The resolution of a time duration is nanoseconds. Durations can be
     positive or negative. Exceptions are thrown in case of arithmetic errors.
-
-    Attributes:
-        ZERO              Zero duration.
-        INFINITY          Infinite duration.
-        NEGATIVE_INFINITY Negative infinite duration.
     """
-    ZERO = None  # type: Duration
-    INFINITY = None  # type: Duration
-    NEGATIVE_INFINITY = None  # type: Duration
+    @property
+    def zero(self) -> 'Duration':
+        return type(self).zero
+
+    @property
+    def infinity(self) -> 'Duration':
+        return type(self).infinity
+
+    @property
+    def negative_infinity(self) -> 'Duration':
+        return type(self).negative_infinity
 
     @classmethod
     def from_nanoseconds(cls, ns: Union[int, float]) -> 'Duration':
@@ -163,7 +183,7 @@ class Duration:
         if delta is None:
             self._ns_count = 0
         else:
-            self._ns_count =  int(delta.total_seconds() * 1e9)
+            self._ns_count = int(delta.total_seconds() * 1e9)
 
         self._inf_type = 0  # -1, 0 or +1
 
@@ -298,9 +318,9 @@ class Duration:
     def negated(self) -> 'Duration':
         """The negated duration, i.e. multiplied by -1."""
         if self._inf_type < 0:
-            return self.INFINITY
+            return self.infinity
         elif self._inf_type > 0:
-            return self.NEGATIVE_INFINITY
+            return self.negative_infinity
         else:
             return self.from_nanoseconds(-self._ns_count)
 
@@ -365,7 +385,7 @@ class Duration:
         yogi.YOGI_FormatDuration(dur, is_neg, s, sizeof(s), dur_fmt, inf_fmt)
         return s.value.decode("utf-8")
 
-    def __str__(self):
+    def __str__(self) -> str:
         """Converts the duration to a string in the format
         "-23d 04:19:33.123456789"
         """
@@ -381,7 +401,7 @@ class Duration:
             raise ArithmeticError("Trying to add positive and negative"
                                   " infinite duration values")
 
-        return self.INFINITY if inf_type_sum > 0 else self.NEGATIVE_INFINITY
+        return self.infinity if inf_type_sum > 0 else self.negative_infinity
 
     def __sub__(self, rhs: 'Duration') -> 'Duration':
         return self + rhs.negated
@@ -396,9 +416,9 @@ class Duration:
 
         rhs_inf_type = 1 if rhs > 0 else -1
         if self._inf_type == rhs_inf_type:
-            return self.INFINITY
+            return self.infinity
         else:
-            return self.NEGATIVE_INFINITY
+            return self.negative_infinity
 
     def __truediv__(self, rhs: Union[int, float]) -> 'Duration':
         if self._inf_type == 0:
@@ -407,9 +427,9 @@ class Duration:
         check_divisor(rhs)
         rhs_inf_type = 1 if rhs > 0 else -1
         if self._inf_type == rhs_inf_type:
-            return self.INFINITY
+            return self.infinity
         else:
-            return self.NEGATIVE_INFINITY
+            return self.negative_infinity
 
     def __eq__(self, rhs: 'Duration') -> bool:
         if not isinstance(rhs, Duration):
@@ -449,7 +469,7 @@ class Duration:
         if math.isnan(val):
             raise ArithmeticError("Cannot construct duration from NaN")
 
-        dur = Duration()
+        dur = cls()
         if math.isfinite(val):
             max_val = 9223372036854775807 // multiplicator
             if abs(val) > max_val:
@@ -468,9 +488,3 @@ class Duration:
             return math.inf
         else:
             return self._ns_count / divisor
-
-
-Duration.ZERO = Duration.from_nanoseconds(0)  # type: Duration
-Duration.INFINITY = Duration.from_nanoseconds(math.inf)  # type: Duration
-Duration.NEGATIVE_INFINITY = Duration.from_nanoseconds(-math.inf)  # type: Duration
-

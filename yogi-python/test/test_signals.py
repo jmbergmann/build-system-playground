@@ -39,12 +39,12 @@ class TestSignals(TestCase):
             fn_called = True
 
         fn_called = False
-        yogi.raise_signal(yogi.Signals.USR3, None, fn)
+        yogi.raise_signal(yogi.Signals.USR3, None, fn2)
         self.assertTrue(fn_called)
 
         fn_called = False
 
-        yogi.raise_signal(yogi.Signals.USR4, "Hello", fn)
+        yogi.raise_signal(yogi.Signals.USR4, "Hello", fn2)
         self.assertTrue(fn_called)
 
     def test_await_signal(self):
