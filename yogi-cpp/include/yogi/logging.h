@@ -3,7 +3,7 @@
 #include "io.h"
 #include "object.h"
 #include "time.h"
-#include "internal/conversion.h"
+#include "internal/string_conversion.h"
 #include "internal/library.h"
 
 #include <cassert>

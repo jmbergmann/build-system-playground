@@ -1,7 +1,7 @@
 #pragma once
 
 #include "internal/library.h"
-#include "internal/conversion.h"
+#include "internal/string_conversion.h"
 #include "internal/error_code_helpers.h"
 
 #include <chrono>

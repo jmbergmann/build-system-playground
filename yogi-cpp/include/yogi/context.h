@@ -1,7 +1,8 @@
 #pragma once
 
 #include "object.h"
-#include "internal/conversion.h"
+#include "duration.h"
+#include "internal/duration_conversion.h"
 
 #include <chrono>
 #include <functional>
@@ -85,10 +86,10 @@ class Context : public Object {
   /// \param duration Duration.
   ///
   /// \returns Number of executed handlers.
-  int Run(std::chrono::nanoseconds duration) {
+  int Run(const Duration& duration) {
     int count;
-    int res = internal::YOGI_ContextRun(
-        GetHandle(), &count, internal::DurationToCoreDuration(duration));
+    int res = internal::YOGI_ContextRun(GetHandle(), &count,
+                                        internal::ToCoreDuration(duration));
     internal::CheckErrorCode(res);
     return count;
   }
@@ -103,7 +104,7 @@ class Context : public Object {
   /// being executed through the context.
   ///
   /// \returns Number of executed handlers.
-  int Run() { return Run((std::chrono::nanoseconds::max)()); }
+  int Run() { return Run(Duration::kInfinity); }
 
   /// Runs the context's event processing loop for the specified duration to
   /// execute at most one handler.
@@ -120,10 +121,10 @@ class Context : public Object {
   /// \param duration Duration.
   ///
   /// \returns Number of executed handlers.
-  int RunOne(std::chrono::nanoseconds duration) {
+  int RunOne(const Duration& duration) {
     int count;
-    int res = internal::YOGI_ContextRunOne(
-        GetHandle(), &count, internal::DurationToCoreDuration(duration));
+    int res = internal::YOGI_ContextRunOne(GetHandle(), &count,
+                                           internal::ToCoreDuration(duration));
     internal::CheckErrorCode(res);
     return count;
   }
@@ -139,7 +140,7 @@ class Context : public Object {
   /// being executed through the context.
   ///
   /// \returns Number of executed handlers.
-  int RunOne() { return RunOne((std::chrono::nanoseconds::max)()); }
+  int RunOne() { return RunOne(Duration::kInfinity); }
 
   /// Starts an internal thread for running the context's event processing loop.
   ///
@@ -175,9 +176,9 @@ class Context : public Object {
   ///
   /// \returns True if the context's event processing loop is running within the
   ///          specified duration and false otherwise.
-  bool WaitForRunning(std::chrono::nanoseconds duration) {
+  bool WaitForRunning(const Duration& duration) {
     int res = internal::YOGI_ContextWaitForRunning(
-        GetHandle(), internal::DurationToCoreDuration(duration));
+        GetHandle(), internal::ToCoreDuration(duration));
     if (res == static_cast<int>(ErrorCode::kTimeout)) return false;
     internal::CheckErrorCode(res);
     return true;
@@ -187,7 +188,7 @@ class Context : public Object {
   ///
   /// This function must be called from outside any handler functions that are
   /// being executed through the context.
-  void WaitForRunning() { WaitForRunning((std::chrono::nanoseconds::max)()); }
+  void WaitForRunning() { WaitForRunning(Duration::kInfinity); }
 
   /// Blocks until no thread is running the context's event processing
   /// loop or until the specified timeout is reached.
@@ -199,9 +200,9 @@ class Context : public Object {
   ///
   /// \returns True if the context's event processing loop is not running within
   ///          the specified duration and false otherwise.
-  bool WaitForStopped(std::chrono::nanoseconds duration) {
+  bool WaitForStopped(const Duration& duration) {
     int res = internal::YOGI_ContextWaitForStopped(
-        GetHandle(), internal::DurationToCoreDuration(duration));
+        GetHandle(), internal::ToCoreDuration(duration));
     if (res == static_cast<int>(ErrorCode::kTimeout)) return false;
     internal::CheckErrorCode(res);
     return true;
@@ -211,7 +212,7 @@ class Context : public Object {
   ///
   /// This function must be called from outside any handler functions that are
   /// being executed through the context.
-  void WaitForStopped() { WaitForStopped((std::chrono::nanoseconds::max)()); }
+  void WaitForStopped() { WaitForStopped(Duration::kInfinity); }
 
   /// Adds the given function to the context's event processing queue to
   /// be executed and returns immediately.
