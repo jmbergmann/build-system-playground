@@ -783,7 +783,7 @@ YOGI_API int YOGI_FormatDuration(long long dur, int neg, char* str, int strsize,
  * will be copied to \p str. If \p nullstr is set to NULL, then the string
  * "INVALID HANDLE" will be used.
  *
- * \param[in]  obj     Handle of the object to print
+ * \param[in]  object  Handle of the object to print
  * \param[out] str     Pointer to a string for storing the result
  * \param[in]  strsize Maximum number of bytes to write to \p str
  * \param[in]  objfmt  Format of the string (set to NULL for default)
@@ -792,7 +792,7 @@ YOGI_API int YOGI_FormatDuration(long long dur, int neg, char* str, int strsize,
  * \returns [=0] #YOGI_OK if successful
  * \returns [<0] An error code in case of a failure (see \ref EC)
  ******************************************************************************/
-YOGI_API int YOGI_FormatObject(void* obj, char* str, int strsize,
+YOGI_API int YOGI_FormatObject(void* object, char* str, int strsize,
                                const char* objfmt, const char* nullstr);
 
 /***************************************************************************//**

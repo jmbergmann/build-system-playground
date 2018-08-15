@@ -1,4 +1,5 @@
 using System;
+using System.Text;
 using System.Diagnostics;
 using System.Runtime.ConstrainedExecution;
 using System.Runtime.InteropServices;
@@ -8,6 +9,17 @@ public static partial class Yogi
 {
     partial class Api
     {
+        // === YOGI_FormatObject ===
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        public delegate int FormatObjectDelegate(IntPtr obj,
+            [MarshalAs(UnmanagedType.LPStr)] StringBuilder str, int strsize,
+            [MarshalAs(UnmanagedType.LPStr)] string objfmt,
+            [MarshalAs(UnmanagedType.LPStr)] string nullstr);
+
+        public static FormatObjectDelegate YOGI_FormatObject
+            = Library.GetDelegateForFunction<FormatObjectDelegate>(
+                "YOGI_FormatObject");
+
         // === YOGI_Destroy ===
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public delegate int DestroyDelegate(IntPtr handle);
@@ -17,7 +29,7 @@ public static partial class Yogi
                 "YOGI_Destroy");
     }
 
-    public class SafeObjectHandle : SafeHandle
+    internal class SafeObjectHandle : SafeHandle
     {
         public SafeObjectHandle(string objectTypeName, IntPtr handle)
         : base(IntPtr.Zero, true)
@@ -31,11 +43,6 @@ public static partial class Yogi
         public override bool IsInvalid
         {
             get { return handle == IntPtr.Zero; }
-        }
-
-        public override string ToString()
-        {
-            return ObjectTypeName + (IsInvalid ? " [INVALID]" : $" [{handle.ToInt64(),1:x}]");
         }
 
         [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
@@ -75,12 +82,40 @@ public static partial class Yogi
         }
 
         /// <summary>
+        /// Creates a string describing the object.
+        ///
+        /// The fmt parameter describes the format of the string. The following
+        /// placeholders are supported:
+        ///     $T: Type of the object (e.g. Branch)
+        ///     $x: Handle of the object in lower-case hex notation
+        ///     $X: Handle of the object in upper-case hex notation
+        ///
+        /// By default, the object will be formatted in the format
+        /// "Branch [44fdde]" with the hex value in brackets being the object's
+        /// handle.
+        ///
+        /// If, for any reason, the object's handle is null, this function returns
+        /// the nullstr parameter value ("INVALID HANDLE" by default).
+        /// </summary>
+        /// <param name="fmt">Format of the string.</param>
+        /// <param name="nullstr">String to use if the handle is null.</param>
+        /// <returns>Formatted string.</returns>
+        public string Format([Optional] string fmt, [Optional] string nullstr)
+        {
+            var str = new StringBuilder(128);
+            int res = Api.YOGI_FormatObject(handle.DangerousGetHandle(), str, str.Capacity,
+                fmt, nullstr);
+            CheckErrorCode(res);
+            return str.ToString();
+        }
+
+        /// <summary>
         /// Returns a string representation of the object.
         /// </summary>
         /// <returns>String representation of the object.</returns>
         public override string ToString()
         {
-            return handle.ToString();
+            return Format();
         }
 
         /// <summary>

@@ -44,14 +44,18 @@ class Object:
             $X: Handle of the object in upper-case hex notation
 
         By default, the object will be formatted in the format
-        "Branch [44fdde]" with the hex value in brackets being the bject's
+        "Branch [44fdde]" with the hex value in brackets being the object's
         handle.
 
         If, for any reason, the object's handle is None, this function returns
         the nullstr parameter value ("INVALID HANDLE" by default).
 
         Args:
-            fmt: Format of the string
+            fmt:     Format of the string
+            nullstr: String to use if the handle is None
+
+        Returns:
+            Formatted string.
         """
         fmt = None if fmt is None else fmt.encode("utf-8")
         nullstr = None if nullstr is None else nullstr.encode("utf-8")

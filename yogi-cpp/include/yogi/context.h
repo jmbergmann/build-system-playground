@@ -37,11 +37,6 @@ class Context : public Object {
   /// Constructs the context.
   Context() : Object(internal::CallApiCreate(internal::YOGI_ContextCreate)) {}
 
-  virtual const std::string& GetObjectTypeName() const {
-    static std::string s = "Context";
-    return s;
-  }
-
   /// Runs the context's event processing loop to execute ready handlers.
   ///
   /// This function runs handlers (internal and user-supplied such as functions

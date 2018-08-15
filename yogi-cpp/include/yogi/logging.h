@@ -450,11 +450,6 @@ class Logger : public Object {
   /// For the AppLogger
   Logger() : Object(nullptr) {}
 
-  virtual const std::string& GetObjectTypeName() const override {
-    static std::string s = "Logger";
-    return s;
-  }
-
   /// Returns the verbosity of the logger.
   ///
   /// \returns Verbosity of the logger.
