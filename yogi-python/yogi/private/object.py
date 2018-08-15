@@ -2,9 +2,14 @@ from .library import yogi
 from .errors import FailureException, ErrorCode, api_result_handler
 
 import sys
-from ctypes import c_void_p
+from ctypes import c_void_p, c_char_p, c_int, create_string_buffer, sizeof
 from typing import List, Any
 
+
+
+yogi.YOGI_FormatObject.restype = api_result_handler
+yogi.YOGI_FormatObject.argtypes = [c_void_p, c_char_p, c_int, c_char_p,
+                                   c_char_p]
 
 yogi.YOGI_Destroy.restype = api_result_handler
 yogi.YOGI_Destroy.argtypes = [c_void_p]
@@ -29,12 +34,41 @@ class Object:
         self._handle = handle
         self._dependencies = dependecies
 
+    def format(self, fmt: str = None, nullstr: str = None) -> str:
+        """Creates a string describing the object.
+
+        The fmt parameter describes the format of the string. The following
+        placeholders are supported:
+            $T: Type of the object (e.g. Branch)
+            $x: Handle of the object in lower-case hex notation
+            $X: Handle of the object in upper-case hex notation
+
+        By default, the object will be formatted in the format
+        "Branch [44fdde]" with the hex value in brackets being the bject's
+        handle.
+
+        If, for any reason, the object's handle is None, this function returns
+        the nullstr parameter value ("INVALID HANDLE" by default).
+
+        Args:
+            fmt: Format of the string
+        """
+        fmt = None if fmt is None else fmt.encode("utf-8")
+        nullstr = None if nullstr is None else nullstr.encode("utf-8")
+        s = create_string_buffer(128)
+        yogi.YOGI_FormatObject(self._handle, s, sizeof(s), fmt, nullstr)
+        return s.value.decode("utf-8")
+
+    def __str__(self):
+        return self.format()
+
     def __del__(self):
         assert self._handle, "Looks like the ctor of the inheriting class" \
             "forgot to call Object.__init__()."
 
         try:
             yogi.YOGI_Destroy(self._handle)
+            self._handle = None
         except FailureException as e:
             info = ""
             if e.failure.error_code is ErrorCode.OBJECT_STILL_USED:
@@ -45,11 +79,3 @@ class Object:
                 self.__class__.__name__, e.failure, info), file=sys.stderr)
 
             assert(False)
-
-    def __str__(self):
-        s = self.__class__.__name__
-        if self._handle.value:
-            s += " [{:x}]".format(self._handle.value)
-        else:
-            s += " [INVALID]"
-        return s

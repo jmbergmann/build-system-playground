@@ -781,7 +781,7 @@ YOGI_API int YOGI_FormatDuration(long long dur, int neg, char* str, int strsize,
  * "Branch [44fdde]" with the hex value in brackets being the object's handle,
  * i.e. the address of the \p obj pointer. If \p obj is NULL then \p nullstr
  * will be copied to \p str. If \p nullstr is set to NULL, then the string
- * "INVALID" will be used.
+ * "INVALID HANDLE" will be used.
  *
  * \param[in]  obj     Handle of the object to print
  * \param[out] str     Pointer to a string for storing the result
