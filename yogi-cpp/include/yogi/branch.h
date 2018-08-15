@@ -3,6 +3,7 @@
 #include "object.h"
 #include "io.h"
 #include "uuid.h"
+#include "duration.h"
 #include "timestamp.h"
 #include "internal/library.h"
 #include "internal/flags.h"
@@ -85,24 +86,20 @@ class BranchInfo {
   BranchInfo(const Uuid& uuid, String json)
       : uuid_(uuid),
         json_(internal::StringToCoreString(json)),
-        name_(internal::ExtractFromJson<std::string>(json_, "name")),
-        description_(
-            internal::ExtractFromJson<std::string>(json_, "description")),
-        net_name_(internal::ExtractFromJson<std::string>(json_, "net_name")),
-        path_(internal::ExtractFromJson<std::string>(json_, "path")),
-        hostname_(internal::ExtractFromJson<std::string>(json_, "hostname")),
-        pid_(internal::ExtractFromJson<int>(json_, "pid")),
-        adv_internal_(internal::ExtractFromJson<std::chrono::nanoseconds>(
-            json_, "advertising_interval")),
-        tcp_server_address_(internal::ExtractFromJson<std::string>(
-            json_, "tcp_server_address")),
+        name_(internal::ExtractStringFromJson(json_, "name")),
+        description_(internal::ExtractStringFromJson(json_, "description")),
+        net_name_(internal::ExtractStringFromJson(json_, "net_name")),
+        path_(internal::ExtractStringFromJson(json_, "path")),
+        hostname_(internal::ExtractStringFromJson(json_, "hostname")),
+        pid_(internal::ExtractIntFromJson(json_, "pid")),
+        adv_internal_(
+            internal::ExtractDurationFromJson(json_, "advertising_interval")),
+        tcp_server_address_(
+            internal::ExtractStringFromJson(json_, "tcp_server_address")),
         tcp_server_port_(
-            internal::ExtractFromJson<int>(json_, "tcp_server_port")),
-        start_time_(
-            internal::ExtractFromJson<Timestamp>(
-                json_, "start_time")),
-        timeout_(internal::ExtractFromJson<std::chrono::nanoseconds>(
-            json_, "timeout")) {}
+            internal::ExtractIntFromJson(json_, "tcp_server_port")),
+        start_time_(internal::ExtractTimestampFromJson(json_, "start_time")),
+        timeout_(internal::ExtractDurationFromJson(json_, "timeout")) {}
 
   /// UUID of the branch.
   const Uuid& GetUuid() const { return uuid_; }
@@ -126,9 +123,7 @@ class BranchInfo {
   int GetPid() const { return pid_; }
 
   /// Advertising interval.
-  const std::chrono::nanoseconds& GetAdvertisingInterval() const {
-    return adv_interval_;
-  }
+  const Duration& GetAdvertisingInterval() const { return adv_interval_; }
 
   /// Address of the TCP server for incoming connections.
   const std::string& GetTcpServerAddress() const { return tcp_server_address_; }
@@ -137,12 +132,10 @@ class BranchInfo {
   int GetTcpServerPort() const { return tcp_server_port_; }
 
   /// Time when the branch was started (UTC time).
-  const Timestamp& GetStartTime() const {
-    return start_time_;
-  }
+  const Timestamp& GetStartTime() const { return start_time_; }
 
   /// Connection timeout.
-  const std::chrono::nanoseconds& GetTimeout() const { return timeout_; }
+  const Duration& GetTimeout() const { return timeout_; }
 
   /// Returns the branch information as JSON-encoded string.
   ///
@@ -158,11 +151,11 @@ class BranchInfo {
   const std::string path_;
   const std::string hostname_;
   const int pid_;
-  const std::chrono::nanoseconds adv_interval_;
+  const Duration adv_interval_;
   const std::string tcp_server_address_;
   const int tcp_server_port_;
   const Timestamp start_time_;
-  const std::chrono::nanoseconds timeout_;
+  const Duration timeout_;
 };
 
 /// Information about a remote branch.
@@ -186,7 +179,7 @@ class LocalBranchInfo : public BranchInfo {
         adv_address_(internal::ExtractFromJson<std::string>(
             ToString(), "advertising_address")),
         adv_port_(
-            internal::ExtractFromJson<int>(ToString(), "advertising_port")) {}
+            internal::ExtractIntFromJson(ToString(), "advertising_port")) {}
 
   /// Advertising IP address.
   const std::string& GetAdvertisingAddress() const { return adv_address_; }
