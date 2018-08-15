@@ -348,7 +348,7 @@ class TestDuration(TestCase):
 
         self.assertFalse(yogi.Duration.infinity > yogi.Duration.infinity)
         self.assertFalse(yogi.Duration.negative_infinity >
-                        yogi.Duration.infinity)
+                         yogi.Duration.infinity)
         self.assertTrue(yogi.Duration.infinity > yogi.Duration.zero)
         self.assertFalse(yogi.Duration.negative_infinity > yogi.Duration.zero)
 
@@ -376,7 +376,7 @@ class TestDuration(TestCase):
 
         self.assertTrue(yogi.Duration.infinity >= yogi.Duration.infinity)
         self.assertFalse(yogi.Duration.negative_infinity >=
-                        yogi.Duration.infinity)
+                         yogi.Duration.infinity)
         self.assertTrue(yogi.Duration.infinity >= yogi.Duration.zero)
         self.assertFalse(yogi.Duration.negative_infinity >= yogi.Duration.zero)
 

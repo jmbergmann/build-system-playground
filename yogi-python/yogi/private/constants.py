@@ -71,7 +71,7 @@ class MetaConstants(type):
     @property
     def DEFAULT_LOG_FORMAT(self) -> str:
         """Default format of a log entry."""
-        return  get_constant(11, c_char_p)
+        return get_constant(11, c_char_p)
 
     @property
     def MAX_MESSAGE_SIZE(self) -> int:
@@ -81,27 +81,27 @@ class MetaConstants(type):
     @property
     def DEFAULT_TIME_FORMAT(self) -> str:
         """Default textual format for timestamps."""
-        return  get_constant(13, c_char_p)
+        return get_constant(13, c_char_p)
 
     @property
     def DEFAULT_INF_DURATION_STRING(self) -> str:
         """Default string to denote an infinite duration."""
-        return  get_constant(14, c_char_p)
+        return get_constant(14, c_char_p)
 
     @property
     def DEFAULT_DURATION_FORMAT(self) -> str:
         """Default textual format for duration strings."""
-        return  get_constant(15, c_char_p)
+        return get_constant(15, c_char_p)
 
     @property
     def DEFAULT_INVALID_HANDLE_STRING(self) -> str:
         """Default string to denote an invalid object handle."""
-        return  get_constant(16, c_char_p)
+        return get_constant(16, c_char_p)
 
     @property
     def DEFAULT_OBJECT_FORMAT(self) -> str:
         """Default textual format for strings describing an object."""
-        return  get_constant(17, c_char_p)
+        return get_constant(17, c_char_p)
 
 
 class Constants(metaclass=MetaConstants):

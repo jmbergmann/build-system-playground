@@ -6,7 +6,6 @@ from ctypes import c_void_p, c_char_p, c_int, create_string_buffer, sizeof
 from typing import List, Any
 
 
-
 yogi.YOGI_FormatObject.restype = api_result_handler
 yogi.YOGI_FormatObject.argtypes = [c_void_p, c_char_p, c_int, c_char_p,
                                    c_char_p]
