@@ -373,47 +373,50 @@ class ConnectionLostEventInfo : public BranchEventInfo {
   using BranchEventInfo::BranchEventInfo;
 };
 
-/// Entry point into a Yogi network.
-///
-/// A branch represents an entry point into a YOGI network. It advertises
-/// itself via IP broadcasts/multicasts with its unique ID and information
-/// required for establishing a connection. If a branch detects other branches
-/// on the network, it connects to them via TCP to retrieve further
-/// information such as their name, description and network name. If the
-/// network names match, two branches attempt to authenticate with each other
-/// by securely comparing passwords. Once authentication succeeds and there is
-/// no other known branch with the same path then the branches can actively
-/// communicate as part of the Yogi network.
-///
-/// Note: Even though the authentication process via passwords is done in a
-///       secure manner, any further communication is done in plain text.
-class Branch : public Object {
- public:
-  /// Creates the branch.
-  ///
-  /// Advertising and establishing connections can be limited to certain
-  /// network interfaces via the interface parameter. The default is to use
-  /// all available interfaces.
-  ///
-  /// Setting the advint parameter to infinity prevents the branch from
-  /// actively participating in the Yogi network, i.e. the branch will not
-  /// advertise itself and it will not authenticate in order to join a
-  /// network. However, the branch will temporarily connect to other
-  /// branches in order to obtain more detailed information such as name,
-  /// description, network name and so on. This is useful for obtaining
-  /// information about active branches without actually becoming part of
-  /// the Yogi network.
-  template <typename NameString, typename DescriptionString = char*,
-            typename NetnameString = char*, typename PasswordString = char*,
-            typename PathString = char*, typename AdvaddrString = char*>
-  Branch(ContextPtr context, NameString&& name,
-         DescriptionString&& description = nullptr,
-         NetnameString&& netname = nullptr, PasswordString&& password = nullptr,
-         PathString&& path = nullptr, AdvaddrString&& advaddr = nullptr,
-         int advport = 0, const Duration& advint = Duration::kZero,
-         const Duration& timeout = Duration::kZero) {}
+// class Branch;
+// typedef std::shared_ptr<Branch> BranchPtr;
 
- private:
-};
+// /// Entry point into a Yogi network.
+// ///
+// /// A branch represents an entry point into a YOGI network. It advertises
+// /// itself via IP broadcasts/multicasts with its unique ID and information
+// /// required for establishing a connection. If a branch detects other branches
+// /// on the network, it connects to them via TCP to retrieve further
+// /// information such as their name, description and network name. If the
+// /// network names match, two branches attempt to authenticate with each other
+// /// by securely comparing passwords. Once authentication succeeds and there is
+// /// no other known branch with the same path then the branches can actively
+// /// communicate as part of the Yogi network.
+// ///
+// /// Note: Even though the authentication process via passwords is done in a
+// ///       secure manner, any further communication is done in plain text.
+// class Branch : public Object {
+//  public:
+//   /// Creates the branch.
+//   ///
+//   /// Advertising and establishing connections can be limited to certain
+//   /// network interfaces via the interface parameter. The default is to use
+//   /// all available interfaces.
+//   ///
+//   /// Setting the advint parameter to infinity prevents the branch from
+//   /// actively participating in the Yogi network, i.e. the branch will not
+//   /// advertise itself and it will not authenticate in order to join a
+//   /// network. However, the branch will temporarily connect to other
+//   /// branches in order to obtain more detailed information such as name,
+//   /// description, network name and so on. This is useful for obtaining
+//   /// information about active branches without actually becoming part of
+//   /// the Yogi network.
+//   template <typename NameString, typename DescriptionString = char*,
+//             typename NetnameString = char*, typename PasswordString = char*,
+//             typename PathString = char*, typename AdvaddrString = char*>
+//   Branch(ContextPtr context, NameString&& name,
+//          DescriptionString&& description = nullptr,
+//          NetnameString&& netname = nullptr, PasswordString&& password = nullptr,
+//          PathString&& path = nullptr, AdvaddrString&& advaddr = nullptr,
+//          int advport = 0, const Duration& advint = Duration::kZero,
+//          const Duration& timeout = Duration::kZero) {}
+
+//  private:
+// };
 
 }  // namespace yogi

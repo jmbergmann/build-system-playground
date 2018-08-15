@@ -21,7 +21,6 @@ class LoggingTest : public ::testing::Test {
   }
 
   boost::filesystem::path temp_dir_;
-  yogi::Logger logger_ = yogi::Logger("Engine");
 };
 
 TEST_F(LoggingTest, VerbosityEnum) {
@@ -44,10 +43,10 @@ TEST_F(LoggingTest, StreamEnum) {
 
 TEST_F(LoggingTest, LogToConsole) {
   yogi::LogToConsole(yogi::Verbosity::kInfo, yogi::Stream::kStdout, true);
-  yogi::app_logger.Log(yogi::Verbosity::kWarning, "Warning message");
+  yogi::app_logger->Log(yogi::Verbosity::kWarning, "Warning message");
   yogi::LogToConsole(yogi::Verbosity::kDebug, yogi::Stream::kStdout, false,
                      "%S.%3", "$t - $m");
-  yogi::app_logger.Log(yogi::Verbosity::kError, "Error message");
+  yogi::app_logger->Log(yogi::Verbosity::kError, "Error message");
 }
 
 TEST_F(LoggingTest, LogToHook) {
@@ -65,7 +64,7 @@ TEST_F(LoggingTest, LogToHook) {
                     called = true;
                   });
 
-  yogi::app_logger.Log(yogi::Verbosity::kWarning, "A warning", "file.cc", 123);
+  yogi::app_logger->Log(yogi::Verbosity::kWarning, "A warning", "file.cc", 123);
   EXPECT_TRUE(called);
 
   called = false;
@@ -76,7 +75,7 @@ TEST_F(LoggingTest, LogToHook) {
                     called = true;
                   });
 
-  yogi::app_logger.Log(yogi::Verbosity::kWarning, "A warning");
+  yogi::app_logger->Log(yogi::Verbosity::kWarning, "A warning");
   EXPECT_TRUE(called);
 }
 
@@ -95,20 +94,20 @@ TEST_F(LoggingTest, LogToFile) {
 
 TEST_F(LoggingTest, SetComponentsVerbosity) {
   yogi::Logger::SetComponentsVerbosity("App", yogi::Verbosity::kDebug);
-  EXPECT_EQ(yogi::Verbosity::kDebug, yogi::app_logger.GetVerbosity());
+  EXPECT_EQ(yogi::Verbosity::kDebug, yogi::app_logger->GetVerbosity());
   yogi::Logger::SetComponentsVerbosity("App", yogi::Verbosity::kInfo);
-  EXPECT_EQ(yogi::Verbosity::kInfo, yogi::app_logger.GetVerbosity());
+  EXPECT_EQ(yogi::Verbosity::kInfo, yogi::app_logger->GetVerbosity());
 }
 
 TEST_F(LoggingTest, LoggerVerbosity) {
-  auto logger = yogi::Logger("My logger");
-  EXPECT_EQ(logger.GetVerbosity(), yogi::Verbosity::kInfo);
-  logger.SetVerbosity(yogi::Verbosity::kFatal);
-  EXPECT_EQ(logger.GetVerbosity(), yogi::Verbosity::kFatal);
+  auto logger = yogi::Logger::Create("My logger");
+  EXPECT_EQ(logger->GetVerbosity(), yogi::Verbosity::kInfo);
+  logger->SetVerbosity(yogi::Verbosity::kFatal);
+  EXPECT_EQ(logger->GetVerbosity(), yogi::Verbosity::kFatal);
 }
 
 TEST_F(LoggingTest, Log) {
-  auto logger = yogi::Logger("My logger");
+  auto logger = yogi::Logger::Create("My logger");
 
   bool called = false;
   yogi::LogToHook(
@@ -122,17 +121,17 @@ TEST_F(LoggingTest, Log) {
         called = true;
       });
 
-  logger.Log(yogi::Verbosity::kWarning, "Hey dude", "file.cc", 123);
+  logger->Log(yogi::Verbosity::kWarning, "Hey dude", "file.cc", 123);
   EXPECT_TRUE(called);
 }
 
 TEST_F(LoggingTest, AppLogger) {
-  auto logger = yogi::AppLogger();
-  logger.SetVerbosity(yogi::Verbosity::kWarning);
-  EXPECT_EQ(logger.GetVerbosity(), yogi::app_logger.GetVerbosity());
+  auto logger = yogi::AppLogger::Create();
+  logger->SetVerbosity(yogi::Verbosity::kWarning);
+  EXPECT_EQ(logger->GetVerbosity(), yogi::app_logger->GetVerbosity());
 
-  logger.SetVerbosity(yogi::Verbosity::kTrace);
-  EXPECT_EQ(logger.GetVerbosity(), yogi::app_logger.GetVerbosity());
+  logger->SetVerbosity(yogi::Verbosity::kTrace);
+  EXPECT_EQ(logger->GetVerbosity(), yogi::app_logger->GetVerbosity());
 }
 
 TEST_F(LoggingTest, Macros) {
@@ -152,9 +151,9 @@ TEST_F(LoggingTest, Macros) {
         entries.push_back(entry);
       });
 
-  auto logger = yogi::Logger("Engine");
-  logger.SetVerbosity(yogi::Verbosity::kTrace);
-  yogi::app_logger.SetVerbosity(yogi::Verbosity::kTrace);
+  auto logger = yogi::Logger::Create("Engine");
+  logger->SetVerbosity(yogi::Verbosity::kTrace);
+  yogi::app_logger->SetVerbosity(yogi::Verbosity::kTrace);
 
   YOGI_LOG_FATAL(logger, "a" << "b");
   YOGI_LOG_FATAL(123 << 45);

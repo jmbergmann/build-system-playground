@@ -130,13 +130,14 @@
 #define _YOGI_LOG_STREAM_CUSTOM_LOGGER(logger, stream) stream
 #define _YOGI_LOG_STREAM_APP_LOGGER(stream) stream
 
-#define _YOGI_LOG_IMPL(severity, logger, stream)                               \
-  {                                                                            \
-    if (::yogi::Verbosity::severity <= (logger).GetVerbosity()) {              \
-      std::stringstream ss;                                                    \
-      ss << stream;                                                            \
-      (logger).Log(::yogi::Verbosity::severity, ss.str(), __FILE__, __LINE__); \
-    }                                                                          \
+#define _YOGI_LOG_IMPL(severity, logger, stream)                     \
+  {                                                                  \
+    if (::yogi::Verbosity::severity <= (logger)->GetVerbosity()) {   \
+      std::stringstream ss;                                          \
+      ss << stream;                                                  \
+      (logger)->Log(::yogi::Verbosity::severity, ss.str(), __FILE__, \
+                    __LINE__);                                       \
+    }                                                                \
   }
 
 namespace yogi {
@@ -404,6 +405,9 @@ inline void LogToFile() {
   internal::CheckErrorCode(res);
 }
 
+class Logger;
+typedef std::shared_ptr<Logger> LoggerPtr;
+
 /// Allows generating log entries.
 ///
 /// A logger is an object used for generating log entries that are tagged with
@@ -417,7 +421,7 @@ inline void LogToFile() {
 /// Note: The verbosity of a logger affects only messages logged through that
 ///       particular logger, i.e. if two loggers have identical component tags
 ///       their verbosity settings are still independent from each other.
-class Logger : public Object {
+class Logger : public ObjectT<Logger> {
  public:
   /// Sets the verbosity of all loggers matching a given component tag.
   ///
@@ -438,21 +442,19 @@ class Logger : public Object {
     return count;
   }
 
-  /// Constructor.
+  /// Creates a logger.
   ///
   /// The verbosity of new loggers is Verbosity.Info by default.
   ///
   /// \tparam String Type of the \p component string
   ///
   /// \param component The component tag to use.
+  ///
+  /// \returns Newly created logger.
   template <typename String>
-  Logger(String&& component)
-      : Object(
-            internal::CallApiCreate(internal::YOGI_LoggerCreate,
-                                    internal::StringToCoreString(component))) {}
-
-  /// For the AppLogger
-  Logger() : Object(nullptr) {}
+  static LoggerPtr Create(String&& component) {
+    return LoggerPtr(new Logger(std::forward<String>(component)));
+  }
 
   /// Returns the verbosity of the logger.
   ///
@@ -504,7 +506,21 @@ class Logger : public Object {
   void Log(Verbosity severity, MsgString&& msg) {
     return Log<MsgString, const char*>(severity, msg, nullptr, 0);
   }
+
+ protected:
+  // For the AppLogger
+  Logger() : ObjectT(nullptr) {}
+
+ private:
+  template <typename String>
+  Logger(String&& component)
+      : ObjectT(
+            internal::CallApiCreate(internal::YOGI_LoggerCreate,
+                                    internal::StringToCoreString(component))) {}
 };
+
+class AppLogger;
+typedef std::shared_ptr<AppLogger> AppLoggerPtr;
 
 /// Represents the App logger singleton.
 ///
@@ -514,9 +530,14 @@ class Logger : public Object {
 /// every AppLogger instance.
 class AppLogger : public Logger {
  public:
+  /// Creates an app logger.
+  ///
+  /// \returns Newly created app logger.
+  static AppLoggerPtr Create() { return AppLoggerPtr(new AppLogger()); }
+
   virtual std::string ToString() const override { return "AppLogger"; }
 };
 
-static AppLogger app_logger;
+static const AppLoggerPtr app_logger = AppLogger::Create();
 
 }  // namespace yogi

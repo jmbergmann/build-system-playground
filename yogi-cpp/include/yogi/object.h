@@ -1,5 +1,6 @@
 #pragma once
 
+#include "io.h"
 #include "internal/string_conversion.h"
 #include "internal/library.h"
 #include "internal/error_code_helpers.h"
@@ -7,6 +8,8 @@
 #include <chrono>
 #include <cassert>
 #include <string>
+#include <memory>
+#include <type_traits>
 
 namespace yogi {
 namespace internal {
@@ -26,11 +29,14 @@ YOGI_DEFINE_API_FN(int, YOGI_FormatObject,
                     const char* nullstr))
 YOGI_DEFINE_API_FN(int, YOGI_Destroy, (void* object))
 
+class Object;
+typedef std::shared_ptr<Object> ObjectPtr;
+
 /// Base class for all "creatable" objects.
 ///
 /// "Creatable" Yogi objects are objects that get instantiated and live until
 /// they are destroyed by the user.
-class Object {
+class Object : std::enable_shared_from_this<Object> {
  public:
   virtual ~Object() {
     if (handle_ == nullptr) return;
@@ -73,9 +79,7 @@ class Object {
   /// Returns a human-readable string identifying the object.
   ///
   /// \returns Human-readable string identifying the object.
-  virtual std::string ToString() const {
-    return Format();
-  }
+  virtual std::string ToString() const { return Format(); }
 
  protected:
   /// Constructs the object.
@@ -89,7 +93,20 @@ class Object {
   void* GetHandle() const { return handle_; }
 
  private:
+  Object(const Object&) = delete;
+  Object& operator=(const Object&) = delete;
+
   void* handle_;
+};
+
+/// Templated base class for all "creatable" objects.
+///
+/// "Creatable" Yogi objects are objects that get instantiated and live until
+/// they are destroyed by the user.
+template <typename T>
+class ObjectT : public Object {
+ public:
+  using Object::Object;
 };
 
 }  // namespace yogi

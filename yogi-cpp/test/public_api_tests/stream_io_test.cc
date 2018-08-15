@@ -16,7 +16,7 @@ TEST(StreamIoTest, Result) {
 }
 
 TEST(StreamIoTest, Object) {
-  Check(yogi::Context());
+  Check(*yogi::Context::Create());
 }
 
 TEST(StreamIoTest, Verbosity) {

@@ -26,17 +26,20 @@ YOGI_DEFINE_API_FN(int, YOGI_ContextWaitForStopped,
 YOGI_DEFINE_API_FN(int, YOGI_ContextPost,
                    (void* context, void (*fn)(void* userarg), void* userarg))
 
+class Context;
+typedef std::shared_ptr<Context> ContextPtr;
+
 /// Scheduler for the execution of asynchronous operations.
 ///
 /// Once an asynchronous operation finishes, the corresponding handler function
 /// is added to the context's event queue and executed through once of the
 /// Poll... or Run... functions.
-class Context : public Object {
+class Context : public ObjectT<Context> {
  public:
   typedef std::function<void()> HandlerFn;
 
-  /// Constructs the context.
-  Context() : Object(internal::CallApiCreate(internal::YOGI_ContextCreate)) {}
+  /// Creates the context
+  static ContextPtr Create() { return ContextPtr(new Context()); }
 
   /// Runs the context's event processing loop to execute ready handlers.
   ///
@@ -231,8 +234,9 @@ class Context : public Object {
     int res = internal::YOGI_ContextPost(GetHandle(), wrapper, fn_ptr);
     internal::CheckErrorCode(res);
   }
-};
 
-typedef std::shared_ptr<Context> ContextPtr;
+ private:
+  Context() : ObjectT(internal::CallApiCreate(internal::YOGI_ContextCreate)) {}
+};
 
 }  // namespace yogi

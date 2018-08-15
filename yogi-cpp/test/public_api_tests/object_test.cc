@@ -9,14 +9,14 @@ class FakeObject : public yogi::Object {
 
 class ObjectTest : public ::testing::Test {
  protected:
-  yogi::Context object_;
+  yogi::ContextPtr object_ = yogi::Context::Create();
 };
 
 TEST_F(ObjectTest, Format) {
-  std::string s = object_.Format();
+  std::string s = object_->Format();
   CheckStringMatches(s, "^Context \\[[1-9a-f][0-9a-f]+\\]$");
 
-  s = object_.Format("$T-[$X]");
+  s = object_->Format("$T-[$X]");
   CheckStringMatches(s, "^Context-\\[[1-9A-F][0-9A-F]+\\]$");
 
   FakeObject obj;
@@ -28,5 +28,5 @@ TEST_F(ObjectTest, Format) {
 }
 
 TEST_F(ObjectTest, ToString) {
-  CheckStringMatches(object_.ToString(), "^Context \\[[1-9a-f][0-9a-f]+\\]$");
+  CheckStringMatches(object_->ToString(), "^Context \\[[1-9a-f][0-9a-f]+\\]$");
 }

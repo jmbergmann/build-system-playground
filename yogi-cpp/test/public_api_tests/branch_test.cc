@@ -4,7 +4,7 @@
 
 class BranchTest : public ::testing::Test {
  protected:
-  yogi::Context context;
+  yogi::ContextPtr context = yogi::Context::Create();
 };
 
 TEST_F(BranchTest, BranchEventsEnum) {

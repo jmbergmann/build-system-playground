@@ -6,28 +6,25 @@
 #include "logging.h"
 #include "branch.h"
 #include "uuid.h"
-#include "time.h"
+#include "duration.h"
+#include "timestamp.h"
 
 #include <sstream>
 
-#define YOGI_DEFINE_OSTREAM_OPERATOR(declaration_type, type)                 \
-  namespace yogi {                                                           \
-    declaration_type type;                                                   \
-  }                                                                          \
+#define YOGI_DEFINE_OSTREAM_OPERATOR(type)                                   \
   inline std::ostream& operator<<(std::ostream& os, const yogi::type& val) { \
     os << yogi::ToString(val);                                               \
     return os;                                                               \
   }
 
-YOGI_DEFINE_OSTREAM_OPERATOR(enum class, ErrorCode)
-YOGI_DEFINE_OSTREAM_OPERATOR(class, Result)
-YOGI_DEFINE_OSTREAM_OPERATOR(class, Object)
-YOGI_DEFINE_OSTREAM_OPERATOR(enum class, Verbosity)
-YOGI_DEFINE_OSTREAM_OPERATOR(enum class, Stream)
-YOGI_DEFINE_OSTREAM_OPERATOR(enum class, BranchEvents)
-YOGI_DEFINE_OSTREAM_OPERATOR(class, Uuid)
-YOGI_DEFINE_OSTREAM_OPERATOR(class, Duration)
-YOGI_DEFINE_OSTREAM_OPERATOR(class, Timestamp)
-
+YOGI_DEFINE_OSTREAM_OPERATOR(ErrorCode)
+YOGI_DEFINE_OSTREAM_OPERATOR(Result)
+YOGI_DEFINE_OSTREAM_OPERATOR(Object)
+YOGI_DEFINE_OSTREAM_OPERATOR(Verbosity)
+YOGI_DEFINE_OSTREAM_OPERATOR(Stream)
+YOGI_DEFINE_OSTREAM_OPERATOR(BranchEvents)
+YOGI_DEFINE_OSTREAM_OPERATOR(Uuid)
+YOGI_DEFINE_OSTREAM_OPERATOR(Duration)
+YOGI_DEFINE_OSTREAM_OPERATOR(Timestamp)
 
 #undef YOGI_DEFINE_OSTREAM_OPERATOR
