@@ -77,8 +77,7 @@ class Timestamp {
   ///
   /// \returns The parsed timestamp.
   template <typename StrString, typename FmtString = char*>
-  static Timestamp Parse(const StrString& str,
-                         const FmtString& timefmt = nullptr) {
+  static Timestamp Parse(StrString&& str, FmtString&& timefmt = nullptr) {
     long long timestamp;
     int res =
         internal::YOGI_ParseTime(&timestamp, internal::StringToCoreString(str),
@@ -135,7 +134,7 @@ class Timestamp {
   ///
   /// \returns The formatted time string.
   template <typename String = char*>
-  std::string Format(const String& timefmt = nullptr) const {
+  std::string Format(String&& timefmt = nullptr) const {
     char str[128];
     int res = internal::YOGI_FormatTime(dur_since_epoch_.NanosecondsCount(),
                                         str, sizeof(str),

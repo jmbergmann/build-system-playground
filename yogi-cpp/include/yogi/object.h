@@ -60,8 +60,8 @@ class Object {
   ///
   /// \returns Formatted string.
   template <typename FmtString = char*, typename NullString = char*>
-  std::string Format(const FmtString& fmt = nullptr,
-                     const NullString& nullstr = nullptr) const {
+  std::string Format(FmtString&& fmt = nullptr,
+                     NullString&& nullstr = nullptr) const {
     char str[128];
     int res = internal::YOGI_FormatObject(
         handle_, str, sizeof(str), internal::StringToCoreString(fmt),

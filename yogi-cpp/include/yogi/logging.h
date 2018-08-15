@@ -442,10 +442,14 @@ class Logger : public Object {
   ///
   /// The verbosity of new loggers is Verbosity.Info by default.
   ///
+  /// \tparam String Type of the \p component string
+  ///
   /// \param component The component tag to use.
-  Logger(const std::string& component)
-      : Object(internal::CallApiCreate(internal::YOGI_LoggerCreate,
-                                       component.c_str())) {}
+  template <typename String>
+  Logger(String&& component)
+      : Object(
+            internal::CallApiCreate(internal::YOGI_LoggerCreate,
+                                    internal::StringToCoreString(component))) {}
 
   /// For the AppLogger
   Logger() : Object(nullptr) {}
@@ -476,8 +480,7 @@ class Logger : public Object {
   /// \param file Source file name.
   /// \param line Source file line number.
   template <typename MsgString, typename FileString>
-  void Log(Verbosity severity, const MsgString& msg, const FileString& file,
-           int line) {
+  void Log(Verbosity severity, MsgString&& msg, FileString&& file, int line) {
     const char* short_file = internal::StringToCoreString(file);
     if (short_file) {
       for (const char* ch = short_file; *ch; ++ch) {
@@ -498,7 +501,7 @@ class Logger : public Object {
   /// \param severity Severity (verbosity) of the entry.
   /// \param msg Log message.
   template <typename MsgString>
-  void Log(Verbosity severity, const MsgString& msg) {
+  void Log(Verbosity severity, MsgString&& msg) {
     return Log<MsgString, const char*>(severity, msg, nullptr, 0);
   }
 };

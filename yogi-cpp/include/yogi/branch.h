@@ -1,6 +1,7 @@
 #pragma once
 
 #include "object.h"
+#include "context.h"
 #include "io.h"
 #include "uuid.h"
 #include "duration.h"
@@ -83,9 +84,9 @@ class BranchInfo {
   /// \param uuid UUID of the branch.
   /// \param json JSON string to parse.
   template <typename String>
-  BranchInfo(const Uuid& uuid, String json)
+  BranchInfo(const Uuid& uuid, String&& json)
       : uuid_(uuid),
-        json_(internal::StringToCoreString(json)),
+        json_(json),
         name_(internal::ExtractStringFromJson(json_, "name")),
         description_(internal::ExtractStringFromJson(json_, "description")),
         net_name_(internal::ExtractStringFromJson(json_, "net_name")),
@@ -101,40 +102,64 @@ class BranchInfo {
         start_time_(internal::ExtractTimestampFromJson(json_, "start_time")),
         timeout_(internal::ExtractDurationFromJson(json_, "timeout")) {}
 
-  /// UUID of the branch.
+  /// Returns the UUID of the branch.
+  ///
+  /// \returns UUID of the branch.
   const Uuid& GetUuid() const { return uuid_; }
 
-  /// Name of the branch.
+  /// Returns the name of the branch.
+  ///
+  /// \returns The name of the branch.
   const std::string& GetName() const { return name_; }
 
-  /// Description of the branch.
+  /// Returns the description of the branch.
+  ///
+  /// \returns The description of the branch.
   const std::string& GetDescription() const { return description_; }
 
-  /// Name of the network.
+  /// Returns the name of the network.
+  ///
+  /// \returns The name of the network.
   const std::string& GetNetName() const { return net_name_; }
 
-  /// Path of the branch.
+  /// Returns the  path of the branch.
+  ///
+  /// \returns The  path of the branch.
   const std::string& GetPath() const { return path_; }
 
-  /// The machine's hostname..
+  /// Returns the machine's hostname.
+  ///
+  /// \returns The machine's hostname.
   const std::string& GetHostname() const { return hostname_; }
 
-  /// ID of the process.
+  /// Returns the ID of the process.
+  ///
+  /// \returns The ID of the process.
   int GetPid() const { return pid_; }
 
-  /// Advertising interval.
+  /// Returns the advertising interval.
+  ///
+  /// \returns The advertising interval.
   const Duration& GetAdvertisingInterval() const { return adv_interval_; }
 
-  /// Address of the TCP server for incoming connections.
+  /// Returns the address of the TCP server for incoming connections.
+  ///
+  /// \returns The address of the TCP server for incoming connections.
   const std::string& GetTcpServerAddress() const { return tcp_server_address_; }
 
-  /// Listening port of the TCP server for incoming connections.
+  /// Returns the listening port of the TCP server for incoming connections.
+  ///
+  /// \returns The listening port of the TCP server for incoming connections.
   int GetTcpServerPort() const { return tcp_server_port_; }
 
-  /// Time when the branch was started (UTC time).
+  /// Returns the time when the branch was started (UTC time).
+  ///
+  /// \returns The time when the branch was started (UTC time).
   const Timestamp& GetStartTime() const { return start_time_; }
 
-  /// Connection timeout.
+  /// Returns the connection timeout.
+  ///
+  /// \returns The connection timeout.
   const Duration& GetTimeout() const { return timeout_; }
 
   /// Returns the branch information as JSON-encoded string.
@@ -174,7 +199,7 @@ class LocalBranchInfo : public BranchInfo {
   /// \param uuid UUID of the branch.
   /// \param json JSON string to parse.
   template <typename String>
-  LocalBranchInfo(const Uuid& uuid, String json)
+  LocalBranchInfo(const Uuid& uuid, String&& json)
       : BranchInfo(uuid, json),
         adv_address_(internal::ExtractFromJson<std::string>(
             ToString(), "advertising_address")),
@@ -182,9 +207,13 @@ class LocalBranchInfo : public BranchInfo {
             internal::ExtractIntFromJson(ToString(), "advertising_port")) {}
 
   /// Advertising IP address.
+  ///
+  /// \return The advertising IP address.
   const std::string& GetAdvertisingAddress() const { return adv_address_; }
 
   /// Advertising port.
+  ///
+  /// \return The advertising port.
   int GetAdvertisingPort() const { return adv_port_; }
 
  private:
@@ -193,21 +222,198 @@ class LocalBranchInfo : public BranchInfo {
 };
 
 /// Information associated with a branch event.
-class BranchEventInfo {};
+class BranchEventInfo {
+ public:
+  /// Constructor.
+  ///
+  /// \tparam String String type.
+  ///
+  /// \param uuid UUID of the branch.
+  /// \param json JSON string to parse.
+  template <typename String>
+  BranchEventInfo(const Uuid& uuid, String&& json) : uuid_(uuid), json_(json) {}
+
+  /// Returns the UUID of the branch.
+  ///
+  /// \returns UUID of the branch.
+  const Uuid& GetUuid() const { return uuid_; }
+
+  /// Returns the event information as JSON-encoded string.
+  ///
+  /// \returns Event information as JSON-encoded string.
+  const std::string& ToString() const { return json_; }
+
+ private:
+  const Uuid uuid_;
+  const std::string json_;
+};
 
 /// Information associated with the BranchDiscovered branch event.
-class BranchDiscoveredEventInfo : public BranchEventInfo {};
+class BranchDiscoveredEventInfo : public BranchEventInfo {
+ public:
+  /// Constructor.
+  ///
+  /// \tparam String String type.
+  ///
+  /// \param uuid UUID of the branch.
+  /// \param json JSON string to parse.
+  template <typename String>
+  BranchDiscoveredEventInfo(const Uuid& uuid, String&& json)
+      : BranchEventInfo(uuid, json),
+        tcp_server_address_(
+            internal::ExtractStringFromJson(json_, "tcp_server_address")),
+        tcp_server_port_(
+            internal::ExtractIntFromJson(json_, "tcp_server_port")) {}
+
+  /// Returns the address of the TCP server for incoming connections.
+  ///
+  /// \returns The address of the TCP server for incoming connections.
+  const std::string& GetTcpServerAddress() const { return tcp_server_address_; }
+
+  /// Returns the listening port of the TCP server for incoming connections.
+  ///
+  /// \returns The listening port of the TCP server for incoming connections.
+  int GetTcpServerPort() const { return tcp_server_port_; }
+
+ private:
+  const std::string tcp_server_address_;
+  const int tcp_server_port_;
+};
 
 /// Information associated with the BranchQueried branch event.
-class BranchQueriedEventInfo : public BranchEventInfo {};
+class BranchQueriedEventInfo : public BranchEventInfo {
+ public:
+  /// Constructor.
+  ///
+  /// \tparam String String type.
+  ///
+  /// \param uuid UUID of the branch.
+  /// \param json JSON string to parse.
+  template <typename String>
+  BranchQueriedEventInfo(const Uuid& uuid, String&& json)
+      : BranchEventInfo(uuid, json), info_(RemoteBranchInfo(uuid, json)) {}
+
+  /// Returns the name of the branch.
+  ///
+  /// \returns The name of the branch.
+  const std::string& GetName() const { return info_.GetName(); }
+
+  /// Returns the description of the branch.
+  ///
+  /// \returns The description of the branch.
+  const std::string& GetDescription() const { return info_.GetDescription(); }
+
+  /// Returns the name of the network.
+  ///
+  /// \returns The name of the network.
+  const std::string& GetNetName() const { return info_.GetNetName(); }
+
+  /// Returns the  path of the branch.
+  ///
+  /// \returns The  path of the branch.
+  const std::string& GetPath() const { return info_.GetPath(); }
+
+  /// Returns the machine's hostname.
+  ///
+  /// \returns The machine's hostname.
+  const std::string& GetHostname() const { return info_.GetHostname(); }
+
+  /// Returns the ID of the process.
+  ///
+  /// \returns The ID of the process.
+  int GetPid() const { return info_.GetPid(); }
+
+  /// Returns the advertising interval.
+  ///
+  /// \returns The advertising interval.
+  const Duration& GetAdvertisingInterval() const {
+    return info_.GetAdvertisingInterval();
+  }
+
+  /// Returns the address of the TCP server for incoming connections.
+  ///
+  /// \returns The address of the TCP server for incoming connections.
+  const std::string& GetTcpServerAddress() const {
+    return info_.GetTcpServerAddress();
+  }
+
+  /// Returns the listening port of the TCP server for incoming connections.
+  ///
+  /// \returns The listening port of the TCP server for incoming connections.
+  int GetTcpServerPort() const { return info_.GetTcpServerPort(); }
+
+  /// Returns the time when the branch was started (UTC time).
+  ///
+  /// \returns The time when the branch was started (UTC time).
+  const Timestamp& GetStartTime() const { return info_.GetStartTime(); }
+
+  /// Returns the connection timeout.
+  ///
+  /// \returns The connection timeout.
+  const Duration& GetTimeout() const { return info_.GetTimeout(); }
+
+  /// Converts the event information to a RemoteBranchInfo object.
+  ///
+  /// \returns The converted RemoteBranchInfo object.
+  const RemoteBranchInfo& ToRemoteBranchInfo() const { return info_; }
+
+ private:
+  const RemoteBranchInfo info_;
+};
 
 /// Information associated with the ConnectFinished branch event.
-class ConnectFinishedEventInfo : public BranchEventInfo {};
+class ConnectFinishedEventInfo : public BranchEventInfo {
+ public:
+  using BranchEventInfo::BranchEventInfo;
+};
 
 /// Information associated with the ConnectionLost branch event.
-class ConnectionLostEventInfo : public BranchEventInfo {};
+class ConnectionLostEventInfo : public BranchEventInfo {
+ public:
+  using BranchEventInfo::BranchEventInfo;
+};
 
+/// Entry point into a Yogi network.
 ///
-class Branch : public Object {};
+/// A branch represents an entry point into a YOGI network. It advertises
+/// itself via IP broadcasts/multicasts with its unique ID and information
+/// required for establishing a connection. If a branch detects other branches
+/// on the network, it connects to them via TCP to retrieve further
+/// information such as their name, description and network name. If the
+/// network names match, two branches attempt to authenticate with each other
+/// by securely comparing passwords. Once authentication succeeds and there is
+/// no other known branch with the same path then the branches can actively
+/// communicate as part of the Yogi network.
+///
+/// Note: Even though the authentication process via passwords is done in a
+///       secure manner, any further communication is done in plain text.
+class Branch : public Object {
+ public:
+  /// Creates the branch.
+  ///
+  /// Advertising and establishing connections can be limited to certain
+  /// network interfaces via the interface parameter. The default is to use
+  /// all available interfaces.
+  ///
+  /// Setting the advint parameter to infinity prevents the branch from
+  /// actively participating in the Yogi network, i.e. the branch will not
+  /// advertise itself and it will not authenticate in order to join a
+  /// network. However, the branch will temporarily connect to other
+  /// branches in order to obtain more detailed information such as name,
+  /// description, network name and so on. This is useful for obtaining
+  /// information about active branches without actually becoming part of
+  /// the Yogi network.
+  template <typename NameString, typename DescriptionString = char*,
+            typename NetnameString = char*, typename PasswordString = char*,
+            typename PathString = char*, typename AdvaddrString = char*>
+  Branch(ContextPtr context, NameString&& name,
+         DescriptionString&& description = nullptr,
+         NetnameString&& netname = nullptr, PasswordString&& password = nullptr,
+         PathString&& path = nullptr, AdvaddrString&& advaddr = nullptr,
+         int advport = 0, const Duration& advint = Duration::kZero,
+         const Duration& timeout = Duration::kZero) {}
+
+ private:
+};
 
 }  // namespace yogi

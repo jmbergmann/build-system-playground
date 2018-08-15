@@ -516,8 +516,8 @@ class Duration {
   ///
   /// \returns The formatted duration string
   template <typename DurFmtString = char*, typename InfFmtString = char*>
-  std::string Format(const DurFmtString& dur_fmt = nullptr,
-                     const InfFmtString& inf_fmt = nullptr) const {
+  std::string Format(DurFmtString&& dur_fmt = nullptr,
+                     InfFmtString&& inf_fmt = nullptr) const {
     char str[128];
     int res = internal::YOGI_FormatDuration(
         IsFinite() ? ns_count_ : -1, ns_count_ < 0 ? 1 : 0, str, sizeof(str),

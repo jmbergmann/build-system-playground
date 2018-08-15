@@ -312,6 +312,10 @@ public static partial class Yogi
         /// <summary>Connection timeout.</summary>
         public Duration Timeout { get { return info.Timeout; } }
 
+        /// <summary>
+        /// Converts the event information to a RemoteBranchInfo object.
+        /// </summary>
+        /// <returns>Converted RemoteBranchInfo object.</returns>
         public RemoteBranchInfo ToRemoteBranchInfo()
         {
             return info;

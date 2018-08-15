@@ -233,4 +233,6 @@ class Context : public Object {
   }
 };
 
+typedef std::shared_ptr<Context> ContextPtr;
+
 }  // namespace yogi
