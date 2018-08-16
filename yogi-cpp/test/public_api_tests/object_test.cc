@@ -4,7 +4,7 @@
 
 class FakeObject : public yogi::Object {
  public:
-  FakeObject() : yogi::Object(nullptr) {}
+  FakeObject() : yogi::Object(nullptr, {}) {}
 };
 
 class ObjectTest : public ::testing::Test {

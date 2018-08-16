@@ -236,7 +236,8 @@ class Context : public ObjectT<Context> {
   }
 
  private:
-  Context() : ObjectT(internal::CallApiCreate(internal::YOGI_ContextCreate)) {}
+  Context()
+      : ObjectT(internal::CallApiCreate(internal::YOGI_ContextCreate), {}) {}
 };
 
 }  // namespace yogi

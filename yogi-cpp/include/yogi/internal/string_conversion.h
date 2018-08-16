@@ -5,9 +5,9 @@
 namespace yogi {
 namespace internal {
 
-inline const char* StringToCoreString(const char* s) { return s; }
+inline const char* ToCoreString(const char* s) { return s; }
 
-inline const char* StringToCoreString(const std::string& s) {
+inline const char* ToCoreString(const std::string& s) {
   return s.c_str();
 }
 

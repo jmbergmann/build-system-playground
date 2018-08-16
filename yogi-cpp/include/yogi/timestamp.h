@@ -80,8 +80,8 @@ class Timestamp {
   static Timestamp Parse(StrString&& str, FmtString&& timefmt = nullptr) {
     long long timestamp;
     int res =
-        internal::YOGI_ParseTime(&timestamp, internal::StringToCoreString(str),
-                                 internal::StringToCoreString(timefmt));
+        internal::YOGI_ParseTime(&timestamp, internal::ToCoreString(str),
+                                 internal::ToCoreString(timefmt));
     internal::CheckErrorCode(res);
     return FromDurationSinceEpoch(Duration::FromNanoseconds(timestamp));
   }
@@ -138,7 +138,7 @@ class Timestamp {
     char str[128];
     int res = internal::YOGI_FormatTime(dur_since_epoch_.NanosecondsCount(),
                                         str, sizeof(str),
-                                        internal::StringToCoreString(timefmt));
+                                        internal::ToCoreString(timefmt));
     internal::CheckErrorCode(res);
     return str;
   }

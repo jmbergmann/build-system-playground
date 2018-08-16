@@ -403,42 +403,18 @@ public static partial class Yogi
         /// <param name="advint">Advertising interval (must be at least 1 ms).</param>
         /// <param name="timeout">Maximum time of inactivity before a remote branch is
         /// considered to be dead (must be at least 1 ms).</param>
-        /// <returns></returns>
-        public Branch(Context context, string name, [Optional] string description,
+        public Branch(Context context, [Optional] string name, [Optional] string description,
             [Optional] string netname, [Optional] string password, [Optional] string path,
             [Optional] string advaddr, [Optional] int advport, [Optional] Duration advint,
             [Optional] Duration timeout)
         : base(Create(context, name, description, netname, password, path, advaddr, advport,
-            advint, timeout), new Object[] {context})
+            advint, timeout), new Object[] { context })
         {
+            Info = GetInfo();
         }
 
-        /// <summary>
-        /// Information about the local branch.
-        /// </summary>
-        public LocalBranchInfo Info
-        {
-            get
-            {
-                if (info == null)
-                {
-                    StringBuilder json;
-                    var size = 1024;
-                    int res;
-                    do
-                    {
-                        json = new StringBuilder(size);
-                        size *= 2;
-                        res = Api.YOGI_BranchGetInfo(Handle, IntPtr.Zero, json, json.Capacity);
-                    }
-                    while (res == (int)ErrorCode.BufferTooSmall);
-                    CheckErrorCode(res);
-                    info = new LocalBranchInfo(json.ToString());
-                }
-
-                return info;
-            }
-        }
+        /// <summary>Information about the local branch.</summary>
+        public LocalBranchInfo Info { get; }
 
         /// <summary>UUID of the branch.</summary>
         public Guid Uuid { get { return Info.Uuid; } }
@@ -616,7 +592,7 @@ public static partial class Yogi
             CheckErrorCode(res);
         }
 
-        static IntPtr Create(Context context, string name, [Optional] string description,
+        static IntPtr Create(Context context, [Optional] string name, [Optional] string description,
             [Optional] string netname, [Optional] string password, [Optional] string path,
             [Optional] string advaddr, [Optional] int advport, [Optional] Duration advint,
             [Optional] Duration timeout)
@@ -631,6 +607,20 @@ public static partial class Yogi
             return handle;
         }
 
-        LocalBranchInfo info;
+        LocalBranchInfo GetInfo()
+        {
+            StringBuilder json;
+            var size = 1024;
+            int res;
+            do
+            {
+                json = new StringBuilder(size);
+                size *= 2;
+                res = Api.YOGI_BranchGetInfo(Handle, IntPtr.Zero, json, json.Capacity);
+            }
+            while (res == (int)ErrorCode.BufferTooSmall);
+            CheckErrorCode(res);
+            return new LocalBranchInfo(json.ToString());
+        }
     }
 }

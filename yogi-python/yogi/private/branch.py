@@ -234,8 +234,9 @@ class Branch(Object):
           secure manner, any further communication is done in plain text.
     """
 
-    def __init__(self, context: Context, name: str, description: str = None,
-                 netname: str = None, password: str = None, path: str = None,
+    def __init__(self, context: Context, name: str = None,
+                 description: str = None, netname: str = None,
+                 password: str = None, path: str = None,
                  advaddr: str = None, advport: int = None,
                  advint: float = None, timeout: float = None):
         """Creates the branch.
@@ -294,7 +295,7 @@ class Branch(Object):
                                advport or 0, conv_duration(advint),
                                conv_duration(timeout))
         Object.__init__(self, handle, [context])
-        self._info = None
+        self._info = self.__get_info()
 
     @property
     def info(self) -> LocalBranchInfo:
@@ -303,91 +304,77 @@ class Branch(Object):
         Returns:
             Object containing information about the branch.
         """
-        if not self._info:
-            s = create_string_buffer(1024)
-            while True:
-                try:
-                    yogi.YOGI_BranchGetInfo(self._handle, None, s, sizeof(s))
-                    break
-                except FailureException as e:
-                    if e.failure.error_code is ErrorCode.BUFFER_TOO_SMALL:
-                        s = create_string_buffer(sizeof(s) * 2)
-                    else:
-                        raise
-
-            self._info = LocalBranchInfo(s.value.decode("utf-8"))
-
         return self._info
 
     @property
     def uuid(self) -> UUID:
         """UUID of the branch."""
-        return self.info.uuid
+        return self._info.uuid
 
     @property
     def name(self) -> str:
         """Name of the branch."""
-        return self.info.name
+        return self._info.name
 
     @property
     def description(self) -> str:
         """Description of the branch."""
-        return self.info.description
+        return self._info.description
 
     @property
     def net_name(self) -> str:
         """Name of the network."""
-        return self.info.net_name
+        return self._info.net_name
 
     @property
     def path(self) -> str:
         """Path of the branch."""
-        return self.info.path
+        return self._info.path
 
     @property
     def hostname(self) -> str:
         """The machine's hostname."""
-        return self.info.hostname
+        return self._info.hostname
 
     @property
     def pid(self) -> int:
         """ID of the process."""
-        return self.info.pid
+        return self._info.pid
 
     @property
     def advertising_address(self) -> str:
         """Advertising IP address."""
-        return self.info.advertising_address
+        return self._info.advertising_address
 
     @property
     def advertising_port(self) -> int:
         """Advertising port."""
-        return self.info.advertising_port
+        return self._info.advertising_port
 
     @property
     def advertising_interval(self) -> float:
         """Advertising interval."""
-        return self.info.advertising_interval
+        return self._info.advertising_interval
 
     @property
     def tcp_server_address(self) -> str:
         """Address of the TCP server for incoming connections."""
-        return self.info.tcp_server_address
+        return self._info.tcp_server_address
 
     @property
     def tcp_server_port(self) -> int:
         """Listening port of the TCP server for incoming connections."""
-        return self.info.tcp_server_port
+        return self._info.tcp_server_port
 
     @property
     def start_time(self) -> Timestamp:
         """Time when the branch was started."""
-        return self.info.start_time
+        return self._info.start_time
 
     @property
     def timeout(self) -> float:
         """Connection timeout."""
-        return self.info.timeout
+        return self._info.timeout
 
     def get_connected_branches(self) -> Dict[str, RemoteBranchInfo]:
         """Retrieves information about all connected remote branches.
@@ -486,3 +473,17 @@ class Branch(Object):
         await_event() to be called with a cancellation error.
         """
         yogi.YOGI_BranchCancelAwaitEvent(self._handle)
+
+    def __get_info(self) -> LocalBranchInfo:
+        s = create_string_buffer(1024)
+        while True:
+            try:
+                yogi.YOGI_BranchGetInfo(self._handle, None, s, sizeof(s))
+                break
+            except FailureException as e:
+                if e.failure.error_code is ErrorCode.BUFFER_TOO_SMALL:
+                    s = create_string_buffer(sizeof(s) * 2)
+                else:
+                    raise
+
+        return LocalBranchInfo(s.value.decode("utf-8"))

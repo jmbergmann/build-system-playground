@@ -10,6 +10,7 @@
 #include <string>
 #include <memory>
 #include <type_traits>
+#include <initializer_list>
 
 namespace yogi {
 namespace internal {
@@ -70,8 +71,8 @@ class Object : std::enable_shared_from_this<Object> {
                      NullString&& nullstr = nullptr) const {
     char str[128];
     int res = internal::YOGI_FormatObject(
-        handle_, str, sizeof(str), internal::StringToCoreString(fmt),
-        internal::StringToCoreString(nullstr));
+        handle_, str, sizeof(str), internal::ToCoreString(fmt),
+        internal::ToCoreString(nullstr));
     internal::CheckErrorCode(res);
     return str;
   }
@@ -82,27 +83,29 @@ class Object : std::enable_shared_from_this<Object> {
   virtual std::string ToString() const { return Format(); }
 
  protected:
-  /// Constructs the object.
-  ///
-  /// \param handle Yogi handle representing the object.
-  Object(void* handle) : handle_(handle) {}
+  Object(void* handle, std::initializer_list<ObjectPtr> dependencies)
+      : handle_(handle), dependencies_(dependencies) {}
 
-  /// Returns the Yogi handle for this object.
-  ///
-  /// \returns The Yogi handle for this object.
   void* GetHandle() const { return handle_; }
+
+  static void* GetForeignHandle(const ObjectPtr& other) {
+    return other->GetHandle();
+  }
 
  private:
   Object(const Object&) = delete;
   Object& operator=(const Object&) = delete;
 
   void* handle_;
+  const std::initializer_list<ObjectPtr> dependencies_;
 };
 
 /// Templated base class for all "creatable" objects.
 ///
 /// "Creatable" Yogi objects are objects that get instantiated and live until
 /// they are destroyed by the user.
+///
+/// \tparam T Class that derives from ObjectT.
 template <typename T>
 class ObjectT : public Object {
  public:

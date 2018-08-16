@@ -2,10 +2,10 @@
 
 using namespace yogi::internal;
 
-TEST(ConversionTest, StringToCoreString) {
+TEST(ConversionTest, ToCoreString) {
   const char* str = "";
-  EXPECT_EQ(StringToCoreString(str), str);
+  EXPECT_EQ(ToCoreString(str), str);
 
   std::string s = "abc";
-  EXPECT_EQ(StringToCoreString(s), s.c_str());
+  EXPECT_EQ(ToCoreString(s), s.c_str());
 }

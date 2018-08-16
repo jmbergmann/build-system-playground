@@ -483,7 +483,7 @@ class Logger : public ObjectT<Logger> {
   /// \param line Source file line number.
   template <typename MsgString, typename FileString>
   void Log(Verbosity severity, MsgString&& msg, FileString&& file, int line) {
-    const char* short_file = internal::StringToCoreString(file);
+    const char* short_file = internal::ToCoreString(file);
     if (short_file) {
       for (const char* ch = short_file; *ch; ++ch) {
         if (*ch == '/' || *ch == '\\') {
@@ -494,7 +494,7 @@ class Logger : public ObjectT<Logger> {
 
     int res = internal::YOGI_LoggerLog(GetHandle(), static_cast<int>(severity),
                                        short_file, line,
-                                       internal::StringToCoreString(msg));
+                                       internal::ToCoreString(msg));
     internal::CheckErrorCode(res);
   }
 
@@ -509,14 +509,14 @@ class Logger : public ObjectT<Logger> {
 
  protected:
   // For the AppLogger
-  Logger() : ObjectT(nullptr) {}
+  Logger() : ObjectT(nullptr, {}) {}
 
  private:
   template <typename String>
   Logger(String&& component)
-      : ObjectT(
-            internal::CallApiCreate(internal::YOGI_LoggerCreate,
-                                    internal::StringToCoreString(component))) {}
+      : ObjectT(internal::CallApiCreate(internal::YOGI_LoggerCreate,
+                                        internal::ToCoreString(component)),
+                {}) {}
 };
 
 class AppLogger;

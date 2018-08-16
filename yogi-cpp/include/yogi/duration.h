@@ -521,8 +521,8 @@ class Duration {
     char str[128];
     int res = internal::YOGI_FormatDuration(
         IsFinite() ? ns_count_ : -1, ns_count_ < 0 ? 1 : 0, str, sizeof(str),
-        internal::StringToCoreString(dur_fmt),
-        internal::StringToCoreString(inf_fmt));
+        internal::ToCoreString(dur_fmt),
+        internal::ToCoreString(inf_fmt));
     internal::CheckErrorCode(res);
     return str;
   }
