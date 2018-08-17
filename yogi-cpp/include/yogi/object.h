@@ -31,7 +31,7 @@ YOGI_DEFINE_API_FN(int, YOGI_FormatObject,
 YOGI_DEFINE_API_FN(int, YOGI_Destroy, (void* object))
 
 class Object;
-typedef std::shared_ptr<Object> ObjectPtr;
+using ObjectPtr = std::shared_ptr<Object>;
 
 /// Base class for all "creatable" objects.
 ///

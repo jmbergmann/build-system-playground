@@ -27,7 +27,7 @@ YOGI_DEFINE_API_FN(int, YOGI_ContextPost,
                    (void* context, void (*fn)(void* userarg), void* userarg))
 
 class Context;
-typedef std::shared_ptr<Context> ContextPtr;
+using ContextPtr = std::shared_ptr<Context>;
 
 /// Scheduler for the execution of asynchronous operations.
 ///
@@ -36,7 +36,7 @@ typedef std::shared_ptr<Context> ContextPtr;
 /// Poll... or Run... functions.
 class Context : public ObjectT<Context> {
  public:
-  typedef std::function<void()> HandlerFn;
+  using HandlerFn = std::function<void()>;
 
   /// Creates the context
   static ContextPtr Create() { return ContextPtr(new Context()); }

@@ -291,20 +291,18 @@ inline void LogToConsole() {
 ///  -# *line*: Source file line number.
 ///  -# *comp*: Component that created the entry.
 ///  -# *msg*: Log message.
-typedef std::function<void(Verbosity severity, Timestamp timestamp, int tid,
-                           std::string file, int line, std::string comp,
-                           std::string msg)>
-    LogHookFn;
+using LogHookFn = std::function<void(Verbosity severity, Timestamp timestamp,
+                                     int tid, std::string file, int line,
+                                     std::string comp, std::string msg)>;
 
 namespace internal {
+  struct LogToHookData {
+    static std::mutex mutex;
+    static std::unique_ptr<LogHookFn> log_hook_fn;
+  };
 
-struct LogToHookData {
-  static std::mutex mutex;
-  static std::unique_ptr<LogHookFn> log_hook_fn;
-};
-
-YOGI_WEAK_SYMBOL std::mutex LogToHookData::mutex;
-YOGI_WEAK_SYMBOL std::unique_ptr<LogHookFn> LogToHookData::log_hook_fn;
+  YOGI_WEAK_SYMBOL std::mutex LogToHookData::mutex;
+  YOGI_WEAK_SYMBOL std::unique_ptr<LogHookFn> LogToHookData::log_hook_fn;
 
 }  // namespace internal
 
@@ -406,7 +404,7 @@ inline void LogToFile() {
 }
 
 class Logger;
-typedef std::shared_ptr<Logger> LoggerPtr;
+using LoggerPtr = std::shared_ptr<Logger>;
 
 /// Allows generating log entries.
 ///
@@ -520,7 +518,7 @@ class Logger : public ObjectT<Logger> {
 };
 
 class AppLogger;
-typedef std::shared_ptr<AppLogger> AppLoggerPtr;
+using AppLoggerPtr = std::shared_ptr<AppLogger>;
 
 /// Represents the App logger singleton.
 ///

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../errors.h"
+#include "error_code_helpers.h"
 
 #include <string>
 
@@ -20,6 +21,8 @@ inline std::string QueryString(Fn fn) {
 
     res = fn(v.data(), size);
   } while (res == static_cast<int>(ErrorCode::kBufferTooSmall));
+
+  internal::CheckErrorCode(res);
 
   return std::string(v.data());
 }

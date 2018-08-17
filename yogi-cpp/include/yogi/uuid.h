@@ -89,3 +89,20 @@ class Uuid {
 };
 
 }  // namespace yogi
+
+namespace std {
+
+template <>
+struct hash<yogi::Uuid> {
+  size_t operator()(const yogi::Uuid& uuid) const {
+    std::size_t seed = 0;
+    for (yogi::Uuid::const_iterator it = uuid.begin(); it != uuid.end(); ++it) {
+      seed ^= static_cast<std::size_t>(*it) + 0x9e3779b9 + (seed << 6) +
+              (seed >> 2);
+    }
+
+    return seed;
+  }
+};
+
+}  // namespace std

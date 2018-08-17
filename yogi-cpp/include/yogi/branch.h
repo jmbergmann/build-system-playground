@@ -12,6 +12,8 @@
 #include "internal/json.h"
 #include "internal/query_string.h"
 
+#include <unordered_map>
+
 namespace yogi {
 
 YOGI_DEFINE_API_FN(int, YOGI_BranchCreate,
@@ -226,6 +228,9 @@ class LocalBranchInfo : public BranchInfo {
 /// Information associated with a branch event.
 class BranchEventInfo {
  public:
+  /// Constructor for an empty event info object.
+  BranchEventInfo() : uuid_{}, json_("{}") {}
+
   /// Constructor.
   ///
   /// \tparam String String type.
@@ -233,7 +238,8 @@ class BranchEventInfo {
   /// \param uuid UUID of the branch.
   /// \param json JSON string to parse.
   template <typename String>
-  BranchEventInfo(const Uuid& uuid, String&& json) : uuid_(uuid), json_(json) {}
+  BranchEventInfo(const Uuid& uuid, String&& json)
+      : uuid_(uuid), json_(std::forward<String>(json)) {}
 
   /// Returns the UUID of the branch.
   ///
@@ -261,11 +267,11 @@ class BranchDiscoveredEventInfo : public BranchEventInfo {
   /// \param json JSON string to parse.
   template <typename String>
   BranchDiscoveredEventInfo(const Uuid& uuid, String&& json)
-      : BranchEventInfo(uuid, json),
+      : BranchEventInfo(uuid, std::forward<String>(json)),
         tcp_server_address_(
-            internal::ExtractStringFromJson(json_, "tcp_server_address")),
+            internal::ExtractStringFromJson(ToString(), "tcp_server_address")),
         tcp_server_port_(
-            internal::ExtractIntFromJson(json_, "tcp_server_port")) {}
+            internal::ExtractIntFromJson(ToString(), "tcp_server_port")) {}
 
   /// Returns the address of the TCP server for incoming connections.
   ///
@@ -293,7 +299,8 @@ class BranchQueriedEventInfo : public BranchEventInfo {
   /// \param json JSON string to parse.
   template <typename String>
   BranchQueriedEventInfo(const Uuid& uuid, String&& json)
-      : BranchEventInfo(uuid, json), info_(RemoteBranchInfo(uuid, json)) {}
+      : BranchEventInfo(uuid, std::forward<String>(json)),
+        info_(RemoteBranchInfo(uuid, ToString())) {}
 
   /// Returns the name of the branch.
   ///
@@ -376,7 +383,7 @@ class ConnectionLostEventInfo : public BranchEventInfo {
 };
 
 class Branch;
-typedef std::shared_ptr<Branch> BranchPtr;
+using BranchPtr = std::shared_ptr<Branch>;
 
 /// Entry point into a Yogi network.
 ///
@@ -394,6 +401,10 @@ typedef std::shared_ptr<Branch> BranchPtr;
 ///       secure manner, any further communication is done in plain text.
 class Branch : public ObjectT<Branch> {
  public:
+  using AwaitEventFn =
+      std::function<void(const Result& res, BranchEvents event,
+                         const Result& evres, BranchEventInfo& info)>;
+
   /// Creates the branch.
   ///
   /// Advertising and establishing connections can be limited to certain
@@ -531,6 +542,114 @@ class Branch : public ObjectT<Branch> {
   /// \returns The advertising port.
   int GetAdvertisingPort() const { return info_.GetAdvertisingPort(); }
 
+  /// Retrieves information about all connected remote branches.
+  ///
+  /// \returns A map mapping the UUID of each connected remote branch to a
+  ///          RemoteBranchInfo object with detailed information about the
+  ///          branch.
+  std::unordered_map<Uuid, RemoteBranchInfo> GetConnectedBranches() const {
+    struct CallbackData {
+      Uuid uuid;
+      const char* str;
+      std::unordered_map<Uuid, RemoteBranchInfo> branches;
+    } data;
+
+    internal::QueryString([&](auto str, auto size) {
+      data.str = str;
+      data.branches.clear();
+
+      return internal::YOGI_BranchGetConnectedBranches(
+          GetHandle(), &data.uuid, str, size,
+          [](int res, void* userarg) {
+            if (res == static_cast<int>(ErrorCode::kOk)) {
+              auto data = static_cast<CallbackData*>(userarg);
+              data->branches.insert(std::make_pair(
+                  data->uuid, RemoteBranchInfo(data->uuid, data->str)));
+            }
+          },
+          &data);
+    });
+  }
+
+  /// Waits for a branch event to occur.
+  ///
+  /// This function will register the handler fn to be executed once one of the
+  /// given branch events occurs. If this function is called while a previous
+  /// wait operation is still active then the previous opertion will be
+  /// canceled, i.e. the handler \p fn for the previous operation will be called
+  /// with a cancellation error.
+  ///
+  /// If successful, the event information passed to the handler function \p fn
+  /// contains at least the UUID of the remote branch.
+  ///
+  /// In case that the internal buffer for reading the event information is too
+  /// small, fn will be called with the corresponding error and the event
+  /// information is lost. You can set the size of this buffer via the
+  /// \p buffer_size parameter.
+  ///
+  /// \param events      Events to observe.
+  /// \param fn          Handler function to call.
+  /// \param buffer_size Size of the internal buffer for reading event
+  ///                    information.
+  void AwaitEvent(BranchEvents events, AwaitEventFn fn,
+                  int buffer_size = 1024) {
+    struct CallbackData {
+      AwaitEventFn fn;
+      Uuid uuid;
+      std::vector<char> json;
+    };
+
+    auto data = std::make_unique<CallbackData>();
+    data->fn = fn;
+    data->json.resize(buffer_size);
+
+    int res = internal::YOGI_BranchAwaitEvent(
+        GetHandle(), static_cast<int>(events), &data->uuid, data->json.data(),
+        buffer_size,
+        [](int res, int event, int evres, void* userarg) {
+          auto data = std::unique_ptr<CallbackData>(
+              static_cast<CallbackData*>(userarg));
+          auto be = static_cast<BranchEvents>(event);
+
+          if (Result(res) && be != BranchEvents::kNone) {
+            switch (be) {
+              case BranchEvents::kBranchDiscovered:
+                CallAwaitEventFn<BranchDiscoveredEventInfo>(res, be, evres,
+                                                            data);
+                break;
+
+              case BranchEvents::kBranchQueried:
+                CallAwaitEventFn<BranchQueriedEventInfo>(res, be, evres, data);
+                break;
+
+              case BranchEvents::kConnectFinished:
+                CallAwaitEventFn<ConnectFinishedEventInfo>(res, be, evres,
+                                                           data);
+                break;
+
+              case BranchEvents::kConnectionLost:
+                CallAwaitEventFn<ConnectionLostEventInfo>(res, be, evres, data);
+                break;
+            }
+          } else {
+            CallAwaitEventFn<BranchEventInfo>(res, be, evres, data);
+          }
+        },
+        data.get());
+    internal::CheckErrorCode(res);
+
+    data.release();
+  }
+
+  /// Cancels waiting for a branch event.
+  ///
+  /// Calling this function will cause the handler registered via AwaitEvent()
+  /// to be called with a cancellation error.
+  void CancelAwaitEvent() {
+    int res = internal::YOGI_BranchCancelAwaitEvent(GetHandle());
+    internal::CheckErrorCode(res);
+  }
+
  private:
   template <typename NameString, typename DescriptionString,
             typename NetnameString, typename PasswordString,
@@ -559,6 +678,29 @@ class Branch : public ObjectT<Branch> {
     });
 
     return LocalBranchInfo(uuid, json);
+  }
+
+  template <typename EventInfo, typename CallbackData>
+  static void CallAwaitEventFn(int res, BranchEvents be, int evres,
+                               CallbackData&& data) {
+    if (res < 0) {
+      BranchEventInfo info;
+      if (evres < 0) {
+        data->fn(Failure(static_cast<ErrorCode>(res)), be,
+                 Failure(static_cast<ErrorCode>(evres)), info);
+      } else {
+        data->fn(Failure(static_cast<ErrorCode>(res)), be, Success(evres),
+                 info);
+      }
+    } else {
+      EventInfo info(data->uuid, data->json.data());
+      if (evres < 0) {
+        data->fn(Success(res), be, Failure(static_cast<ErrorCode>(evres)),
+                 info);
+      } else {
+        data->fn(Success(res), be, Success(evres), info);
+      }
+    }
   }
 
   const LocalBranchInfo info_;
