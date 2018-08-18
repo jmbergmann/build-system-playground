@@ -44,7 +44,8 @@ inline int ExtractIntFromJson(const std::string& json, const char (&name)[N]) {
 }
 
 template <int N>
-inline float ExtractFloatFromJson(const std::string& json, const char (&name)[N]) {
+inline float ExtractFloatFromJson(const std::string& json,
+                                  const char (&name)[N]) {
   auto pos = FindElementInJson(json, name);
 
   try {
@@ -129,7 +130,19 @@ template <int N>
 inline Duration ExtractDurationFromJson(const std::string& json,
                                         const char (&name)[N]) {
   auto seconds = ExtractFloatFromJson(json, name);
-  return Duration::FromSeconds(seconds);
+  if (seconds < 0 && seconds != -1) {
+    throw DescriptiveFailureException(
+        ErrorCode::kParsingJsonFailed,
+        std::string("Could not extract duration '") + name +
+            "': Invalid value");
+  }
+
+  if (seconds < 0) {
+    return Duration::kInfinity;
+  }
+  else {
+    return Duration::FromSeconds(seconds);
+  }
 }
 
 template <int N>

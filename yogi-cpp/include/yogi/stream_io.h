@@ -8,6 +8,7 @@
 #include "uuid.h"
 #include "duration.h"
 #include "timestamp.h"
+#include "branch.h"
 
 #include <sstream>
 
@@ -26,5 +27,7 @@ YOGI_DEFINE_OSTREAM_OPERATOR(BranchEvents)
 YOGI_DEFINE_OSTREAM_OPERATOR(Uuid)
 YOGI_DEFINE_OSTREAM_OPERATOR(Duration)
 YOGI_DEFINE_OSTREAM_OPERATOR(Timestamp)
+YOGI_DEFINE_OSTREAM_OPERATOR(BranchInfo)
+YOGI_DEFINE_OSTREAM_OPERATOR(BranchEventInfo)
 
 #undef YOGI_DEFINE_OSTREAM_OPERATOR

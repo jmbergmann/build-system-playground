@@ -106,6 +106,8 @@ class BranchInfo {
         start_time_(internal::ExtractTimestampFromJson(json_, "start_time")),
         timeout_(internal::ExtractDurationFromJson(json_, "timeout")) {}
 
+  virtual ~BranchInfo() {}
+
   /// Returns the UUID of the branch.
   ///
   /// \returns UUID of the branch.
@@ -240,6 +242,8 @@ class BranchEventInfo {
   template <typename String>
   BranchEventInfo(const Uuid& uuid, String&& json)
       : uuid_(uuid), json_(std::forward<String>(json)) {}
+
+  virtual ~BranchEventInfo() {}
 
   /// Returns the UUID of the branch.
   ///
@@ -563,12 +567,14 @@ class Branch : public ObjectT<Branch> {
           [](int res, void* userarg) {
             if (res == static_cast<int>(ErrorCode::kOk)) {
               auto data = static_cast<CallbackData*>(userarg);
-              data->branches.insert(std::make_pair(
+              data->branches.emplace(std::make_pair(
                   data->uuid, RemoteBranchInfo(data->uuid, data->str)));
             }
           },
           &data);
     });
+
+    return data.branches;
   }
 
   /// Waits for a branch event to occur.

@@ -45,6 +45,9 @@ TEST(JsonTest, ExtractString) {
 TEST(JsonTest, ExtractDuration) {
   auto json = R"({"dur":0.00123})";
   EXPECT_EQ(ExtractDurationFromJson(json, "dur"), 1230us);
+
+  json = R"({"dur":-1})";
+  EXPECT_EQ(ExtractDurationFromJson(json, "dur"), yogi::Duration::kInfinity);
 }
 
 TEST(JsonTest, ExtractTimestamp) {

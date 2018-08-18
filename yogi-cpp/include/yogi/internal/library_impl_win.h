@@ -11,7 +11,12 @@ const char* Library::GetFilename() {
     disable : 4996)  // 'getenv': This function or variable may be unsafe.
   const char* s = std::getenv("YOGI_CORE_LIBRARY");
 #pragma warning(pop)
-  return s ? s : "yogi-core.so";
+
+  if (!s) {
+    s = sizeof(void*) == 4 ? "yogi-core-x86.dll" : "yogi-core-x64.dll";
+  }
+
+  return s;
 }
 
 Library::LibraryHandle Library::LoadLibrary(const char* filename) {

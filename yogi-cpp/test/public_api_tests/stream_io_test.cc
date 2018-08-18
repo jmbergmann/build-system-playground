@@ -38,3 +38,13 @@ TEST(StreamIoTest, Duration) {
 TEST(StreamIoTest, Timestamp) {
   Check(yogi::Timestamp::Now());
 }
+
+TEST(StreamIoTest, BranchInfo) {
+  auto context = yogi::Context::Create();
+  auto branch = yogi::Branch::Create(context);
+  Check(branch->GetInfo());
+}
+
+TEST(StreamIoTest, BranchEventInfo) {
+  Check(yogi::BranchEventInfo(yogi::Uuid{}, "{}"));
+}

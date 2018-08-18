@@ -31,22 +31,37 @@ namespace test
                                          "/some/path", "239.255.0.1", 12345,
                                          Yogi.Duration.FromSeconds(7), Yogi.Duration.Infinity);
 
-           Yogi.LocalBranchInfo info = branch.Info;
-           Assert.IsType<Guid>(info.Uuid);
-           Assert.Equal("My Branch", info.Name);
-           Assert.Equal("Stuff", info.Description);
-           Assert.Equal("My Network", info.NetName);
-           Assert.Equal("/some/path", info.Path);
-           Assert.Equal(Dns.GetHostName(), info.Hostname);
-           Assert.Equal(System.Diagnostics.Process.GetCurrentProcess().Id, info.Pid);
-           Assert.IsType<IPAddress>(info.AdvertisingAddress);
-           Assert.Equal("239.255.0.1", info.AdvertisingAddress.ToString());
-           Assert.Equal(12345, info.AdvertisingPort);
-           Assert.Equal(7, info.AdvertisingInterval.TotalSeconds, precision: 5);
-           Assert.IsType<IPAddress>(info.TcpServerAddress);
-           Assert.True(info.TcpServerPort > 0);
-           Assert.True(info.StartTime < Yogi.CurrentTime);
-           Assert.Equal(Yogi.Duration.Infinity, info.Timeout);
+            var info = branch.Info;
+            Assert.IsType<Guid>(info.Uuid);
+            Assert.Equal("My Branch", info.Name);
+            Assert.Equal("Stuff", info.Description);
+            Assert.Equal("My Network", info.NetName);
+            Assert.Equal("/some/path", info.Path);
+            Assert.Equal(Dns.GetHostName(), info.Hostname);
+            Assert.Equal(System.Diagnostics.Process.GetCurrentProcess().Id, info.Pid);
+            Assert.IsType<IPAddress>(info.AdvertisingAddress);
+            Assert.Equal("239.255.0.1", info.AdvertisingAddress.ToString());
+            Assert.Equal(12345, info.AdvertisingPort);
+            Assert.Equal(7, info.AdvertisingInterval.TotalSeconds, precision: 5);
+            Assert.IsType<IPAddress>(info.TcpServerAddress);
+            Assert.True(info.TcpServerPort > 0);
+            Assert.True(info.StartTime < Yogi.CurrentTime);
+            Assert.Equal(Yogi.Duration.Infinity, info.Timeout);
+
+            Assert.Equal(info.Uuid, branch.Uuid);
+            Assert.Equal(info.Name, branch.Name);
+            Assert.Equal(info.Description, branch.Description);
+            Assert.Equal(info.NetName, branch.NetName);
+            Assert.Equal(info.Path, branch.Path);
+            Assert.Equal(info.Hostname, branch.Hostname);
+            Assert.Equal(info.Pid, branch.Pid);
+            Assert.Equal(info.AdvertisingAddress, branch.AdvertisingAddress);
+            Assert.Equal(info.AdvertisingPort, branch.AdvertisingPort);
+            Assert.Equal(info.AdvertisingInterval, branch.AdvertisingInterval);
+            Assert.Equal(info.TcpServerAddress, branch.TcpServerAddress);
+            Assert.Equal(info.TcpServerPort, branch.TcpServerPort);
+            Assert.Equal(info.StartTime, branch.StartTime);
+            Assert.Equal(info.Timeout, branch.Timeout);
         }
 
         [Fact]
