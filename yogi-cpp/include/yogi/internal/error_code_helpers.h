@@ -23,5 +23,15 @@ inline void CheckDescriptiveErrorCode(Fn fn) {
   }
 }
 
+template <typename Fn>
+inline void WithErrorCodeToResult(int res, Fn fn) {
+  if (res < 0) {
+    fn(yogi::Failure(static_cast<ErrorCode>(res)));
+  }
+  else {
+    fn(yogi::Success(res));
+  }
+}
+
 }  // namespace internal
 }  // namespace yogi

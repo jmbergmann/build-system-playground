@@ -49,6 +49,7 @@ add_executable (yogi-cpp-test
   test/compile_tests/object_compile_test.cc
   test/compile_tests/stream_io_compile_test.cc
   test/compile_tests/time_compile_test.cc
+  test/compile_tests/timer_compile_test.cc
   test/compile_tests/timestamp_compile_test.cc
   test/compile_tests/uuid_compile_test.cc
   test/compile_tests/version_compile_test.cc
@@ -66,6 +67,7 @@ add_executable (yogi-cpp-test
   test/public_api_tests/object_test.cc
   test/public_api_tests/stream_io_test.cc
   test/public_api_tests/time_test.cc
+  test/public_api_tests/timer_test.cc
   test/public_api_tests/timestamp_test.cc
   test/public_api_tests/uuid_test.cc
   test/public_api_tests/version_test.cc

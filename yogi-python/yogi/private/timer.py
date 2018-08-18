@@ -37,7 +37,7 @@ class Timer(Object):
         """Starts the timer.
 
         If the timer is already running, the timer will be canceled first, as
-        if stop() were called explicitly.
+        if cancel() were called explicitly.
 
         Args:
             duration: Time when the timer expires.

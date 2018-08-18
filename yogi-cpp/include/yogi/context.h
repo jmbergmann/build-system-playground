@@ -39,6 +39,8 @@ class Context : public ObjectT<Context> {
   using HandlerFn = std::function<void()>;
 
   /// Creates the context
+  ///
+  /// \returns The created context.
   static ContextPtr Create() { return ContextPtr(new Context()); }
 
   /// Runs the context's event processing loop to execute ready handlers.

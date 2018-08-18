@@ -29,7 +29,7 @@ YOGI_DEFINE_API_FN(int, YOGI_BranchGetConnectedBranches,
 YOGI_DEFINE_API_FN(int, YOGI_BranchAwaitEvent,
                    (void* branch, int events, void* uuid, char* json,
                     int jsonsize,
-                    void (*fn)(int res, int event, int evres, void* userarg),
+                    void (*fn)(int res, int event, int ev_res, void* userarg),
                     void* userarg))
 YOGI_DEFINE_API_FN(int, YOGI_BranchCancelAwaitEvent, (void* branch))
 
@@ -407,9 +407,9 @@ class Branch : public ObjectT<Branch> {
  public:
   using AwaitEventFn =
       std::function<void(const Result& res, BranchEvents event,
-                         const Result& evres, BranchEventInfo& info)>;
+                         const Result& ev_res, BranchEventInfo& info)>;
 
-  /// Creates the branch.
+  /// Creates a branch.
   ///
   /// Advertising and establishing connections can be limited to certain
   /// network interfaces via the interface parameter. The default is to use
@@ -447,6 +447,8 @@ class Branch : public ObjectT<Branch> {
   ///                    infinity disables advertising and joining networks)
   /// \param timeout     Maximum time of inactivity before a remote branch is
   ///                    considered to be dead (must be at least 1 millisecond)
+  ///
+  /// \returns The created branch.
   template <typename NameString = char*, typename DescriptionString = char*,
             typename NetnameString = char*, typename PasswordString = char*,
             typename PathString = char*, typename AdvaddrString = char*>
@@ -612,7 +614,7 @@ class Branch : public ObjectT<Branch> {
     int res = internal::YOGI_BranchAwaitEvent(
         GetHandle(), static_cast<int>(events), &data->uuid, data->json.data(),
         buffer_size,
-        [](int res, int event, int evres, void* userarg) {
+        [](int res, int event, int ev_res, void* userarg) {
           auto data = std::unique_ptr<CallbackData>(
               static_cast<CallbackData*>(userarg));
           auto be = static_cast<BranchEvents>(event);
@@ -620,30 +622,31 @@ class Branch : public ObjectT<Branch> {
           if (Result(res) && be != BranchEvents::kNone) {
             switch (be) {
               case BranchEvents::kBranchDiscovered:
-                CallAwaitEventFn<BranchDiscoveredEventInfo>(res, be, evres,
+                CallAwaitEventFn<BranchDiscoveredEventInfo>(res, be, ev_res,
                                                             data);
                 break;
 
               case BranchEvents::kBranchQueried:
-                CallAwaitEventFn<BranchQueriedEventInfo>(res, be, evres, data);
+                CallAwaitEventFn<BranchQueriedEventInfo>(res, be, ev_res, data);
                 break;
 
               case BranchEvents::kConnectFinished:
-                CallAwaitEventFn<ConnectFinishedEventInfo>(res, be, evres,
+                CallAwaitEventFn<ConnectFinishedEventInfo>(res, be, ev_res,
                                                            data);
                 break;
 
               case BranchEvents::kConnectionLost:
-                CallAwaitEventFn<ConnectionLostEventInfo>(res, be, evres, data);
+                CallAwaitEventFn<ConnectionLostEventInfo>(res, be, ev_res,
+                                                          data);
                 break;
             }
           } else {
-            CallAwaitEventFn<BranchEventInfo>(res, be, evres, data);
+            CallAwaitEventFn<BranchEventInfo>(res, be, ev_res, data);
           }
         },
         data.get());
-    internal::CheckErrorCode(res);
 
+    internal::CheckErrorCode(res);
     data.release();
   }
 
@@ -687,26 +690,21 @@ class Branch : public ObjectT<Branch> {
   }
 
   template <typename EventInfo, typename CallbackData>
-  static void CallAwaitEventFn(int res, BranchEvents be, int evres,
+  static void CallAwaitEventFn(int res, BranchEvents be, int ev_res,
                                CallbackData&& data) {
-    if (res < 0) {
-      BranchEventInfo info;
-      if (evres < 0) {
-        data->fn(Failure(static_cast<ErrorCode>(res)), be,
-                 Failure(static_cast<ErrorCode>(evres)), info);
+    internal::WithErrorCodeToResult(res, [&](const auto& result) {
+      if (result) {
+        EventInfo info(data->uuid, data->json.data());
+        internal::WithErrorCodeToResult(ev_res, [&](const auto& ev_result) {
+          data->fn(result, be, ev_result, info);
+        });
       } else {
-        data->fn(Failure(static_cast<ErrorCode>(res)), be, Success(evres),
-                 info);
+        BranchEventInfo info;
+        internal::WithErrorCodeToResult(ev_res, [&](const auto& ev_result) {
+          data->fn(result, be, ev_result, info);
+        });
       }
-    } else {
-      EventInfo info(data->uuid, data->json.data());
-      if (evres < 0) {
-        data->fn(Success(res), be, Failure(static_cast<ErrorCode>(evres)),
-                 info);
-      } else {
-        data->fn(Success(res), be, Success(evres), info);
-      }
-    }
+    });
   }
 
   const LocalBranchInfo info_;

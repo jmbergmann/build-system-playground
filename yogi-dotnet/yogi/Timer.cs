@@ -53,18 +53,18 @@ public static partial class Yogi
         /// Delegate for the start handler function.
         /// </summary>
         /// <param name="res">Result of the wait operation.</param>
-        public delegate void StartFnDelegate(Result res);
+        public delegate void HandlerFnDelegate(Result res);
 
         /// <summary>
         /// Starts the timer.
         ///
         /// If the timer is already running, the timer will be canceled first,
-        /// as if Stop() were called explicitly.
+        /// as if Cancel() were called explicitly.
         ///
         /// </summary>
         /// <param name="duration">Time when the timer expires.</param>
         /// <param name="fn">Handler function to call after the given time passed.</param>
-        public void Start(Duration duration, StartFnDelegate fn)
+        public void Start(Duration duration, HandlerFnDelegate fn)
         {
             if (duration < Duration.Zero)
             {
