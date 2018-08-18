@@ -9,6 +9,7 @@
 #include "duration.h"
 #include "timestamp.h"
 #include "branch.h"
+#include "signals.h"
 
 #include <sstream>
 
@@ -29,5 +30,6 @@ YOGI_DEFINE_OSTREAM_OPERATOR(Duration)
 YOGI_DEFINE_OSTREAM_OPERATOR(Timestamp)
 YOGI_DEFINE_OSTREAM_OPERATOR(BranchInfo)
 YOGI_DEFINE_OSTREAM_OPERATOR(BranchEventInfo)
+YOGI_DEFINE_OSTREAM_OPERATOR(Signals)
 
 #undef YOGI_DEFINE_OSTREAM_OPERATOR

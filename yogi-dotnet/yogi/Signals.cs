@@ -87,7 +87,7 @@ public static partial class Yogi
         /// <summary>User-defined signal 8.</summary>
         Usr8 = (1 << 31),
 
-        /// <summary>Combination of all flags.</summary>
+        /// <summary>All signals.</summary>
         All = Int | Term | Usr1 | Usr2 | Usr3 | Usr4 | Usr5 | Usr6 | Usr7 | Usr8
     }
 
@@ -116,7 +116,10 @@ public static partial class Yogi
     /// Note: The cleanup handler fn can get called either from within the
     ///       RaiseSignal() function or from any context within the program.
     /// </summary>
-    /// <typeparam name="T"></typeparam>
+    /// <typeparam name="T">Type of the sigarg parameter.</typeparam>
+    /// <param name="signal">The signal to raise.</param>
+    /// <param name="sigarg">Object to pass to the signal sets.</param>
+    /// <param name="fn">Function call after all signal sets have been notified.</param>
     public static void RaiseSignal<T>(Signals signal, T sigarg,
         [Optional] RaiseSignalFnDelegate<T> fn) where T: class
     {
@@ -173,8 +176,8 @@ public static partial class Yogi
     /// Note: The cleanup handler fn can get called either from within the
     ///       RaiseSignal() function or from any context within the program.
     /// </summary>
-    /// <param name="signal"></param>
-    /// <param name="fn"></param>
+    /// <param name="signal">The signal to raise.</param>
+    /// <param name="fn">Function to call after all signal sets have been notified.</param>
     public static void RaiseSignal(Signals signal, [Optional] Action fn)
     {
         RaiseSignal<object>(signal, null, (sigarg) => {
@@ -203,9 +206,24 @@ public static partial class Yogi
         {
         }
 
+        /// <summary>
+        /// Delegate for the AwaitSignal<T>() function.
+        /// </summary>
+        /// <typeparam name="T">Type of the sigarg parameter passed to RaiseSignal().</typeparam>
+        /// <param name="res">Result of the wait operation.</param>
+        /// <param name="signal">The raised signal.</param>
+        /// <param name="sigarg">Value of the sigarg parameter passed to RaiseSignal().</param>
         public delegate void AwaitSignalFnDelegate<T>(Result res, Signals signal,
             [Optional] T sigarg) where T: class;
 
+        /// <summary>
+        /// Waits for a signal to be raised.
+        ///
+        /// The handler \p fn will be called after one of the signals in the set
+        /// is caught.
+        /// </summary>
+        /// <typeparam name="T">Type of the sigarg parameter passed to RaiseSignal().</typeparam>
+        /// <param name="fn">Handler function to call.</param>
         public void AwaitSignal<T>(AwaitSignalFnDelegate<T> fn) where T: class
         {
             Api.SignalSetAwaitSignalFnDelegate wrapper = (ec, signal, sigargPtr, userarg) =>
@@ -240,13 +258,31 @@ public static partial class Yogi
             }
         }
 
+        /// <summary>
+        /// Delegate for the AwaitSignal() function.
+        /// </summary>
+        /// <param name="res">Result of the wait operation.</param>
+        /// <param name="signal">The raised signal.</param>
         public delegate void AwaitSignalFnDelegate(Result res, Signals signal);
 
+        /// <summary>
+        /// Waits for a signal to be raised.
+        ///
+        /// The handler fn will be called after one of the signals in the set
+        /// is caught.
+        /// </summary>
+        /// <param name="fn">Handler function to call.</param>
         public void AwaitSignal(AwaitSignalFnDelegate fn)
         {
             AwaitSignal<object>((res, signal, sigarg) => { fn(res, signal); });
         }
 
+        /// <summary>
+        /// Cancels waiting for a signal.
+        ///
+        /// This causes the handler function registered via AwaitSignal() to be
+        /// called with a cancellation error.
+        /// </summary>
         public void CancelAwaitSignal()
         {
             int res = Api.YOGI_SignalSetCancelAwaitSignal(Handle);

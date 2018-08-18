@@ -18,10 +18,13 @@ TEST_F(BranchTest, BranchEventsEnum) {
   // clang-format on
 
   auto events = yogi::BranchEvents::kNone;
+  EXPECT_EQ(yogi::ToString(events), "kNone");
   events = events | yogi::BranchEvents::kBranchDiscovered;
   EXPECT_EQ(yogi::ToString(events), "kBranchDiscovered");
   events |= yogi::BranchEvents::kConnectFinished;
   EXPECT_EQ(yogi::ToString(events), "kBranchDiscovered | kConnectFinished");
+  events |= yogi::BranchEvents::kAll;
+  EXPECT_EQ(yogi::ToString(events), "kAll");
 }
 
 TEST_F(BranchTest, Info) {

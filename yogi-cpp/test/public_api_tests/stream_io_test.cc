@@ -28,7 +28,8 @@ TEST(StreamIoTest, Stream) {
 }
 
 TEST(StreamIoTest, BranchEvents) {
-  Check(yogi::BranchEvents::kBranchDiscovered);
+  Check(yogi::BranchEvents::kBranchDiscovered |
+        yogi::BranchEvents::kBranchQueried);
 }
 
 TEST(StreamIoTest, Duration) {
@@ -47,4 +48,8 @@ TEST(StreamIoTest, BranchInfo) {
 
 TEST(StreamIoTest, BranchEventInfo) {
   Check(yogi::BranchEventInfo(yogi::Uuid{}, "{}"));
+}
+
+TEST(StreamIoTest, Signals) {
+  Check(yogi::Signals::kInt | yogi::Signals::kUsr3);
 }

@@ -617,6 +617,11 @@ class Branch : public ObjectT<Branch> {
         [](int res, int event, int ev_res, void* userarg) {
           auto data = std::unique_ptr<CallbackData>(
               static_cast<CallbackData*>(userarg));
+
+          if (!data->fn) {
+            return;
+          }
+
           auto be = static_cast<BranchEvents>(event);
 
           if (Result(res) && be != BranchEvents::kNone) {

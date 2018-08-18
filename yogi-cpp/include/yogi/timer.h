@@ -53,7 +53,9 @@ class Timer : public ObjectT<Timer> {
               static_cast<CallbackData*>(userarg));
 
           internal::WithErrorCodeToResult(res, [&](const auto& result) {
-            data->fn(result);
+            if (data->fn) {
+              data->fn(result);
+            }
           });
         },
         data.get());

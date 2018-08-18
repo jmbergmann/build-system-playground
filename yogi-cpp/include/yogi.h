@@ -7,6 +7,7 @@
 #include "yogi/licenses.h"
 #include "yogi/logging.h"
 #include "yogi/object.h"
+#include "yogi/signals.h"
 #include "yogi/stream_io.h"
 #include "yogi/time.h"
 #include "yogi/timer.h"
