@@ -1,4 +1,5 @@
 #include "yogi/branch.h"
+#include "yogi/configuration.h"
 #include "yogi/constants.h"
 #include "yogi/context.h"
 #include "yogi/duration.h"
