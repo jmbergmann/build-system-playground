@@ -11,7 +11,7 @@ namespace yogi {
 namespace internal {
 
 template <int N>
-inline std::string::size_type FindElementInJson(const std::string& json,
+inline std::string::const_iterator FindElementInJson(const std::string& json,
                                                 const char (&name)[N]) {
   char key[N + 3];
   key[0] = '"';
@@ -27,15 +27,15 @@ inline std::string::size_type FindElementInJson(const std::string& json,
         std::string("Could not find key '") + name + "' from " + json);
   }
 
-  return pos + N + 2;
+  return json.begin() + pos + N + 2;
 }
 
 template <int N>
 inline int ExtractIntFromJson(const std::string& json, const char (&name)[N]) {
-  auto pos = FindElementInJson(json, name);
+  auto it = FindElementInJson(json, name);
 
   try {
-    return std::stoi(json.substr(pos));
+    return std::stoi(std::string(it, json.end()));
   } catch (const std::exception& e) {
     throw DescriptiveFailureException(
         ErrorCode::kParsingJsonFailed,
@@ -46,10 +46,10 @@ inline int ExtractIntFromJson(const std::string& json, const char (&name)[N]) {
 template <int N>
 inline float ExtractFloatFromJson(const std::string& json,
                                   const char (&name)[N]) {
-  auto pos = FindElementInJson(json, name);
+  auto it = FindElementInJson(json, name);
 
   try {
-    return std::stof(json.substr(pos));
+    return std::stof(std::string(it, json.end()));
   } catch (const std::exception& e) {
     throw DescriptiveFailureException(
         ErrorCode::kParsingJsonFailed,
@@ -60,9 +60,8 @@ inline float ExtractFloatFromJson(const std::string& json,
 template <int N>
 inline std::string ExtractStringFromJson(const std::string& json,
                                          const char (&name)[N]) {
-  auto pos = FindElementInJson(json, name);
+  auto it = FindElementInJson(json, name);
 
-  auto it = json.begin() + pos;
   if (it == json.end() || *it != '"') {
     throw DescriptiveFailureException(
         ErrorCode::kParsingJsonFailed,

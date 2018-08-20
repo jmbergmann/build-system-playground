@@ -85,6 +85,36 @@ inline double ToTotalTimeUnit(InfinityType inf_type, long long ns_count) {
 }
 
 template <typename T>
+inline long long Multiply(long long val, T multiplicator) {
+  return static_cast<long long>(val * multiplicator);
+}
+
+template <>
+inline long long Multiply<float>(long long val, float multiplicator) {
+  return static_cast<long long>(static_cast<float>(val) * multiplicator);
+}
+
+template <>
+inline long long Multiply<double>(long long val, double multiplicator) {
+  return static_cast<long long>(static_cast<double>(val) * multiplicator);
+}
+
+template <typename T>
+inline long long Divide(long long val, T divisor) {
+  return static_cast<long long>(val / divisor);
+}
+
+template <>
+inline long long Divide<float>(long long val, float multiplicator) {
+  return static_cast<long long>(static_cast<float>(val) / multiplicator);
+}
+
+template <>
+inline long long Divide<double>(long long val, double multiplicator) {
+  return static_cast<long long>(static_cast<double>(val) / multiplicator);
+}
+
+template <typename T>
 inline long long MultiplySafely(long long val, T multiplicator) {
   if (IsNan(multiplicator)) {
     throw ArithmeticException("Trying to multiply duration value and NaN");
@@ -95,15 +125,14 @@ inline long long MultiplySafely(long long val, T multiplicator) {
   }
 
   if (std::abs(multiplicator) > static_cast<T>(1)) {
-    long long max_val = static_cast<long long>(
-        static_cast<T>((std::numeric_limits<long long>::max)()) /
-        multiplicator);
+    auto max_val =
+        Divide((std::numeric_limits<long long>::max)(), multiplicator);
     if (std::abs(val) > max_val) {
       throw ArithmeticException("Duration value overflow");
     }
   }
 
-  return static_cast<long long>(static_cast<T>(val) * multiplicator);
+  return Multiply(val, multiplicator);
 }
 
 template <typename T>
@@ -126,14 +155,13 @@ inline long long DivideSafely(long long val, T divisor) {
   }
 
   if (std::abs(divisor) < static_cast<T>(1)) {
-    long long max_val = static_cast<long long>(
-        static_cast<T>((std::numeric_limits<long long>::max)()) * divisor);
+    auto max_val = Multiply((std::numeric_limits<long long>::max)(), divisor);
     if (std::abs(val) > max_val) {
       throw ArithmeticException("Duration value overflow.");
     }
   }
 
-  return static_cast<long long>(static_cast<T>(val) / divisor);
+  return Divide(val, divisor);
 }
 
 template <long long Multiplicator, typename T>
