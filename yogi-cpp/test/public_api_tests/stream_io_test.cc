@@ -53,3 +53,12 @@ TEST(StreamIoTest, BranchEventInfo) {
 TEST(StreamIoTest, Signals) {
   Check(yogi::Signals::kInt | yogi::Signals::kUsr3);
 }
+
+TEST(StreamIoTest, ConfigurationFlags) {
+  Check(yogi::ConfigurationFlags::kDisableVariables);
+}
+
+TEST(StreamIoTest, CommandLineOptions) {
+  Check(yogi::CommandLineOptions::kBranchAll |
+        yogi::CommandLineOptions::kLogging);
+}

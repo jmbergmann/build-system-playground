@@ -113,6 +113,9 @@ struct CommandLine final {
 
   CommandLine(std::initializer_list<std::string> args);
   ~CommandLine();
+
+  CommandLine(const CommandLine&) = delete;
+  CommandLine& operator= (const CommandLine&) = delete;
 };
 
 void SetupLogging(int verbosity);

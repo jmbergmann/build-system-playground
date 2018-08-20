@@ -201,7 +201,7 @@ public static partial class Yogi
 
         /// <summary>
         /// Updates the configuration from a JSON object.
-        /// ///
+        ///
         /// If parsing fails then a DescriptiveFailure exception will be raised
         /// containing detailed information about the error.
         /// </summary>

@@ -16,10 +16,14 @@ inline void CheckErrorCode(int res) {
 template <typename Fn>
 inline void CheckDescriptiveErrorCode(Fn fn) {
   std::array<char, 256> description;
-  int res = fn(description.data(), description.size());
+  int res = fn(description.data(), static_cast<int>(description.size()));
   if (res < 0) {
-    throw DescriptiveFailureException(static_cast<ErrorCode>(res),
-      description.data());
+    auto ec = static_cast<ErrorCode>(res);
+    if (description[0] != '\0') {
+      throw DescriptiveFailureException(ec, description.data());
+    } else {
+      throw FailureException(ec);
+    }
   }
 }
 
@@ -27,8 +31,7 @@ template <typename Fn>
 inline void WithErrorCodeToResult(int res, Fn fn) {
   if (res < 0) {
     fn(yogi::Failure(static_cast<ErrorCode>(res)));
-  }
-  else {
+  } else {
     fn(yogi::Success(res));
   }
 }

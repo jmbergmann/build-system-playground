@@ -1,10 +1,9 @@
 #include "../common.h"
+#include "../../../3rd_party/nlohmann/json.hpp"
 
 #include <yogi_core.h>
 
-class ConfigurationTest : public ::testing::Test {};
-
-TEST_F(ConfigurationTest, ConfigurationFlags) {
+TEST(ConfigurationTest, ConfigurationFlags) {
   // clang-format off
   CHECK_ENUM_ELEMENT(ConfigurationFlags, kNone,             YOGI_CFG_NONE);
   CHECK_ENUM_ELEMENT(ConfigurationFlags, kDisableVariables, YOGI_CFG_DISABLE_VARIABLES);
@@ -19,7 +18,7 @@ TEST_F(ConfigurationTest, ConfigurationFlags) {
   EXPECT_EQ(yogi::ToString(flags), "kDisableVariables | kMutableCmdLine");
 }
 
-TEST_F(ConfigurationTest, CommandLineOptions) {
+TEST(ConfigurationTest, CommandLineOptions) {
   // clang-format off
   CHECK_ENUM_ELEMENT(CommandLineOptions, kNone,              YOGI_CLO_NONE);
   CHECK_ENUM_ELEMENT(CommandLineOptions, kLogging,           YOGI_CLO_LOGGING);
@@ -85,4 +84,98 @@ TEST_F(ConfigurationTest, CommandLineOptions) {
             "kLogging | kBranchAll | kFiles | kFilesRequired | kOverrides");
   options |= yogi::CommandLineOptions::kVariables;
   EXPECT_EQ(yogi::ToString(options), "kAll");
+}
+
+TEST(ConfigurationTest, GetFlags) {
+  auto cfg =
+      yogi::Configuration::Create(yogi::ConfigurationFlags::kMutableCmdLine);
+  EXPECT_EQ(cfg->GetFlags(), yogi::ConfigurationFlags::kMutableCmdLine);
+}
+
+TEST(ConfigurationTest, UpdateFromCommandLine) {
+  auto cfg = yogi::Configuration::Create();
+
+  // clang-format off
+  CommandLine cmdline{
+    "-o", "{\"age\": 25}"
+  };
+  // clang-format on
+
+  cfg->UpdateFromCommandLine(cmdline.argc, cmdline.argv,
+                             yogi::CommandLineOptions::kOverrides);
+  auto json = nlohmann::json::parse(cfg->Dump());
+  EXPECT_EQ(json.value("age", -1), 25);
+
+  // clang-format off
+  CommandLine cmdline2{
+    "-o", "{\"age\": 18}"
+  };
+  // clang-format on
+
+  cfg->UpdateFromCommandLine(cmdline2.argc, cmdline2.argv,
+                             yogi::CommandLineOptions::kOverrides);
+  json = nlohmann::json::parse(cfg->Dump());
+  EXPECT_EQ(json.value("age", -1), 18);
+}
+
+TEST(ConfigurationTest, UpdateFromJson) {
+  auto cfg = yogi::Configuration::Create();
+
+  cfg->UpdateFromJson("{\"age\": 42}");
+  auto json = nlohmann::json::parse(cfg->Dump());
+  EXPECT_EQ(json.value("age", -1), 42);
+
+  cfg->UpdateFromJson("{\"age\": 88}");
+  json = nlohmann::json::parse(cfg->Dump());
+  EXPECT_EQ(json.value("age", -1), 88);
+}
+
+TEST(ConfigurationTest, UpdateFromFile) {
+  TemporaryWorkdirGuard workdir;
+  auto filename = "cfg.json";
+  WriteFile(filename, "{\"age\": 66}");
+
+  auto cfg = yogi::Configuration::Create();
+
+  cfg->UpdateFromFile(filename);
+  auto json = nlohmann::json::parse(cfg->Dump());
+  EXPECT_EQ(json.value("age", -1), 66);
+}
+
+TEST(ConfigurationTest, Dump) {
+  auto cfg =
+      yogi::Configuration::Create(yogi::ConfigurationFlags::kDisableVariables);
+  cfg->UpdateFromJson("{\"age\": 42}");
+
+  EXPECT_THROW(cfg->Dump(true), yogi::FailureException);
+
+  EXPECT_EQ(cfg->Dump().find(" "), std::string::npos);
+  EXPECT_EQ(cfg->Dump().find("\n"), std::string::npos);
+  EXPECT_NE(cfg->Dump(2).find(" "), std::string::npos);
+  EXPECT_NE(cfg->Dump(2).find("\n"), std::string::npos);
+}
+
+TEST(ConfigurationTest, WriteToFile) {
+  TemporaryWorkdirGuard workdir;
+  auto filename = "dump.json";
+
+  auto cfg =
+      yogi::Configuration::Create(yogi::ConfigurationFlags::kDisableVariables);
+  cfg->UpdateFromJson("{\"age\": 11}");
+
+  EXPECT_THROW(cfg->WriteToFile(filename, true), yogi::FailureException);
+
+  cfg->WriteToFile(filename);
+  auto content = ReadFile(filename);
+  EXPECT_EQ(content.find(" "), std::string::npos);
+  EXPECT_EQ(content.find("\n"), std::string::npos);
+  auto json = nlohmann::json::parse(content);
+  EXPECT_EQ(json.value("age", -1), 11);
+
+  cfg->WriteToFile(filename, 2);
+  content = ReadFile(filename);
+  EXPECT_NE(content.find(" "), std::string::npos);
+  EXPECT_NE(content.find("\n"), std::string::npos);
+  json = nlohmann::json::parse(content);
+  EXPECT_EQ(json.value("age", -1), 11);
 }

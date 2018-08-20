@@ -323,7 +323,13 @@ public static partial class Yogi
         int res = fn(err);
         if (res < 0)
         {
-            throw new DescriptiveFailureException((ErrorCode)res, err.ToString());
+            var s = err.ToString();
+            if (s.Length > 0) {
+                throw new DescriptiveFailureException((ErrorCode)res, err.ToString());
+            }
+            else {
+                throw new FailureException((ErrorCode)res);
+            }
         }
     }
 

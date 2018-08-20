@@ -3,6 +3,7 @@
 #include "object.h"
 #include "io.h"
 #include "internal/flags.h"
+#include "internal/query_string.h"
 
 #include <memory>
 
@@ -164,21 +165,238 @@ inline std::string ToString<CommandLineOptions>(
 class Configuration;
 using ConfigurationPtr = std::shared_ptr<Configuration>;
 
+/// A configuration represents a set of parameters that usually remain constant
+/// throughout the runtime of a program. Parameters can come from different
+/// sources such as the command line or a file. Configurations are used for
+/// other parts of the library such as application objects, however, they are
+/// also intended to store user-defined parameters.
 class Configuration : public ObjectT<Configuration> {
  public:
-  /// Creates a timer.
+  /// Creates a configuration.
   ///
-  /// \param context The context to use.
+  /// \param flags Flags for behaviour adjustments.
   ///
-  /// \returns The created Timer.
-  static ConfigurationPtr Create() {
-    return ConfigurationPtr(new Configuration());
+  /// \returns The created configuration.
+  static ConfigurationPtr Create(
+      ConfigurationFlags flags = ConfigurationFlags::kNone) {
+    return ConfigurationPtr(new Configuration(flags));
+  }
+
+  /// Returns the flags set for the configuration.
+  ///
+  /// \return Flags set for the configuration.
+  ConfigurationFlags GetFlags() const { return flags_; }
+
+  /// Updates the configuration from command line options.
+  ///
+  /// If parsing the command line, files or any given JSON string fails, or
+  /// if help is requested (e.g. by using the --help switch) then a
+  /// DescriptiveFailure exception will be raised containing detailed
+  /// information about the error or the help text.
+  ///
+  /// \param argc    Number of command line arguments in \p argv.
+  /// \param argv    Command line arguments as passed to main().
+  /// \param options Options to provide on the command line.
+  void UpdateFromCommandLine(
+      int argc, const char* const* argv,
+      CommandLineOptions options = CommandLineOptions::kNone) {
+    internal::CheckDescriptiveErrorCode([&](auto err, auto size) {
+      return internal::YOGI_ConfigurationUpdateFromCommandLine(
+          GetHandle(), argc, argv, static_cast<int>(options), err, size);
+    });
+  }
+
+  /// Updates the configuration from a JSON object.
+  ///
+  /// If parsing fails then a DescriptiveFailure exception will be raised
+  /// containing detailed information about the error.
+  ///
+  /// \tparam String Type of the \p json parameter.
+  ///
+  /// \param json Serialized JSON object.
+  template <typename String>
+  void UpdateFromJson(String&& json) {
+    internal::CheckDescriptiveErrorCode([&](auto err, auto size) {
+      return internal::YOGI_ConfigurationUpdateFromJson(
+          GetHandle(), internal::ToCoreString(json), err, size);
+    });
+  }
+
+  /// Updates the configuration from a JSON file.
+  ///
+  /// If parsing the file fails then a DescriptiveFailure exception will be
+  /// raised containing detailed information about the error.
+  ///
+  /// \tparam String Type of the \p filename parameter.
+  ///
+  /// \param filename Path to the JSON file.
+  template <typename String>
+  void UpdateFromFile(String&& filename) {
+    internal::CheckDescriptiveErrorCode([&](auto err, auto size) {
+      return internal::YOGI_ConfigurationUpdateFromFile(
+          GetHandle(), internal::ToCoreString(filename), err, size);
+    });
+  }
+
+  /// Retrieves the configuration as a JSON-formatted string.
+  ///
+  /// \param resolve_variables Resolve all configuration variables.
+  /// \param indentation       Number of space characters to use for
+  ///                          indentation; must be >= 0.
+  ///
+  /// \returns The configuration serialized to a string.
+  std::string Dump(bool resolve_variables, int indentation) const {
+    if (indentation < 0) {
+      throw Failure(ErrorCode::kInvalidParam);
+    }
+
+    return DumpImpl(resolve_variables, indentation);
+  }
+
+  /// Retrieves the configuration as a JSON-formatted string.
+  ///
+  /// No indentation and no newlines will be generated; i.e. the returned string
+  /// will be as compact as possible.
+  ///
+  /// \param resolve_variables Resolve all configuration variables.
+  ///
+  /// \returns The configuration serialized to a string.
+  std::string Dump(bool resolve_variables) const {
+    return DumpImpl(resolve_variables, -1);
+  }
+
+  /// Retrieves the configuration as a JSON-formatted string.
+  ///
+  /// Configuration variables get resolved if the configuration supports them.
+  ///
+  /// \param indentation Number of space characters to use for indentation;
+  ///                    must be >= 0.
+  ///
+  /// \returns The configuration serialized to a string.
+  std::string Dump(int indentation) const {
+    if (indentation < 0) {
+      throw Failure(ErrorCode::kInvalidParam);
+    }
+
+    return DumpImpl((flags_ & ConfigurationFlags::kDisableVariables) ==
+                        ConfigurationFlags::kNone,
+                    indentation);
+  }
+
+  /// Retrieves the configuration as a JSON-formatted string.
+  ///
+  /// Configuration variables get resolved if the configuration supports them.
+  ///
+  /// No indentation and no newlines will be generated; i.e. the returned string
+  /// will be as compact as possible.
+  ///
+  /// \returns The configuration serialized to a string.
+  std::string Dump() const {
+    return DumpImpl((flags_ & ConfigurationFlags::kDisableVariables) ==
+                        ConfigurationFlags::kNone,
+                    -1);
+  }
+
+  /// Writes the configuration to a file in JSON format.
+  ///
+  /// \tparam String Type of the \p filename parameter.
+  ///
+  /// \param filename          Path to the output file.
+  /// \param resolve_variables Resolve all configuration variables.
+  /// \param indentation       Number of space characters to use for
+  ///                          indentation; must be >= 0.
+  template <typename String>
+  void WriteToFile(String&& filename, bool resolve_variables,
+                   int indentation) const {
+    if (indentation < 0) {
+      throw Failure(ErrorCode::kInvalidParam);
+    }
+
+    WriteToFileImpl(std::forward<String>(filename), resolve_variables,
+                    indentation);
+  }
+
+  /// Writes the configuration to a file in JSON format.
+  ///
+  /// No indentation and no newlines will be generated; i.e. the returned string
+  /// will be as compact as possible.
+  ///
+  /// \tparam String Type of the \p filename parameter.
+  ///
+  /// \param filename          Path to the output file.
+  /// \param resolve_variables Resolve all configuration variables.
+  template <typename String>
+  void WriteToFile(String&& filename, bool resolve_variables) const {
+    WriteToFileImpl(std::forward<String>(filename), resolve_variables, -1);
+  }
+
+  /// Writes the configuration to a file in JSON format.
+  ///
+  /// Configuration variables get resolved if the configuration supports them.
+  ///
+  /// \tparam String Type of the \p filename parameter.
+  ///
+  /// \param filename          Path to the output file.
+  /// \param resolve_variables Resolve all configuration variables.
+  /// \param indentation       Number of space characters to use for
+  ///                          indentation; must be >= 0.
+  template <typename String>
+  void WriteToFile(String&& filename, int indentation) const {
+    if (indentation < 0) {
+      throw Failure(ErrorCode::kInvalidParam);
+    }
+
+    WriteToFileImpl(std::forward<String>(filename),
+                    (flags_ & ConfigurationFlags::kDisableVariables) ==
+                        ConfigurationFlags::kNone,
+                    indentation);
+  }
+
+  /// Writes the configuration to a file in JSON format.
+  ///
+  /// Configuration variables get resolved if the configuration supports them.
+  ///
+  /// No indentation and no newlines will be generated; i.e. the returned string
+  /// will be as compact as possible.
+  ///
+  /// \tparam String Type of the \p filename parameter.
+  ///
+  /// \param filename          Path to the output file.
+  /// \param resolve_variables Resolve all configuration variables.
+  /// \param indentation       Number of space characters to use for
+  ///                          indentation; must be >= 0.
+  template <typename String>
+  void WriteToFile(String&& filename) const {
+    WriteToFileImpl(std::forward<String>(filename),
+                    (flags_ & ConfigurationFlags::kDisableVariables) ==
+                        ConfigurationFlags::kNone,
+                    -1);
   }
 
  private:
-  Configuration()
-      : ObjectT(internal::CallApiCreate(internal::YOGI_ConfigurationCreate, 0),
-                {}) {}
+  Configuration(ConfigurationFlags flags)
+      : ObjectT(internal::CallApiCreate(internal::YOGI_ConfigurationCreate,
+                                        static_cast<int>(flags)),
+                {}),
+        flags_(flags) {}
+
+  std::string DumpImpl(bool resolve_variables, int indentation) const {
+    return internal::QueryString([&](auto json, auto size) {
+      return internal::YOGI_ConfigurationDump(
+          GetHandle(), json, size, resolve_variables ? 1 : 0, indentation);
+    });
+  }
+
+  template <typename String>
+  void WriteToFileImpl(String&& filename, bool resolve_variables,
+                       int indentation) const {
+    int res = internal::YOGI_ConfigurationWriteToFile(
+        GetHandle(), internal::ToCoreString(filename),
+        resolve_variables ? 1 : 0, indentation);
+    internal::CheckErrorCode(res);
+  }
+
+  const ConfigurationFlags flags_;
 };
 
 }  // namespace yogi
