@@ -32,6 +32,20 @@ TEST_F(TimerTest, Start) {
   EXPECT_LT(dur, 1ms + kTimingMargin);
 }
 
+TEST_F(TimerTest, StartImmediateTimeout) {
+  int handler_res = 1;
+  int res = YOGI_TimerStart(
+      timer_, 0,  // Immediate timeout
+      [](int res_, void* handler_res_) { *static_cast<int*>(handler_res_) = res_; },
+      &handler_res);
+  EXPECT_EQ(res, YOGI_OK);
+
+  int cnt = -1;
+  YOGI_ContextRunOne(context_, &cnt, 1000000000);
+  ASSERT_EQ(cnt, 1);
+  EXPECT_EQ(handler_res, YOGI_OK);
+}
+
 TEST_F(TimerTest, StartWhileRunning) {
   int handler_res = 1;
   int res = YOGI_TimerStart(
@@ -46,10 +60,14 @@ TEST_F(TimerTest, StartWhileRunning) {
       &handler_res);
   EXPECT_EQ(res, YOGI_OK);
 
-  YOGI_ContextRunOne(context_, nullptr, -1);
+  int cnt = -1;
+  YOGI_ContextRunOne(context_, &cnt, 1000000000);
+  ASSERT_EQ(cnt, 1);
   EXPECT_EQ(handler_res, YOGI_ERR_CANCELED);
 
-  YOGI_ContextRunOne(context_, nullptr, -1);
+  cnt = -1;
+  YOGI_ContextRunOne(context_, &cnt, 1000000000);
+  ASSERT_EQ(cnt, 1);
   EXPECT_EQ(handler_res, YOGI_OK);
 }
 

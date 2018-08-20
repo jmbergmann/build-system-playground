@@ -27,7 +27,7 @@ inline std::string::const_iterator FindElementInJson(const std::string& json,
         std::string("Could not find key '") + name + "' from " + json);
   }
 
-  return json.begin() + pos + N + 2;
+  return json.begin() + static_cast<int>(pos) + N + 2;
 }
 
 template <int N>
