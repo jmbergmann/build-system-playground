@@ -7,6 +7,7 @@
 #else
 # include <sys/types.h>
 # include <unistd.h>
+# include <sys/syscall.h>
 #endif
 
 namespace utils {
@@ -33,7 +34,7 @@ int GetCurrentThreadId() {
 #ifdef _WIN32
   auto id = ::GetCurrentThreadId();
 #else
-  auto id = pthread_self();
+  auto id = syscall(SYS_gettid);
 #endif
 
   return static_cast<int>(id);
