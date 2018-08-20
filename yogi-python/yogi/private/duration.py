@@ -24,9 +24,10 @@ def multiply_safely(val: int, multiplicator: float) -> int:
     if multiplicator == 0:
         return 0
 
-    max_val = int(9223372036854775807 / multiplicator)
-    if abs(val) > max_val:
-        raise OverflowError("Duration value overflow")
+    if abs(multiplicator) > 1:
+        max_val = int(9223372036854775807 / multiplicator)
+        if abs(val) > max_val:
+            raise OverflowError("Duration value overflow")
 
     return int(val * multiplicator)
 

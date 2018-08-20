@@ -60,51 +60,6 @@ enum InfinityType {
   kPositive = 1,
 };
 
-template <long long Multiplicator, typename T>
-inline Duration DurationFromTimeUnitImpl(T val) {
-  static_assert(std::is_arithmetic<T>::value, "T must be an arithmetic type.");
-
-  if (IsNan(val)) {
-    throw ArithmeticException("Cannot construct duration from NaN");
-  }
-
-  if (IsFinite(val)) {
-    auto max_val =
-        static_cast<T>((std::numeric_limits<T>::max)() / Multiplicator);
-    if (std::abs(val) > max_val) {
-      throw ArithmeticException("Duration value overflow");
-    }
-
-    return Duration(std::chrono::nanoseconds(
-          static_cast<std::chrono::nanoseconds::rep>(val * Multiplicator)));
-  }
-
-  // infinite
-  return val < 0 ? Duration::kNegativeInfinity : Duration::kInfinity;
-}
-
-template <bool IsIntegral>
-struct DurationFromTimeUnitSelector {
-  template <long long Multiplicator, typename T>
-  inline static Duration Fn(T val) {
-    return DurationFromTimeUnitImpl<Multiplicator, T>(val);
-  }
-};
-
-template <>
-struct DurationFromTimeUnitSelector<true> {
-  template <long long Multiplicator, typename T>
-  inline static Duration Fn(T val) {
-    return DurationFromTimeUnitImpl<Multiplicator, long long>(val);
-  }
-};
-
-template <long long Multiplicator, typename T>
-inline Duration DurationFromTimeUnit(T val) {
-  return DurationFromTimeUnitSelector<std::is_integral<T>::value>::Fn<
-      Multiplicator>(val);
-}
-
 inline long long AddSafely(long long a, long long b) {
   if (a > 0 && b > (std::numeric_limits<long long>::max)() - a) {
     throw ArithmeticException("Duration value overflow");
@@ -139,13 +94,16 @@ inline long long MultiplySafely(long long val, T multiplicator) {
     return 0;
   }
 
-  long long max_val = static_cast<long long>(
-      (std::numeric_limits<long long>::max)() / multiplicator);
-  if (std::abs(val) > max_val) {
-    throw ArithmeticException("Duration value overflow");
+  if (std::abs(multiplicator) > static_cast<T>(1)) {
+    long long max_val = static_cast<long long>(
+        static_cast<T>((std::numeric_limits<long long>::max)()) /
+        multiplicator);
+    if (std::abs(val) > max_val) {
+      throw ArithmeticException("Duration value overflow");
+    }
   }
 
-  return static_cast<long long>(val * multiplicator);
+  return static_cast<long long>(static_cast<T>(val) * multiplicator);
 }
 
 template <typename T>
@@ -169,14 +127,17 @@ inline long long DivideSafely(long long val, T divisor) {
 
   if (std::abs(divisor) < static_cast<T>(1)) {
     long long max_val = static_cast<long long>(
-        (std::numeric_limits<long long>::max)() * divisor);
+        static_cast<T>((std::numeric_limits<long long>::max)()) * divisor);
     if (std::abs(val) > max_val) {
       throw ArithmeticException("Duration value overflow.");
     }
   }
 
-  return static_cast<long long>(val / divisor);
+  return static_cast<long long>(static_cast<T>(val) / divisor);
 }
+
+template <long long Multiplicator, typename T>
+inline Duration DurationFromTimeUnit(T val);
 
 }  // namespace internal
 
@@ -521,8 +482,7 @@ class Duration {
     char str[128];
     int res = internal::YOGI_FormatDuration(
         IsFinite() ? ns_count_ : -1, ns_count_ < 0 ? 1 : 0, str, sizeof(str),
-        internal::ToCoreString(dur_fmt),
-        internal::ToCoreString(inf_fmt));
+        internal::ToCoreString(dur_fmt), internal::ToCoreString(inf_fmt));
     internal::CheckErrorCode(res);
     return str;
   }
@@ -670,4 +630,52 @@ YOGI_WEAK_SYMBOL const Duration Duration::kInfinity(internal::kPositive);
 YOGI_WEAK_SYMBOL const Duration
     Duration::kNegativeInfinity(internal::kNegative);
 
+namespace internal {
+
+template <long long Multiplicator, typename T>
+inline Duration DurationFromTimeUnitImpl(T val) {
+  static_assert(std::is_arithmetic<T>::value, "T must be an arithmetic type.");
+
+  if (IsNan(val)) {
+    throw ArithmeticException("Cannot construct duration from NaN");
+  }
+
+  if (IsFinite(val)) {
+    auto max_val =
+        static_cast<T>((std::numeric_limits<T>::max)() / Multiplicator);
+    if (std::abs(val) > max_val) {
+      throw ArithmeticException("Duration value overflow");
+    }
+
+    return Duration(std::chrono::nanoseconds(
+        static_cast<std::chrono::nanoseconds::rep>(val * Multiplicator)));
+  }
+
+  // infinite
+  return val < 0 ? Duration::kNegativeInfinity : Duration::kInfinity;
+}
+
+template <bool IsIntegral>
+struct DurationFromTimeUnitSelector {
+  template <long long Multiplicator, typename T>
+  inline static Duration Fn(T val) {
+    return DurationFromTimeUnitImpl<Multiplicator, T>(val);
+  }
+};
+
+template <>
+struct DurationFromTimeUnitSelector<true> {
+  template <long long Multiplicator, typename T>
+  inline static Duration Fn(T val) {
+    return DurationFromTimeUnitImpl<Multiplicator, long long>(val);
+  }
+};
+
+template <long long Multiplicator, typename T>
+inline Duration DurationFromTimeUnit(T val) {
+  using Selector = DurationFromTimeUnitSelector<std::is_integral<T>::value>;
+  return Selector::template Fn<Multiplicator>(val);
+}
+
+}  // namespace internal
 }  // namespace yogi

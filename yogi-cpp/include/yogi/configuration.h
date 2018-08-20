@@ -202,7 +202,7 @@ class Configuration : public ObjectT<Configuration> {
       CommandLineOptions options = CommandLineOptions::kNone) {
     internal::CheckDescriptiveErrorCode([&](auto err, auto size) {
       return internal::YOGI_ConfigurationUpdateFromCommandLine(
-          GetHandle(), argc, argv, static_cast<int>(options), err, size);
+          this->GetHandle(), argc, argv, static_cast<int>(options), err, size);
     });
   }
 
@@ -218,7 +218,7 @@ class Configuration : public ObjectT<Configuration> {
   void UpdateFromJson(String&& json) {
     internal::CheckDescriptiveErrorCode([&](auto err, auto size) {
       return internal::YOGI_ConfigurationUpdateFromJson(
-          GetHandle(), internal::ToCoreString(json), err, size);
+          this->GetHandle(), internal::ToCoreString(json), err, size);
     });
   }
 
@@ -234,7 +234,7 @@ class Configuration : public ObjectT<Configuration> {
   void UpdateFromFile(String&& filename) {
     internal::CheckDescriptiveErrorCode([&](auto err, auto size) {
       return internal::YOGI_ConfigurationUpdateFromFile(
-          GetHandle(), internal::ToCoreString(filename), err, size);
+          this->GetHandle(), internal::ToCoreString(filename), err, size);
     });
   }
 
@@ -382,8 +382,9 @@ class Configuration : public ObjectT<Configuration> {
 
   std::string DumpImpl(bool resolve_variables, int indentation) const {
     return internal::QueryString([&](auto json, auto size) {
-      return internal::YOGI_ConfigurationDump(
-          GetHandle(), json, size, resolve_variables ? 1 : 0, indentation);
+      return internal::YOGI_ConfigurationDump(this->GetHandle(), json, size,
+                                              resolve_variables ? 1 : 0,
+                                              indentation);
     });
   }
 
@@ -391,7 +392,7 @@ class Configuration : public ObjectT<Configuration> {
   void WriteToFileImpl(String&& filename, bool resolve_variables,
                        int indentation) const {
     int res = internal::YOGI_ConfigurationWriteToFile(
-        GetHandle(), internal::ToCoreString(filename),
+        this->GetHandle(), internal::ToCoreString(filename),
         resolve_variables ? 1 : 0, indentation);
     internal::CheckErrorCode(res);
   }

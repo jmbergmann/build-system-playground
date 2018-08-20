@@ -45,13 +45,12 @@ TEST_F(SignalSetTest, Await) {
   EXPECT_EQ(res, YOGI_OK);
 
   bool called_3 = false;
-  res = YOGI_SignalSetAwaitSignal(
-      sigset_3,
-      [](int res, int sig, void* sigarg, void* userarg) {
-        EXPECT_EQ(res, YOGI_ERR_CANCELED);
-        *static_cast<bool*>(userarg) = true;
-      },
-      &called_3);
+  res = YOGI_SignalSetAwaitSignal(sigset_3,
+                                  [](int res, int, void*, void* userarg) {
+                                    EXPECT_EQ(res, YOGI_ERR_CANCELED);
+                                    *static_cast<bool*>(userarg) = true;
+                                  },
+                                  &called_3);
   EXPECT_EQ(res, YOGI_OK);
 
   int sigarg = 123;
@@ -87,7 +86,7 @@ TEST_F(SignalSetTest, CleanupHandler) {
 
   res = YOGI_SignalSetAwaitSignal(
       sigset_1,
-      [](int res, int sig, void* sigarg, void* userarg) {
+      [](int, int, void*, void* userarg) {
         static_cast<std::vector<bool>*>(userarg)->push_back(false);
       },
       &calls);
@@ -98,7 +97,7 @@ TEST_F(SignalSetTest, CleanupHandler) {
 
   res = YOGI_SignalSetAwaitSignal(
       sigset_2,
-      [](int res, int sig, void* sigarg, void* userarg) {
+      [](int, int, void*, void* userarg) {
         static_cast<std::vector<bool>*>(userarg)->push_back(false);
       },
       &calls);
@@ -226,12 +225,11 @@ TEST_F(SignalSetTest, OverrideAwait) {
                             &called_1);
 
   bool called_2 = false;
-  int res = YOGI_SignalSetAwaitSignal(
-      sigset,
-      [](int res, int sig, void* sigarg, void* userarg) {
-        *static_cast<bool*>(userarg) = true;
-      },
-      &called_2);
+  int res = YOGI_SignalSetAwaitSignal(sigset,
+                                      [](int, int, void*, void* userarg) {
+                                        *static_cast<bool*>(userarg) = true;
+                                      },
+                                      &called_2);
   EXPECT_EQ(res, YOGI_OK);
 
   YOGI_ContextRunOne(context_, nullptr, -1);

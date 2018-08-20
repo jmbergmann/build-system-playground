@@ -5,7 +5,7 @@
 #include "../timestamp.h"
 
 #include <string>
-#include <string.h>
+#include <cstring>
 
 namespace yogi {
 namespace internal {

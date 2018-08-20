@@ -17,7 +17,7 @@ inline std::string QueryString(Fn fn) {
   do {
     size *= 2;
     v = std::vector<char>{};
-    v.resize(size);
+    v.resize(static_cast<std::size_t>(size));
 
     res = fn(v.data(), size);
   } while (res == static_cast<int>(ErrorCode::kBufferTooSmall));

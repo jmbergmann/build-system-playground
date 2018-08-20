@@ -41,13 +41,11 @@ const std::string& ExposedObject::TypeName() const {
       return s;
     }
 
-#ifdef _WIN32
     default: {
       YOGI_NEVER_REACHED;
       static const std::string s;
       return s;
     }
-#endif
   }
 }
 

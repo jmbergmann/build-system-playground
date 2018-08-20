@@ -53,10 +53,12 @@ public static partial class Yogi
             return 0;
         }
 
-        long maxVal = (long)(long.MaxValue / multiplicator);
-        if (Math.Abs(val) > maxVal)
-        {
-            throw new OverflowException("Duration value overflow");
+        if (Math.Abs(multiplicator) > 1) {
+            long maxVal = (long)(long.MaxValue / multiplicator);
+            if (Math.Abs(val) > maxVal)
+            {
+                throw new OverflowException("Duration value overflow");
+            }
         }
 
         return (long)(val * multiplicator);

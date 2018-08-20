@@ -37,7 +37,7 @@ using ObjectPtr = std::shared_ptr<Object>;
 ///
 /// "Creatable" Yogi objects are objects that get instantiated and live until
 /// they are destroyed by the user.
-class Object : std::enable_shared_from_this<Object> {
+class Object : public std::enable_shared_from_this<Object> {
  public:
   virtual ~Object() {
     if (handle_ == nullptr) return;

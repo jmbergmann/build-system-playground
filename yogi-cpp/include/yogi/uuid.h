@@ -9,9 +9,9 @@ namespace internal {
 
 inline char NibbleToHexChar(unsigned char nibble) {
   if (nibble <= 9) {
-    return '0' + nibble;
+    return static_cast<char>('0' + nibble);
   } else {
-    return 'a' + (nibble - 10);
+    return static_cast<char>('a' + (nibble - 10));
   }
 }
 

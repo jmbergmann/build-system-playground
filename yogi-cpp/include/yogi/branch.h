@@ -565,7 +565,7 @@ class Branch : public ObjectT<Branch> {
       data.branches.clear();
 
       return internal::YOGI_BranchGetConnectedBranches(
-          GetHandle(), &data.uuid, str, size,
+          this->GetHandle(), &data.uuid, str, size,
           [](int res, void* userarg) {
             if (res == static_cast<int>(ErrorCode::kOk)) {
               auto data = static_cast<CallbackData*>(userarg);
@@ -609,7 +609,7 @@ class Branch : public ObjectT<Branch> {
 
     auto data = std::make_unique<CallbackData>();
     data->fn = fn;
-    data->json.resize(buffer_size);
+    data->json.resize(static_cast<std::size_t>(buffer_size));
 
     int res = internal::YOGI_BranchAwaitEvent(
         GetHandle(), static_cast<int>(events), &data->uuid, data->json.data(),
@@ -644,6 +644,11 @@ class Branch : public ObjectT<Branch> {
                 CallAwaitEventFn<ConnectionLostEventInfo>(res, be, ev_res,
                                                           data);
                 break;
+
+              default: {
+                bool should_never_get_here = false;
+                assert(should_never_get_here);
+              }
             }
           } else {
             CallAwaitEventFn<BranchEventInfo>(res, be, ev_res, data);
@@ -688,7 +693,7 @@ class Branch : public ObjectT<Branch> {
   LocalBranchInfo QueryInfo() {
     Uuid uuid;
     auto json = internal::QueryString([&](auto str, auto size) {
-      return internal::YOGI_BranchGetInfo(GetHandle(), &uuid, str, size);
+      return internal::YOGI_BranchGetInfo(this->GetHandle(), &uuid, str, size);
     });
 
     return LocalBranchInfo(uuid, json);

@@ -17,3 +17,4 @@ TODO:
 * Move stuff from yogi-cpp/internal/json.h into yogi-core as helper functions
   and make the helper functions accessible through yogi-cpp so that users do
   not have to include a massive 3rd party JSON library
+* Fix Duration multiply and divide

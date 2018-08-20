@@ -65,21 +65,21 @@ YOGI_API int YOGI_FormatDuration(long long dur, int neg, char* str, int strsize,
 
       char tmp[32];
       auto days = dur / 86'400'000'000'000;
-      sprintf(tmp, "%i", days);
+      sprintf(tmp, "%i", static_cast<int>(days));
       boost::replace_all(s, "%d", tmp);
       boost::replace_all(s, "%D", days > 0 ? tmp : "");
       boost::replace_all(s, "%T", "%H:%M:%S");
-      sprintf(tmp, "%02i", (dur / 3'600'000'000'000) % 24);
+      sprintf(tmp, "%02i", static_cast<int>((dur / 3'600'000'000'000) % 24));
       boost::replace_all(s, "%H", tmp);
-      sprintf(tmp, "%02i", (dur / 60'000'000'000) % 60);
+      sprintf(tmp, "%02i", static_cast<int>((dur / 60'000'000'000) % 60));
       boost::replace_all(s, "%M", tmp);
-      sprintf(tmp, "%02i", (dur / 1'000'000'000) % 60);
+      sprintf(tmp, "%02i", static_cast<int>((dur / 1'000'000'000) % 60));
       boost::replace_all(s, "%S", tmp);
-      sprintf(tmp, "%03i", (dur / 1'000'000) % 1000);
+      sprintf(tmp, "%03i", static_cast<int>((dur / 1'000'000) % 1000));
       boost::replace_all(s, "%3", tmp);
-      sprintf(tmp, "%03i", (dur / 1'000) % 1000);
+      sprintf(tmp, "%03i", static_cast<int>((dur / 1'000) % 1000));
       boost::replace_all(s, "%6", tmp);
-      sprintf(tmp, "%03i", dur % 1000);
+      sprintf(tmp, "%03i", static_cast<int>(dur % 1000));
       boost::replace_all(s, "%9", tmp);
     }
 
