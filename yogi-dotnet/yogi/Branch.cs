@@ -396,7 +396,8 @@ public static partial class Yogi
         /// machine's hostname will be used as the network name).</param>
         /// <param name="password">Password for the network.</param>
         /// <param name="path">Path of the branch in the network (by default, the
-        /// format /name where name is the branch's name will be used).</param>
+        /// format /name where name is the branch's name will be used). Must start
+        /// with a slash.</param>
         /// <param name="advaddr">Multicast address to use; e.g. 239.255.0.1 for IPv4
         /// or ff31::8000:1234 for IPv6.</param>
         /// <param name="advport">Advertising port.</param>

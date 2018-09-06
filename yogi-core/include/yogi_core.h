@@ -575,6 +575,44 @@
                      )
 
 //! @}
+//!
+//! @defgroup RLS Provider-Consumer Role Source
+//!
+//! When creating a terminal or interface, a provider/consumer role has to be
+//! assigned. The definitions in this section set where this role information
+//! comes from.
+//!
+//! @{
+
+//! Role is determined by the value of the _role_ string from the provided
+//! terminal properties (the _json_ parameter). For example, the following will
+//! set the role to _Provider_:
+//!
+//!    {
+//!      "role": "Provider",
+//!      ...
+//!    }
+#define YOGI_RLS_JSON 0
+
+//! Role is determined by the value of the _role_ string from the provided
+//! terminal properties (the _json_ parameter) but inverted, i.e. if the string
+//! value is _Provider_ then the role will be set to _Consumer_ and if the
+//! string value is _Consumer_ then the role will be set to _Provider_. For
+//! example, the following will set the role to _Consumer_:
+//!
+//!    {
+//!      "role": "Provider",
+//!      ...
+//!    }
+#define YOGI_RLS_JSON_INV 1
+
+//! Role is set to _Provider_.
+#define YOGI_RLS_PROVIDER 2
+
+//! Role is set to _Consumer_.
+#define YOGI_RLS_CONSUMER 3
+
+//! @}
 
 #ifndef YOGI_API
 # ifdef _MSC_VER
@@ -586,7 +624,7 @@
 
 //! @defgroup FN Library Functions
 //!
-//! Description of the various library functions
+//! Description of the various library functions.
 //!
 //! @{
 
@@ -1397,10 +1435,10 @@ YOGI_API int YOGI_SignalSetCreate(void** sigset, void* context, int signals);
  *
  * The handler \p fn will be called after one of the signals in the signal set
  * is caught. The parameters passed to \p fn are:
- * -# *res*: YOGI_OK or error code in case of a failure (see \ref EC)
- * -# *sig*: The caught signal (see \ref SIG)
- * -# *sigarg*: User-defined parameter passed to YOGI_RaiseSignal()
- * -# *userarg*: Value of the user-specified \p userarg parameter
+ *  -# *res*: YOGI_OK or error code in case of a failure (see \ref EC)
+ *  -# *sig*: The caught signal (see \ref SIG)
+ *  -# *sigarg*: User-defined parameter passed to YOGI_RaiseSignal()
+ *  -# *userarg*: Value of the user-specified \p userarg parameter
  *
  * Note: Calling this function on the same context again before the signal has
  *       been caught will cause the previously registered handler function to
@@ -1517,7 +1555,8 @@ YOGI_API int YOGI_TimerCancel(void* timer);
  *                         machine's hostname)
  * \param[in]  password    Password for the network (set to NULL for none)
  * \param[in]  path        Path of the branch in the network (set to NULL to use
- *                         the format /name where name is the branch's name)
+ *                         the format /name where name is the branch's name);
+ *                         must start with a slash
  * \param[in]  advaddr     Multicast address to use; e.g. 239.255.0.1 for IPv4
  *                         or ff31::8000:1234 for IPv6 (set to NULL for default)
  * \param[in]  advport     Advertising port (set to 0 for default)
@@ -1583,10 +1622,10 @@ YOGI_API int YOGI_BranchGetInfo(void* branch, void* uuid, char* json,
  * Retrieves information about all connected remote branches.
  *
  * For each of the connected remote branches, this function will:
- * -# Write the branch's UUID (16 bytes) in binary form to \p uuid.
- * -# Generate a JSON string containing further information to \p json.
- * -# Execute the handler \p fn with YOGI_OK as first argument if \p jsonsize
- *    is as least as large as the length of the generated JSON string
+ *  -# Write the branch's UUID (16 bytes) in binary form to \p uuid.
+ *  -# Generate a JSON string containing further information to \p json.
+ *  -# Execute the handler \p fn with YOGI_OK as first argument if \p jsonsize
+ *     is as least as large as the length of the generated JSON string
  *
  * If the produced JSON string for the branch does not fit into \p json, i.e. if
  * \p jsonsize is too small, then \p json will be filled with the first
@@ -1691,6 +1730,124 @@ YOGI_API int YOGI_BranchAwaitEvent(
  * \returns [<0] An error code in case of a failure (see \ref EC)
  ******************************************************************************/
 YOGI_API int YOGI_BranchCancelAwaitEvent(void* branch);
+
+/***************************************************************************//**
+ * Creates a new terminal.
+ *
+ * Terminals are the communication endpoints in Yogi. Each terminal is
+ * associated with exactly one branch and each branch can have an arbitrary
+ * number of terminals. Terminals are uniquely identified by their UUID as well
+ * as by the combination their \p path and the branch they belong to.
+ *
+ * Upon creation, a terminal is either a *prividing* or a *consuming* terminal.
+ * Providing terminals have paths (names) that describe where in the owning
+ * branch they are located. Consuming terminals have paths that describe where
+ * in the network their providing terminal resides. This means that a connection
+ * between terminals is always initiated from the consuming terminal; i.e. only
+ * the consuming terminal needs to know the location of their connected
+ * counterpart.
+ *
+ * Each terminal is of one of the following types:
+ *  - *Variable*: A single providing _Variable_ "owns" the variable. The value
+ *    of the variable is the message that has last been sent over the provider
+ *    or received by the provider from any of the consuming _Variable_
+ *    terminals. Once the value of the variable changes, the provider sends
+ *    the new value to all consumers. The value gets cached such that new
+ *    consumers will receive the current value of the variable. Compatible
+ *    types: _Variable_ (provider/consumer) and _ReadOnlyVariable_ (consumer).
+ *  - *ReadOnlyVariable*: Same as _Variable_ but consumers cannot change the
+ *    value of the variable. Compatible types: _ReadOnlyVariable_
+ *    (provider/consumer), _Variable_ (provider), and _Constant_ (provider).
+ *  - *WriteOnlyVariable*: Same as _Variable_ but consumers cannot read the
+ *    value of the variable. Compatible types: _WriteOnlyVariable_
+ *    (provider/consumer), _Variable_ (provider).
+ *  - *Constant*: Same as _ReadOnlyVariable_ but the state of the variable
+ *    never changes after it has initially been set. Compatible types:
+ *    _Constant_ (provider/consumer) and _ReadOnlyVariable_ (consumer).
+ *  - *Publisher*: Publishes messages to an arbitrary number of _Subscriber_
+ *    terminals. Compatible types: _Subscriber_ (provider/consumer).
+ *  - *Subscriber*: Receives messages published by _Publisher_ terminals.
+ *    Compatible types: _Publisher_ (provider/consumer).
+ *  - *Surveyor*: Sends a request message to an arbitrary number of
+ *    _Surveyee_ terminals that in turn answer with a response message.
+ *    Compatible types: _Surveyee_ (provider/consumer).
+ *  - *Surveyee*: Answers messages from _Surveyor_ terminals by sending a
+ *    response message for each received request. Compatible types:
+ *    _Surveyor_ (provider/consumer).
+ *  - *Pair*: Allows messaging between exactly one providing and one consuming
+ *    _Pair_ terminal. Compatible types: _Pair_ (provider/consumer).
+ *  - *Semaphore*: Can be acquired via _Lock_ terminals a configured number of
+ *    N times simultaneously. Compatible types: _Lock_ (provider/consumer).
+ *  - *Mutex*: Special case of a _Semaphore_ where N = 1, i.e. it can only be
+ *    acquired by a single _Lock_ terminal at a time. Compatible types:
+ *    _Lock_ (provider/consumer).
+ *  - *Lock*: Acquires _Semaphore_ and _Mutex_ terminals. Compatible types:
+ *    _Semaphore_ (provider/consumer) and _Mutex_ (provider/consumer).
+ *  - *Stream*: Allows streaming of data, e.g. for video or audio data. The
+ *    provider represents the source and the consumer represents of an arbitrary
+ *    number of sinks of the stream. Compatible types: _Stream_
+ *    (provider/consumer).
+ *  - *File*: Allows transferring files. The provider supplies the file to an
+ *    arbitrary number of consumers. Compatible types: _File_
+ *    (provider/consumer).
+ *
+ * The terminal's properties are configured via the \p json parameter. The
+ * supplied JSON must have the following structure:
+ *
+ *    {
+ *      "path":        "Temperature",
+ *      "type":        "Variable",
+ *      "role":        "Provider",
+ *      "description": "The engine's temperature",
+ *      "data": [
+ *        {
+ *          "type":        "float",
+ *          "description": "Temperature in degrees Celsius",
+ *          "min":         -50,
+ *          "max":         300
+ *        }, {
+ *          "type":        "int",
+ *          "description": "Timestamp"
+ *        }
+ *      ]
+ *    }
+ *
+ * The properties have the following meaning:
+ *  - *path* (optional): Path of the terminal (prefixed by \p pathpfx)
+ *  - *type*: Type of the terminal (see above for possible types)
+ *  - *role* (optional): Role of the terminal
+ *  - *description* (optional): Additional information about the terminal
+ *  - *data*: Schema of the data type that is transmitted
+ *
+ * Note: The final path of the terminal will be determined by joining the
+ *       \p pathpfx and the value of the _path_ string from the JSON above.
+ *       At most one of these two may be empty or NULL.
+ *
+ * \param[out] terminal Pointer to the terminal handle
+ * \param[in]  branch   The branch to use
+ * \param[in]  pathpfx  Path prefix of the terminal (can be NULL)
+ * \param[in]  rolesrc  Provider-consumer role source (see \ref RLS)
+ * \param[in]  json     Terminal properties as JSON
+ * \param[in]  section  Section in \p props to use (NULL means the root section)
+ *
+ * \returns [=0] #YOGI_OK if successful
+ * \returns [<0] An error code in case of a failure (see \ref EC)
+ ******************************************************************************/
+YOGI_API int YOGI_TerminalCreate(void** terminal, void* branch,
+                                 const char* pathpfx, int rolesrc,
+                                 const char* json, const char* section);
+
+YOGI_API int YOGI_TerminalSend(void* terminal, int msgid, const void* data);
+
+YOGI_API int YOGI_TerminalReceive(void* terminal, int* msgid, void* data,
+                                  int datasize);
+
+YOGI_API int YOGI_InterfaceCreate(void** interface, void* branch,
+                                  const char* pathpfx, int role,
+                                  const char* json, const char* section);
+
+YOGI_API int YOGI_InterfaceGetTerminal(void** terminal, void* interface,
+                                       const char* path);
 
 /***************************************************************************//**
  * Destroys an object.

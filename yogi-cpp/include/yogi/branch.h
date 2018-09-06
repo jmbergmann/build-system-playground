@@ -439,7 +439,8 @@ class Branch : public ObjectT<Branch> {
   ///                    the machine's hostname)
   /// \param password    Password for the network
   /// \param path        Path of the branch in the network (set to nullptr to
-  ///                    use the format /name where name is the branch's name)
+  ///                    use the format /name where name is the branch's name);
+  ///                    must start with a slash
   /// \param advaddr     Multicast address to use; e.g. 239.255.0.1 for IPv4 or
   ///                    ff31::8000:1234 for IPv6
   /// \param advport     Advertising port

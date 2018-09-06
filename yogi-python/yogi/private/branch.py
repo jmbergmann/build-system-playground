@@ -265,7 +265,7 @@ class Branch(Object):
             password:    Password for the network.
             path:        Path of the branch in the network (by default, the
                          format /name where name is the branch's name will
-                         be used).
+                         be used). Must start with a slash.
             advaddr:     Multicast address to use; e.g. 239.255.0.1 for IPv4
                          or ff31::8000:1234 for IPv6.
             advport:     Advertising port.
