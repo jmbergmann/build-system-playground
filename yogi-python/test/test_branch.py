@@ -27,7 +27,7 @@ class TestBranches(TestCase):
         self.assertIsInstance(info.uuid, uuid.UUID)
         self.assertEqual(info.name, "My Branch")
         self.assertEqual(info.description, "Stuff")
-        self.assertEqual(info.net_name, "My Network")
+        self.assertEqual(info.network_name, "My Network")
         self.assertEqual(info.path, "/some/path")
         self.assertEqual(info.hostname, socket.gethostname())
         self.assertEqual(info.pid, os.getpid())

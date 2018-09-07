@@ -25,7 +25,7 @@ BranchInfoPtr BranchInfo::CreateLocal(
     std::string name, std::string description, std::string net_name,
     std::string path, const boost::asio::ip::tcp::endpoint& tcp_ep,
     const std::chrono::nanoseconds& timeout,
-    const std::chrono::nanoseconds& adv_interval) {
+    const std::chrono::nanoseconds& adv_interval, bool ghost_mode) {
   auto info = std::make_shared<BranchInfo>();
   info->uuid_ = boost::uuids::random_generator()();
   info->name_ = name;
@@ -38,6 +38,7 @@ BranchInfoPtr BranchInfo::CreateLocal(
   info->start_time_ = utils::Timestamp::Now();
   info->timeout_ = timeout;
   info->adv_interval_ = adv_interval;
+  info->ghost_mode_ = ghost_mode;
 
   info->PopulateMessages();
   info->PopulateJson();
@@ -67,6 +68,7 @@ BranchInfoPtr BranchInfo::CreateFromInfoMessage(
   DeserializeField(&info->start_time_, info_msg, &it);
   DeserializeField(&info->timeout_, info_msg, &it);
   DeserializeField(&info->adv_interval_, info_msg, &it);
+  DeserializeField(&info->ghost_mode_, info_msg, &it);
 
   info->PopulateJson();
 
@@ -137,6 +139,7 @@ void BranchInfo::PopulateMessages() {
   utils::Serialize(&buffer, start_time_);
   utils::Serialize(&buffer, timeout_);
   utils::Serialize(&buffer, adv_interval_);
+  utils::Serialize(&buffer, ghost_mode_);
 
   utils::Serialize(&*info_msg_, buffer.size());
   YOGI_ASSERT(info_msg_->size() == kInfoMessageHeaderSize);
@@ -158,7 +161,7 @@ void BranchInfo::PopulateJson() {
       {"uuid", boost::uuids::to_string(uuid_)},
       {"name", name_},
       {"description", description_},
-      {"net_name", net_name_},
+      {"network_name", net_name_},
       {"path", path_},
       {"hostname", hostname_},
       {"pid", pid_},
@@ -167,6 +170,7 @@ void BranchInfo::PopulateJson() {
       {"start_time", start_time_.ToJavaScriptString()},
       {"timeout", timeout},
       {"advertising_interval", adv_interval},
+      {"ghost_mode", ghost_mode_},
   };
 }
 

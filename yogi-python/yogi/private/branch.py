@@ -71,9 +71,9 @@ class BranchInfo:
         return self._info["description"]
 
     @property
-    def net_name(self) -> str:
+    def network_name(self) -> str:
         """Name of the network."""
-        return self._info["net_name"]
+        return self._info["network_name"]
 
     @property
     def path(self) -> str:
@@ -324,7 +324,7 @@ class Branch(Object):
     @property
     def net_name(self) -> str:
         """Name of the network."""
-        return self._info.net_name
+        return self._info.network_name
 
     @property
     def path(self) -> str:

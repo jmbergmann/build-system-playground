@@ -76,7 +76,7 @@ FakeBranch::FakeBranch()
   acceptor_.listen();
   info_ = objects::detail::BranchInfo::CreateLocal(
       "Fake Branch", "", utils::GetHostname(), "/Fake Branch",
-      acceptor_.local_endpoint(), 1s, 1s);
+      acceptor_.local_endpoint(), 1s, 1s, false);
 
   udp_socket_.set_option(boost::asio::ip::udp::socket::reuse_address(true));
   udp_socket_.bind(boost::asio::ip::udp::endpoint(kUdpProtocol, 0));

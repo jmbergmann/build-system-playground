@@ -93,7 +93,7 @@ class BranchInfo {
         json_(json),
         name_(internal::ExtractStringFromJson(json_, "name")),
         description_(internal::ExtractStringFromJson(json_, "description")),
-        net_name_(internal::ExtractStringFromJson(json_, "net_name")),
+        network_name_(internal::ExtractStringFromJson(json_, "network_name")),
         path_(internal::ExtractStringFromJson(json_, "path")),
         hostname_(internal::ExtractStringFromJson(json_, "hostname")),
         pid_(internal::ExtractIntFromJson(json_, "pid")),
@@ -126,7 +126,7 @@ class BranchInfo {
   /// Returns the name of the network.
   ///
   /// \returns The name of the network.
-  const std::string& GetNetName() const { return net_name_; }
+  const std::string& GetNetworkName() const { return network_name_; }
 
   /// Returns the  path of the branch.
   ///
@@ -178,7 +178,7 @@ class BranchInfo {
   const std::string json_;
   const std::string name_;
   const std::string description_;
-  const std::string net_name_;
+  const std::string network_name_;
   const std::string path_;
   const std::string hostname_;
   const int pid_;
@@ -319,7 +319,7 @@ class BranchQueriedEventInfo : public BranchEventInfo {
   /// Returns the name of the network.
   ///
   /// \returns The name of the network.
-  const std::string& GetNetName() const { return info_.GetNetName(); }
+  const std::string& GetNetworkName() const { return info_.GetNetworkName(); }
 
   /// Returns the  path of the branch.
   ///
@@ -491,7 +491,7 @@ class Branch : public ObjectT<Branch> {
   /// Returns the name of the network.
   ///
   /// \returns The name of the network.
-  const std::string& GetNetName() const { return info_.GetNetName(); }
+  const std::string& GetNetworkName() const { return info_.GetNetworkName(); }
 
   /// Returns the  path of the branch.
   ///

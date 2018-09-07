@@ -35,7 +35,7 @@ namespace test
             Assert.IsType<Guid>(info.Uuid);
             Assert.Equal("My Branch", info.Name);
             Assert.Equal("Stuff", info.Description);
-            Assert.Equal("My Network", info.NetName);
+            Assert.Equal("My Network", info.NetworkName);
             Assert.Equal("/some/path", info.Path);
             Assert.Equal(Dns.GetHostName(), info.Hostname);
             Assert.Equal(System.Diagnostics.Process.GetCurrentProcess().Id, info.Pid);
@@ -51,7 +51,7 @@ namespace test
             Assert.Equal(info.Uuid, branch.Uuid);
             Assert.Equal(info.Name, branch.Name);
             Assert.Equal(info.Description, branch.Description);
-            Assert.Equal(info.NetName, branch.NetName);
+            Assert.Equal(info.NetworkName, branch.NetName);
             Assert.Equal(info.Path, branch.Path);
             Assert.Equal(info.Hostname, branch.Hostname);
             Assert.Equal(info.Pid, branch.Pid);

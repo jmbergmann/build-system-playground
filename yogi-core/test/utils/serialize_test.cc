@@ -22,6 +22,11 @@ class SerializeTest : public Test {
   }
 };
 
+TEST_F(SerializeTest, bool) {
+  Check<bool>(true);
+  Check<bool>(false);
+}
+
 TEST_F(SerializeTest, unsigned_short) {
   Check<unsigned short>(12345);
 }

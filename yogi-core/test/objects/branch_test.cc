@@ -27,6 +27,27 @@ TEST_F(BranchTest, GetInfoBufferTooSmall) {
 
 TEST_F(BranchTest, GetInfoUuid) { GetBranchUuid(branch_); }
 
+TEST_F(BranchTest, CreateWithSection) {
+  nlohmann::json props;
+  props["branch"] = kBranchProps;
+  props["branch"]["name"] = "Samosa";
+
+  char err[100];
+
+  void* branch;
+  int res = YOGI_BranchCreate(&branch, context_, props.dump().c_str(), "blabla",
+                              err, sizeof(err));
+  EXPECT_EQ(YOGI_ERR_PARSING_JSON_FAILED, res);
+  EXPECT_STRNE(err, "");
+
+  res = YOGI_BranchCreate(&branch, context_, props.dump().c_str(), "branch",
+                          err, sizeof(err));
+  EXPECT_EQ(YOGI_OK, res);
+  EXPECT_STREQ(err, "");
+  auto info = GetBranchInfo(branch);
+  EXPECT_EQ(info.value("name", "NOT FOUND"), "Samosa");
+}
+
 TEST_F(BranchTest, GetInfoJson) {
   boost::uuids::uuid uuid;
   char json_str[1000] = {0};
@@ -44,7 +65,7 @@ TEST_F(BranchTest, GetInfoJson) {
   EXPECT_EQ(json.value("uuid", "NOT FOUND"), boost::uuids::to_string(uuid));
   EXPECT_EQ(json.value("name", "NOT FOUND"), default_name);
   EXPECT_FALSE(json.value("description", "").empty());
-  EXPECT_EQ(json.value("net_name", "NOT FOUND"), utils::GetHostname());
+  EXPECT_EQ(json.value("network_name", "NOT FOUND"), utils::GetHostname());
   EXPECT_EQ(json.value("path", "NOT FOUND"), std::string("/") + default_name);
   EXPECT_EQ(json.value("hostname", "NOT FOUND"), utils::GetHostname());
   EXPECT_EQ(json.value("pid", -1), utils::GetProcessId());
@@ -57,4 +78,5 @@ TEST_F(BranchTest, GetInfoJson) {
   EXPECT_EQ(json.value("advertising_port", -1), static_cast<int>(kAdvPort));
   EXPECT_EQ(json.value("advertising_interval", -1.0f),
             static_cast<float>(kBranchProps["advertising_interval"]));
+  EXPECT_EQ(json.value("ghost_mode", true), false);
 }

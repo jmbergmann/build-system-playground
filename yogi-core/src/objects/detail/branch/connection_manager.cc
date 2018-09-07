@@ -9,13 +9,12 @@ namespace detail {
 
 ConnectionManager::ConnectionManager(
     ContextPtr context, const std::string& password,
-    const boost::asio::ip::udp::endpoint& adv_ep, bool ghost_mode,
+    const boost::asio::ip::udp::endpoint& adv_ep,
     ConnectionChangedHandler connection_changed_handler,
     MessageHandler message_handler)
     : context_(context),
       password_hash_(utils::MakeSharedByteVector(
           utils::MakeSha256({password.cbegin(), password.cend()}))),
-      ghost_mode_(ghost_mode),
       connection_changed_handler_(connection_changed_handler),
       message_handler_(message_handler),
       adv_sender_(std::make_shared<AdvertisingSender>(context, adv_ep)),
@@ -45,7 +44,7 @@ void ConnectionManager::Start(BranchInfoPtr info) {
   YOGI_LOG_DEBUG(logger_,
                  info_ << " Started ConnectionManager with TCP server port "
                        << info_->GetTcpEndpoint().port()
-                       << (ghost_mode_ ? " in ghost mode" : ""));
+                       << (info_->GetGhostMode() ? " in ghost mode" : ""));
 }
 
 ConnectionManager::BranchInfoStringsList
@@ -228,7 +227,7 @@ void ConnectionManager::OnExchangeBranchInfoFinished(
     }
   }
 
-  if (ghost_mode_) {
+  if (info_->GetGhostMode()) {
     blacklisted_uuids_.insert(remote_uuid);
   } else {
     StartAuthenticate(conn);
@@ -244,13 +243,13 @@ bool ConnectionManager::CheckExchangeBranchInfoError(
   if (conn->SourceIsTcpServer()) {
     YOGI_LOG_ERROR(
         logger_,
-        info_ << "Exchanging branch info with TCP server connection from "
+        info_ << " Exchanging branch info with TCP server connection from "
               << utils::MakeIpAddressString(conn->GetRemoteEndpoint())
               << " failed: " << err);
   } else {
     YOGI_LOG_ERROR(
         logger_,
-        info_ << "Exchanging branch info with TCP client connection to "
+        info_ << " Exchanging branch info with TCP client connection to "
               << utils::MakeIpAddressString(conn->GetRemoteEndpoint()) << ":"
               << conn->GetRemoteEndpoint().port() << " failed: " << err);
   }
@@ -309,7 +308,7 @@ bool ConnectionManager::VerifyConnectionHasHigherPriority(
 
 api::Error ConnectionManager::CheckRemoteBranchInfo(
     const BranchInfoPtr& remote_info) {
-  if (remote_info->GetNetName() != info_->GetNetName()) {
+  if (remote_info->GetNetworkName() != info_->GetNetworkName()) {
     blacklisted_uuids_.insert(remote_info->GetUuid());
     return api::Error(YOGI_ERR_NET_NAME_MISMATCH);
   }

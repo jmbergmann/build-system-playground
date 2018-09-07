@@ -26,7 +26,8 @@ class BranchInfo {
       std::string name, std::string description, std::string net_name,
       std::string path, const boost::asio::ip::tcp::endpoint& tcp_ep,
       const std::chrono::nanoseconds& timeout,
-      const std::chrono::nanoseconds& adv_interval);
+      const std::chrono::nanoseconds& adv_interval,
+      bool ghost_mode);
 
   static std::shared_ptr<BranchInfo> CreateFromInfoMessage(
       const utils::ByteVector& info_msg, const boost::asio::ip::address& addr);
@@ -42,7 +43,7 @@ class BranchInfo {
 
   const std::string& GetName() const { return name_; }
   const std::string& GetDescription() const { return description_; }
-  const std::string& GetNetName() const { return net_name_; }
+  const std::string& GetNetworkName() const { return net_name_; }
   const std::string& GetPath() const { return path_; }
   const std::string& GetHostname() const { return hostname_; }
 
@@ -57,6 +58,10 @@ class BranchInfo {
 
   const std::chrono::nanoseconds& GetAdvertisingInterval() const {
     return adv_interval_;
+  }
+
+  bool GetGhostMode() const {
+    return ghost_mode_;
   }
 
   utils::SharedByteVector MakeAdvertisingMessage() const {
@@ -89,6 +94,7 @@ class BranchInfo {
   utils::Timestamp start_time_;
   std::chrono::nanoseconds timeout_;
   std::chrono::nanoseconds adv_interval_;
+  bool ghost_mode_;
 
   utils::SharedByteVector adv_msg_;
   utils::SharedByteVector info_msg_;

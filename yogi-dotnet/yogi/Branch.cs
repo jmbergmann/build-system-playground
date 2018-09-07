@@ -116,7 +116,7 @@ public static partial class Yogi
             Uuid = Guid.Parse((string)Data["uuid"]);
             Name = (string)Data["name"];
             Description = (string)Data["description"];
-            NetName = (string)Data["net_name"];
+            NetworkName = (string)Data["network_name"];
             Path = (string)Data["path"];
             Hostname = (string)Data["hostname"];
             Pid = (int)Data["pid"];
@@ -146,7 +146,7 @@ public static partial class Yogi
         public string Description { get; }
 
         /// <summary>Name of the network.</summary>
-        public string NetName { get; }
+        public string NetworkName { get; }
 
         /// <summary>Path of the branch.</summary>
         public string Path { get; }
@@ -286,7 +286,7 @@ public static partial class Yogi
         public string Description { get { return info.Description; } }
 
         /// <summary>Name of the network.</summary>
-        public string NetName { get { return info.NetName; } }
+        public string NetName { get { return info.NetworkName; } }
 
         /// <summary>Path of the branch.</summary>
         public string Path { get { return info.Path; } }
@@ -427,7 +427,7 @@ public static partial class Yogi
         public string Description { get { return Info.Description; } }
 
         /// <summary>Name of the network.</summary>
-        public string NetName { get { return Info.NetName; } }
+        public string NetName { get { return Info.NetworkName; } }
 
         /// <summary>Path of the branch.</summary>
         public string Path { get { return Info.Path; } }

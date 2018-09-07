@@ -37,7 +37,7 @@ TEST_F(BranchTest, Info) {
   EXPECT_NE(info.GetUuid(), yogi::Uuid{});
   EXPECT_EQ(info.GetName(), "My Branch");
   EXPECT_EQ(info.GetDescription(), "Stuff");
-  EXPECT_EQ(info.GetNetName(), "My Network");
+  EXPECT_EQ(info.GetNetworkName(), "My Network");
   EXPECT_EQ(info.GetPath(), "/some/path");
   EXPECT_FALSE(info.GetHostname().empty());
   EXPECT_GT(info.GetPid(), 0);
@@ -52,7 +52,7 @@ TEST_F(BranchTest, Info) {
   EXPECT_EQ(branch->GetUuid(), info.GetUuid());
   EXPECT_EQ(branch->GetName(), info.GetName());
   EXPECT_EQ(branch->GetDescription(), info.GetDescription());
-  EXPECT_EQ(branch->GetNetName(), info.GetNetName());
+  EXPECT_EQ(branch->GetNetworkName(), info.GetNetworkName());
   EXPECT_EQ(branch->GetPath(), info.GetPath());
   EXPECT_EQ(branch->GetHostname(), info.GetHostname());
   EXPECT_EQ(branch->GetPid(), info.GetPid());

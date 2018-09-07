@@ -545,7 +545,8 @@
 //!     "tcp_server_port":      43384,
 //!     "start_time":           "2018-04-23T18:25:43.511Z",
 //!     "timeout":              3.0,
-//!     "advertising_interval": 1.0
+//!     "advertising_interval": 1.0,
+//!     "ghost_mode":           false
 //!   }
 #define YOGI_BEV_BRANCH_QUERIED (1<<1)
 
@@ -1620,7 +1621,8 @@ YOGI_API int YOGI_BranchCreate(void** branch, void* context, const char* props,
  *      "tcp_server_address":   "::",
  *      "tcp_server_port":      53332,
  *      "start_time":           "2018-04-23T18:25:43.511Z",
- *      "timeout":              3.0
+ *      "timeout":              3.0,
+ *      "ghost_mode":           false
  *    }
  *
  * \param[in]  branch   The branch handle
@@ -1668,7 +1670,8 @@ YOGI_API int YOGI_BranchGetInfo(void* branch, void* uuid, char* json,
  *      "tcp_server_port":      43384,
  *      "start_time":           "2018-04-23T18:25:43.511Z",
  *      "timeout":              3.0,
- *      "advertising_interval": 1.0
+ *      "advertising_interval": 1.0,
+ *      "ghost_mode":           false
  *    }
  *
  * \param[in]  branch   The branch handle

@@ -13,14 +13,15 @@ Branch::Branch(ContextPtr context, std::string name, std::string description,
                std::chrono::nanoseconds timeout, bool ghost_mode)
     : context_(context),
       connection_manager_(std::make_shared<detail::ConnectionManager>(
-          context, password, adv_ep, ghost_mode,
+          context, password, adv_ep,
           [&](auto& err, auto conn) { this->OnConnectionChanged(err, conn); },
           [&](auto& msg, auto size, auto& conn) {
             this->OnMessageReceived(msg, size, conn);
           })),
       info_(detail::BranchInfo::CreateLocal(
           name, description, net_name, path,
-          connection_manager_->GetTcpServerEndpoint(), timeout, adv_interval)) {
+          connection_manager_->GetTcpServerEndpoint(), timeout, adv_interval,
+          ghost_mode)) {
   if (name.empty() || net_name.empty() || path.empty() || path.front() != '/' ||
       adv_interval < 1ms || timeout < 1ms) {
     throw api::Error(YOGI_ERR_INVALID_PARAM);

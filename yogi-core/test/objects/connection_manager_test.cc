@@ -211,7 +211,7 @@ TEST_F(ConnectionManagerTest, BranchEvents) {
   CheckJsonElementsAreEqual(json, info, "uuid");
   CheckJsonElementsAreEqual(json, info, "name");
   CheckJsonElementsAreEqual(json, info, "description");
-  CheckJsonElementsAreEqual(json, info, "net_name");
+  CheckJsonElementsAreEqual(json, info, "network_name");
   CheckJsonElementsAreEqual(json, info, "path");
   CheckJsonElementsAreEqual(json, info, "hostname");
   CheckJsonElementsAreEqual(json, info, "pid");
@@ -220,6 +220,7 @@ TEST_F(ConnectionManagerTest, BranchEvents) {
   CheckJsonElementsAreEqual(json, info, "start_time");
   CheckJsonElementsAreEqual(json, info, "timeout");
   CheckJsonElementsAreEqual(json, info, "advertising_interval");
+  CheckJsonElementsAreEqual(json, info, "ghost_mode");
 
   json = rec.RunContextUntil(YOGI_BEV_CONNECT_FINISHED, uuid, YOGI_OK);
   CheckJsonElementsAreEqual(json, info, "uuid");
@@ -293,7 +294,7 @@ TEST_F(ConnectionManagerTest, GetConnectedBranches) {
     CheckJsonElementsAreEqual(json, info, "uuid");
     CheckJsonElementsAreEqual(json, info, "name");
     CheckJsonElementsAreEqual(json, info, "description");
-    CheckJsonElementsAreEqual(json, info, "net_name");
+    CheckJsonElementsAreEqual(json, info, "network_name");
     CheckJsonElementsAreEqual(json, info, "path");
     CheckJsonElementsAreEqual(json, info, "hostname");
     CheckJsonElementsAreEqual(json, info, "pid");
@@ -302,6 +303,7 @@ TEST_F(ConnectionManagerTest, GetConnectedBranches) {
     CheckJsonElementsAreEqual(json, info, "start_time");
     CheckJsonElementsAreEqual(json, info, "timeout");
     CheckJsonElementsAreEqual(json, info, "advertising_interval");
+    CheckJsonElementsAreEqual(json, info, "ghost_mode");
   };
 
   fn(branch_a);
