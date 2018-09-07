@@ -308,9 +308,10 @@ TEST_F(ConnectionManagerTest, GetConnectedBranches) {
   fn(branch_b);
 }
 
-TEST_F(ConnectionManagerTest, GhostBranch) {
+TEST_F(ConnectionManagerTest, GhostMode) {
   auto props = kBranchProps;
   props["name"] = "B";
+  props["ghost_mode"] = true;
 
   void* ghost_branch;
   int res = YOGI_BranchCreate(&ghost_branch, context_, props.dump().c_str(),

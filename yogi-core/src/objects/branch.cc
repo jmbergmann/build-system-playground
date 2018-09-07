@@ -10,10 +10,10 @@ Branch::Branch(ContextPtr context, std::string name, std::string description,
                std::string net_name, std::string password, std::string path,
                const boost::asio::ip::udp::endpoint& adv_ep,
                std::chrono::nanoseconds adv_interval,
-               std::chrono::nanoseconds timeout)
+               std::chrono::nanoseconds timeout, bool ghost_mode)
     : context_(context),
       connection_manager_(std::make_shared<detail::ConnectionManager>(
-          context, password, adv_ep,
+          context, password, adv_ep, ghost_mode,
           [&](auto& err, auto conn) { this->OnConnectionChanged(err, conn); },
           [&](auto& msg, auto size, auto& conn) {
             this->OnMessageReceived(msg, size, conn);

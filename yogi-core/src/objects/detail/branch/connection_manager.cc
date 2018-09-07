@@ -9,12 +9,13 @@ namespace detail {
 
 ConnectionManager::ConnectionManager(
     ContextPtr context, const std::string& password,
-    const boost::asio::ip::udp::endpoint& adv_ep,
+    const boost::asio::ip::udp::endpoint& adv_ep, bool ghost_mode,
     ConnectionChangedHandler connection_changed_handler,
     MessageHandler message_handler)
     : context_(context),
       password_hash_(utils::MakeSharedByteVector(
           utils::MakeSha256({password.cbegin(), password.cend()}))),
+      ghost_mode_(ghost_mode),
       connection_changed_handler_(connection_changed_handler),
       message_handler_(message_handler),
       adv_sender_(std::make_shared<AdvertisingSender>(context, adv_ep)),
@@ -43,7 +44,8 @@ void ConnectionManager::Start(BranchInfoPtr info) {
 
   YOGI_LOG_DEBUG(logger_,
                  info_ << " Started ConnectionManager with TCP server port "
-                       << info_->GetTcpEndpoint().port());
+                       << info_->GetTcpEndpoint().port()
+                       << (ghost_mode_ ? " in ghost mode" : ""));
 }
 
 ConnectionManager::BranchInfoStringsList
@@ -226,7 +228,7 @@ void ConnectionManager::OnExchangeBranchInfoFinished(
     }
   }
 
-  if (InOberserveOnlyMode()) {
+  if (ghost_mode_) {
     blacklisted_uuids_.insert(remote_uuid);
   } else {
     StartAuthenticate(conn);
@@ -254,10 +256,6 @@ bool ConnectionManager::CheckExchangeBranchInfoError(
   }
 
   return false;
-}
-
-bool ConnectionManager::InOberserveOnlyMode() const {
-  return info_->GetAdvertisingInterval() == std::chrono::nanoseconds::max();
 }
 
 bool ConnectionManager::VerifyUuidsMatch(const boost::uuids::uuid& remote_uuid,

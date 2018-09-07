@@ -56,5 +56,5 @@ TEST_F(BranchTest, GetInfoJson) {
   EXPECT_EQ(json.value("advertising_address", "NOT FOUND"), kAdvAddress);
   EXPECT_EQ(json.value("advertising_port", -1), static_cast<int>(kAdvPort));
   EXPECT_EQ(json.value("advertising_interval", -1.0f),
-            kBranchProps["advertising_interval"]);
+            static_cast<float>(kBranchProps["advertising_interval"]));
 }

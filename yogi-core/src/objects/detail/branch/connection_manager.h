@@ -42,6 +42,7 @@ class ConnectionManager final
 
   ConnectionManager(ContextPtr context, const std::string& password,
                     const boost::asio::ip::udp::endpoint& adv_ep,
+                    bool ghost_mode,
                     ConnectionChangedHandler connection_changed_handler,
                     MessageHandler message_handler);
   virtual ~ConnectionManager();
@@ -124,6 +125,7 @@ class ConnectionManager final
 
   const ContextPtr context_;
   const utils::SharedByteVector password_hash_;
+  const bool ghost_mode_;
   const ConnectionChangedHandler connection_changed_handler_;
   const MessageHandler message_handler_;
   const detail::AdvertisingSenderPtr adv_sender_;

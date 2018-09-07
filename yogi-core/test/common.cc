@@ -243,6 +243,7 @@ void* CreateBranch(void* context, const char* name, const char* net_name,
                    const char* password, const char* path) {
   auto props = kBranchProps;
   props["description"] = "Description";
+  if (name) props["name"] = name;
   if (net_name) props["network_name"] = net_name;
   if (password) props["network_password"] = password;
   if (path) props["path"] = path;

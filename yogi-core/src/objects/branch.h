@@ -17,7 +17,7 @@ class Branch : public api::ExposedObjectT<Branch, api::ObjectType::kBranch> {
          std::string net_name, std::string password, std::string path,
          const boost::asio::ip::udp::endpoint& adv_ep,
          std::chrono::nanoseconds adv_interval,
-         std::chrono::nanoseconds timeout);
+         std::chrono::nanoseconds timeout, bool ghost_mode);
 
   void Start();
 

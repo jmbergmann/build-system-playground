@@ -62,10 +62,11 @@ YOGI_API int YOGI_BranchCreate(void** branch, void* context, const char* props,
 
     auto timeout =
         ExtractDuration(properties, "timeout", api::kDefaultConnectionTimeout);
+    auto ghost = properties.value("ghost_mode", false);
 
     auto brn =
         objects::Branch::Create(ctx, name, description, network, password, path,
-                                adv_ep, adv_int, timeout);
+                                adv_ep, adv_int, timeout, ghost);
     brn->Start();
 
     *branch = api::ObjectRegister::Register(brn);
