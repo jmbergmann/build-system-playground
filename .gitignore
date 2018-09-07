@@ -26,3 +26,7 @@ yogi-dotnet/**/packages/
 
 # VSCode
 .vscode/.ropeproject
+
+# Doxygen
+**/doc/*.tmp
+**/doc/html/

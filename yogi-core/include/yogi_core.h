@@ -1549,10 +1549,9 @@ YOGI_API int YOGI_TimerCancel(void* timer);
  *    }
  *
  * All of the properties are optional and if unspecified (or set to _null_),
- * their respective default values will be used (see \CV). The properties have
- * the following meaning:
- *  - *name*: Name of the branch (default: PID@hostname with PID being the
- *    process ID).
+ * their respective default values will be used (see \ref CV). The properties
+ * have the following meaning:
+ *  - *name*: Name of the branch (default: PID\@hostname without the backslash).
  *  - *description*: Description of the branch.
  *  - *path*: Path of the branch in the network (default: /name where name is
  *    the name of the branch). Must start with a slash.
@@ -1758,7 +1757,7 @@ YOGI_API int YOGI_BranchCancelAwaitEvent(void* branch);
  * Terminals are the communication endpoints in Yogi. Each terminal is
  * associated with exactly one branch and each branch can have an arbitrary
  * number of terminals. Terminals are uniquely identified by their UUID as well
- * as by the combination their \p path and the branch they belong to.
+ * as by the combination their path and the branch they belong to.
  *
  * Upon creation, a terminal is either a *prividing* or a *consuming* terminal.
  * Providing terminals have paths (names) that describe where in the owning
@@ -1812,7 +1811,7 @@ YOGI_API int YOGI_BranchCancelAwaitEvent(void* branch);
  *    arbitrary number of consumers. Compatible types: _File_
  *    (provider/consumer).
  *
- * The terminal's properties are configured via the \p json parameter. The
+ * The terminal's properties are configured via the \p props parameter. The
  * supplied JSON must have the following structure:
  *
  *    {
@@ -1848,7 +1847,7 @@ YOGI_API int YOGI_BranchCancelAwaitEvent(void* branch);
  * \param[in]  branch   The branch to use
  * \param[in]  pathpfx  Path prefix of the terminal (can be NULL)
  * \param[in]  rolesrc  Provider-consumer role source (see \ref RLS)
- * \param[in]  json     Terminal properties as JSON
+ * \param[in]  props    Terminal properties as JSON
  * \param[in]  section  Section in \p props to use (NULL means the root section)
  *
  * \returns [=0] #YOGI_OK if successful
@@ -1856,19 +1855,19 @@ YOGI_API int YOGI_BranchCancelAwaitEvent(void* branch);
  ******************************************************************************/
 YOGI_API int YOGI_TerminalCreate(void** terminal, void* branch,
                                  const char* pathpfx, int rolesrc,
-                                 const char* json, const char* section);
+                                 const char* props, const char* section);
 
-YOGI_API int YOGI_TerminalSend(void* terminal, int msgid, const void* data);
+// YOGI_API int YOGI_TerminalSend(void* terminal, int msgid, const void* data);
 
-YOGI_API int YOGI_TerminalReceive(void* terminal, int* msgid, void* data,
-                                  int datasize);
+// YOGI_API int YOGI_TerminalReceive(void* terminal, int* msgid, void* data,
+//                                   int datasize);
 
-YOGI_API int YOGI_InterfaceCreate(void** iface, void* branch,
-                                  const char* pathpfx, int role,
-                                  const char* json, const char* section);
+// YOGI_API int YOGI_InterfaceCreate(void** iface, void* branch,
+//                                   const char* pathpfx, int role,
+//                                   const char* props, const char* section);
 
-YOGI_API int YOGI_InterfaceGetTerminal(void** terminal, void* iface,
-                                       const char* path);
+// YOGI_API int YOGI_InterfaceGetTerminal(void** terminal, void* iface,
+//                                        const char* path);
 
 /***************************************************************************//**
  * Destroys an object.
@@ -1883,6 +1882,11 @@ YOGI_API int YOGI_InterfaceGetTerminal(void** terminal, void* iface,
  * Destroying an object will cause any active asynchronous operations to get
  * canceled and the corresponding completion handlers will be invoked with an
  * error code of #YOGI_ERR_CANCELED.
+ *
+ * \param[in] object The object to destroy
+ *
+ * \returns [=0] #YOGI_OK if successful
+ * \returns [<0] An error code in case of a failure (see \ref EC)
  ******************************************************************************/
 YOGI_API int YOGI_Destroy(void* object);
 
@@ -1898,6 +1902,9 @@ YOGI_API int YOGI_Destroy(void* object);
  * Destroying objects will cause any active asynchronous operations to get
  * canceled and the corresponding completion handlers will be invoked with an
  * error code of #YOGI_ERR_CANCELED.
+ *
+ * \returns [=0] #YOGI_OK if successful
+ * \returns [<0] An error code in case of a failure (see \ref EC)
  ******************************************************************************/
 YOGI_API int YOGI_DestroyAll();
 
