@@ -26,11 +26,18 @@ using namespace std::chrono_literals;
     FAIL() << "Wrong exception type thrown"; \
   }
 
-static const int kAdvPort = 44442;
-static const char* kAdvAddress = "ff31::8000:2439";
-static const std::chrono::nanoseconds kAdvInterval = 100ms;
-static const std::chrono::nanoseconds kConnTimeout = 3000ms;
+static const nlohmann::json kBranchProps = nlohmann::json::parse(R"raw(
+  {
+    "advertising_port": 44442,
+    "advertising_address": "ff31::8000:2439",
+    "advertising_interval": 0.1,
+    "timeout": 3.0
+  }
+)raw");
+
 static const std::chrono::nanoseconds kTimingMargin = 50ms;
+static const std::string kAdvAddress = kBranchProps["advertising_address"];
+static const unsigned int kAdvPort = kBranchProps["advertising_port"];
 
 static const auto kUdpProtocol =
     boost::asio::ip::make_address(kAdvAddress).is_v4()
@@ -115,7 +122,7 @@ struct CommandLine final {
   ~CommandLine();
 
   CommandLine(const CommandLine&) = delete;
-  CommandLine& operator= (const CommandLine&) = delete;
+  CommandLine& operator=(const CommandLine&) = delete;
 };
 
 void SetupLogging(int verbosity);

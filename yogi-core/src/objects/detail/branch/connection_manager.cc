@@ -25,6 +25,10 @@ ConnectionManager::ConnectionManager(
           })),
       acceptor_(context->IoContext()),
       observed_events_(kNoEvent) {
+  if (adv_ep.port() == 0) {
+    throw api::Error(YOGI_ERR_INVALID_PARAM);
+  }
+
   using namespace boost::asio::ip;
   SetupAcceptor(adv_ep.protocol() == udp::v4() ? tcp::v4() : tcp::v6());
 }

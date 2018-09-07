@@ -1,8 +1,10 @@
 #include "common.h"
 #include "../src/utils/crypto.h"
 #include "../src/utils/system.h"
+
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/asio.hpp>
+using namespace std::string_literals;
 
 namespace fs = boost::filesystem;
 
@@ -239,10 +241,15 @@ void RunContextInBackground(void* context) {
 
 void* CreateBranch(void* context, const char* name, const char* net_name,
                    const char* password, const char* path) {
+  auto props = kBranchProps;
+  props["description"] = "Description";
+  if (net_name) props["network_name"] = net_name;
+  if (password) props["network_password"] = password;
+  if (path) props["path"] = path;
+
   void* branch = nullptr;
-  int res = YOGI_BranchCreate(&branch, context, name, "Description", net_name,
-                              password, path, nullptr, kAdvPort,
-                              kAdvInterval.count(), kConnTimeout.count());
+  int res = YOGI_BranchCreate(&branch, context, props.dump().c_str(), nullptr,
+                              nullptr, 0);
   EXPECT_EQ(res, YOGI_OK);
   return branch;
 }

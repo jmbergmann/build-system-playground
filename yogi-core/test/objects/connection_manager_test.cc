@@ -17,11 +17,13 @@ class ConnectionManagerTest : public Test {
 TEST_F(ConnectionManagerTest, Advertising) {
   using namespace boost::asio;
   io_context ioc;
-  ip::udp::endpoint ep(ip::make_address("0::0"), kAdvPort);
+  ip::udp::endpoint ep(ip::make_address("0::0"),
+                       kBranchProps["advertising_port"]);
   ip::udp::socket socket(ioc, ep.protocol());
   socket.set_option(ip::udp::socket::reuse_address(true));
   socket.bind(ep);
-  socket.set_option(ip::multicast::join_group(ip::make_address(kAdvAddress)));
+  socket.set_option(ip::multicast::join_group(
+      ip::make_address(kBranchProps["advertising_address"])));
 
   boost::system::error_code error_code;
   std::array<char, 100> data;
@@ -306,17 +308,19 @@ TEST_F(ConnectionManagerTest, GetConnectedBranches) {
   fn(branch_b);
 }
 
-TEST_F(ConnectionManagerTest, InfiniteAdvertisingInterval) {
-  void* silent_branch;
-  int res = YOGI_BranchCreate(&silent_branch, context_, "B", nullptr, nullptr,
-                              nullptr, nullptr, nullptr, kAdvPort, -1,
-                              kConnTimeout.count());
+TEST_F(ConnectionManagerTest, GhostBranch) {
+  auto props = kBranchProps;
+  props["name"] = "B";
+
+  void* ghost_branch;
+  int res = YOGI_BranchCreate(&ghost_branch, context_, props.dump().c_str(),
+                              nullptr, nullptr, 0);
   EXPECT_EQ(res, YOGI_OK);
 
-  BranchEventRecorder rec(context_, silent_branch);
+  BranchEventRecorder rec(context_, ghost_branch);
   rec.RunContextUntil(YOGI_BEV_BRANCH_QUERIED, branch_, YOGI_OK);
   YOGI_ContextRun(context_, nullptr, 10e6);
 
-  auto branches = GetConnectedBranches(silent_branch);
+  auto branches = GetConnectedBranches(ghost_branch);
   EXPECT_TRUE(branches.empty());
 }

@@ -537,7 +537,7 @@
 //!     "uuid":                 "123e4567-e89b-12d3-a456-426655440000",
 //!     "name":                 "Pump Safety Logic",
 //!     "description":          "Monitors the pump for safety",
-//!     "net_name":             "Hardware Control",
+//!     "network_name":         "Hardware Control",
 //!     "path":                 "/Cooling System/Pump/Safety",
 //!     "hostname":             "beaglebone",
 //!     "pid":                  3321,
@@ -1531,50 +1531,68 @@ YOGI_API int YOGI_TimerCancel(void* timer);
  * Once authentication succeeds and there is no other known branch with the same
  * path then the branches can actively communicate as part of the Yogi network.
  *
+ * The branch is configured via the \p props parameter. The supplied JSON must
+ * have the following structure:
+ *
+ *    {
+ *      "name":                 "Fan Controller",
+ *      "description":          "Controls a fan via PWM",
+ *      "path":                 "/Cooling System/Fan Controller",
+ *      "network_name":         "Hardware Control",
+ *      "network_password":     "secret",
+ *      "advertising_address":  "ff31::8000:2439",
+ *      "advertising_port":     13531,
+ *      "advertising_interval": 1.0,
+ *      "timeout":              3.0,
+ *      "ghost_mode":           false
+ *    }
+ *
+ * All of the properties are optional and if unspecified (or set to _null_),
+ * their respective default values will be used (see \CV). The properties have
+ * the following meaning:
+ *  - *name*: Name of the branch (default: PID@hostname with PID being the
+ *    process ID).
+ *  - *description*: Description of the branch.
+ *  - *path*: Path of the branch in the network (default: /name where name is
+ *    the name of the branch). Must start with a slash.
+ *  - *network_name*: Name of the network to join (default: the machine's
+ *    hostname).
+ *  - *network_password*: Password for the network (default: no password)
+ *  - *advertising_address*: Multicast address to use for advertising, e.g.
+ *    239.255.0.1 for IPv4 or ff31::8000:1234 for IPv6.
+ *  - *advertising_port*: Port to use for advertising.
+ *  - *advertising_interval*: Time between advertising messages. Must be at
+ *    least 1 ms.
+ *  - *ghost_mode*: Set to true to activate ghost mode (default: false).
+ *
  * Advertising and establishing connections can be limited to certain network
- * interfaces via the \p interface parameter. The default is to use all
+ * interfaces via the _interface_ property. The default is to use all
  * available interfaces.
  *
- * The \p advint parameter can be set to -1 which prevents the branch from
- * actively participating in the Yogi network, i.e. the branch will not
- * advertise itself and it will not authenticate in order to join a network.
- * However, the branch will temporarily connect to other branches in order to
- * obtain more detailed information such as name, description, network name
- * and so on. This is useful for obtaining information about active branches
- * without actually becoming part of the Yogi network.
+ * Setting the _ghost_mode_ property to _true_prevents the branch from actively
+ * participating in the Yogi network, i.e. the branch will not advertise itself
+ * and it will not authenticate in order to join a network. However, the branch
+ * will temporarily connect to other branches in order to obtain more detailed
+ * information such as name, description, network name and so on. This is useful
+ * for obtaining information about active branches without actually becoming
+ * part of the Yogi network.
  *
  * Note: Even though the authentication process via passwords is done in a
  *       secure manner, any further communication is done in plain text.
  *
- * \param[out] branch      Pointer to the branch handle
- * \param[in]  context     The context to use
- * \param[in]  name        Name of the branch (set to NULL to use the format
- *                         PID@hostname with PID being the process ID)
- * \param[in]  description Description of the branch (set to NULL for none)
- * \param[in]  netname     Name of the network to join (set to NULL to use the
- *                         machine's hostname)
- * \param[in]  password    Password for the network (set to NULL for none)
- * \param[in]  path        Path of the branch in the network (set to NULL to use
- *                         the format /name where name is the branch's name);
- *                         must start with a slash
- * \param[in]  advaddr     Multicast address to use; e.g. 239.255.0.1 for IPv4
- *                         or ff31::8000:1234 for IPv6 (set to NULL for default)
- * \param[in]  advport     Advertising port (set to 0 for default)
- * \param[in]  advint      Advertising interval in nanoseconds (set to 0 for
- *                         default; set to -1 for no advertising and no joining
- *                         networks; must be at least 1 millisecond)
- * \param[in]  timeout     Maximum time of inactivity before a remote branch is
- *                         considered to be dead (set to 0 for default; set to
- *                         -1 for infinity; must be at least 1 millisecond)
+ * \param[out] branch   Pointer to the branch handle
+ * \param[in]  context  The context to use
+ * \param[in]  props    Branch properties as JSON (set to NULL to use defaults)
+ * \param[in]  section  Section in \p props to use (set to NULL for root)
+ * \param[out] err      Pointer to a char array for storing an error description
+ *                      (can be set to NULL)
+ * \param[in]  errsize  Maximum number of bytes to write to \p err
  *
  * \returns [=0] #YOGI_OK if successful
  * \returns [<0] An error code in case of a failure (see \ref EC)
  ******************************************************************************/
-YOGI_API int YOGI_BranchCreate(void** branch, void* context, const char* name,
-                               const char* description, const char* netname,
-                               const char* password, const char* path,
-                               const char* advaddr, int advport,
-                               long long advint, long long timeout);
+YOGI_API int YOGI_BranchCreate(void** branch, void* context, const char* props,
+                               const char* section, char* err, int errsize);
 
 /***************************************************************************//**
  * Retrieves information about a local branch.
@@ -1592,7 +1610,7 @@ YOGI_API int YOGI_BranchCreate(void** branch, void* context, const char* name,
  *      "uuid":                 "6ba7b810-9dad-11d1-80b4-00c04fd430c8",
  *      "name":                 "Fan Controller",
  *      "description":          "Controls a fan via PWM",
- *      "net_name":             "Hardware Control",
+ *      "network_name":         "Hardware Control",
  *      "path":                 "/Cooling System/Fan Controller",
  *      "hostname":             "beaglebone",
  *      "pid":                  4124,
@@ -1642,7 +1660,7 @@ YOGI_API int YOGI_BranchGetInfo(void* branch, void* uuid, char* json,
  *      "uuid":                 "123e4567-e89b-12d3-a456-426655440000",
  *      "name":                 "Pump Safety Logic",
  *      "description":          "Monitors the pump for safety",
- *      "net_name":             "Hardware Control",
+ *      "network_name":         "Hardware Control",
  *      "path":                 "/Cooling System/Pump/Safety",
  *      "hostname":             "beaglebone",
  *      "pid":                  3321,
@@ -1842,11 +1860,11 @@ YOGI_API int YOGI_TerminalSend(void* terminal, int msgid, const void* data);
 YOGI_API int YOGI_TerminalReceive(void* terminal, int* msgid, void* data,
                                   int datasize);
 
-YOGI_API int YOGI_InterfaceCreate(void** interface, void* branch,
+YOGI_API int YOGI_InterfaceCreate(void** iface, void* branch,
                                   const char* pathpfx, int role,
                                   const char* json, const char* section);
 
-YOGI_API int YOGI_InterfaceGetTerminal(void** terminal, void* interface,
+YOGI_API int YOGI_InterfaceGetTerminal(void** terminal, void* iface,
                                        const char* path);
 
 /***************************************************************************//**

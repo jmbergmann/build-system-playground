@@ -20,7 +20,9 @@ TODO:
 * Checkout asio timer problem (see code below)
 * Check path validity when creating branches and terminals
 * Use JSON when creating branches
-
+* Should branches in observer only mode be visible as branch events on other branches? Or should there be a flag showing that a branch is only an observer in branch info?
+* Remove "observer only" to ghost
+* rename net_name to network_name in branch info and everywhere
 
 
 #include <boost/asio.hpp>

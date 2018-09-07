@@ -25,9 +25,7 @@ TEST_F(BranchTest, GetInfoBufferTooSmall) {
   EXPECT_EQ(json[sizeof(json) - 1], '\0');
 }
 
-TEST_F(BranchTest, GetInfoUuid) {
-  GetBranchUuid(branch_);
-}
+TEST_F(BranchTest, GetInfoUuid) { GetBranchUuid(branch_); }
 
 TEST_F(BranchTest, GetInfoJson) {
   boost::uuids::uuid uuid;
@@ -54,11 +52,9 @@ TEST_F(BranchTest, GetInfoJson) {
   EXPECT_GT(json.value("tcp_server_port", 0), 1024);
   EXPECT_TRUE(
       std::regex_match(json.value("start_time", "NOT FOUND"), time_regex));
-  EXPECT_EQ(json.value("timeout", -1.0f),
-            static_cast<float>(kConnTimeout.count()) / 1e9f);
-  EXPECT_EQ(json.value("advertising_address", "NOT FOUND"),
-            kAdvAddress);
-  EXPECT_EQ(json.value("advertising_port", -1), kAdvPort);
+  EXPECT_EQ(json.value("timeout", -1.0f), kBranchProps["timeout"]);
+  EXPECT_EQ(json.value("advertising_address", "NOT FOUND"), kAdvAddress);
+  EXPECT_EQ(json.value("advertising_port", -1), static_cast<int>(kAdvPort));
   EXPECT_EQ(json.value("advertising_interval", -1.0f),
-            static_cast<float>(kAdvInterval.count()) / 1e9f);
+            kBranchProps["advertising_interval"]);
 }

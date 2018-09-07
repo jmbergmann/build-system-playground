@@ -1,6 +1,9 @@
 #include "branch.h"
 #include "../utils/ip.h"
 
+#include <chrono>
+using namespace std::chrono_literals;
+
 namespace objects {
 
 Branch::Branch(ContextPtr context, std::string name, std::string description,
@@ -18,7 +21,8 @@ Branch::Branch(ContextPtr context, std::string name, std::string description,
       info_(detail::BranchInfo::CreateLocal(
           name, description, net_name, path,
           connection_manager_->GetTcpServerEndpoint(), timeout, adv_interval)) {
-  if (adv_ep.port() == 0) {
+  if (name.empty() || net_name.empty() || path.empty() || path.front() != '/' ||
+      adv_interval < 1ms || timeout < 1ms) {
     throw api::Error(YOGI_ERR_INVALID_PARAM);
   }
 }

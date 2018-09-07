@@ -4,6 +4,22 @@
 #include <boost/algorithm/string.hpp>
 #include <regex>
 
+std::chrono::nanoseconds ExtractDuration(const nlohmann::json& json,
+                                         const char* key,
+                                         long long defaultValue) {
+  float seconds = json.value(key, static_cast<float>(defaultValue) / 1e9f);
+  if (seconds == -1) {
+    return (std::chrono::nanoseconds::max)();
+  }
+  else if (seconds < 0) {
+    return (std::chrono::nanoseconds::max)();
+    // TODO: Throw exception with additional information
+  }
+
+  auto ns = static_cast<long long>(seconds * 1e9f);
+  return std::chrono::nanoseconds(ns);
+}
+
 bool IsExactlyOneBitSet(int bit_field) {
   auto x = static_cast<unsigned int>(bit_field);
   return x && !(x & (x - 1));
