@@ -1,6 +1,7 @@
 from .object import Object
 from .errors import Result, FailureException, Success, ErrorCode, \
-    api_result_handler, error_code_to_result
+    api_result_handler, error_code_to_result, \
+    run_with_discriptive_failure_awareness
 from .library import yogi
 from .handler import Handler
 from .context import Context
@@ -9,7 +10,7 @@ from .timestamp import Timestamp
 import json
 from enum import IntEnum
 from uuid import UUID
-from typing import Callable, Any, Optional, Dict
+from typing import Callable, Any, Optional, Dict, Union
 from ctypes import c_int, c_longlong, c_void_p, c_char_p, CFUNCTYPE, \
     POINTER, byref, create_string_buffer, sizeof
 
@@ -115,6 +116,11 @@ class BranchInfo:
         """Connection timeout."""
         return self._info["timeout"]
 
+    @property
+    def ghost_mode(self) -> bool:
+        """True if the branch is in ghost mode."""
+        return self._info["ghost_mode"]
+
 
 class RemoteBranchInfo(BranchInfo):
     """Information about a remote branch."""
@@ -195,10 +201,9 @@ class ConnectionLostEventInfo(BranchEventInfo):
         BranchEventInfo.__init__(self, info_string)
 
 
-yogi.YOGI_BranchCreate.restype = api_result_handler
+yogi.YOGI_BranchCreate.restype = int
 yogi.YOGI_BranchCreate.argtypes = [
-    POINTER(c_void_p), c_void_p, c_char_p, c_char_p, c_char_p, c_char_p,
-    c_char_p, c_char_p, c_int, c_longlong, c_longlong]
+    POINTER(c_void_p), c_void_p, c_char_p, c_char_p, c_char_p, c_int]
 
 yogi.YOGI_BranchGetInfo.restype = api_result_handler
 yogi.YOGI_BranchGetInfo.argtypes = [c_void_p, c_void_p, c_char_p, c_int]
@@ -234,18 +239,47 @@ class Branch(Object):
           secure manner, any further communication is done in plain text.
     """
 
-    def __init__(self, context: Context, name: str = None,
-                 description: str = None, netname: str = None,
-                 password: str = None, path: str = None,
-                 advaddr: str = None, advport: int = None,
-                 advint: float = None, timeout: float = None):
+    def __init__(self, context: Context, props: Union[str, object] = None,
+                 section: str = None):
         """Creates the branch.
 
+        The branch is configured via the props parameter. The supplied JSON
+        must have the following structure:
+
+            {
+              "name":                 "Fan Controller",
+              "description":          "Controls a fan via PWM",
+              "path":                 "/Cooling System/Fan Controller",
+              "network_name":         "Hardware Control",
+              "network_password":     "secret",
+              "advertising_address":  "ff31::8000:2439",
+              "advertising_port":     13531,
+              "advertising_interval": 1.0,
+              "timeout":              3.0,
+              "ghost_mode":           false
+            }
+        All of the properties are optional and if unspecified (or set to
+        null), their respective default values will be used. The properties
+        have the following meaning:
+         - name: Name of the branch (default: PID@hostname).
+         - description: Description of the branch.
+         - path: Path of the branch in the network (default: /name where name
+           is the name of the branch). Must start with a slash.
+         - network_name: Name of the network to join (default: the machine's
+           hostname).
+         - network_password: Password for the network (default: no password)
+         - advertising_address: Multicast address to use for advertising, e.g.
+           239.255.0.1 for IPv4 or ff31::8000:1234 for IPv6.
+         - advertising_port: Port to use for advertising.
+         - advertising_interval: Time between advertising messages. Must be at
+           least 1 ms.
+         - ghost_mode: Set to true to activate ghost mode (default: false).
+
         Advertising and establishing connections can be limited to certain
-        network interfaces via the interface parameter. The default is to use
+        network interfaces via the _interface_ property. The default is to use
         all available interfaces.
 
-        Setting the advint parameter to infinity prevents the branch from
+        Setting the ghost_mode property to true prevents the branch from
         actively participating in the Yogi network, i.e. the branch will not
         advertise itself and it will not authenticate in order to join a
         network. However, the branch will temporarily connect to other
@@ -255,45 +289,27 @@ class Branch(Object):
         the Yogi network.
 
         Args:
-            context:     The context to use.
-            name:        Name of the branch (by default, the format
-                         PID@hostname with PID being the process ID will be
-                         used).
-            description: Description of the branch.
-            netname:     Name of the network to join (by default, the
-                         machine's hostname will be used as the network name).
-            password:    Password for the network.
-            path:        Path of the branch in the network (by default, the
-                         format /name where name is the branch's name will
-                         be used). Must start with a slash.
-            advaddr:     Multicast address to use; e.g. 239.255.0.1 for IPv4
-                         or ff31::8000:1234 for IPv6.
-            advport:     Advertising port.
-            advint:      Advertising interval (must be at least 0.001).
-            timeout:     Maximum time of inactivity before a remote branch is
-                         considered to be dead (must be at least 0.001).
+            context: The context to use.
+            props:   Branch properties as serializable object or JSON object.
+            section: Section in props to use instead of the root section.
         """
+        if not isinstance(props, str):
+            props = json.dumps(props)
+
         def conv_string(s):
             if s is None:
                 return None
             else:
                 return s.encode("utf-8")
 
-        def conv_duration(duration):
-            if duration is None:
-                return 0
-            elif duration == float("inf"):
-                return -1
-            else:
-                return int(duration * 1e9)
-
         handle = c_void_p()
-        yogi.YOGI_BranchCreate(byref(handle), context._handle,
-                               conv_string(name), conv_string(description),
-                               conv_string(netname), conv_string(password),
-                               conv_string(path), conv_string(advaddr),
-                               advport or 0, conv_duration(advint),
-                               conv_duration(timeout))
+        run_with_discriptive_failure_awareness(
+            lambda err: yogi.YOGI_BranchCreate(byref(handle),
+                                               context._handle,
+                                               conv_string(props),
+                                               conv_string(section),
+                                               err, sizeof(err)))
+
         Object.__init__(self, handle, [context])
         self._info = self.__get_info()
 
@@ -322,7 +338,7 @@ class Branch(Object):
         return self._info.description
 
     @property
-    def net_name(self) -> str:
+    def network_name(self) -> str:
         """Name of the network."""
         return self._info.network_name
 
@@ -375,6 +391,11 @@ class Branch(Object):
     def timeout(self) -> float:
         """Connection timeout."""
         return self._info.timeout
+
+    @property
+    def ghost_mode(self) -> bool:
+        """True if the branch is in ghost mode."""
+        return self._info.ghost_mode
 
     def get_connected_branches(self) -> Dict[str, RemoteBranchInfo]:
         """Retrieves information about all connected remote branches.

@@ -480,7 +480,6 @@ public static partial class Yogi
         /// information such as name, description, network name and so on. This is useful
         /// for obtaining information about active branches without actually becoming
         /// part of the Yogi network.
-        ///
         /// </summary>
         /// <param name="context">The context to use.</param>
         /// <param name="props">Branch properties.</param>

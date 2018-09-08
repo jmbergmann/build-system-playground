@@ -18,10 +18,26 @@ class TestBranches(TestCase):
             else:
                 self.assertFlagMatches("YOGI_BEV_", ev)
 
+    def test_create_with_sub_section(self):
+        branch = yogi.Branch(
+            self.context, '{"branch":{"name":"Cow"}}', "branch")
+        self.assertEqual(branch.name, "Cow")
+
     def test_info(self):
-        branch = yogi.Branch(self.context, "My Branch", "Stuff", "My Network",
-                             "Password", "/some/path", "239.255.0.1", 12345,
-                             7.0, float("inf"))
+        props = {
+            "name": "My Branch",
+            "description": "Stuff",
+            "network_name": "My Network",
+            "network_password": "Password",
+            "path": "/some/path",
+            "advertising_address": "239.255.0.1",
+            "advertising_port": 12345,
+            "advertising_interval": 7,
+            "timeout": -1
+        }
+
+        branch = yogi.Branch(self.context, props)
+
         info = branch.info
         self.assertIsInstance(info, yogi.LocalBranchInfo)
         self.assertIsInstance(info.uuid, uuid.UUID)
@@ -38,14 +54,15 @@ class TestBranches(TestCase):
         self.assertGreater(info.tcp_server_port, 0)
         self.assertLessEqual(info.start_time, yogi.get_current_time())
         self.assertEqual(info.timeout, float("inf"))
+        self.assertEqual(info.ghost_mode, False)
 
         for key in info._info:
             self.assertEqual(getattr(branch, key), info._info[key])
 
     def test_get_connected_branches(self):
-        branch = yogi.Branch(self.context, "My Branch")
-        branch_a = yogi.Branch(self.context, "A")
-        branch_b = yogi.Branch(self.context, "B")
+        branch = yogi.Branch(self.context, '{"name":"My Branch"}')
+        branch_a = yogi.Branch(self.context, '{"name":"A"}')
+        branch_b = yogi.Branch(self.context, '{"name":"B"}')
 
         while len(branch.get_connected_branches()) < 2:
             self.context.run_one()
@@ -57,8 +74,8 @@ class TestBranches(TestCase):
             self.assertIsInstance(branches[brn.uuid], yogi.RemoteBranchInfo)
 
     def test_await_event(self):
-        branch = yogi.Branch(self.context, "My Branch")
-        branch_a = yogi.Branch(self.context, "A")
+        branch = yogi.Branch(self.context, '{"name":"My Branch"}')
+        branch_a = yogi.Branch(self.context, '{"name":"A"}')
 
         fn_res = None
         fn_event = None
@@ -90,9 +107,10 @@ class TestBranches(TestCase):
         self.assertEqual(fn_info.uuid, branch_a.uuid)
         self.assertEqual(fn_info.start_time, branch_a.start_time)
         self.assertEqual(fn_info.timeout, branch_a.timeout)
+        self.assertEqual(fn_info.ghost_mode, branch_a.ghost_mode)
 
     def test_cancel_await_event(self):
-        branch = yogi.Branch(self.context, "My Branch")
+        branch = yogi.Branch(self.context, '{"name":"My Branch"}')
 
         fn_res = None
         fn_event = None
