@@ -1572,7 +1572,7 @@ YOGI_API int YOGI_TimerCancel(void* timer);
  * interfaces via the _interface_ property. The default is to use all
  * available interfaces.
  *
- * Setting the _ghost_mode_ property to _true_prevents the branch from actively
+ * Setting the _ghost_mode_ property to _true_ prevents the branch from actively
  * participating in the Yogi network, i.e. the branch will not advertise itself
  * and it will not authenticate in order to join a network. However, the branch
  * will temporarily connect to other branches in order to obtain more detailed

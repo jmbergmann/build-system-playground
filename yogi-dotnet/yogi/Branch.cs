@@ -14,13 +14,9 @@ public static partial class Yogi
         // === YOGI_BranchCreate ===
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public delegate int BranchCreateDelegate(ref IntPtr branch, SafeObjectHandle context,
-            [MarshalAs(UnmanagedType.LPStr)] string name,
-            [MarshalAs(UnmanagedType.LPStr)] string description,
-            [MarshalAs(UnmanagedType.LPStr)] string netname,
-            [MarshalAs(UnmanagedType.LPStr)] string password,
-            [MarshalAs(UnmanagedType.LPStr)] string path,
-            [MarshalAs(UnmanagedType.LPStr)] string advaddr, int advport, long advint,
-            long timeout);
+            [MarshalAs(UnmanagedType.LPStr)] string props,
+            [MarshalAs(UnmanagedType.LPStr)] string section,
+            [MarshalAs(UnmanagedType.LPStr)] StringBuilder err, int errsize);
 
         public static BranchCreateDelegate YOGI_BranchCreate
             = Library.GetDelegateForFunction<BranchCreateDelegate>(
@@ -125,6 +121,7 @@ public static partial class Yogi
             TcpServerPort = (int)Data["tcp_server_port"];
             StartTime = Timestamp.Parse((string)Data["start_time"]);
             Timeout = Duration.FromJson(Data["timeout"]);
+            GhostMode = (bool)Data["ghost_mode"];
         }
 
         public override string ToString()
@@ -171,6 +168,9 @@ public static partial class Yogi
 
         /// <summary>Connection timeout.</summary>
         public Duration Timeout { get; }
+
+        /// <summary>True if the branch is in ghost mode.</summary>
+        public bool GhostMode { get; }
     }
 
     /// <summary>
@@ -312,6 +312,9 @@ public static partial class Yogi
         /// <summary>Connection timeout.</summary>
         public Duration Timeout { get { return info.Timeout; } }
 
+        /// <summary>True if the branch is in ghost mode.</summary>
+        public bool GhostMode { get { return info.GhostMode; } }
+
         /// <summary>
         /// Converts the event information to a RemoteBranchInfo object.
         /// </summary>
@@ -375,43 +378,115 @@ public static partial class Yogi
         /// <summary>
         /// Creates the branch.
         ///
-        /// Advertising and establishing connections can be limited to certain
-        /// network interfaces via the interface parameter. The default is to use
-        /// all available interfaces.
+        /// The branch is configured via the props parameter. The supplied JSON must
+        /// have the following structure:
         ///
-        /// Setting the advint parameter to infinity prevents the branch from
-        /// actively participating in the Yogi network, i.e. the branch will not
-        /// advertise itself and it will not authenticate in order to join a
-        /// network. However, the branch will temporarily connect to other
-        /// branches in order to obtain more detailed information such as name,
-        /// description, network name and so on. This is useful for obtaining
-        /// information about active branches without actually becoming part of
-        /// the Yogi network.
+        ///    {
+        ///      "name":                 "Fan Controller",
+        ///      "description":          "Controls a fan via PWM",
+        ///      "path":                 "/Cooling System/Fan Controller",
+        ///      "network_name":         "Hardware Control",
+        ///      "network_password":     "secret",
+        ///      "advertising_address":  "ff31::8000:2439",
+        ///      "advertising_port":     13531,
+        ///      "advertising_interval": 1.0,
+        ///      "timeout":              3.0,
+        ///      "ghost_mode":           false
+        ///    }
+        ///
+        /// All of the properties are optional and if unspecified (or set to null),
+        /// their respective default values will be used. The properties have the
+        /// following meaning:
+        ///  - name: Name of the branch (default: PID@hostname).
+        ///  - description: Description of the branch.
+        ///  - path: Path of the branch in the network (default: /name where name is
+        ///    the name of the branch). Must start with a slash.
+        ///  - network_name: Name of the network to join (default: the machine's
+        ///    hostname).
+        ///  - network_password: Password for the network (default: no password)
+        ///  - advertising_address: Multicast address to use for advertising, e.g.
+        ///    239.255.0.1 for IPv4 or ff31::8000:1234 for IPv6.
+        ///  - advertising_port: Port to use for advertising.
+        ///  - advertising_interval: Time between advertising messages. Must be at
+        ///    least 1 ms.
+        ///  - ghost_mode: Set to true to activate ghost mode (default: false).
+        ///
+        /// Advertising and establishing connections can be limited to certain network
+        /// interfaces via the _interface_ property. The default is to use all
+        /// available interfaces.
+        ///
+        /// Setting the ghost_mode property to true prevents the branch from actively
+        /// participating in the Yogi network, i.e. the branch will not advertise itself
+        /// and it will not authenticate in order to join a network. However, the branch
+        /// will temporarily connect to other branches in order to obtain more detailed
+        /// information such as name, description, network name and so on. This is useful
+        /// for obtaining information about active branches without actually becoming
+        /// part of the Yogi network.
+        ///
         /// </summary>
         /// <param name="context">The context to use.</param>
-        /// <param name="name">Name of the branch (by default, the format PID@hostname
-        /// with PID being the process ID will be used).</param>
-        /// <param name="description">Description of the branch.</param>
-        /// <param name="netname">Name of the network to join (by default, the
-        /// machine's hostname will be used as the network name).</param>
-        /// <param name="password">Password for the network.</param>
-        /// <param name="path">Path of the branch in the network (by default, the
-        /// format /name where name is the branch's name will be used). Must start
-        /// with a slash.</param>
-        /// <param name="advaddr">Multicast address to use; e.g. 239.255.0.1 for IPv4
-        /// or ff31::8000:1234 for IPv6.</param>
-        /// <param name="advport">Advertising port.</param>
-        /// <param name="advint">Advertising interval (must be at least 1 ms).</param>
-        /// <param name="timeout">Maximum time of inactivity before a remote branch is
-        /// considered to be dead (must be at least 1 ms).</param>
-        public Branch(Context context, [Optional] string name, [Optional] string description,
-            [Optional] string netname, [Optional] string password, [Optional] string path,
-            [Optional] string advaddr, [Optional] int advport, [Optional] Duration advint,
-            [Optional] Duration timeout)
-        : base(Create(context, name, description, netname, password, path, advaddr, advport,
-            advint, timeout), new Object[] { context })
+        /// <param name="props">Branch properties as serialized JSON.</param>
+        /// <param name="section">Section in props to use instead of the root section.</param>
+        public Branch(Context context, [Optional] string props, [Optional] string section)
+        : base(Create(context, props, section), new Object[] { context })
         {
             Info = GetInfo();
+        }
+
+        /// <summary>
+        /// Creates the branch.
+        ///
+        /// The branch is configured via the props parameter. The supplied JSON must
+        /// have the following structure:
+        ///
+        ///    {
+        ///      "name":                 "Fan Controller",
+        ///      "description":          "Controls a fan via PWM",
+        ///      "path":                 "/Cooling System/Fan Controller",
+        ///      "network_name":         "Hardware Control",
+        ///      "network_password":     "secret",
+        ///      "advertising_address":  "ff31::8000:2439",
+        ///      "advertising_port":     13531,
+        ///      "advertising_interval": 1.0,
+        ///      "timeout":              3.0,
+        ///      "ghost_mode":           false
+        ///    }
+        ///
+        /// All of the properties are optional and if unspecified (or set to null),
+        /// their respective default values will be used. The properties have the
+        /// following meaning:
+        ///  - name: Name of the branch (default: PID@hostname).
+        ///  - description: Description of the branch.
+        ///  - path: Path of the branch in the network (default: /name where name is
+        ///    the name of the branch). Must start with a slash.
+        ///  - network_name: Name of the network to join (default: the machine's
+        ///    hostname).
+        ///  - network_password: Password for the network (default: no password)
+        ///  - advertising_address: Multicast address to use for advertising, e.g.
+        ///    239.255.0.1 for IPv4 or ff31::8000:1234 for IPv6.
+        ///  - advertising_port: Port to use for advertising.
+        ///  - advertising_interval: Time between advertising messages. Must be at
+        ///    least 1 ms.
+        ///  - ghost_mode: Set to true to activate ghost mode (default: false).
+        ///
+        /// Advertising and establishing connections can be limited to certain network
+        /// interfaces via the _interface_ property. The default is to use all
+        /// available interfaces.
+        ///
+        /// Setting the ghost_mode property to true prevents the branch from actively
+        /// participating in the Yogi network, i.e. the branch will not advertise itself
+        /// and it will not authenticate in order to join a network. However, the branch
+        /// will temporarily connect to other branches in order to obtain more detailed
+        /// information such as name, description, network name and so on. This is useful
+        /// for obtaining information about active branches without actually becoming
+        /// part of the Yogi network.
+        ///
+        /// </summary>
+        /// <param name="context">The context to use.</param>
+        /// <param name="props">Branch properties.</param>
+        public Branch(Context context, JObject props)
+        : this(context, JsonConvert.SerializeObject(props))
+        {
         }
 
         /// <summary>Information about the local branch.</summary>
@@ -452,6 +527,9 @@ public static partial class Yogi
 
         /// <summary>Connection timeout.</summary>
         public Duration Timeout { get { return Info.Timeout; } }
+
+        /// <summary>True if the branch is in ghost mode.</summary>
+        public bool GhostMode { get { return Info.GhostMode; } }
 
         /// <summary>Advertising IP address.</summary>
         public IPAddress AdvertisingAddress { get { return Info.AdvertisingAddress; } }
@@ -593,18 +671,13 @@ public static partial class Yogi
             CheckErrorCode(res);
         }
 
-        static IntPtr Create(Context context, [Optional] string name, [Optional] string description,
-            [Optional] string netname, [Optional] string password, [Optional] string path,
-            [Optional] string advaddr, [Optional] int advport, [Optional] Duration advint,
-            [Optional] Duration timeout)
+        static IntPtr Create(Context context, [Optional] string props, [Optional] string section)
         {
-            long advintDur = advint == null ? 0 : DurationToApiDuration(advint);
-            long timeoutDur = timeout == null ? 0 : DurationToApiDuration(timeout);
-
             var handle = new IntPtr();
-            int res = Api.YOGI_BranchCreate(ref handle, context.Handle, name, description, netname,
-                password, path, advaddr, advport, advintDur, timeoutDur);
-            CheckErrorCode(res);
+            CheckDescriptiveErrorCode((err) =>
+            {
+                return Api.YOGI_BranchCreate(ref handle, context.Handle, props, section, err, err.Capacity);
+            });
             return handle;
         }
 

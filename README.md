@@ -23,6 +23,7 @@ TODO:
 * Should branches in observer only mode be visible as branch events on other branches? Or should there be a flag showing that a branch is only an observer in branch info?
 * Remove "observer only" to ghost
 * rename net_name to network_name in branch info and everywhere
+* Section should use JSON pointer!
 
 
 #include <boost/asio.hpp>

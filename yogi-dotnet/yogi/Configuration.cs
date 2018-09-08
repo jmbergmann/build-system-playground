@@ -179,7 +179,8 @@ public static partial class Yogi
             var args = new List<string>();
             args.AddRange(argv);
 
-            CheckDescriptiveErrorCode((err) => {
+            CheckDescriptiveErrorCode((err) =>
+            {
                 return Api.YOGI_ConfigurationUpdateFromCommandLine(Handle, args.Count,
                     args.ToArray(), options, err, err.Capacity);
             });
@@ -194,7 +195,8 @@ public static partial class Yogi
         /// <param name="json">Serialized JSON object.</param>
         public void UpdateFromJson(string json)
         {
-            CheckDescriptiveErrorCode((err) => {
+            CheckDescriptiveErrorCode((err) =>
+            {
                 return Api.YOGI_ConfigurationUpdateFromJson(Handle, json, err, err.Capacity);
             });
         }
@@ -220,7 +222,8 @@ public static partial class Yogi
         /// <param name="filename">Path to the JSON file.</param>
         public void UpdateFromFile(string filename)
         {
-            CheckDescriptiveErrorCode((err) => {
+            CheckDescriptiveErrorCode((err) =>
+            {
                 return Api.YOGI_ConfigurationUpdateFromFile(Handle, filename, err, err.Capacity);
             });
         }

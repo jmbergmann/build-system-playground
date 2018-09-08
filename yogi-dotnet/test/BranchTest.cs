@@ -1,6 +1,8 @@
 using System;
 using System.Net;
 using Xunit;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace test
 {
@@ -25,11 +27,27 @@ namespace test
         }
 
         [Fact]
+        public void CreateWithSubSection()
+        {
+            var branch = new Yogi.Branch(context, "{\"branch\":{\"name\":\"Cow\"}}", "branch");
+            Assert.Equal("Cow", branch.Name);
+        }
+
+        [Fact]
         public void Info()
         {
-            var branch = new Yogi.Branch(context, "My Branch", "Stuff", "My Network", "Password",
-                                         "/some/path", "239.255.0.1", 12345,
-                                         Yogi.Duration.FromSeconds(7), Yogi.Duration.Infinity);
+            var props = new JObject();
+            props["name"] = "My Branch";
+            props["description"] = "Stuff";
+            props["network_name"] = "My Network";
+            props["network_password"] = "Password";
+            props["path"] = "/some/path";
+            props["advertising_address"] = "239.255.0.1";
+            props["advertising_port"] = 12345;
+            props["advertising_interval"] = 7;
+            props["timeout"] = -1;
+
+            var branch = new Yogi.Branch(context, props);
 
             var info = branch.Info;
             Assert.IsType<Guid>(info.Uuid);
@@ -47,6 +65,7 @@ namespace test
             Assert.True(info.TcpServerPort > 0);
             Assert.True(info.StartTime < Yogi.CurrentTime);
             Assert.Equal(Yogi.Duration.Infinity, info.Timeout);
+            Assert.Equal(false, info.GhostMode);
 
             Assert.Equal(info.Uuid, branch.Uuid);
             Assert.Equal(info.Name, branch.Name);
@@ -62,14 +81,15 @@ namespace test
             Assert.Equal(info.TcpServerPort, branch.TcpServerPort);
             Assert.Equal(info.StartTime, branch.StartTime);
             Assert.Equal(info.Timeout, branch.Timeout);
+            Assert.Equal(info.GhostMode, branch.GhostMode);
         }
 
         [Fact]
         public void GetConnectedBranches()
         {
-            var branch = new Yogi.Branch(context, "My Branch");
-            var branch_a = new Yogi.Branch(context, "A");
-            var branch_b = new Yogi.Branch(context, "B");
+            var branch = new Yogi.Branch(context, "{\"name\":\"My Branch\"}");
+            var branch_a = new Yogi.Branch(context,"{\"name\":\"A\"}");
+            var branch_b = new Yogi.Branch(context, "{\"name\":\"B\"}");
 
             while (!branch.GetConnectedBranches().ContainsKey(branch_a.Uuid)
                 || !branch.GetConnectedBranches().ContainsKey(branch_b.Uuid))
@@ -90,8 +110,8 @@ namespace test
         [Fact]
         public void AwaitEvent()
         {
-            var branch = new Yogi.Branch(context, "My Branch");
-            var branch_a = new Yogi.Branch(context, "A");
+            var branch = new Yogi.Branch(context, "{\"name\":\"My Branch\"}");
+            var branch_a = new Yogi.Branch(context, "{\"name\":\"A\"}");
 
             var events = Yogi.BranchEvents.BranchQueried | Yogi.BranchEvents.ConnectionLost;
             bool called = false;
@@ -106,6 +126,7 @@ namespace test
                 Assert.Equal(branch_a.Uuid, info.Uuid);
                 Assert.Equal(branch_a.StartTime, (info as Yogi.BranchQueriedEventInfo).StartTime);
                 Assert.Equal(branch_a.Timeout, (info as Yogi.BranchQueriedEventInfo).Timeout);
+                Assert.Equal(branch_a.GhostMode, (info as Yogi.BranchQueriedEventInfo).GhostMode);
                 called = true;
             });
 
@@ -125,7 +146,7 @@ namespace test
         [Fact]
         public void CancelAwaitEvent()
         {
-            var branch = new Yogi.Branch(context, "My Branch");
+            var branch = new Yogi.Branch(context, "{\"name\":\"My Branch\"}");
 
             bool called = false;
             branch.AwaitEvent(Yogi.BranchEvents.All, (res, ev, evres, info) => {
