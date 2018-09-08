@@ -29,7 +29,7 @@ namespace test
         [Fact]
         public void CreateWithSubSection()
         {
-            var branch = new Yogi.Branch(context, "{\"branch\":{\"name\":\"Cow\"}}", "branch");
+            var branch = new Yogi.Branch(context, "{\"branch\":{\"name\":\"Cow\"}}", "/branch");
             Assert.Equal("Cow", branch.Name);
         }
 

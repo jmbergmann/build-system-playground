@@ -1586,7 +1586,8 @@ YOGI_API int YOGI_TimerCancel(void* timer);
  * \param[out] branch   Pointer to the branch handle
  * \param[in]  context  The context to use
  * \param[in]  props    Branch properties as JSON (set to NULL to use defaults)
- * \param[in]  section  Section in \p props to use (set to NULL for root)
+ * \param[in]  section  Section in \p props to use (set to NULL for root);
+ *                      supports JSON pointer (RFC 6901)
  * \param[out] err      Pointer to a char array for storing an error description
  *                      (can be set to NULL)
  * \param[in]  errsize  Maximum number of bytes to write to \p err
@@ -1857,7 +1858,8 @@ YOGI_API int YOGI_BranchCancelAwaitEvent(void* branch);
  * \param[in]  pathpfx  Path prefix of the terminal (can be NULL)
  * \param[in]  rolesrc  Provider-consumer role source (see \ref RLS)
  * \param[in]  props    Terminal properties as JSON
- * \param[in]  section  Section in \p props to use (NULL means the root section)
+ * \param[in]  section  Section in \p props to use (NULL means the root
+ *                      section; syntax is JSON pointer (RFC 6901))
  *
  * \returns [=0] #YOGI_OK if successful
  * \returns [<0] An error code in case of a failure (see \ref EC)

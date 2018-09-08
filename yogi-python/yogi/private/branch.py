@@ -292,6 +292,7 @@ class Branch(Object):
             context: The context to use.
             props:   Branch properties as serializable object or JSON object.
             section: Section in props to use instead of the root section.
+                     Syntax is JSON pointer (RFC 6901).
         """
         if not isinstance(props, str):
             props = json.dumps(props)

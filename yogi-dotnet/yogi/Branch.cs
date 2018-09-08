@@ -426,7 +426,8 @@ public static partial class Yogi
         /// </summary>
         /// <param name="context">The context to use.</param>
         /// <param name="props">Branch properties as serialized JSON.</param>
-        /// <param name="section">Section in props to use instead of the root section.</param>
+        /// <param name="section">Section in props to use instead of the root section.
+        /// Syntax is JSON pointer (RFC 6901).</param>
         public Branch(Context context, [Optional] string props, [Optional] string section)
         : base(Create(context, props, section), new Object[] { context })
         {

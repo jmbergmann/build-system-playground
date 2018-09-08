@@ -20,7 +20,7 @@ class TestBranches(TestCase):
 
     def test_create_with_sub_section(self):
         branch = yogi.Branch(
-            self.context, '{"branch":{"name":"Cow"}}', "branch")
+            self.context, '{"branch":{"name":"Cow"}}', "/branch")
         self.assertEqual(branch.name, "Cow")
 
     def test_info(self):

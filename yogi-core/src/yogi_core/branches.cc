@@ -28,14 +28,23 @@ YOGI_API int YOGI_BranchCreate(void** branch, void* context, const char* props,
       }
 
       if (section) {
-        if (!properties[section].is_object()) {
+        nlohmann::json::json_pointer jp;
+
+        try {
+          jp = nlohmann::json::json_pointer(section);
+        } catch (const nlohmann::json::exception& e) {
+          err_desc = "Could not parse JSON pointer: "s + e.what();
+          CopyStringToUserBuffer(err_desc, err, errsize);
+          throw api::Error(YOGI_ERR_INVALID_PARAM);
+        }
+
+        properties = properties[jp];
+        if (!properties.is_object()) {
           err_desc = "Could not find section \""s + section +
                      "\" in branch properties.";
           CopyStringToUserBuffer(err_desc, err, errsize);
           throw api::Error(YOGI_ERR_PARSING_JSON_FAILED);
         }
-
-        properties = properties[section];
       }
     }
 

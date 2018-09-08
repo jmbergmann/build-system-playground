@@ -27,20 +27,20 @@ TEST_F(BranchTest, GetInfoBufferTooSmall) {
 
 TEST_F(BranchTest, GetInfoUuid) { GetBranchUuid(branch_); }
 
-TEST_F(BranchTest, CreateWithSection) {
+TEST_F(BranchTest, CreateWithJsonPointer) {
   nlohmann::json props;
-  props["branch"] = kBranchProps;
-  props["branch"]["name"] = "Samosa";
+  props["arr"] = {"some string", kBranchProps, 123};
+  props["arr"][1]["name"] = "Samosa";
 
   char err[100];
 
   void* branch;
-  int res = YOGI_BranchCreate(&branch, context_, props.dump().c_str(), "blabla",
-                              err, sizeof(err));
+  int res = YOGI_BranchCreate(&branch, context_, props.dump().c_str(),
+                              "/blabla", err, sizeof(err));
   EXPECT_EQ(YOGI_ERR_PARSING_JSON_FAILED, res);
   EXPECT_STRNE(err, "");
 
-  res = YOGI_BranchCreate(&branch, context_, props.dump().c_str(), "branch",
+  res = YOGI_BranchCreate(&branch, context_, props.dump().c_str(), "/arr/1",
                           err, sizeof(err));
   EXPECT_EQ(YOGI_OK, res);
   EXPECT_STREQ(err, "");
