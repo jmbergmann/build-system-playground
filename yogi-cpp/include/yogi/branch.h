@@ -197,7 +197,9 @@ class LocalBranchInfo : public BranchInfo {
   /// Advertising IP address.
   ///
   /// \returns The advertising IP address.
-  std::string GetAdvertisingAddress() const { return ToJson()["advertising_address"]; }
+  std::string GetAdvertisingAddress() const {
+    return ToJson()["advertising_address"];
+  }
 
   /// Advertising port.
   ///
