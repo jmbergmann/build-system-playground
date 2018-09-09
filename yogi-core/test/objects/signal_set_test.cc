@@ -108,8 +108,8 @@ TEST_F(SignalSetTest, CleanupHandler) {
 }
 
 TEST_F(SignalSetTest, CleanupHandlerNoSets) {
-  void* sigset_1 = CreateSignalSet(YOGI_SIG_INT);
-  void* sigset_2 = CreateSignalSet(YOGI_SIG_INT);
+  CreateSignalSet(YOGI_SIG_INT);
+  CreateSignalSet(YOGI_SIG_INT);
 
   int sigarg = 123;
   bool called = false;

@@ -21,7 +21,7 @@ void Configuration::UpdateFromCommandLine(int argc, const char* const* argv,
 
   try {
     parser.Parse();
-  } catch (const api::Error& err) {
+  } catch (const api::Error&) {
     *err_desc = parser.GetLastErrorString();
     throw;
   }

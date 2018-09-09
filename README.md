@@ -1,12 +1,13 @@
+# Windows x86, x64 and VS solution
 cmake .. -DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake -DVCPKG_TARGET_TRIPLET=x86-windows-static -DCMAKE_BUILD_TYPE=Debug -G "NMake Makefiles"
+cmake .. -DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake -DVCPKG_TARGET_TRIPLET=x64-windows-static -DCMAKE_BUILD_TYPE=Debug -G "NMake Makefiles"
+cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_TOOLCHAIN_FILE=~/vcpkg/scripts/buildsystems/vcpkg.cmake
 
-nmake yogi-core-test && yogi-core\yogi-core-test.exe --gtest_repeat=1 --gtest_break_on_failure --gtest_catch_exceptions=0 --gtest_filter=*
-
-cmake .. -DCMAKE_BUILD_TYPE=Debug  -DCMAKE_TOOLCHAIN_FILE=~/vcpkg/scripts/buildsystems/vcpkg.cmake
-
+# Run Python tests manually
 cd "/c/Documents and Settings/commu_000/Documents/Projects/build-system-playground/yogi-python"
 YOGI_CORE_LIBRARY=../build/yogi-core/yogi-core-x86.dll python -m unittest
 
+# Run .NET tests manually
 cd ../yogi-dotnet
 YOGI_CORE_LIBRARY="/c/Documents and Settings/commu_000/Documents/Projects/build-system-playground/build-x64/yogi-core/yogi-core-x64.dll" dotnet test
 
@@ -14,17 +15,8 @@ YOGI_CORE_LIBRARY="/c/Documents and Settings/commu_000/Documents/Projects/build-
 
 TODO:
 --------------------------------------------------
-* Move stuff from yogi-cpp/internal/json.h into yogi-core as helper functions
-  and make the helper functions accessible through yogi-cpp so that users do
-  not have to include a massive 3rd party JSON library
 * Checkout asio timer problem (see code below)
 * Check path validity when creating branches and terminals
-* Use JSON when creating branches
-* Should branches in observer only mode be visible as branch events on other branches? Or should there be a flag showing that a branch is only an observer in branch info?
-* Remove "observer only" to ghost
-* rename net_name to network_name in branch info and everywhere
-* Section should use JSON pointer!
-* Add JSON lib to yogi-cpp
 
 
 #include <boost/asio.hpp>

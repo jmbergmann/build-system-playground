@@ -322,7 +322,7 @@ TEST_F(ConnectionManagerTest, GhostMode) {
 
   BranchEventRecorder rec(context_, ghost_branch);
   rec.RunContextUntil(YOGI_BEV_BRANCH_QUERIED, branch_, YOGI_OK);
-  YOGI_ContextRun(context_, nullptr, 10e6);
+  YOGI_ContextRun(context_, nullptr, 10'000'000);
 
   auto branches = GetConnectedBranches(ghost_branch);
   EXPECT_TRUE(branches.empty());
