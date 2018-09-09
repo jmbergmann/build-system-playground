@@ -57,7 +57,6 @@ add_executable (yogi-cpp-test
   test/compile_tests/uuid_compile_test.cc
   test/compile_tests/version_compile_test.cc
   test/internal_tests/duration_conversion_test.cc
-  test/internal_tests/json_test.cc
   test/internal_tests/json_view_test.cc
   test/internal_tests/string_view_test.cc
   test/public_api_tests/branch_test.cc

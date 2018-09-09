@@ -47,6 +47,8 @@ TEST_F(BranchTest, Info) {
     })raw");
 
   auto info = branch->GetInfo();
+  EXPECT_EQ(info.ToJson(), yogi::Json::parse(info.ToString()));
+
   EXPECT_NE(info.GetUuid(), yogi::Uuid{});
   EXPECT_EQ(info.GetName(), "My Branch");
   EXPECT_EQ(info.GetDescription(), "Stuff");
@@ -120,6 +122,7 @@ TEST_F(BranchTest, AwaitEvent) {
     EXPECT_EQ(
         static_cast<const yogi::BranchQueriedEventInfo&>(info).GetTimeout(),
         branch_a->GetTimeout());
+    EXPECT_EQ(info.ToJson(), yogi::Json::parse(info.ToString()));
     called = true;
   });
 
