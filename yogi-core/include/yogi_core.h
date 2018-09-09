@@ -1587,7 +1587,7 @@ YOGI_API int YOGI_TimerCancel(void* timer);
  * \param[in]  context  The context to use
  * \param[in]  props    Branch properties as JSON (set to NULL to use defaults)
  * \param[in]  section  Section in \p props to use (set to NULL for root);
- *                      supports JSON pointer (RFC 6901)
+ *                      syntax is JSON pointer (RFC 6901)
  * \param[out] err      Pointer to a char array for storing an error description
  *                      (can be set to NULL)
  * \param[in]  errsize  Maximum number of bytes to write to \p err

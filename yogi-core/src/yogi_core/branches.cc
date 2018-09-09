@@ -17,7 +17,7 @@ YOGI_API int YOGI_BranchCreate(void** branch, void* context, const char* props,
     auto ctx = api::ObjectRegister::Get<objects::Context>(context);
     std::string err_desc;
 
-    nlohmann::json properties;
+    auto properties = nlohmann::json::object();
     if (props) {
       try {
         properties = nlohmann::json::parse(props);

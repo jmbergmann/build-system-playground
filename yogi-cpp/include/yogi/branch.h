@@ -17,10 +17,8 @@
 namespace yogi {
 
 YOGI_DEFINE_API_FN(int, YOGI_BranchCreate,
-                   (void** branch, void* context, const char* name,
-                    const char* description, const char* netname,
-                    const char* password, const char* path, const char* advaddr,
-                    int advport, long long advint, long long timeout))
+                   (void** branch, void* context, const char* props,
+                    const char* section, char* err, int errsize))
 YOGI_DEFINE_API_FN(int, YOGI_BranchGetInfo,
                    (void* branch, void* uuid, char* json, int jsonsize))
 YOGI_DEFINE_API_FN(int, YOGI_BranchGetConnectedBranches,
@@ -104,7 +102,8 @@ class BranchInfo {
         tcp_server_port_(
             internal::ExtractIntFromJson(json_, "tcp_server_port")),
         start_time_(internal::ExtractTimestampFromJson(json_, "start_time")),
-        timeout_(internal::ExtractDurationFromJson(json_, "timeout")) {}
+        timeout_(internal::ExtractDurationFromJson(json_, "timeout")),
+        ghost_mode_(internal::ExtractBoolFromJson(json_, "ghost_mode")) {}
 
   virtual ~BranchInfo() {}
 
@@ -168,6 +167,11 @@ class BranchInfo {
   /// \returns The connection timeout.
   const Duration& GetTimeout() const { return timeout_; }
 
+  /// Returns true if the branch is in ghost mode.
+  ///
+  /// \return True if the branch is in ghost mode.
+  bool GetGhostMode() const { return ghost_mode_; }
+
   /// Returns the branch information as JSON-encoded string.
   ///
   /// \returns Branch information as JSON-encoded string.
@@ -187,6 +191,7 @@ class BranchInfo {
   const int tcp_server_port_;
   const Timestamp start_time_;
   const Duration timeout_;
+  const bool ghost_mode_;
 };
 
 /// Information about a remote branch.
@@ -365,6 +370,11 @@ class BranchQueriedEventInfo : public BranchEventInfo {
   /// \returns The connection timeout.
   const Duration& GetTimeout() const { return info_.GetTimeout(); }
 
+  /// Returns true if the branch is in ghost mode.
+  ///
+  /// \return True if the branch is in ghost mode.
+  bool GetGhostMode() const { return info_.GetGhostMode(); }
+
   /// Converts the event information to a RemoteBranchInfo object.
   ///
   /// \returns The converted RemoteBranchInfo object.
@@ -411,61 +421,69 @@ class Branch : public ObjectT<Branch> {
 
   /// Creates a branch.
   ///
-  /// Advertising and establishing connections can be limited to certain
-  /// network interfaces via the interface parameter. The default is to use
-  /// all available interfaces.
+  /// The branch is configured via the \p props parameter. The supplied JSON
+  /// must have the following structure:
   ///
-  /// Setting the advint parameter to infinity prevents the branch from
+  /// \code
+  ///    {
+  ///      "name":                 "Fan Controller",
+  ///      "description":          "Controls a fan via PWM",
+  ///      "path":                 "/Cooling System/Fan Controller",
+  ///      "network_name":         "Hardware Control",
+  ///      "network_password":     "secret",
+  ///      "advertising_address":  "ff31::8000:2439",
+  ///      "advertising_port":     13531,
+  ///      "advertising_interval": 1.0,
+  ///      "timeout":              3.0,
+  ///      "ghost_mode":           false
+  ///    }
+  /// \endcode
+  ///
+  /// All of the properties are optional and if unspecified (or set to _null_),
+  /// their respective default values will be used (see \ref CV). The properties
+  /// have the following meaning:
+  ///  - *name*: Name of the branch (default: PID\@hostname without the
+  ///    backslash).
+  ///  - *description*: Description of the branch.
+  ///  - *path*: Path of the branch in the network (default: /name where name is
+  ///    the name of the branch). Must start with a slash.
+  ///  - *network_name*: Name of the network to join (default: the machine's
+  ///    hostname).
+  ///  - *network_password*: Password for the network (default: no password)
+  ///  - *advertising_address*: Multicast address to use for advertising, e.g.
+  ///    239.255.0.1 for IPv4 or ff31::8000:1234 for IPv6.
+  ///  - *advertising_port*: Port to use for advertising.
+  ///  - *advertising_interval*: Time between advertising messages. Must be at
+  ///    least 1 ms.
+  ///  - *ghost_mode*: Set to true to activate ghost mode (default: false).
+  ///
+  /// Advertising and establishing connections can be limited to certain network
+  /// interfaces via the _interface_ property. The default is to use all
+  /// available interfaces.
+  ///
+  /// Setting the _ghost_mode_ property to _true_ prevents the branch from
   /// actively participating in the Yogi network, i.e. the branch will not
-  /// advertise itself and it will not authenticate in order to join a
-  /// network. However, the branch will temporarily connect to other
-  /// branches in order to obtain more detailed information such as name,
-  /// description, network name and so on. This is useful for obtaining
-  /// information about active branches without actually becoming part of
-  /// the Yogi network.
+  /// advertise itself and it will not authenticate in order to join a network.
+  /// However, the branch will temporarily connect to other branches in order to
+  /// obtain more detailed information such as name, description, network name
+  /// and so on. This is useful for obtaining information about active branches
+  /// without actually becoming part of the Yogi network.
   ///
-  /// \tparam NameString Type of the \p name string
-  /// \tparam DescriptionString Type of the \p description string
-  /// \tparam NetnameString Type of the \p netname string
-  /// \tparam PasswordString Type of the \p password string
-  /// \tparam PathString Type of the \p path string
-  /// \tparam AdvaddrString Type of the \p advaddr string
+  /// \tparam PropsString Type of the \p props string
+  /// \tparam SectionString Type of the \p section string
   ///
-  /// \param context     Context to use
-  /// \param name        Name of the branch (set to NULL to use the format
-  ///                    PID@hostname with PID being the process ID)
-  /// \param description Description of the branch
-  /// \param netname     Name of the network to join (set to nullptr to use
-  ///                    the machine's hostname)
-  /// \param password    Password for the network
-  /// \param path        Path of the branch in the network (set to nullptr to
-  ///                    use the format /name where name is the branch's name);
-  ///                    must start with a slash
-  /// \param advaddr     Multicast address to use; e.g. 239.255.0.1 for IPv4 or
-  ///                    ff31::8000:1234 for IPv6
-  /// \param advport     Advertising port
-  /// \param advint      Advertising interval (must be at least 1 millisecond;
-  ///                    infinity disables advertising and joining networks)
-  /// \param timeout     Maximum time of inactivity before a remote branch is
-  ///                    considered to be dead (must be at least 1 millisecond)
+  /// \param context Context to use
+  /// \param props   Branch properties as serialized JSON
+  /// \param section Section in \p props to use instead of the root section;
+  ///                syntax is JSON pointer (RFC 6901)
   ///
   /// \returns The created branch.
-  template <typename NameString = char*, typename DescriptionString = char*,
-            typename NetnameString = char*, typename PasswordString = char*,
-            typename PathString = char*, typename AdvaddrString = char*>
-  static BranchPtr Create(
-      ContextPtr context, NameString&& name = nullptr,
-      DescriptionString&& description = nullptr,
-      NetnameString&& netname = nullptr, PasswordString&& password = nullptr,
-      PathString&& path = nullptr, AdvaddrString&& advaddr = nullptr,
-      int advport = 0, const Duration& advint = constants::kDefaultAdvInterval,
-      const Duration& timeout = constants::kDefaultConnectionTimeout) {
+  template <typename PropsString = char*, typename SectionString = char*>
+  static BranchPtr Create(ContextPtr context, PropsString&& props = nullptr,
+                          SectionString&& section = nullptr) {
     return BranchPtr(new Branch(
-        context, std::forward<NameString>(name),
-        std::forward<DescriptionString>(description),
-        std::forward<NetnameString>(netname),
-        std::forward<PasswordString>(password), std::forward<PathString>(path),
-        std::forward<AdvaddrString>(advaddr), advport, advint, timeout));
+        context, std::forward<PropsString>(props),
+        std::forward<SectionString>(section)));
   }
 
   /// Returns information about the local branch.
@@ -536,6 +554,11 @@ class Branch : public ObjectT<Branch> {
   ///
   /// \returns The connection timeout.
   const Duration& GetTimeout() const { return info_.GetTimeout(); }
+
+  /// Returns true if the branch is in ghost mode.
+  ///
+  /// \return True if the branch is in ghost mode.
+  bool GetGhostMode() const { return info_.GetGhostMode(); }
 
   /// Advertising IP address.
   ///
@@ -671,23 +694,12 @@ class Branch : public ObjectT<Branch> {
   }
 
  private:
-  template <typename NameString, typename DescriptionString,
-            typename NetnameString, typename PasswordString,
-            typename PathString, typename AdvaddrString>
-  Branch(ContextPtr context, NameString&& name, DescriptionString&& description,
-         NetnameString&& netname, PasswordString&& password, PathString&& path,
-         AdvaddrString&& advaddr, int advport, const Duration& advint,
-         const Duration& timeout)
+  template <typename PropsString, typename SectionString>
+  Branch(ContextPtr context, PropsString&& props, SectionString&& section)
       : ObjectT(
-            internal::CallApiCreate(
+            internal::CallApiCreateWithDescriptiveErrorCode(
                 internal::YOGI_BranchCreate, GetForeignHandle(context),
-                internal::ToCoreString(name),
-                internal::ToCoreString(description),
-                internal::ToCoreString(netname),
-                internal::ToCoreString(password), internal::ToCoreString(path),
-                internal::ToCoreString(advaddr), advport,
-                internal::ToCoreDuration(advint),
-                internal::ToCoreDuration(timeout)),
+                internal::ToCoreString(props), internal::ToCoreString(section)),
             {context}),
         info_(QueryInfo()) {}
 

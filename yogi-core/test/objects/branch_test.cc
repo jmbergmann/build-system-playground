@@ -17,15 +17,11 @@ class BranchTest : public Test {
   void* branch_;
 };
 
-TEST_F(BranchTest, GetInfoBufferTooSmall) {
-  char json[3];
-  int res = YOGI_BranchGetInfo(branch_, nullptr, json, sizeof(json));
-  EXPECT_EQ(res, YOGI_ERR_BUFFER_TOO_SMALL);
-  EXPECT_NE(json[sizeof(json) - 2], '\0');
-  EXPECT_EQ(json[sizeof(json) - 1], '\0');
+TEST_F(BranchTest, CreateWithDefaults) {
+  void* branch;
+  int res = YOGI_BranchCreate(&branch, context_, nullptr, nullptr, nullptr, 0);
+  EXPECT_EQ(YOGI_OK, res);
 }
-
-TEST_F(BranchTest, GetInfoUuid) { GetBranchUuid(branch_); }
 
 TEST_F(BranchTest, CreateWithJsonPointer) {
   nlohmann::json props;
@@ -47,6 +43,16 @@ TEST_F(BranchTest, CreateWithJsonPointer) {
   auto info = GetBranchInfo(branch);
   EXPECT_EQ(info.value("name", "NOT FOUND"), "Samosa");
 }
+
+TEST_F(BranchTest, GetInfoBufferTooSmall) {
+  char json[3];
+  int res = YOGI_BranchGetInfo(branch_, nullptr, json, sizeof(json));
+  EXPECT_EQ(res, YOGI_ERR_BUFFER_TOO_SMALL);
+  EXPECT_NE(json[sizeof(json) - 2], '\0');
+  EXPECT_EQ(json[sizeof(json) - 1], '\0');
+}
+
+TEST_F(BranchTest, GetInfoUuid) { GetBranchUuid(branch_); }
 
 TEST_F(BranchTest, GetInfoJson) {
   boost::uuids::uuid uuid;

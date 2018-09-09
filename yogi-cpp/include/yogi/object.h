@@ -23,6 +23,16 @@ inline void* CallApiCreate(Fn fn, Args&&... args) {
   return handle;
 }
 
+template <typename Fn, typename... Args>
+inline void* CallApiCreateWithDescriptiveErrorCode(Fn fn, Args&&... args) {
+  void* handle;
+  CheckDescriptiveErrorCode([&](auto err, auto size) {
+    return fn(&handle, std::forward<Args>(args)..., err, size);
+  });
+
+  return handle;
+}
+
 }  // namespace internal
 
 YOGI_DEFINE_API_FN(int, YOGI_FormatObject,
@@ -70,9 +80,9 @@ class Object : public std::enable_shared_from_this<Object> {
   std::string Format(FmtString&& fmt = nullptr,
                      NullString&& nullstr = nullptr) const {
     char str[128];
-    int res = internal::YOGI_FormatObject(
-        handle_, str, sizeof(str), internal::ToCoreString(fmt),
-        internal::ToCoreString(nullstr));
+    int res = internal::YOGI_FormatObject(handle_, str, sizeof(str),
+                                          internal::ToCoreString(fmt),
+                                          internal::ToCoreString(nullstr));
     internal::CheckErrorCode(res);
     return str;
   }

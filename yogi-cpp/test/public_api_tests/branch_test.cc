@@ -7,6 +7,8 @@ class BranchTest : public ::testing::Test {
   yogi::ContextPtr context_ = yogi::Context::Create();
 };
 
+TEST_F(BranchTest, DISABLED_CreateWithSubSection) {}
+
 TEST_F(BranchTest, BranchEventsEnum) {
   // clang-format off
   CHECK_ENUM_ELEMENT(BranchEvents, kNone,             YOGI_BEV_NONE);
@@ -28,10 +30,17 @@ TEST_F(BranchTest, BranchEventsEnum) {
 }
 
 TEST_F(BranchTest, Info) {
-  auto branch = yogi::Branch::Create(
-      context_, "My Branch", "Stuff", "My Network", "Password", "/some/path",
-      "239.255.0.1", 12345, yogi::Duration::FromSeconds(7),
-      yogi::Duration::kInfinity);
+  auto branch = yogi::Branch::Create(context_, R"raw({
+    "name": "My Branch",
+    "description": "Stuff",
+    "network_name": "My Network",
+    "network_password": "Password",
+    "path": "/some/path",
+    "advertising_address": "239.255.0.1",
+    "advertising_port": 12345,
+    "advertising_interval": 7,
+    "timeout": -1
+    })raw");
 
   auto info = branch->GetInfo();
   EXPECT_NE(info.GetUuid(), yogi::Uuid{});
@@ -48,6 +57,7 @@ TEST_F(BranchTest, Info) {
   EXPECT_GT(info.GetTcpServerPort(), 0);
   EXPECT_LT(info.GetStartTime(), yogi::GetCurrentTime());
   EXPECT_EQ(info.GetTimeout(), yogi::Duration::kInfinity);
+  EXPECT_FALSE(info.GetGhostMode());
 
   EXPECT_EQ(branch->GetUuid(), info.GetUuid());
   EXPECT_EQ(branch->GetName(), info.GetName());
@@ -63,12 +73,13 @@ TEST_F(BranchTest, Info) {
   EXPECT_EQ(branch->GetTcpServerPort(), info.GetTcpServerPort());
   EXPECT_EQ(branch->GetStartTime(), info.GetStartTime());
   EXPECT_EQ(branch->GetTimeout(), info.GetTimeout());
+  EXPECT_EQ(branch->GetGhostMode(), info.GetGhostMode());
 }
 
 TEST_F(BranchTest, GetConnectedBranches) {
-  auto branch = yogi::Branch::Create(context_, "My Branch");
-  auto branch_a = yogi::Branch::Create(context_, "A");
-  auto branch_b = yogi::Branch::Create(context_, "B");
+  auto branch = yogi::Branch::Create(context_, "{\"name\":\"My Branch\"}");
+  auto branch_a = yogi::Branch::Create(context_, "{\"name\":\"A\"}");
+  auto branch_b = yogi::Branch::Create(context_, "{\"name\":\"B\"}");
 
   while (!branch->GetConnectedBranches().count(branch_a->GetUuid()) ||
          !branch->GetConnectedBranches().count(branch_b->GetUuid())) {
@@ -85,8 +96,8 @@ TEST_F(BranchTest, GetConnectedBranches) {
 }
 
 TEST_F(BranchTest, AwaitEvent) {
-  auto branch = yogi::Branch::Create(context_, "My Branch");
-  auto branch_a = yogi::Branch::Create(context_, "A");
+  auto branch = yogi::Branch::Create(context_, "{\"name\":\"My Branch\"}");
+  auto branch_a = yogi::Branch::Create(context_, "{\"name\":\"A\"}");
 
   auto events =
       yogi::BranchEvents::kBranchQueried | yogi::BranchEvents::kConnectionLost;
@@ -116,18 +127,18 @@ TEST_F(BranchTest, AwaitEvent) {
 }
 
 TEST_F(BranchTest, CancelAwaitEvent) {
-  auto branch = yogi::Branch::Create(context_, "My Branch");
+  auto branch = yogi::Branch::Create(context_, "{\"name\":\"My Branch\"}");
 
   bool called = false;
-  branch->AwaitEvent(yogi::BranchEvents::kAll, [&](auto& res, auto event,
-                                                   auto& evres, auto&) {
-    EXPECT_NO_THROW(dynamic_cast<const yogi::Failure&>(res));
-    EXPECT_EQ(res.GetErrorCode(), yogi::ErrorCode::kCanceled);
-    EXPECT_EQ(event, yogi::BranchEvents::kNone);
-    EXPECT_NO_THROW(dynamic_cast<const yogi::Success&>(evres));
-    EXPECT_EQ(evres.GetErrorCode(), yogi::ErrorCode::kOk);
-    called = true;
-  });
+  branch->AwaitEvent(
+      yogi::BranchEvents::kAll, [&](auto& res, auto event, auto& evres, auto&) {
+        EXPECT_NO_THROW(dynamic_cast<const yogi::Failure&>(res));
+        EXPECT_EQ(res.GetErrorCode(), yogi::ErrorCode::kCanceled);
+        EXPECT_EQ(event, yogi::BranchEvents::kNone);
+        EXPECT_NO_THROW(dynamic_cast<const yogi::Success&>(evres));
+        EXPECT_EQ(evres.GetErrorCode(), yogi::ErrorCode::kOk);
+        called = true;
+      });
 
   branch->CancelAwaitEvent();
   context_->Poll();

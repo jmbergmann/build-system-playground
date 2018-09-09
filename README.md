@@ -24,6 +24,7 @@ TODO:
 * Remove "observer only" to ghost
 * rename net_name to network_name in branch info and everywhere
 * Section should use JSON pointer!
+* Add JSON lib to yogi-cpp
 
 
 #include <boost/asio.hpp>

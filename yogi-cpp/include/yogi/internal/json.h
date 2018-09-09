@@ -151,5 +151,10 @@ inline Timestamp ExtractTimestampFromJson(const std::string& json,
   return Timestamp::Parse(s);
 }
 
+template <int N>
+inline bool ExtractBoolFromJson(const std::string& json, const char (&name)[N]) {
+  return false; // TODO: use real JSON lib
+}
+
 }  // namespace internal
 }  // namespace yogi
