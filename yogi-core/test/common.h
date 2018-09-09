@@ -37,7 +37,7 @@ static const nlohmann::json kBranchProps = nlohmann::json::parse(R"raw(
 
 static const std::chrono::nanoseconds kTimingMargin = 50ms;
 static const std::string kAdvAddress = kBranchProps["advertising_address"];
-static const unsigned int kAdvPort = kBranchProps["advertising_port"];
+static const unsigned short kAdvPort = kBranchProps["advertising_port"];
 
 static const auto kUdpProtocol =
     boost::asio::ip::make_address(kAdvAddress).is_v4()
