@@ -1,98 +1,6 @@
 {
   "C_Cpp.clang_format_style": "Google",
   "C_Cpp.clang_format_sortIncludes": false,
-  "files.associations": {
-    "ios": "cpp",
-    "xiosbase": "cpp",
-    "*.rh": "cpp",
-    "cmath": "cpp",
-    "cstddef": "cpp",
-    "cstdint": "cpp",
-    "cstdio": "cpp",
-    "cstdlib": "cpp",
-    "cstring": "cpp",
-    "cwchar": "cpp",
-    "exception": "cpp",
-    "initializer_list": "cpp",
-    "iosfwd": "cpp",
-    "iostream": "cpp",
-    "istream": "cpp",
-    "limits": "cpp",
-    "new": "cpp",
-    "ostream": "cpp",
-    "stdexcept": "cpp",
-    "streambuf": "cpp",
-    "string": "cpp",
-    "system_error": "cpp",
-    "type_traits": "cpp",
-    "typeinfo": "cpp",
-    "utility": "cpp",
-    "xfacet": "cpp",
-    "xlocale": "cpp",
-    "xlocinfo": "cpp",
-    "xlocnum": "cpp",
-    "xmemory0": "cpp",
-    "xstddef": "cpp",
-    "xstring": "cpp",
-    "xtr1common": "cpp",
-    "xutility": "cpp",
-    "xhash": "cpp",
-    "list": "cpp",
-    "vector": "cpp",
-    "algorithm": "cpp",
-    "mutex": "cpp",
-    "functional": "cpp",
-    "chrono": "cpp",
-    "condition_variable": "cpp",
-    "memory": "cpp",
-    "ratio": "cpp",
-    "sstream": "cpp",
-    "thread": "cpp",
-    "tuple": "cpp",
-    "unordered_map": "cpp",
-    "xfunctional": "cpp",
-    "xmemory": "cpp",
-    "regex": "cpp",
-    "ctime": "cpp",
-    "iterator": "cpp",
-    "locale": "cpp",
-    "xlocbuf": "cpp",
-    "xlocmes": "cpp",
-    "xlocmon": "cpp",
-    "xloctime": "cpp",
-    "iomanip": "cpp",
-    "unordered_set": "cpp",
-    "atomic": "cpp",
-    "random": "cpp",
-    "set": "cpp",
-    "xtree": "cpp",
-    "valarray": "cpp",
-    "array": "cpp",
-    "clocale": "cpp",
-    "forward_list": "cpp",
-    "map": "cpp",
-    "numeric": "cpp",
-    "fstream": "cpp",
-    "xxatomic": "cpp",
-    "deque": "cpp",
-    "queue": "cpp",
-    "bitset": "cpp",
-    "future": "cpp",
-    "typeindex": "cpp",
-    "stack": "cpp",
-    "cctype": "cpp",
-    "codecvt": "cpp",
-    "complex": "cpp",
-    "csignal": "cpp",
-    "cstdarg": "cpp",
-    "cwctype": "cpp",
-    "optional": "cpp",
-    "shared_mutex": "cpp",
-    "string_view": "cpp",
-    "strstream": "cpp",
-    "variant": "cpp",
-    "*.ipp": "cpp"
-  },
   "files.exclude": {
     "**/.git": true,
     "**/.svn": true,
@@ -119,5 +27,25 @@
   "python.unitTest.nosetestsEnabled": false,
   "python.unitTest.unittestEnabled": false,
   "python.unitTest.promptToConfigure": false,
-  "python.formatting.provider": "autopep8"
+  "python.formatting.provider": "autopep8",
+  "[python]": {
+    "editor.rulers": [
+      79
+    ]
+  },
+  "[c]": {
+    "editor.rulers": [
+      80
+    ]
+  },
+  "[cpp]": {
+    "editor.rulers": [
+      80
+    ]
+  },
+  "[csharp]": {
+    "editor.rulers": [
+      100
+    ]
+  }
 }
