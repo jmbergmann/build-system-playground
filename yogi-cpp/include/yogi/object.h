@@ -2,9 +2,9 @@
 #define YOGI_OBJECT_H
 
 #include "io.h"
-#include "internal/string_conversion.h"
 #include "internal/library.h"
 #include "internal/error_code_helpers.h"
+#include "internal/json_view.h"
 
 #include <chrono>
 #include <cassert>
@@ -70,20 +70,15 @@ class Object : public std::enable_shared_from_this<Object> {
   /// If, for any reason, the object's handle is NULL, this function returns
   /// the nullstr parameter value ("INVALID HANDLE" by default).
   ///
-  /// \tparam FmtString Type of the \p fmt string.
-  /// \tparam NullString Type of the \p nullstr string.
-  ///
   /// \param fmt     Format of the string
   /// \param nullstr String to use if the object's handle is NULL
   ///
   /// \returns Formatted string.
-  template <typename FmtString = char*, typename NullString = char*>
-  std::string Format(FmtString&& fmt = nullptr,
-                     NullString&& nullstr = nullptr) const {
+  std::string Format(internal::StringView fmt = {},
+                     internal::StringView nullstr = {}) const {
     char str[128];
-    int res = internal::YOGI_FormatObject(handle_, str, sizeof(str),
-                                          internal::ToCoreString(fmt),
-                                          internal::ToCoreString(nullstr));
+    int res =
+        internal::YOGI_FormatObject(handle_, str, sizeof(str), fmt, nullstr);
     internal::CheckErrorCode(res);
     return str;
   }

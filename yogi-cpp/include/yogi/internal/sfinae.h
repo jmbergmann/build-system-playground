@@ -2,6 +2,7 @@
 #define YOGI_INTERNAL_SFINAE_H
 
 #include <type_traits>
+#include <string>
 
 #define YOGI_DEFINE_SFINAE_METHOD_TESTER(class_name, test_expression)     \
   namespace internal {                                                    \

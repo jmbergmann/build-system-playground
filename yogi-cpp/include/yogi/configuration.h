@@ -6,8 +6,11 @@
 #include "json.h"
 #include "internal/flags.h"
 #include "internal/query_string.h"
+#include "internal/string_view.h"
+#include "internal/json_view.h"
 
 #include <memory>
+#include <type_traits>
 
 namespace yogi {
 
@@ -208,19 +211,16 @@ class Configuration : public ObjectT<Configuration> {
     });
   }
 
-  /// Updates the configuration from a JSON object.
+  /// Updates the configuration from a serialized JSON object.
   ///
   /// If parsing fails then a DescriptiveFailure exception will be raised
   /// containing detailed information about the error.
   ///
-  /// \tparam String Type of the \p json parameter.
-  ///
-  /// \param json Serialized JSON object.
-  template <typename String>
-  void UpdateFromJson(String&& json) {
+  /// \param json JSON object or serialized JSON.
+  void UpdateFromJson(internal::JsonView json) {
     internal::CheckDescriptiveErrorCode([&](auto err, auto size) {
-      return internal::YOGI_ConfigurationUpdateFromJson(
-          this->GetHandle(), internal::ToCoreString(json), err, size);
+      return internal::YOGI_ConfigurationUpdateFromJson(this->GetHandle(), json,
+                                                        err, size);
     });
   }
 
@@ -229,14 +229,11 @@ class Configuration : public ObjectT<Configuration> {
   /// If parsing the file fails then a DescriptiveFailure exception will be
   /// raised containing detailed information about the error.
   ///
-  /// \tparam String Type of the \p filename parameter.
-  ///
   /// \param filename Path to the JSON file.
-  template <typename String>
-  void UpdateFromFile(String&& filename) {
+  void UpdateFromFile(internal::StringView filename) {
     internal::CheckDescriptiveErrorCode([&](auto err, auto size) {
-      return internal::YOGI_ConfigurationUpdateFromFile(
-          this->GetHandle(), internal::ToCoreString(filename), err, size);
+      return internal::YOGI_ConfigurationUpdateFromFile(this->GetHandle(),
+                                                        filename, err, size);
     });
   }
 
@@ -301,21 +298,17 @@ class Configuration : public ObjectT<Configuration> {
 
   /// Writes the configuration to a file in JSON format.
   ///
-  /// \tparam String Type of the \p filename parameter.
-  ///
   /// \param filename          Path to the output file.
   /// \param resolve_variables Resolve all configuration variables.
   /// \param indentation       Number of space characters to use for
   ///                          indentation; must be >= 0.
-  template <typename String>
-  void WriteToFile(String&& filename, bool resolve_variables,
+  void WriteToFile(internal::StringView filename, bool resolve_variables,
                    int indentation) const {
     if (indentation < 0) {
       throw Failure(ErrorCode::kInvalidParam);
     }
 
-    WriteToFileImpl(std::forward<String>(filename), resolve_variables,
-                    indentation);
+    WriteToFileImpl(filename, resolve_variables, indentation);
   }
 
   /// Writes the configuration to a file in JSON format.
@@ -323,32 +316,27 @@ class Configuration : public ObjectT<Configuration> {
   /// No indentation and no newlines will be generated; i.e. the returned string
   /// will be as compact as possible.
   ///
-  /// \tparam String Type of the \p filename parameter.
-  ///
   /// \param filename          Path to the output file.
   /// \param resolve_variables Resolve all configuration variables.
-  template <typename String>
-  void WriteToFile(String&& filename, bool resolve_variables) const {
-    WriteToFileImpl(std::forward<String>(filename), resolve_variables, -1);
+  void WriteToFile(internal::StringView filename,
+                   bool resolve_variables) const {
+    WriteToFileImpl(filename, resolve_variables, -1);
   }
 
   /// Writes the configuration to a file in JSON format.
   ///
   /// Configuration variables get resolved if the configuration supports them.
   ///
-  /// \tparam String Type of the \p filename parameter.
-  ///
   /// \param filename          Path to the output file.
   /// \param resolve_variables Resolve all configuration variables.
   /// \param indentation       Number of space characters to use for
   ///                          indentation; must be >= 0.
-  template <typename String>
-  void WriteToFile(String&& filename, int indentation) const {
+  void WriteToFile(internal::StringView filename, int indentation) const {
     if (indentation < 0) {
       throw Failure(ErrorCode::kInvalidParam);
     }
 
-    WriteToFileImpl(std::forward<String>(filename),
+    WriteToFileImpl(filename,
                     (flags_ & ConfigurationFlags::kDisableVariables) ==
                         ConfigurationFlags::kNone,
                     indentation);
@@ -361,15 +349,12 @@ class Configuration : public ObjectT<Configuration> {
   /// No indentation and no newlines will be generated; i.e. the returned string
   /// will be as compact as possible.
   ///
-  /// \tparam String Type of the \p filename parameter.
-  ///
   /// \param filename          Path to the output file.
   /// \param resolve_variables Resolve all configuration variables.
   /// \param indentation       Number of space characters to use for
   ///                          indentation; must be >= 0.
-  template <typename String>
-  void WriteToFile(String&& filename) const {
-    WriteToFileImpl(std::forward<String>(filename),
+  void WriteToFile(internal::StringView filename) const {
+    WriteToFileImpl(filename,
                     (flags_ & ConfigurationFlags::kDisableVariables) ==
                         ConfigurationFlags::kNone,
                     -1);
@@ -390,12 +375,10 @@ class Configuration : public ObjectT<Configuration> {
     });
   }
 
-  template <typename String>
-  void WriteToFileImpl(String&& filename, bool resolve_variables,
+  void WriteToFileImpl(const char* filename, bool resolve_variables,
                        int indentation) const {
     int res = internal::YOGI_ConfigurationWriteToFile(
-        this->GetHandle(), internal::ToCoreString(filename),
-        resolve_variables ? 1 : 0, indentation);
+        this->GetHandle(), filename, resolve_variables ? 1 : 0, indentation);
     internal::CheckErrorCode(res);
   }
 

@@ -3,7 +3,6 @@
 
 #include "logging.h"
 #include "duration.h"
-#include "internal/string_conversion.h"
 #include "internal/error_code_helpers.h"
 #include "internal/library.h"
 

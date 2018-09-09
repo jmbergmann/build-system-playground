@@ -102,7 +102,7 @@ TEST(ConfigurationTest, UpdateFromCommandLine) {
 
   cfg->UpdateFromCommandLine(cmdline.argc, cmdline.argv,
                              yogi::CommandLineOptions::kOverrides);
-  auto json = yogi::json::parse(cfg->Dump());
+  auto json = yogi::Json::parse(cfg->Dump());
   EXPECT_EQ(json.value("age", -1), 25);
 
   // clang-format off
@@ -113,7 +113,7 @@ TEST(ConfigurationTest, UpdateFromCommandLine) {
 
   cfg->UpdateFromCommandLine(cmdline2.argc, cmdline2.argv,
                              yogi::CommandLineOptions::kOverrides);
-  json = yogi::json::parse(cfg->Dump());
+  json = yogi::Json::parse(cfg->Dump());
   EXPECT_EQ(json.value("age", -1), 18);
 }
 
@@ -121,11 +121,11 @@ TEST(ConfigurationTest, UpdateFromJson) {
   auto cfg = yogi::Configuration::Create();
 
   cfg->UpdateFromJson("{\"age\": 42}");
-  auto json = yogi::json::parse(cfg->Dump());
+  auto json = yogi::Json::parse(cfg->Dump());
   EXPECT_EQ(json.value("age", -1), 42);
 
-  cfg->UpdateFromJson("{\"age\": 88}");
-  json = yogi::json::parse(cfg->Dump());
+  cfg->UpdateFromJson(yogi::Json::parse("{\"age\": 88}"));
+  json = yogi::Json::parse(cfg->Dump());
   EXPECT_EQ(json.value("age", -1), 88);
 }
 
@@ -137,7 +137,7 @@ TEST(ConfigurationTest, UpdateFromFile) {
   auto cfg = yogi::Configuration::Create();
 
   cfg->UpdateFromFile(filename);
-  auto json = yogi::json::parse(cfg->Dump());
+  auto json = yogi::Json::parse(cfg->Dump());
   EXPECT_EQ(json.value("age", -1), 66);
 }
 
@@ -168,13 +168,13 @@ TEST(ConfigurationTest, WriteToFile) {
   auto content = ReadFile(filename);
   EXPECT_EQ(content.find(" "), std::string::npos);
   EXPECT_EQ(content.find("\n"), std::string::npos);
-  auto json = yogi::json::parse(content);
+  auto json = yogi::Json::parse(content);
   EXPECT_EQ(json.value("age", -1), 11);
 
   cfg->WriteToFile(filename, 2);
   content = ReadFile(filename);
   EXPECT_NE(content.find(" "), std::string::npos);
   EXPECT_NE(content.find("\n"), std::string::npos);
-  json = yogi::json::parse(content);
+  json = yogi::Json::parse(content);
   EXPECT_EQ(json.value("age", -1), 11);
 }

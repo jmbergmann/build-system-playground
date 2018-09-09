@@ -2,6 +2,7 @@
 #define YOGI_ERRORS_H
 
 #include "internal/library.h"
+#include "internal/string_view.h"
 #include "io.h"
 
 #include <string>
@@ -281,13 +282,10 @@ class DescriptiveFailure : public Failure {
  public:
   /// Constructor
   ///
-  /// \tparam String String type (for perfect forwarding).
-  ///
   /// \param ec Error code.
   /// \param description Description of the error.
-  template <typename String>
-  DescriptiveFailure(ErrorCode ec, String&& description)
-      : Failure(ec), description_(std::forward<String>(description)) {}
+  DescriptiveFailure(ErrorCode ec, internal::StringView description)
+      : Failure(ec), description_(description) {}
 
   /// Returns a detailed description of the error.
   ///
@@ -352,13 +350,10 @@ class DescriptiveFailureException : public FailureException {
  public:
   /// Constructor
   ///
-  /// \tparam String String type (for perfect forwarding).
-  ///
   /// \param ec Error code.
   /// \param description Description of the error.
-  template <typename String>
-  DescriptiveFailureException(ErrorCode ec, String&& description)
-      : FailureException(ec), failure_(ec, std::forward<String>(description)) {}
+  DescriptiveFailureException(ErrorCode ec, internal::StringView description)
+      : FailureException(ec), failure_(ec, description) {}
 
   virtual const Failure& GetFailure() const override { return failure_; }
 

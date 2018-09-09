@@ -1,9 +1,9 @@
 #ifndef YOGI_TIMESTAMP_H
 #define YOGI_TIMESTAMP_H
 
-#include "internal/string_conversion.h"
-#include "internal/error_code_helpers.h"
 #include "internal/library.h"
+#include "internal/error_code_helpers.h"
+#include "internal/string_view.h"
 #include "duration.h"
 
 #include <chrono>
@@ -70,18 +70,14 @@ class Timestamp {
   /// By default, the string \p str will be parsed in the format
   /// "2018-04-23T18:25:43.511Z".
   ///
-  /// \tparam StrString Type of the \p str string.
-  /// \tparam FmtString Type of the \p timefmt string.
-  ///
   /// \param str The string to parse.
   /// \param timefmt Format of the time string.
   ///
   /// \returns The parsed timestamp.
-  template <typename StrString, typename FmtString = char*>
-  static Timestamp Parse(StrString&& str, FmtString&& timefmt = nullptr) {
+  static Timestamp Parse(internal::StringView str,
+                         internal::StringView timefmt = {}) {
     long long timestamp;
-    int res = internal::YOGI_ParseTime(&timestamp, internal::ToCoreString(str),
-                                       internal::ToCoreString(timefmt));
+    int res = internal::YOGI_ParseTime(&timestamp, str, timefmt);
     internal::CheckErrorCode(res);
     return FromDurationSinceEpoch(Duration::FromNanoseconds(timestamp));
   }
@@ -133,12 +129,10 @@ class Timestamp {
   /// \param timefmt Format of the time string.
   ///
   /// \returns The formatted time string.
-  template <typename String = char*>
-  std::string Format(String&& timefmt = nullptr) const {
+  std::string Format(internal::StringView timefmt = {}) const {
     char str[128];
-    int res =
-        internal::YOGI_FormatTime(dur_since_epoch_.NanosecondsCount(), str,
-                                  sizeof(str), internal::ToCoreString(timefmt));
+    int res = internal::YOGI_FormatTime(dur_since_epoch_.NanosecondsCount(),
+                                        str, sizeof(str), timefmt);
     internal::CheckErrorCode(res);
     return str;
   }

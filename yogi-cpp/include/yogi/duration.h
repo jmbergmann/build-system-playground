@@ -2,8 +2,8 @@
 #define YOGI_DURATION_H
 
 #include "internal/library.h"
-#include "internal/string_conversion.h"
 #include "internal/error_code_helpers.h"
+#include "internal/string_view.h"
 
 #include <chrono>
 #include <sstream>
@@ -498,20 +498,16 @@ class Duration {
   /// constructed using \p inf_fmt will be returned ("inf" and "-inf"
   /// respectively by default).
   ///
-  /// \tparam DurFmtString Type of the \p dur_fmt parameter
-  /// \tparam InfFmtString Type of the \p inf_fmt parameter
-  ///
   /// \param[in] dur_fmt Format of the duration string
   /// \param[in] inf_fmt Format to use for infinity
   ///
   /// \returns The formatted duration string
-  template <typename DurFmtString = char*, typename InfFmtString = char*>
-  std::string Format(DurFmtString&& dur_fmt = nullptr,
-                     InfFmtString&& inf_fmt = nullptr) const {
+  std::string Format(internal::StringView dur_fmt = {},
+                     internal::StringView inf_fmt = {}) const {
     char str[128];
-    int res = internal::YOGI_FormatDuration(
-        IsFinite() ? ns_count_ : -1, ns_count_ < 0 ? 1 : 0, str, sizeof(str),
-        internal::ToCoreString(dur_fmt), internal::ToCoreString(inf_fmt));
+    int res = internal::YOGI_FormatDuration(IsFinite() ? ns_count_ : -1,
+                                            ns_count_ < 0 ? 1 : 0, str,
+                                            sizeof(str), dur_fmt, inf_fmt);
     internal::CheckErrorCode(res);
     return str;
   }

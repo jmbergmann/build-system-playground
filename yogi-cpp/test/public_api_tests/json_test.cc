@@ -11,5 +11,5 @@ using json = int;
 #include <type_traits>
 
 TEST(JsonTest, CustomJsonLibrary) {
-  EXPECT_TRUE((std::is_same<yogi::json, int>::value));
+  EXPECT_TRUE((std::is_same<yogi::Json, int>::value));
 }

@@ -12,6 +12,8 @@
 #include "internal/flags.h"
 #include "internal/json.h"
 #include "internal/query_string.h"
+#include "internal/json_view.h"
+#include "internal/string_view.h"
 
 #include <unordered_map>
 
@@ -82,12 +84,9 @@ class BranchInfo {
  public:
   /// Constructor.
   ///
-  /// \tparam String String type.
-  ///
   /// \param uuid UUID of the branch.
   /// \param json JSON string to parse.
-  template <typename String>
-  BranchInfo(const Uuid& uuid, String&& json)
+  BranchInfo(const Uuid& uuid, internal::JsonView json)
       : uuid_(uuid),
         json_(json),
         name_(internal::ExtractStringFromJson(json_, "name")),
@@ -206,12 +205,9 @@ class LocalBranchInfo : public BranchInfo {
  public:
   /// Constructor.
   ///
-  /// \tparam String String type.
-  ///
   /// \param uuid UUID of the branch.
   /// \param json JSON string to parse.
-  template <typename String>
-  LocalBranchInfo(const Uuid& uuid, String&& json)
+  LocalBranchInfo(const Uuid& uuid, internal::JsonView json)
       : BranchInfo(uuid, json),
         adv_address_(
             internal::ExtractStringFromJson(ToString(), "advertising_address")),
@@ -241,13 +237,10 @@ class BranchEventInfo {
 
   /// Constructor.
   ///
-  /// \tparam String String type.
-  ///
   /// \param uuid UUID of the branch.
   /// \param json JSON string to parse.
-  template <typename String>
-  BranchEventInfo(const Uuid& uuid, String&& json)
-      : uuid_(uuid), json_(std::forward<String>(json)) {}
+  BranchEventInfo(const Uuid& uuid, internal::JsonView json)
+      : uuid_(uuid), json_(json) {}
 
   virtual ~BranchEventInfo() {}
 
@@ -271,13 +264,10 @@ class BranchDiscoveredEventInfo : public BranchEventInfo {
  public:
   /// Constructor.
   ///
-  /// \tparam String String type.
-  ///
   /// \param uuid UUID of the branch.
   /// \param json JSON string to parse.
-  template <typename String>
-  BranchDiscoveredEventInfo(const Uuid& uuid, String&& json)
-      : BranchEventInfo(uuid, std::forward<String>(json)),
+  BranchDiscoveredEventInfo(const Uuid& uuid, internal::JsonView json)
+      : BranchEventInfo(uuid, json),
         tcp_server_address_(
             internal::ExtractStringFromJson(ToString(), "tcp_server_address")),
         tcp_server_port_(
@@ -303,13 +293,10 @@ class BranchQueriedEventInfo : public BranchEventInfo {
  public:
   /// Constructor.
   ///
-  /// \tparam String String type.
-  ///
   /// \param uuid UUID of the branch.
   /// \param json JSON string to parse.
-  template <typename String>
-  BranchQueriedEventInfo(const Uuid& uuid, String&& json)
-      : BranchEventInfo(uuid, std::forward<String>(json)),
+  BranchQueriedEventInfo(const Uuid& uuid, internal::JsonView json)
+      : BranchEventInfo(uuid, json),
         info_(RemoteBranchInfo(uuid, ToString())) {}
 
   /// Returns the name of the branch.
@@ -470,20 +457,15 @@ class Branch : public ObjectT<Branch> {
   /// and so on. This is useful for obtaining information about active branches
   /// without actually becoming part of the Yogi network.
   ///
-  /// \tparam PropsString Type of the \p props string
-  /// \tparam SectionString Type of the \p section string
-  ///
   /// \param context Context to use
   /// \param props   Branch properties as serialized JSON
   /// \param section Section in \p props to use instead of the root section;
   ///                syntax is JSON pointer (RFC 6901)
   ///
   /// \returns The created branch.
-  template <typename PropsString = char*, typename SectionString = char*>
-  static BranchPtr Create(ContextPtr context, PropsString&& props = nullptr,
-                          SectionString&& section = nullptr) {
-    return BranchPtr(new Branch(context, std::forward<PropsString>(props),
-                                std::forward<SectionString>(section)));
+  static BranchPtr Create(ContextPtr context, internal::JsonView props = {},
+                          internal::StringView section = {}) {
+    return BranchPtr(new Branch(context, props, section));
   }
 
   /// Returns information about the local branch.
@@ -694,13 +676,12 @@ class Branch : public ObjectT<Branch> {
   }
 
  private:
-  template <typename PropsString, typename SectionString>
-  Branch(ContextPtr context, PropsString&& props, SectionString&& section)
-      : ObjectT(
-            internal::CallApiCreateWithDescriptiveErrorCode(
-                internal::YOGI_BranchCreate, GetForeignHandle(context),
-                internal::ToCoreString(props), internal::ToCoreString(section)),
-            {context}),
+  Branch(ContextPtr context, internal::JsonView props,
+         internal::StringView section)
+      : ObjectT(internal::CallApiCreateWithDescriptiveErrorCode(
+                    internal::YOGI_BranchCreate, GetForeignHandle(context),
+                    props, section),
+                {context}),
         info_(QueryInfo()) {}
 
   LocalBranchInfo QueryInfo() {

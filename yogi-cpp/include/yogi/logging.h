@@ -4,7 +4,7 @@
 #include "io.h"
 #include "object.h"
 #include "time.h"
-#include "internal/string_conversion.h"
+#include "internal/string_view.h"
 #include "internal/library.h"
 
 #include <cassert>
@@ -267,12 +267,11 @@ inline std::string ToString<Stream>(const Stream& st) {
 ///     $>: Reset the colours (also done after each log entry).
 ///     $$: A $ sign.
 inline void LogToConsole(Verbosity verbosity, Stream stream = Stream::kStderr,
-                         bool color = true, const std::string& timefmt = {},
-                         const std::string& fmt = {}) {
-  int res = internal::YOGI_LogToConsole(
-      static_cast<int>(verbosity), static_cast<int>(stream), color ? 1 : 0,
-      timefmt.empty() ? nullptr : timefmt.c_str(),
-      fmt.empty() ? nullptr : fmt.c_str());
+                         bool color = true, internal::StringView timefmt = {},
+                         internal::StringView fmt = {}) {
+  int res = internal::YOGI_LogToConsole(static_cast<int>(verbosity),
+                                        static_cast<int>(stream), color ? 1 : 0,
+                                        timefmt, fmt);
   internal::CheckErrorCode(res);
 }
 
@@ -386,14 +385,12 @@ inline void LogToHook() {
 /// \param fmt Format of a log entry (see above for placeholders).
 ///
 /// \returns The generated filename with all placeholders resolved.
-inline std::string LogToFile(Verbosity verbosity, const std::string& filename,
-                             const std::string& timefmt = {},
-                             const std::string& fmt = {}) {
+inline std::string LogToFile(Verbosity verbosity, internal::StringView filename,
+                             internal::StringView timefmt = {},
+                             internal::StringView fmt = {}) {
   char genfn[256];
-  int res = internal::YOGI_LogToFile(
-      static_cast<int>(verbosity), filename.c_str(), genfn, sizeof(genfn),
-      timefmt.empty() ? nullptr : timefmt.c_str(),
-      fmt.empty() ? nullptr : timefmt.c_str());
+  int res = internal::YOGI_LogToFile(static_cast<int>(verbosity), filename,
+                                     genfn, sizeof(genfn), timefmt, fmt);
   internal::CheckErrorCode(res);
   return genfn;
 }
@@ -432,11 +429,11 @@ class Logger : public ObjectT<Logger> {
   /// \param verbosity Maximum verbosity entries to be logged.
   ///
   /// \returns Number of matching loggers.
-  static int SetComponentsVerbosity(const std::string& components,
+  static int SetComponentsVerbosity(internal::StringView components,
                                     Verbosity verbosity) {
     int count;
     int res = internal::YOGI_LoggerSetComponentsVerbosity(
-        components.c_str(), static_cast<int>(verbosity), &count);
+        components, static_cast<int>(verbosity), &count);
     internal::CheckErrorCode(res);
     return count;
   }
@@ -445,14 +442,11 @@ class Logger : public ObjectT<Logger> {
   ///
   /// The verbosity of new loggers is Verbosity.Info by default.
   ///
-  /// \tparam String Type of the \p component string
-  ///
   /// \param component The component tag to use.
   ///
   /// \returns Newly created logger.
-  template <typename String>
-  static LoggerPtr Create(String&& component) {
-    return LoggerPtr(new Logger(std::forward<String>(component)));
+  static LoggerPtr Create(internal::StringView component) {
+    return LoggerPtr(new Logger(component));
   }
 
   /// Returns the verbosity of the logger.
@@ -480,9 +474,9 @@ class Logger : public ObjectT<Logger> {
   /// \param msg Log message.
   /// \param file Source file name.
   /// \param line Source file line number.
-  template <typename MsgString, typename FileString>
-  void Log(Verbosity severity, MsgString&& msg, FileString&& file, int line) {
-    const char* short_file = internal::ToCoreString(file);
+  void Log(Verbosity severity, internal::StringView msg,
+           internal::StringView file, int line) {
+    const char* short_file = file;
     if (short_file) {
       for (const char* ch = short_file; *ch; ++ch) {
         if (*ch == '/' || *ch == '\\') {
@@ -491,19 +485,17 @@ class Logger : public ObjectT<Logger> {
       }
     }
 
-    int res =
-        internal::YOGI_LoggerLog(GetHandle(), static_cast<int>(severity),
-                                 short_file, line, internal::ToCoreString(msg));
+    int res = internal::YOGI_LoggerLog(GetHandle(), static_cast<int>(severity),
+                                       short_file, line, msg);
     internal::CheckErrorCode(res);
   }
 
-  /// Creates a log entry.
+  /// Creates a log entry without file and line number information.
   ///
   /// \param severity Severity (verbosity) of the entry.
   /// \param msg Log message.
-  template <typename MsgString>
-  void Log(Verbosity severity, MsgString&& msg) {
-    return Log<MsgString, const char*>(severity, msg, nullptr, 0);
+  void Log(Verbosity severity, internal::StringView msg) {
+    Log(severity, msg, {}, 0);
   }
 
  protected:
@@ -511,10 +503,8 @@ class Logger : public ObjectT<Logger> {
   Logger() : ObjectT(nullptr, {}) {}
 
  private:
-  template <typename String>
-  Logger(String&& component)
-      : ObjectT(internal::CallApiCreate(internal::YOGI_LoggerCreate,
-                                        internal::ToCoreString(component)),
+  Logger(const char* component)
+      : ObjectT(internal::CallApiCreate(internal::YOGI_LoggerCreate, component),
                 {}) {}
 };
 

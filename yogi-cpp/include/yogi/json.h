@@ -11,7 +11,7 @@
 
 namespace yogi {
 
-using json = ::nlohmann::json;
+using Json = ::nlohmann::json;
 
 }  // namespace yogi
 
