@@ -22,8 +22,8 @@ TEST_F(ConnectionManagerTest, Advertising) {
   ip::udp::socket socket(ioc, ep.protocol());
   socket.set_option(ip::udp::socket::reuse_address(true));
   socket.bind(ep);
-  socket.set_option(ip::multicast::join_group(
-      ip::make_address(kBranchProps["advertising_address"])));
+  socket.set_option(ip::multicast::join_group(ip::make_address(
+      static_cast<const std::string&>(kBranchProps["advertising_address"]))));
 
   boost::system::error_code error_code;
   std::array<char, 100> data;
