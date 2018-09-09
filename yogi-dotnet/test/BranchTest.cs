@@ -65,7 +65,7 @@ namespace test
             Assert.True(info.TcpServerPort > 0);
             Assert.True(info.StartTime < Yogi.CurrentTime);
             Assert.Equal(Yogi.Duration.Infinity, info.Timeout);
-            Assert.Equal(false, info.GhostMode);
+            Assert.False(info.GhostMode);
 
             Assert.Equal(info.Uuid, branch.Uuid);
             Assert.Equal(info.Name, branch.Name);

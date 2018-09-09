@@ -7,7 +7,11 @@ class BranchTest : public ::testing::Test {
   yogi::ContextPtr context_ = yogi::Context::Create();
 };
 
-TEST_F(BranchTest, DISABLED_CreateWithSubSection) {}
+TEST_F(BranchTest, CreateWithSubSection) {
+  auto branch = yogi::Branch::Create(
+      context_, "{\"branch\":{\"name\":\"Cow\"}}", "/branch");
+  EXPECT_EQ(branch->GetName(), "Cow");
+}
 
 TEST_F(BranchTest, BranchEventsEnum) {
   // clang-format off

@@ -4,6 +4,7 @@
 #include "../duration.h"
 #include "../timestamp.h"
 
+#include <algorithm>
 #include <string>
 #include <cstring>
 
@@ -12,7 +13,7 @@ namespace internal {
 
 template <int N>
 inline std::string::const_iterator FindElementInJson(const std::string& json,
-                                                const char (&name)[N]) {
+                                                     const char (&name)[N]) {
   char key[N + 3];
   key[0] = '"';
   std::memcpy(key + 1, name, N - 1);
@@ -138,8 +139,7 @@ inline Duration ExtractDurationFromJson(const std::string& json,
 
   if (seconds < 0) {
     return Duration::kInfinity;
-  }
-  else {
+  } else {
     return Duration::FromSeconds(seconds);
   }
 }
@@ -152,8 +152,25 @@ inline Timestamp ExtractTimestampFromJson(const std::string& json,
 }
 
 template <int N>
-inline bool ExtractBoolFromJson(const std::string& json, const char (&name)[N]) {
-  return false; // TODO: use real JSON lib
+inline bool ExtractBoolFromJson(const std::string& json,
+                                const char (&name)[N]) {
+  auto it = FindElementInJson(json, name);
+
+  try {
+    auto s = std::string(it, std::find(it, json.end(), 'e'));
+    if (s == "tru") {
+      return true;
+    } else if (s == "fals") {
+      return false;
+    } else {
+      throw std::runtime_error(std::string("Value \"") + s +
+                               "\" is neither true nor false");
+    }
+  } catch (const std::exception& e) {
+    throw DescriptiveFailureException(
+        ErrorCode::kParsingJsonFailed,
+        std::string("Could not extract bool '") + name + "': " + e.what());
+  }
 }
 
 }  // namespace internal
