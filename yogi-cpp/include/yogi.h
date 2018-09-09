@@ -5,6 +5,7 @@
 #include "yogi/duration.h"
 #include "yogi/errors.h"
 #include "yogi/io.h"
+#include "yogi/json.h"
 #include "yogi/licenses.h"
 #include "yogi/logging.h"
 #include "yogi/object.h"

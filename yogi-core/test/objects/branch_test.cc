@@ -1,10 +1,9 @@
 #include "../common.h"
-
-#include <boost/uuid/uuid_io.hpp>
-#include <regex>
-
 #include "../../src/utils/system.h"
-#include "../../../3rd_party/nlohmann/json.hpp"
+
+#include <nlohmann/json.hpp>
+#include <boost/uuid/uuid_io.hpp>
+#include <regex>]
 
 class BranchTest : public Test {
  protected:

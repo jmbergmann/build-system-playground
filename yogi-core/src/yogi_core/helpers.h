@@ -1,11 +1,11 @@
 #pragma once
 
 #include "../config.h"
-#include "../../../3rd_party/nlohmann/json.hpp"
 
+#include <nlohmann/json.hpp>
+#include <boost/uuid/uuid.hpp>
 #include <chrono>
 #include <string>
-#include <boost/uuid/uuid.hpp>
 
 inline std::chrono::nanoseconds ConvertDuration(long long duration) {
   return duration == -1 ? std::chrono::nanoseconds::max()

@@ -1,8 +1,8 @@
 #pragma once
 
-#include "../../3rd_party/nlohmann/json.hpp"
 #include "../src/objects/detail/branch/branch_info.h"
 
+#include <nlohmann/json.hpp>
 #include <gtest/gtest.h>
 #include <yogi_core.h>
 #include <chrono>

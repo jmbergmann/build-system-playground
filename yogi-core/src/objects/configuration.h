@@ -4,10 +4,10 @@
 #include "../api/object.h"
 #include "../api/error.h"
 #include "../utils/types.h"
-#include "../../../3rd_party/nlohmann/json.hpp"
 #include "detail/command_line_parser.h"
 #include "logger.h"
 
+#include <nlohmann/json.hpp>
 #include <mutex>
 
 namespace objects {

@@ -3,8 +3,8 @@
 #include "../api/constants.h"
 #include "../objects/branch.h"
 #include "../utils/system.h"
-#include "../../../3rd_party/nlohmann/json.hpp"
 
+#include <nlohmann/json.hpp>
 #include <string>
 using namespace std::string_literals;
 
