@@ -1,4 +1,5 @@
-#pragma once
+#ifndef YOGI_INTERNAL_ERROR_CODE_HELPERS_H
+#define YOGI_INTERNAL_ERROR_CODE_HELPERS_H
 
 #include "../errors.h"
 
@@ -38,3 +39,5 @@ inline void WithErrorCodeToResult(int res, Fn fn) {
 
 }  // namespace internal
 }  // namespace yogi
+
+#endif  // YOGI_INTERNAL_ERROR_CODE_HELPERS_H

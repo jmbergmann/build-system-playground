@@ -1,4 +1,5 @@
-#pragma once
+#ifndef YOGI_INTERNAL_LIBRARY_IMPL_UNIX_H
+#define YOGI_INTERNAL_LIBRARY_IMPL_UNIX_H
 
 #include <dlfcn.h>
 
@@ -33,3 +34,5 @@ std::string Library::GetLastErrorString() {
 
 }  // namespace internal
 }  // namespace yogi
+
+#endif  // YOGI_INTERNAL_LIBRARY_IMPL_UNIX_H

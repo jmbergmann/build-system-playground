@@ -1,4 +1,5 @@
-#pragma once
+#ifndef YOGI_IO_H
+#define YOGI_IO_H
 
 #include "internal/sfinae.h"
 
@@ -34,3 +35,5 @@ inline std::string ToString(const T& printable) {
 }
 
 }  // namespace yogi
+
+#endif  // YOGI_IO_H

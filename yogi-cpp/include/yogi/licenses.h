@@ -1,7 +1,7 @@
-#pragma once
+#ifndef YOGI_LICENSES_H
+#define YOGI_LICENSES_H
 
 #include "internal/library.h"
-
 
 namespace yogi {
 
@@ -30,3 +30,5 @@ inline const std::string& Get3rdPartyLicenses() {
 }
 
 }  // namespace yogi
+
+#endif  // YOGI_LICENSES_H

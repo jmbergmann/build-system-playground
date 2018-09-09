@@ -1,4 +1,5 @@
-#pragma once
+#ifndef YOGI_INTERNAL_LIBRARY_H
+#define YOGI_INTERNAL_LIBRARY_H
 
 #include <cstdlib>
 #include <string>
@@ -74,7 +75,8 @@ class Library final {
   // Methods below are platform-dependent
   static inline const char* GetFilename();
   static inline LibraryHandle LoadLibrary(const char* filename);
-  static inline ProcAddress GetProcAddress(LibraryHandle handle, const char* name);
+  static inline ProcAddress GetProcAddress(LibraryHandle handle,
+                                           const char* name);
   static inline std::string GetLastErrorString();
 };
 
@@ -88,3 +90,5 @@ YOGI_WEAK_SYMBOL Library::LibraryHandle Library::lib_handle_;
 #else
 #include "library_impl_unix.h"
 #endif
+
+#endif  // YOGI_INTERNAL_LIBRARY_H

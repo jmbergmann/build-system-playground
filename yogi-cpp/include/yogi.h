@@ -1,3 +1,6 @@
+#ifndef YOGI_H
+#define YOGI_H
+
 #include "yogi/branch.h"
 #include "yogi/configuration.h"
 #include "yogi/constants.h"
@@ -16,3 +19,5 @@
 #include "yogi/timestamp.h"
 #include "yogi/uuid.h"
 #include "yogi/version.h"
+
+#endif  // YOGI_H

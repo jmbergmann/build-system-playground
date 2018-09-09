@@ -1,4 +1,5 @@
-#pragma once
+#ifndef YOGI_OBJECT_H
+#define YOGI_OBJECT_H
 
 #include "io.h"
 #include "internal/string_conversion.h"
@@ -123,3 +124,5 @@ class ObjectT : public Object {
 };
 
 }  // namespace yogi
+
+#endif  // YOGI_OBJECT_H

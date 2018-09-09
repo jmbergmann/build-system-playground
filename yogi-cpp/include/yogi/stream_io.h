@@ -1,4 +1,5 @@
-#pragma once
+#ifndef YOGI_STREAM_IO_H
+#define YOGI_STREAM_IO_H
 
 #include "io.h"
 #include "errors.h"
@@ -36,3 +37,5 @@ YOGI_DEFINE_OSTREAM_OPERATOR(ConfigurationFlags)
 YOGI_DEFINE_OSTREAM_OPERATOR(CommandLineOptions)
 
 #undef YOGI_DEFINE_OSTREAM_OPERATOR
+
+#endif  // YOGI_STREAM_IO_H

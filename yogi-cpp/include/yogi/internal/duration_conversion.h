@@ -1,4 +1,5 @@
-#pragma once
+#ifndef YOGI_INTERNAL_DURATION_CONVERSION_H
+#define YOGI_INTERNAL_DURATION_CONVERSION_H
 
 #include "../errors.h"
 #include "../duration.h"
@@ -16,3 +17,5 @@ inline long long ToCoreDuration(const Duration& duration) {
 
 }  // namespace internal
 }  // namespace yogi
+
+#endif  // YOGI_INTERNAL_DURATION_CONVERSION_H

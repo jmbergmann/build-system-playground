@@ -1,4 +1,5 @@
-#pragma once
+#ifndef YOGI_UUID_H
+#define YOGI_UUID_H
 
 #include "io.h"
 
@@ -106,3 +107,5 @@ struct hash<yogi::Uuid> {
 };
 
 }  // namespace std
+
+#endif  // YOGI_UUID_H

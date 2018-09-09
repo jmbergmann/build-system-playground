@@ -1,4 +1,5 @@
-#pragma once
+#ifndef YOGI_CONTEXT_H
+#define YOGI_CONTEXT_H
 
 #include "object.h"
 #include "duration.h"
@@ -243,3 +244,5 @@ class Context : public ObjectT<Context> {
 };
 
 }  // namespace yogi
+
+#endif  // YOGI_CONTEXT_H

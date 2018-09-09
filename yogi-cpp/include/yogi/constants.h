@@ -1,4 +1,5 @@
-#pragma once
+#ifndef YOGI_CONSTANTS_H
+#define YOGI_CONSTANTS_H
 
 #include "logging.h"
 #include "duration.h"
@@ -100,8 +101,7 @@ YOGI_WEAK_SYMBOL const int constants::kDefaultAdvPort =
 YOGI_WEAK_SYMBOL const Duration constants::kDefaultAdvInterval =
     Duration::FromNanoseconds(internal::GetConstant<long long>(7));
 
-YOGI_WEAK_SYMBOL const Duration
-    constants::kDefaultConnectionTimeout =
+YOGI_WEAK_SYMBOL const Duration constants::kDefaultConnectionTimeout =
     Duration::FromNanoseconds(internal::GetConstant<long long>(8));
 
 YOGI_WEAK_SYMBOL const Verbosity constants::kDefaultLoggerVerbosity =
@@ -132,3 +132,5 @@ YOGI_WEAK_SYMBOL const std::string constants::kDefaultObjectFormat =
     internal::GetConstant<char*>(17);
 
 }  // namespace yogi
+
+#endif  // YOGI_CONSTANTS_H

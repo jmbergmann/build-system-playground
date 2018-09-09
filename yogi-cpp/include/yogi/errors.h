@@ -1,4 +1,5 @@
-#pragma once
+#ifndef YOGI_ERRORS_H
+#define YOGI_ERRORS_H
 
 #include "internal/library.h"
 #include "io.h"
@@ -373,12 +374,12 @@ class ArithmeticException : public Exception {
  public:
   ArithmeticException(const char* what) : what_(what) {}
 
-  virtual const char* what() const noexcept override {
-    return what_;
-  }
+  virtual const char* what() const noexcept override { return what_; }
 
  private:
   const char* what_;
 };
 
 }  // namespace yogi
+
+#endif  // YOGI_ERRORS_H

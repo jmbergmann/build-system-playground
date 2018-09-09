@@ -1,4 +1,5 @@
-#pragma once
+#ifndef YOGI_SIGNALS_H
+#define YOGI_SIGNALS_H
 
 #include "duration.h"
 #include "object.h"
@@ -345,3 +346,5 @@ class SignalSet : public ObjectT<SignalSet> {
 };
 
 }  // namespace yogi
+
+#endif  // YOGI_SIGNALS_H

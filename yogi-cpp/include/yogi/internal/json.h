@@ -1,4 +1,5 @@
-#pragma once
+#ifndef YOGI_INTERNAL_JSON_H
+#define YOGI_INTERNAL_JSON_H
 
 #include "../errors.h"
 #include "../duration.h"
@@ -175,3 +176,5 @@ inline bool ExtractBoolFromJson(const std::string& json,
 
 }  // namespace internal
 }  // namespace yogi
+
+#endif  // YOGI_INTERNAL_JSON_H

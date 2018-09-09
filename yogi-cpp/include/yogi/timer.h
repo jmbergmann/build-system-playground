@@ -1,4 +1,5 @@
-#pragma once
+#ifndef YOGI_TIMER_H
+#define YOGI_TIMER_H
 
 #include "duration.h"
 #include "object.h"
@@ -91,3 +92,5 @@ class Timer : public ObjectT<Timer> {
 };
 
 }  // namespace yogi
+
+#endif  // YOGI_TIMER_H

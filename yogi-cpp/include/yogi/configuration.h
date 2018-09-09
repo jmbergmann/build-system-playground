@@ -1,7 +1,9 @@
-#pragma once
+#ifndef YOGI_CONFIGURATION_H
+#define YOGI_CONFIGURATION_H
 
 #include "object.h"
 #include "io.h"
+#include "json.h"
 #include "internal/flags.h"
 #include "internal/query_string.h"
 
@@ -401,3 +403,5 @@ class Configuration : public ObjectT<Configuration> {
 };
 
 }  // namespace yogi
+
+#endif  // YOGI_CONFIGURATION_H

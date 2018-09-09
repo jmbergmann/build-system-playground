@@ -45,6 +45,7 @@ add_executable (yogi-cpp-test
   test/compile_tests/duration_compile_test.cc
   test/compile_tests/errors_compile_test.cc
   test/compile_tests/io_compile_test.cc
+  test/compile_tests/json_compile_test.cc
   test/compile_tests/licenses_compile_test.cc
   test/compile_tests/logging_compile_test.cc
   test/compile_tests/object_compile_test.cc
@@ -65,6 +66,7 @@ add_executable (yogi-cpp-test
   test/public_api_tests/duration_test.cc
   test/public_api_tests/errors_test.cc
   test/public_api_tests/io_test.cc
+  test/public_api_tests/json_test.cc
   test/public_api_tests/licenses_test.cc
   test/public_api_tests/logging_test.cc
   test/public_api_tests/object_test.cc

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef YOGI_INTERNAL_SFINAE_H
+#define YOGI_INTERNAL_SFINAE_H
 
 #include <type_traits>
 
@@ -19,3 +20,5 @@
         std::is_same<decltype(test<T>(0)), std::true_type>::value;        \
   };                                                                      \
   }  // namespace internal
+
+#endif  // YOGI_INTERNAL_SFINAE_H

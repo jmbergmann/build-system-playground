@@ -1,4 +1,5 @@
-#pragma once
+#ifndef YOGI_DURATION_H
+#define YOGI_DURATION_H
 
 #include "internal/library.h"
 #include "internal/string_conversion.h"
@@ -707,3 +708,5 @@ inline Duration DurationFromTimeUnit(T val) {
 
 }  // namespace internal
 }  // namespace yogi
+
+#endif  // YOGI_DURATION_H

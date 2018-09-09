@@ -1,4 +1,5 @@
-#pragma once
+#ifndef YOGI_INTERNAL_QUERY_STRING_H
+#define YOGI_INTERNAL_QUERY_STRING_H
 
 #include "../errors.h"
 #include "error_code_helpers.h"
@@ -29,3 +30,5 @@ inline std::string QueryString(Fn fn) {
 
 }  // namespace internal
 }  // namespace yogi
+
+#endif  // YOGI_INTERNAL_QUERY_STRING_H

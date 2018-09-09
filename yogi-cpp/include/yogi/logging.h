@@ -1,4 +1,5 @@
-#pragma once
+#ifndef YOGI_LOGGING_H
+#define YOGI_LOGGING_H
 
 #include "io.h"
 #include "object.h"
@@ -296,13 +297,13 @@ using LogHookFn = std::function<void(Verbosity severity, Timestamp timestamp,
                                      std::string comp, std::string msg)>;
 
 namespace internal {
-  struct LogToHookData {
-    static std::mutex mutex;
-    static std::unique_ptr<LogHookFn> log_hook_fn;
-  };
+struct LogToHookData {
+  static std::mutex mutex;
+  static std::unique_ptr<LogHookFn> log_hook_fn;
+};
 
-  YOGI_WEAK_SYMBOL std::mutex LogToHookData::mutex;
-  YOGI_WEAK_SYMBOL std::unique_ptr<LogHookFn> LogToHookData::log_hook_fn;
+YOGI_WEAK_SYMBOL std::mutex LogToHookData::mutex;
+YOGI_WEAK_SYMBOL std::unique_ptr<LogHookFn> LogToHookData::log_hook_fn;
 
 }  // namespace internal
 
@@ -490,9 +491,9 @@ class Logger : public ObjectT<Logger> {
       }
     }
 
-    int res = internal::YOGI_LoggerLog(GetHandle(), static_cast<int>(severity),
-                                       short_file, line,
-                                       internal::ToCoreString(msg));
+    int res =
+        internal::YOGI_LoggerLog(GetHandle(), static_cast<int>(severity),
+                                 short_file, line, internal::ToCoreString(msg));
     internal::CheckErrorCode(res);
   }
 
@@ -539,3 +540,5 @@ class AppLogger : public Logger {
 static const AppLoggerPtr app_logger = AppLogger::Create();
 
 }  // namespace yogi
+
+#endif  // YOGI_LOGGING_H

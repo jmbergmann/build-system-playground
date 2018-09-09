@@ -1,7 +1,7 @@
-#pragma once
+#ifndef YOGI_VERSION_H
+#define YOGI_VERSION_H
 
 #include "internal/library.h"
-
 
 namespace yogi {
 
@@ -16,3 +16,5 @@ inline const std::string& GetVersion() {
 }
 
 }  // namespace yogi
+
+#endif  // YOGI_VERSION_H

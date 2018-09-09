@@ -1,4 +1,5 @@
-#pragma once
+#ifndef YOGI_TIMESTAMP_H
+#define YOGI_TIMESTAMP_H
 
 #include "internal/string_conversion.h"
 #include "internal/error_code_helpers.h"
@@ -79,9 +80,8 @@ class Timestamp {
   template <typename StrString, typename FmtString = char*>
   static Timestamp Parse(StrString&& str, FmtString&& timefmt = nullptr) {
     long long timestamp;
-    int res =
-        internal::YOGI_ParseTime(&timestamp, internal::ToCoreString(str),
-                                 internal::ToCoreString(timefmt));
+    int res = internal::YOGI_ParseTime(&timestamp, internal::ToCoreString(str),
+                                       internal::ToCoreString(timefmt));
     internal::CheckErrorCode(res);
     return FromDurationSinceEpoch(Duration::FromNanoseconds(timestamp));
   }
@@ -136,9 +136,9 @@ class Timestamp {
   template <typename String = char*>
   std::string Format(String&& timefmt = nullptr) const {
     char str[128];
-    int res = internal::YOGI_FormatTime(dur_since_epoch_.NanosecondsCount(),
-                                        str, sizeof(str),
-                                        internal::ToCoreString(timefmt));
+    int res =
+        internal::YOGI_FormatTime(dur_since_epoch_.NanosecondsCount(), str,
+                                  sizeof(str), internal::ToCoreString(timefmt));
     internal::CheckErrorCode(res);
     return str;
   }
@@ -201,3 +201,5 @@ class Timestamp {
 };
 
 }  // namespace yogi
+
+#endif  // YOGI_TIMESTAMP_H

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef YOGI_INTERNAL_LIBRARY_IMPL_WIN_H
+#define YOGI_INTERNAL_LIBRARY_IMPL_WIN_H
 
 #include <Windows.h>
 
@@ -49,3 +50,5 @@ std::string Library::GetLastErrorString() {
 
 }  // namespace internal
 }  // namespace yogi
+
+#endif  // YOGI_INTERNAL_LIBRARY_IMPL_WIN_H

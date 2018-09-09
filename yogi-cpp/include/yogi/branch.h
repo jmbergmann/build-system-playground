@@ -1,4 +1,5 @@
-#pragma once
+#ifndef YOGI_BRANCH_H
+#define YOGI_BRANCH_H
 
 #include "object.h"
 #include "context.h"
@@ -481,9 +482,8 @@ class Branch : public ObjectT<Branch> {
   template <typename PropsString = char*, typename SectionString = char*>
   static BranchPtr Create(ContextPtr context, PropsString&& props = nullptr,
                           SectionString&& section = nullptr) {
-    return BranchPtr(new Branch(
-        context, std::forward<PropsString>(props),
-        std::forward<SectionString>(section)));
+    return BranchPtr(new Branch(context, std::forward<PropsString>(props),
+                                std::forward<SectionString>(section)));
   }
 
   /// Returns information about the local branch.
@@ -734,3 +734,5 @@ class Branch : public ObjectT<Branch> {
 };
 
 }  // namespace yogi
+
+#endif  // YOGI_BRANCH_H
