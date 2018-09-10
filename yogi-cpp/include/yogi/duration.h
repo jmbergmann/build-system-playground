@@ -3,7 +3,7 @@
 
 #include "internal/library.h"
 #include "internal/error_code_helpers.h"
-#include "internal/string_view.h"
+#include "string_view.h"
 
 #include <chrono>
 #include <sstream>
@@ -502,8 +502,8 @@ class Duration {
   /// \param[in] inf_fmt Format to use for infinity
   ///
   /// \returns The formatted duration string
-  std::string Format(internal::StringView dur_fmt = {},
-                     internal::StringView inf_fmt = {}) const {
+  std::string Format(StringView dur_fmt = {},
+                     StringView inf_fmt = {}) const {
     char str[128];
     int res = internal::YOGI_FormatDuration(IsFinite() ? ns_count_ : -1,
                                             ns_count_ < 0 ? 1 : 0, str,

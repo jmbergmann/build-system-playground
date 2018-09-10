@@ -4,7 +4,7 @@
 #include "io.h"
 #include "object.h"
 #include "time.h"
-#include "internal/string_view.h"
+#include "string_view.h"
 #include "internal/library.h"
 
 #include <cassert>
@@ -267,8 +267,8 @@ inline std::string ToString<Stream>(const Stream& st) {
 ///     $>: Reset the colours (also done after each log entry).
 ///     $$: A $ sign.
 inline void LogToConsole(Verbosity verbosity, Stream stream = Stream::kStderr,
-                         bool color = true, internal::StringView timefmt = {},
-                         internal::StringView fmt = {}) {
+                         bool color = true, StringView timefmt = {},
+                         StringView fmt = {}) {
   int res = internal::YOGI_LogToConsole(static_cast<int>(verbosity),
                                         static_cast<int>(stream), color ? 1 : 0,
                                         timefmt, fmt);
@@ -385,9 +385,9 @@ inline void LogToHook() {
 /// \param fmt Format of a log entry (see above for placeholders).
 ///
 /// \returns The generated filename with all placeholders resolved.
-inline std::string LogToFile(Verbosity verbosity, internal::StringView filename,
-                             internal::StringView timefmt = {},
-                             internal::StringView fmt = {}) {
+inline std::string LogToFile(Verbosity verbosity, StringView filename,
+                             StringView timefmt = {},
+                             StringView fmt = {}) {
   char genfn[256];
   int res = internal::YOGI_LogToFile(static_cast<int>(verbosity), filename,
                                      genfn, sizeof(genfn), timefmt, fmt);
@@ -429,7 +429,7 @@ class Logger : public ObjectT<Logger> {
   /// \param verbosity Maximum verbosity entries to be logged.
   ///
   /// \returns Number of matching loggers.
-  static int SetComponentsVerbosity(internal::StringView components,
+  static int SetComponentsVerbosity(StringView components,
                                     Verbosity verbosity) {
     int count;
     int res = internal::YOGI_LoggerSetComponentsVerbosity(
@@ -445,7 +445,7 @@ class Logger : public ObjectT<Logger> {
   /// \param component The component tag to use.
   ///
   /// \returns Newly created logger.
-  static LoggerPtr Create(internal::StringView component) {
+  static LoggerPtr Create(StringView component) {
     return LoggerPtr(new Logger(component));
   }
 
@@ -474,8 +474,8 @@ class Logger : public ObjectT<Logger> {
   /// \param msg Log message.
   /// \param file Source file name.
   /// \param line Source file line number.
-  void Log(Verbosity severity, internal::StringView msg,
-           internal::StringView file, int line) {
+  void Log(Verbosity severity, StringView msg,
+           StringView file, int line) {
     const char* short_file = file;
     if (short_file) {
       for (const char* ch = short_file; *ch; ++ch) {
@@ -494,7 +494,7 @@ class Logger : public ObjectT<Logger> {
   ///
   /// \param severity Severity (verbosity) of the entry.
   /// \param msg Log message.
-  void Log(Verbosity severity, internal::StringView msg) {
+  void Log(Verbosity severity, StringView msg) {
     Log(severity, msg, {}, 0);
   }
 

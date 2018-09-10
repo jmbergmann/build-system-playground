@@ -3,7 +3,7 @@
 
 #include "internal/library.h"
 #include "internal/error_code_helpers.h"
-#include "internal/string_view.h"
+#include "string_view.h"
 #include "duration.h"
 
 #include <chrono>
@@ -74,8 +74,8 @@ class Timestamp {
   /// \param timefmt Format of the time string.
   ///
   /// \returns The parsed timestamp.
-  static Timestamp Parse(internal::StringView str,
-                         internal::StringView timefmt = {}) {
+  static Timestamp Parse(StringView str,
+                         StringView timefmt = {}) {
     long long timestamp;
     int res = internal::YOGI_ParseTime(&timestamp, str, timefmt);
     internal::CheckErrorCode(res);
@@ -129,7 +129,7 @@ class Timestamp {
   /// \param timefmt Format of the time string.
   ///
   /// \returns The formatted time string.
-  std::string Format(internal::StringView timefmt = {}) const {
+  std::string Format(StringView timefmt = {}) const {
     char str[128];
     int res = internal::YOGI_FormatTime(dur_since_epoch_.NanosecondsCount(),
                                         str, sizeof(str), timefmt);

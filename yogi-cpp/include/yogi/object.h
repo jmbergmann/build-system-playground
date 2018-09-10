@@ -4,7 +4,7 @@
 #include "io.h"
 #include "internal/library.h"
 #include "internal/error_code_helpers.h"
-#include "internal/json_view.h"
+#include "json_view.h"
 
 #include <chrono>
 #include <cassert>
@@ -74,8 +74,8 @@ class Object : public std::enable_shared_from_this<Object> {
   /// \param nullstr String to use if the object's handle is NULL
   ///
   /// \returns Formatted string.
-  std::string Format(internal::StringView fmt = {},
-                     internal::StringView nullstr = {}) const {
+  std::string Format(StringView fmt = {},
+                     StringView nullstr = {}) const {
     char str[128];
     int res =
         internal::YOGI_FormatObject(handle_, str, sizeof(str), fmt, nullstr);

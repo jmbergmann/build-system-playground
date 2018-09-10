@@ -57,8 +57,6 @@ add_executable (yogi-cpp-test
   test/compile_tests/uuid_compile_test.cc
   test/compile_tests/version_compile_test.cc
   test/internal_tests/duration_conversion_test.cc
-  test/internal_tests/json_view_test.cc
-  test/internal_tests/string_view_test.cc
   test/public_api_tests/branch_test.cc
   test/public_api_tests/configuration_test.cc
   test/public_api_tests/constants_test.cc
@@ -67,11 +65,13 @@ add_executable (yogi-cpp-test
   test/public_api_tests/errors_test.cc
   test/public_api_tests/io_test.cc
   test/public_api_tests/json_test.cc
+  test/public_api_tests/json_view_test.cc
   test/public_api_tests/licenses_test.cc
   test/public_api_tests/logging_test.cc
   test/public_api_tests/object_test.cc
   test/public_api_tests/signals_test.cc
   test/public_api_tests/stream_io_test.cc
+  test/public_api_tests/string_view_test.cc
   test/public_api_tests/time_test.cc
   test/public_api_tests/timer_test.cc
   test/public_api_tests/timestamp_test.cc

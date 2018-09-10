@@ -12,8 +12,8 @@
 #include "internal/library.h"
 #include "internal/flags.h"
 #include "internal/query_string.h"
-#include "internal/json_view.h"
-#include "internal/string_view.h"
+#include "json_view.h"
+#include "string_view.h"
 
 #include <unordered_map>
 
@@ -435,8 +435,8 @@ class Branch : public ObjectT<Branch> {
   ///                syntax is JSON pointer (RFC 6901)
   ///
   /// \returns The created branch.
-  static BranchPtr Create(ContextPtr context, internal::JsonView props = {},
-                          internal::StringView section = {}) {
+  static BranchPtr Create(ContextPtr context, JsonView props = {},
+                          StringView section = {}) {
     return BranchPtr(new Branch(context, props, section));
   }
 
@@ -648,8 +648,8 @@ class Branch : public ObjectT<Branch> {
   }
 
  private:
-  Branch(ContextPtr context, internal::JsonView props,
-         internal::StringView section)
+  Branch(ContextPtr context, JsonView props,
+         StringView section)
       : ObjectT(internal::CallApiCreateWithDescriptiveErrorCode(
                     internal::YOGI_BranchCreate, GetForeignHandle(context),
                     props, section),

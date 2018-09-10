@@ -2,7 +2,7 @@
 #define YOGI_ERRORS_H
 
 #include "internal/library.h"
-#include "internal/string_view.h"
+#include "string_view.h"
 #include "io.h"
 
 #include <string>
@@ -284,7 +284,7 @@ class DescriptiveFailure : public Failure {
   ///
   /// \param ec Error code.
   /// \param description Description of the error.
-  DescriptiveFailure(ErrorCode ec, internal::StringView description)
+  DescriptiveFailure(ErrorCode ec, StringView description)
       : Failure(ec), description_(description) {}
 
   /// Returns a detailed description of the error.
@@ -352,7 +352,7 @@ class DescriptiveFailureException : public FailureException {
   ///
   /// \param ec Error code.
   /// \param description Description of the error.
-  DescriptiveFailureException(ErrorCode ec, internal::StringView description)
+  DescriptiveFailureException(ErrorCode ec, StringView description)
       : FailureException(ec), failure_(ec, description) {}
 
   virtual const Failure& GetFailure() const override { return failure_; }

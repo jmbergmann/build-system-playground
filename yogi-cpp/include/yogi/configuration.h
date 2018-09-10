@@ -6,8 +6,8 @@
 #include "json.h"
 #include "internal/flags.h"
 #include "internal/query_string.h"
-#include "internal/string_view.h"
-#include "internal/json_view.h"
+#include "string_view.h"
+#include "json_view.h"
 
 #include <memory>
 #include <type_traits>
@@ -217,7 +217,7 @@ class Configuration : public ObjectT<Configuration> {
   /// containing detailed information about the error.
   ///
   /// \param json JSON object or serialized JSON.
-  void UpdateFromJson(internal::JsonView json) {
+  void UpdateFromJson(JsonView json) {
     internal::CheckDescriptiveErrorCode([&](auto err, auto size) {
       return internal::YOGI_ConfigurationUpdateFromJson(this->GetHandle(), json,
                                                         err, size);
@@ -230,7 +230,7 @@ class Configuration : public ObjectT<Configuration> {
   /// raised containing detailed information about the error.
   ///
   /// \param filename Path to the JSON file.
-  void UpdateFromFile(internal::StringView filename) {
+  void UpdateFromFile(StringView filename) {
     internal::CheckDescriptiveErrorCode([&](auto err, auto size) {
       return internal::YOGI_ConfigurationUpdateFromFile(this->GetHandle(),
                                                         filename, err, size);
@@ -302,7 +302,7 @@ class Configuration : public ObjectT<Configuration> {
   /// \param resolve_variables Resolve all configuration variables.
   /// \param indentation       Number of space characters to use for
   ///                          indentation; must be >= 0.
-  void WriteToFile(internal::StringView filename, bool resolve_variables,
+  void WriteToFile(StringView filename, bool resolve_variables,
                    int indentation) const {
     if (indentation < 0) {
       throw Failure(ErrorCode::kInvalidParam);
@@ -318,7 +318,7 @@ class Configuration : public ObjectT<Configuration> {
   ///
   /// \param filename          Path to the output file.
   /// \param resolve_variables Resolve all configuration variables.
-  void WriteToFile(internal::StringView filename,
+  void WriteToFile(StringView filename,
                    bool resolve_variables) const {
     WriteToFileImpl(filename, resolve_variables, -1);
   }
@@ -331,7 +331,7 @@ class Configuration : public ObjectT<Configuration> {
   /// \param resolve_variables Resolve all configuration variables.
   /// \param indentation       Number of space characters to use for
   ///                          indentation; must be >= 0.
-  void WriteToFile(internal::StringView filename, int indentation) const {
+  void WriteToFile(StringView filename, int indentation) const {
     if (indentation < 0) {
       throw Failure(ErrorCode::kInvalidParam);
     }
@@ -353,7 +353,7 @@ class Configuration : public ObjectT<Configuration> {
   /// \param resolve_variables Resolve all configuration variables.
   /// \param indentation       Number of space characters to use for
   ///                          indentation; must be >= 0.
-  void WriteToFile(internal::StringView filename) const {
+  void WriteToFile(StringView filename) const {
     WriteToFileImpl(filename,
                     (flags_ & ConfigurationFlags::kDisableVariables) ==
                         ConfigurationFlags::kNone,
