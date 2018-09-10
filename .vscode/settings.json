@@ -129,6 +129,8 @@
     "xloctime": "cpp",
     "xmemory": "cpp",
     "xmemory0": "cpp",
-    "xstddef": "cpp"
+    "xstddef": "cpp",
+    "*.ipp": "cpp",
+    "random": "cpp"
   }
 }

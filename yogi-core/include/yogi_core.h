@@ -358,10 +358,12 @@
 //! pre-defined  section. They can then be used in multiple other parts of the
 //! configuration.
 //!
-//! Note: Variables can *not* be used in keys.
+//! \note
+//!   Variables can *not* be used in keys.
 //!
 //! Variables are defined in the *variables* section of the configuration:
 //!
+//! \code
 //!   {
 //!     "variables": {
 //!       "ROOT": "/usr/share/my-app",
@@ -369,18 +371,19 @@
 //!       "DURATION": 30,
 //!       "MAX_DURATION": "${DURATION}",
 //!   ...
+//! \endcode
 //!
 //! These variables can then be used anywhere in the configuration, even in the
 //! *variables* section itself as shown above.
 //!
-//! Note: Even if the value of a variable is not a string, the placeholder
-//!       *${name}* always has to be a string to conform to the JSON format.
-//!       When resolving a placeholder for a non-string variable, the type of
-//!       the target value will be changed accordingly if and only if the
-//!       placeholder is surrounded by quotation marks as shown for the
-//!       *MAX_DURATION* variable above. Othwise, the target value will remain
-//!       a string and the placeholder will be replaced with the stringified
-//!       value of the variable.
+//! \note
+//!   Even if the value of a variable is not a string, the placeholder *${name}*
+//!   always has to be a string to conform to the JSON format. When resolving a
+//!   placeholder for a non-string variable, the type of the target value will
+//!   be changed accordingly if and only if the placeholder is surrounded by
+//!   quotation marks as shown for the *MAX_DURATION* variable above. Othwise,
+//!   the target value will remain a string and the placeholder will be replaced
+//!   with the stringified value of the variable.
 #define YOGI_CFG_DISABLE_VARIABLES (1<<0)
 
 //! Makes configuration options given directly on the command line overridable
@@ -400,54 +403,34 @@
 //! No options
 #define YOGI_CLO_NONE 0
 
-//! Include logging configuration for file logging
-//!
-//! Adds the *--log-...*  switches.
+//! Include the \c --log... switches for configuring file logging
 #define YOGI_CLO_LOGGING (1<<0)
 
-//! Include branch name configuration
-//!
-//! Adds the *--name* switch.
+//! Include the \c --name switch for setting the branch name
 #define YOGI_CLO_BRANCH_NAME (1<<1)
 
-//! Include branch description configuration
-//!
-//! Adds the *--description* switch.
+//! Include the \c --description switch for setting the branch description
 #define YOGI_CLO_BRANCH_DESCRIPTION (1<<2)
 
-//! Include network name configuration
-//!
-//! Adds the *--network* switch.
+//! Include the \c --network switch for setting the network name
 #define YOGI_CLO_BRANCH_NETWORK (1<<3)
 
-//! Include network password configuration
-//!
-//! Adds the *--password* switch.
+//! Include the \c --password switch for setting the network password
 #define YOGI_CLO_BRANCH_PASSWORD (1<<4)
 
-//! Include branch path configuration
-//!
-//! Adds the *--path* switch.
+//! Include the \c --path switch for setting the branch path
 #define YOGI_CLO_BRANCH_PATH (1<<5)
 
-//! Include branch advertising address configuration
-//!
-//! Adds the *--adv-addr* switch.
+//! Include the \c --adv-addr switch for setting the branch advertising address
 #define YOGI_CLO_BRANCH_ADV_ADDR (1<<6)
 
-//! Include branch advertising port configuration
-//!
-//! Adds the *--adv-port* switch.
+//! Include the \c --adv-port switch for setting the branch advertising port
 #define YOGI_CLO_BRANCH_ADV_PORT (1<<7)
 
-//! Include branch advertising interval configuration
-//!
-//! Adds the *--adv-int* switch.
+//! Include the \c --adv-int switch for setting the branch advertising interval
 #define YOGI_CLO_BRANCH_ADV_INT (1<<8)
 
-//! Include branch timeout configuration
-//!
-//! Adds the *--timeout* switch.
+//! Include the \c --timeout switch for setting the branch timeout
 #define YOGI_CLO_BRANCH_TIMEOUT (1<<9)
 
 //! Parse configuration files given on the command line
@@ -461,21 +444,19 @@
 //! Same as #YOGI_CLO_FILES but at least one configuration must be given
 #define YOGI_CLO_FILES_REQUIRED (1<<11)
 
-//! Allow overriding arbitrary configuration sections
-//!
-//! Adds the *--override* switch.
+//! Include the \c --override switch for overriding arbitrary configuration
+//! sections
 //!
 //! This is useful for supplying arbitrary parameters on the command line
 //! without having to store them in a file.
 //!
-//! Note: Parameters supplied in this way override the same parameters in any
-//!       given configuration file. If the same parameter is set directly on
-//!       the command line multiple times, then the rightmost value is used.
+//! \note
+//!   Parameters supplied in this way override the same parameters in any
+//!   given configuration file. If the same parameter is set directly on the
+//!   command line multiple times, then the rightmost value is used.
 #define YOGI_CLO_OVERRIDES (1<<12)
 
-//! Allow setting variables via a dedicated switch
-//!
-//! Adds the *--var* switch.
+//! Include the \c --var switch for setting variables
 #define YOGI_CLO_VARIABLES (1<<13)
 
 //! Combination of all branch flags
@@ -522,17 +503,20 @@
 //!
 //! Associated event information:
 //!
+//! \code
 //!   {
 //!     "uuid":               "123e4567-e89b-12d3-a456-426655440000",
 //!     "tcp_server_address": "fe80::f086:b106:2c1b:c45",
 //!     "tcp_server_port":    43384
 //!   }
+//! \endcode
 #define YOGI_BEV_BRANCH_DISCOVERED (1<<0)
 
 //! Querying a new branch for information finished (successfully or not)
 //!
 //! Associated event information:
 //!
+//! \code
 //!   {
 //!     "uuid":                 "123e4567-e89b-12d3-a456-426655440000",
 //!     "name":                 "Pump Safety Logic",
@@ -548,24 +532,29 @@
 //!     "advertising_interval": 1.0,
 //!     "ghost_mode":           false
 //!   }
+//! \endcode
 #define YOGI_BEV_BRANCH_QUERIED (1<<1)
 
 //! Connecting to a branch finished (successfully or not)
 //!
 //! Associated event information:
 //!
+//! \code
 //!   {
 //!     "uuid": "123e4567-e89b-12d3-a456-426655440000"
 //!   }
+//! \endcode
 #define YOGI_BEV_CONNECT_FINISHED (1<<2)
 
 //! The connection to a branch was lost
 //!
 //! Associated event information:
 //!
+//! \code
 //!   {
 //!     "uuid": "123e4567-e89b-12d3-a456-426655440000"
 //!   }
+//! \endcode
 #define YOGI_BEV_CONNECTION_LOST (1<<3)
 
 //! All branch events
@@ -586,25 +575,29 @@
 //! @{
 
 //! Role is determined by the value of the _role_ string from the provided
-//! terminal properties (the _json_ parameter). For example, the following will
-//! set the role to _Provider_:
+//! terminal properties.
 //!
-//!    {
-//!      "role": "Provider",
-//!      ...
-//!    }
+//! For example, the following will set the role to _Provider_:
+//!
+//! \code
+//!   {
+//!     "role": "Provider",
+//!     ...
+//!   }
+//! \endcode
 #define YOGI_RLS_JSON 0
 
 //! Role is determined by the value of the _role_ string from the provided
-//! terminal properties (the _json_ parameter) but inverted, i.e. if the string
-//! value is _Provider_ then the role will be set to _Consumer_ and if the
-//! string value is _Consumer_ then the role will be set to _Provider_. For
-//! example, the following will set the role to _Consumer_:
+//! terminal properties but inverted.
 //!
-//!    {
-//!      "role": "Provider",
-//!      ...
-//!    }
+//! For example, the following will set the role to _Consumer_:
+//!
+//! \code
+//!   {
+//!     "role": "Provider",
+//!     ...
+//!   }
+//! \endcode
 #define YOGI_RLS_JSON_INV 1
 
 //! Role is set to _Provider_.
@@ -633,7 +626,7 @@
 extern "C" {
 #endif
 
-/***************************************************************************//**
+/*!
  * Get the version of the loaded library.
  *
  * The returned string is human-reable and in the same format as the
@@ -642,29 +635,31 @@ extern "C" {
  * different from the version number in the used header file.
  *
  * \returns Library version
- ******************************************************************************/
+ */
 YOGI_API const char* YOGI_GetVersion();
 
-/***************************************************************************//**
+/*!
  * Get the license that Yogi is published under.
  *
- * Note: The returned string contains the complete description of the license
- *       and is therefore very large.
+ * \note
+ *   The returned string contains the complete description of the license
+ *   and is therefore very large.
  *
  * \returns License information
- ******************************************************************************/
+ */
 YOGI_API const char* YOGI_GetLicense();
 
-/***************************************************************************//**
+/*!
  * Get the license information about the 3rd party libraries used in Yogi.
  *
- * Note: The returned string is very large.
+ * \note
+ *   The returned string is very large.
  *
  * \returns License information
- ******************************************************************************/
+ */
 YOGI_API const char* YOGI_Get3rdPartyLicenses();
 
-/***************************************************************************//**
+/*!
  * Get a description of an error code.
  *
  * Returns a human-readable string describing the given error code. The returned
@@ -674,10 +669,10 @@ YOGI_API const char* YOGI_Get3rdPartyLicenses();
  * \param[in] err Error code (see \ref EC)
  *
  * \returns Description of the error code
- ******************************************************************************/
+ */
 YOGI_API const char* YOGI_GetErrorString(int err);
 
-/***************************************************************************//**
+/*!
  * Get the value of a constant (see \ref CV).
  *
  * Depending on the type of constant, which can either be an integer number or a
@@ -693,35 +688,39 @@ YOGI_API const char* YOGI_GetErrorString(int err);
  *
  * \returns [=0] #YOGI_OK if successful
  * \returns [<0] An error code in case of a failure (see \ref EC)
- ******************************************************************************/
+ */
 YOGI_API int YOGI_GetConstant(void* dest, int constant);
 
-/***************************************************************************//**
+/*!
  * Get the current time.
  *
  * \param[out] timestamp Current time in nanoseconds since 01/01/1970 UTC.
  *
  * \returns [=0] #YOGI_OK if successful
  * \returns [<0] An error code in case of a failure (see \ref EC)
- ******************************************************************************/
+ */
 YOGI_API int YOGI_GetCurrentTime(long long* timestamp);
 
-/***************************************************************************//**
+/*!
  * Converts a timestamp into a string.
  *
  * The \p timefmt parameter describes the format of the conversion. The
  * following placeholders are supported:
- *  - *%Y*: Four digit year
- *  - *%m*: Month name as a decimal 01 to 12
- *  - *%d*: Day of the month as decimal 01 to 31
- *  - *%F*: Equivalent to %Y-%m-%d (the ISO 8601 date format)
- *  - *%H*: The hour as a decimal number using a 24-hour clock (range 00 to 23)
- *  - *%M*: The minute as a decimal 00 to 59
- *  - *%S*: Seconds as a decimal 00 to 59
- *  - *%T*: Equivalent to %H:%M:%S (the ISO 8601 time format)
- *  - *%3*: Milliseconds as decimal number 000 to 999
- *  - *%6*: Microseconds as decimal number 000 to 999
- *  - *%9*: Nanoseconds as decimal number 000 to 999
+ *  - \c \%Y: Four digit year
+ *  - \c \%m: Month name as a decimal 01 to 12
+ *  - \c \%d: Day of the month as decimal 01 to 31
+ *  - \c \%F: Equivalent to %Y-%m-%d (the ISO 8601 date format)
+ *  - \c \%H: The hour as a decimal number using a 24-hour clock (00 to 23)
+ *  - \c \%M: The minute as a decimal 00 to 59
+ *  - \c \%S: Seconds as a decimal 00 to 59
+ *  - \c \%T: Equivalent to %H:%M:%S (the ISO 8601 time format)
+ *  - \c \%3: Milliseconds as decimal number 000 to 999
+ *  - \c \%6: Microseconds as decimal number 000 to 999
+ *  - \c \%9: Nanoseconds as decimal number 000 to 999
+ *
+ * \note
+ *   The placeholder syntax is a modulo sign followed by a single character. Any
+ *   additional characters shown above are for Doxygen.
  *
  * If \p timefmt is set to NULL, then the timestamp will be formatted in the
  * format "2009-02-11T12:53:09.123Z".
@@ -733,26 +732,30 @@ YOGI_API int YOGI_GetCurrentTime(long long* timestamp);
  *
  * \returns [=0] #YOGI_OK if successful
  * \returns [<0] An error code in case of a failure (see \ref EC)
- ******************************************************************************/
+ */
 YOGI_API int YOGI_FormatTime(long long timestamp, char* str, int strsize,
                              const char* timefmt);
 
-/***************************************************************************//**
+/*!
  * Converts a string into a timestamp.
  *
  * The \p timefmt parameter describes the format of the conversion. The
  * following placeholders are supported:
- *  - *%Y*: Four digit year
- *  - *%m*: Month name as a decimal 01 to 12
- *  - *%d*: Day of the month as decimal 01 to 31
- *  - *%F*: Equivalent to %Y-%m-%d (the ISO 8601 date format)
- *  - *%H*: The hour as a decimal number using a 24-hour clock (range 00 to 23)
- *  - *%M*: The minute as a decimal 00 to 59
- *  - *%S*: Seconds as a decimal 00 to 59
- *  - *%T*: Equivalent to %H:%M:%S (the ISO 8601 time format)
- *  - *%3*: Milliseconds as decimal number 000 to 999
- *  - *%6*: Microseconds as decimal number 000 to 999
- *  - *%9*: Nanoseconds as decimal number 000 to 999
+ *  - \c \%Y: Four digit year
+ *  - \c \%m: Month name as a decimal 01 to 12
+ *  - \c \%d: Day of the month as decimal 01 to 31
+ *  - \c \%F: Equivalent to %Y-%m-%d (the ISO 8601 date format)
+ *  - \c \%H: The hour as a decimal number using a 24-hour clock (00 to 23)
+ *  - \c \%M: The minute as a decimal 00 to 59
+ *  - \c \%S: Seconds as a decimal 00 to 59
+ *  - \c \%T: Equivalent to %H:%M:%S (the ISO 8601 time format)
+ *  - \c \%3: Milliseconds as decimal number 000 to 999
+ *  - \c \%6: Microseconds as decimal number 000 to 999
+ *  - \c \%9: Nanoseconds as decimal number 000 to 999
+ *
+ * \note
+ *   The placeholder syntax is a modulo sign followed by a single character. Any
+ *   additional characters shown above are for Doxygen.
  *
  * If \p timefmt is set to NULL, then the timestamp will be parsed in the
  * format "2009-02-11T12:53:09.123Z".
@@ -763,31 +766,35 @@ YOGI_API int YOGI_FormatTime(long long timestamp, char* str, int strsize,
  *
  * \returns [=0] #YOGI_OK if successful
  * \returns [<0] An error code in case of a failure (see \ref EC)
- ******************************************************************************/
+ */
 YOGI_API int YOGI_ParseTime(long long* timestamp, const char* str,
                             const char* timefmt);
 
-/***************************************************************************//**
+/*!
  * Converts a duration into a string.
  *
  * The \p durfmt parameter describes the format of the conversion. The
  * following placeholders are supported:
- *  - *%+*: Plus sign if duration is positive and minus sign if it is negative
- *  - *%-*: Minus sign (only) if duration is negative
- *  - *%d*: Total number of days
- *  - *%D*: Total number of days if days > 0
- *  - *%H*: Fractional hours (range 00 to 23)
- *  - *%M*: Fractional minutes (range 00 to 59)
- *  - *%S*: Fractional seconds (range 00 to 59)
- *  - *%T*: Equivalent to %H:%M:%S
- *  - *%3*: Fractional milliseconds (range 000 to 999)
- *  - *%6*: Fractional microseconds (range 000 to 999)
- *  - *%9*: Fractional nanoseconds (range 000 to 999)
+ *  - \c \%+: Plus sign if duration is positive and minus sign if it is negative
+ *  - \c \%-: Minus sign (only) if duration is negative
+ *  - \c \%d: Total number of days
+ *  - \c \%D: Total number of days if days > 0
+ *  - \c \%H: Fractional hours (range 00 to 23)
+ *  - \c \%M: Fractional minutes (range 00 to 59)
+ *  - \c \%S: Fractional seconds (range 00 to 59)
+ *  - \c \%T: Equivalent to %H:%M:%S
+ *  - \c \%3: Fractional milliseconds (range 000 to 999)
+ *  - \c \%6: Fractional microseconds (range 000 to 999)
+ *  - \c \%9: Fractional nanoseconds (range 000 to 999)
  *
  * The \p inffmt parameter describes the format to use for infinite durations.
  * The following placeholders are supported:
- *  - *%+*: Plus sign if duration is positive and minus sign if it is negative
- *  - *%-*: Minus sign (only) if duration is negative
+ *  - \c \%+: Plus sign if duration is positive and minus sign if it is negative
+ *  - \c \%-: Minus sign (only) if duration is negative
+ *
+ * \note
+ *   The placeholder syntax is a modulo sign followed by a single character. Any
+ *   additional characters shown above are for Doxygen.
  *
  * If \p durfmt is set to NULL, then the duration will be formatted in the
  * format "-23d 04:19:33.123456789". If \p dur is -1 to indicate an infinite
@@ -803,18 +810,22 @@ YOGI_API int YOGI_ParseTime(long long* timestamp, const char* str,
  *
  * \returns [=0] #YOGI_OK if successful
  * \returns [<0] An error code in case of a failure (see \ref EC)
- ******************************************************************************/
+ */
 YOGI_API int YOGI_FormatDuration(long long dur, int neg, char* str, int strsize,
                                  const char* durfmt, const char* inffmt);
 
-/***************************************************************************//**
+/*!
  * Creates a string describing an object.
  *
  * The \p objfmt parameter describes the format of the string. The following
  * placeholders are supported:
- *  - *$T*: Type of the object (e.g. Branch)
- *  - *$x*: Handle of the object in lower-case hex notation
- *  - *$X*: Handle of the object in upper-case hex notation
+ *  - \c $T: Type of the object (e.g. Branch)
+ *  - \c $x: Handle of the object in lower-case hex notation
+ *  - \c $X: Handle of the object in upper-case hex notation
+ *
+ * \note
+ *   The placeholder syntax is a dollar sign followed by a single character. Any
+ *   additional characters shown above are for Doxygen.
  *
  * If \p objfmt is set to NULL, then the object will be formatted in the format
  * "Branch [44fdde]" with the hex value in brackets being the object's handle,
@@ -830,11 +841,11 @@ YOGI_API int YOGI_FormatDuration(long long dur, int neg, char* str, int strsize,
  *
  * \returns [=0] #YOGI_OK if successful
  * \returns [<0] An error code in case of a failure (see \ref EC)
- ******************************************************************************/
+ */
 YOGI_API int YOGI_FormatObject(void* object, char* str, int strsize,
                                const char* objfmt, const char* nullstr);
 
-/***************************************************************************//**
+/*!
  * Allows the Yogi to write library-internal and user logging to stdout or
  * stderr.
  *
@@ -854,31 +865,35 @@ YOGI_API int YOGI_FormatObject(void* object, char* str, int strsize,
  *
  * The \p timefmt parameter describes the textual format of a log entry's
  * timestamp. The following placeholders are supported:
- *  - *%Y*: Four digit year
- *  - *%m*: Month name as a decimal 01 to 12
- *  - *%d*: Day of the month as decimal 01 to 31
- *  - *%F*: Equivalent to %Y-%m-%d (the ISO 8601 date format)
- *  - *%H*: The hour as a decimal number using a 24-hour clock (range 00 to 23)
- *  - *%M*: The minute as a decimal 00 to 59
- *  - *%S*: Seconds as a decimal 00 to 59
- *  - *%T*: Equivalent to %H:%M:%S (the ISO 8601 time format)
- *  - *%3*: Milliseconds as decimal number 000 to 999
- *  - *%6*: Microseconds as decimal number 000 to 999
- *  - *%9*: Nanoseconds as decimal number 000 to 999
+ *  - \c \%Y: Four digit year
+ *  - \c \%m: Month name as a decimal 01 to 12
+ *  - \c \%d: Day of the month as decimal 01 to 31
+ *  - \c \%F: Equivalent to %Y-%m-%d (the ISO 8601 date format)
+ *  - \c \%H: The hour as a decimal number using a 24-hour clock (00 to 23)
+ *  - \c \%M: The minute as a decimal 00 to 59
+ *  - \c \%S: Seconds as a decimal 00 to 59
+ *  - \c \%T: Equivalent to %H:%M:%S (the ISO 8601 time format)
+ *  - \c \%3: Milliseconds as decimal number 000 to 999
+ *  - \c \%6: Microseconds as decimal number 000 to 999
+ *  - \c \%9: Nanoseconds as decimal number 000 to 999
  *
  * The \p fmt parameter describes the textual format of the complete log entry
  * as it will appear on the console. The supported placeholders are:
- *  - *$t*: Timestamp, formatted according to \p timefmt
- *  - *$P*: Process ID (PID)
- *  - *$T*: Thread ID
- *  - *$s*: Severity as a 3 letter abbreviation (FAT, ERR, WRN, IFO, DBG or TRC)
- *  - *$m*: Log message
- *  - *$f*: Source filename
- *  - *$l*: Source line number
- *  - *$c*: Component tag
- *  - *$<*: Set console color corresponding to severity
- *  - *$>*: Reset the colours (also done after each log entry)
- *  - *$$*: A $ sign
+ *  - \c $t: Timestamp, formatted according to \p timefmt
+ *  - \c $P: Process ID (PID)
+ *  - \c $T: Thread ID
+ *  - \c $s: Severity as 3 letter abbreviation (FAT, ERR, WRN, IFO, DBG or TRC)
+ *  - \c $m: Log message
+ *  - \c $f: Source filename
+ *  - \c $l: Source line number
+ *  - \c $c: Component tag
+ *  - \c $<: Set console color corresponding to severity
+ *  - \c $>: Reset the colours (also done after each log entry)
+ *  - \c $$: A $ sign
+ *
+ * \note
+ *   The placeholder syntax is a modulo or dollar sign repectively, followed by
+ *   a single character. Any additional characters shown above are for Doxygen.
  *
  * \param[in] verbosity Maximum verbosity of messages to log
  * \param[in] stream    The stream to use (#YOGI_ST_STDOUT or #YOGI_ST_STDERR)
@@ -888,11 +903,11 @@ YOGI_API int YOGI_FormatObject(void* object, char* str, int strsize,
  *
  * \returns [=0] #YOGI_OK if successful
  * \returns [<0] An error code in case of a failure (see \ref EC)
- ******************************************************************************/
+ */
 YOGI_API int YOGI_LogToConsole(int verbosity, int stream, int color,
                                const char* timefmt, const char* fmt);
 
-/***************************************************************************//**
+/*!
  * Installs a callback function for receiving log entries.
  *
  * This function can be used to get notified whenever the Yogi library itself or
@@ -903,21 +918,23 @@ YOGI_API int YOGI_LogToConsole(int verbosity, int stream, int color,
  * again will override the previous function. Setting \p fn to NULL or
  * \p verbosity to #YOGI_VB_NONE will disable the hook.
  *
- * Note: The library will call \p fn from only one thread at a time, i.e. \p fn
- *       does not have to be thread-safe.
+ * \note
+ *   The library will call \p fn from only one thread at a time, i.e. \p fn does
+ *   not have to be thread-safe.
  *
  * The parameters passed to \p fn are:
- *  -# *severity*: Severity (verbosity) of the entry (see \ref VB)
- *  -# *timestamp*: Timestamp of the entry in nanoseconds since 01/01/1970 UTC
- *  -# *tid*: ID of the thread that created the entry
- *  -# *file*: Source file name
- *  -# *line*: Source file line number
- *  -# *comp*: Component that created the entry
- *  -# *msg*: Log message
- *  -# *userarg*: Value of \p userarg
+ *  -# __severity__: Severity (verbosity) of the entry (see \ref VB)
+ *  -# __timestamp__: Timestamp of the entry in nanoseconds since 01/01/1970 UTC
+ *  -# __tid__: ID of the thread that created the entry
+ *  -# __file__: Source file name
+ *  -# __line__: Source file line number
+ *  -# __comp__: Component that created the entry
+ *  -# __msg__: Log message
+ *  -# __userarg__: Value of \p userarg
  *
- * Note: The two string arguments *comp* and *msg* of \p fn are valid only while
- *       \p fn is being executed. Do not access those variables at a later time!
+ * \attention
+ *   The two string arguments *comp* and *msg* of \p fn are valid only while
+ *   \p fn is being executed. Do not access those variables at a later time!
  *
  * \param[in] verbosity Maximum verbosity of messages to call \p fn for
  * \param[in] fn        Callback function
@@ -925,7 +942,7 @@ YOGI_API int YOGI_LogToConsole(int verbosity, int stream, int color,
  *
  * \returns [=0] #YOGI_OK if successful
  * \returns [<0] An error code in case of a failure (see \ref EC)
- ******************************************************************************/
+ */
 YOGI_API int YOGI_LogToHook(int verbosity,
                             void (*fn)(int severity, long long timestamp,
                                        int tid, const char* file, int line,
@@ -933,7 +950,7 @@ YOGI_API int YOGI_LogToHook(int verbosity,
                                        void* userarg),
                             void* userarg);
 
-/***************************************************************************//**
+/*!
  * Creates log file.
  *
  * This function opens a file to write library-internal and user logging
@@ -948,7 +965,8 @@ YOGI_API int YOGI_LogToHook(int verbosity,
  * for \p timefmt See the YOGI_LogToConsole() function for supported
  * placeholders.
  *
- * Note: The color-related placeholders are ignored when writing to log files.
+ * \note
+ *   The color-related placeholders are ignored when writing to log files.
  *
  * The \p genfn parameter can be used to obtain the filename generated by
  * replacing the placeholders in the \p filename parameter. If \p genfnsize
@@ -966,12 +984,12 @@ YOGI_API int YOGI_LogToHook(int verbosity,
  *
  * \returns [=0] #YOGI_OK if successful
  * \returns [<0] An error code in case of a failure (see \ref EC)
- ******************************************************************************/
+ */
 YOGI_API int YOGI_LogToFile(int verbosity, const char* filename, char* genfn,
                             int genfnsize, const char* timefmt,
                             const char* fmt);
 
-/***************************************************************************//**
+/*!
  * Creates a logger.
  *
  * A logger is an object used for generating log entries that are tagged with
@@ -986,18 +1004,19 @@ YOGI_API int YOGI_LogToFile(int verbosity, const char* filename, char* genfn,
  *
  * \returns [=0] #YOGI_OK if successful
  * \returns [<0] An error code in case of a failure (see \ref EC)
- ******************************************************************************/
+ */
 YOGI_API int YOGI_LoggerCreate(void** logger, const char* component);
 
-/***************************************************************************//**
+/*!
  * Gets the verbosity of a particular logger.
  *
  * The verbosity of a logger acts as a filter. Only messages with a verbosity
  * less than or equal to the given value are being logged.
  *
- * Note: The verbosity of a logger affects only messages logged through that
- *       particular logger, i.e. if two loggers have identical component tags
- *       their verbosity settings are still independent from each other.
+ * \note
+ *   The verbosity of a logger affects only messages logged through that
+ *   particular logger, i.e. if two loggers have identical component tags their
+ *   verbosity settings are still independent from each other.
  *
  * \param[in]  logger    Logger handle (set to NULL for the App logger)
  * \param[out] verbosity Pointer to where the verbosity level shall be written
@@ -1005,28 +1024,29 @@ YOGI_API int YOGI_LoggerCreate(void** logger, const char* component);
  *
  * \returns [=0] #YOGI_OK if successful
  * \returns [<0] An error code in case of a failure (see \ref EC)
- ******************************************************************************/
+ */
 YOGI_API int YOGI_LoggerGetVerbosity(void* logger, int* verbosity);
 
-/***************************************************************************//**
+/*!
  * Sets the verbosity of a particular logger.
  *
  * The verbosity of a logger acts as a filter. Only messages with a verbosity
  * less than or equal to the given value are being logged.
  *
- * Note: The verbosity of a logger affects only messages logged through that
- *       particular logger, i.e. if two loggers have identical component tags
- *       their verbosity settings are still independent from each other.
+ * \note
+ *   The verbosity of a logger affects only messages logged through that
+ *   particular logger, i.e. if two loggers have identical component tags their
+ *   verbosity settings are still independent from each other.
  *
  * \param[in] logger    Logger handle (set to NULL for the App logger)
  * \param[in] verbosity Maximum verbosity entries to be logged (see \ref VB)
  *
  * \returns [=0] #YOGI_OK if successful
  * \returns [<0] An error code in case of a failure (see \ref EC)
- ******************************************************************************/
+ */
 YOGI_API int YOGI_LoggerSetVerbosity(void* logger, int verbosity);
 
-/***************************************************************************//**
+/*!
  * Sets the verbosity of all loggers matching a given component tag.
  *
  * This function finds all loggers whose component tag matches the regular
@@ -1039,11 +1059,11 @@ YOGI_API int YOGI_LoggerSetVerbosity(void* logger, int verbosity);
  *
  * \returns [=0] #YOGI_OK if successful
  * \returns [<0] An error code in case of a failure (see \ref EC)
- ******************************************************************************/
+ */
 YOGI_API int YOGI_LoggerSetComponentsVerbosity(const char* components,
                                                int verbosity, int* count);
 
-/***************************************************************************//**
+/*!
  * Creates a log entry.
  *
  * The entry can be generated using a specific logger or, by setting \p logger
@@ -1058,11 +1078,11 @@ YOGI_API int YOGI_LoggerSetComponentsVerbosity(const char* components,
  *
  * \returns [=0] #YOGI_OK if successful
  * \returns [<0] An error code in case of a failure (see \ref EC)
- ******************************************************************************/
+ */
 YOGI_API int YOGI_LoggerLog(void* logger, int severity, const char* file,
                             int line, const char* msg);
 
-/***************************************************************************//**
+/*!
  * Creates a configuration.
  *
  * A configuration represents a set of parameters that usually remain constant
@@ -1079,10 +1099,10 @@ YOGI_API int YOGI_LoggerLog(void* logger, int severity, const char* file,
  *
  * \returns [=0] #YOGI_OK if successful
  * \returns [<0] An error code in case of a failure (see \ref EC)
- ******************************************************************************/
+ */
 YOGI_API int YOGI_ConfigurationCreate(void** config, int flags);
 
-/***************************************************************************//**
+/*!
  * Updates a configuration from command line options.
  *
  * The function populates \p err with:
@@ -1106,13 +1126,13 @@ YOGI_API int YOGI_ConfigurationCreate(void** config, int flags);
  *
  * \returns [=0] #YOGI_OK if successful
  * \returns [<0] An error code in case of a failure (see \ref EC)
- ******************************************************************************/
+ */
 YOGI_API int YOGI_ConfigurationUpdateFromCommandLine(void* config, int argc,
                                                      const char* const* argv,
                                                      int options, char* err,
                                                      int errsize);
 
-/***************************************************************************//**
+/*!
  * Updates a configuration from a JSON-formatted string.
  *
  * The function populates \p err with:
@@ -1132,11 +1152,11 @@ YOGI_API int YOGI_ConfigurationUpdateFromCommandLine(void* config, int argc,
  *
  * \returns [=0] #YOGI_OK if successful
  * \returns [<0] An error code in case of a failure (see \ref EC)
- ******************************************************************************/
+ */
 YOGI_API int YOGI_ConfigurationUpdateFromJson(void* config, const char* json,
                                               char* err, int errsize);
 
-/***************************************************************************//**
+/*!
  * Updates a configuration from a JSON file.
  *
  * The function populates \p err with:
@@ -1156,12 +1176,12 @@ YOGI_API int YOGI_ConfigurationUpdateFromJson(void* config, const char* json,
  *
  * \returns [=0] #YOGI_OK if successful
  * \returns [<0] An error code in case of a failure (see \ref EC)
- ******************************************************************************/
+ */
 YOGI_API int YOGI_ConfigurationUpdateFromFile(void* config,
                                               const char* filename, char* err,
                                               int errsize);
 
-/***************************************************************************//**
+/*!
  * Retrieves a configuration as a JSON-formatted string.
  *
  * If the configuration is larger than the space provided by \p json and
@@ -1180,11 +1200,11 @@ YOGI_API int YOGI_ConfigurationUpdateFromFile(void* config,
  *
  * \returns [=0] #YOGI_OK if successful
  * \returns [<0] An error code in case of a failure (see \ref EC)
- ******************************************************************************/
+ */
 YOGI_API int YOGI_ConfigurationDump(void* config, char* json, int jsonsize,
                                     int resvars, int indent);
 
-/***************************************************************************//**
+/*!
  * Writes a configuration to a file in JSON format.
  *
  * This is useful for debugging purposes.
@@ -1198,21 +1218,21 @@ YOGI_API int YOGI_ConfigurationDump(void* config, char* json, int jsonsize,
  *
  * \returns [=0] #YOGI_OK if successful
  * \returns [<0] An error code in case of a failure (see \ref EC)
- ******************************************************************************/
+ */
 YOGI_API int YOGI_ConfigurationWriteToFile(void* config, const char* filename,
                                            int resvars, int indent);
 
-/***************************************************************************//**
+/*!
  * Creates a context for the execution of asynchronous operations.
  *
  * \param[out] context Pointer to the context handle
  *
  * \returns [=0] #YOGI_OK if successful
  * \returns [<0] An error code in case of a failure (see \ref EC)
- ******************************************************************************/
+ */
 YOGI_API int YOGI_ContextCreate(void** context);
 
-/***************************************************************************//**
+/*!
  * Runs the context's event processing loop to execute ready handlers.
  *
  * This function runs handlers (internal and user-supplied such as functions
@@ -1228,10 +1248,10 @@ YOGI_API int YOGI_ContextCreate(void** context);
  *
  * \returns [=0] #YOGI_OK if successful
  * \returns [<0] An error code in case of a failure (see \ref EC)
- ******************************************************************************/
+ */
 YOGI_API int YOGI_ContextPoll(void* context, int* count);
 
-/***************************************************************************//**
+/*!
  * Runs the context's event processing loop to execute at most one ready
  * handler.
  *
@@ -1247,10 +1267,10 @@ YOGI_API int YOGI_ContextPoll(void* context, int* count);
  *
  * \returns [=0] #YOGI_OK if successful
  * \returns [<0] An error code in case of a failure (see \ref EC)
- ******************************************************************************/
+ */
 YOGI_API int YOGI_ContextPollOne(void* context, int* count);
 
-/***************************************************************************//**
+/*!
  * Runs the context's event processing loop for the specified duration.
  *
  * This function blocks while running the context's event processing loop and
@@ -1267,10 +1287,10 @@ YOGI_API int YOGI_ContextPollOne(void* context, int* count);
  *
  * \returns [=0] #YOGI_OK if successful
  * \returns [<0] An error code in case of a failure (see \ref EC)
- ******************************************************************************/
+ */
 YOGI_API int YOGI_ContextRun(void* context, int* count, long long duration);
 
-/***************************************************************************//**
+/*!
  * Runs the context's event processing loop for the specified duration to
  * execute at most one handler.
  *
@@ -1289,10 +1309,10 @@ YOGI_API int YOGI_ContextRun(void* context, int* count, long long duration);
  *
  * \returns [=0] #YOGI_OK if successful
  * \returns [<0] An error code in case of a failure (see \ref EC)
- ******************************************************************************/
+ */
 YOGI_API int YOGI_ContextRunOne(void* context, int* count, long long duration);
 
-/***************************************************************************//**
+/*!
  * Starts an internal thread for running the context's event processing loop.
  *
  * This function starts a threads that runs the context's event processing loop
@@ -1307,10 +1327,10 @@ YOGI_API int YOGI_ContextRunOne(void* context, int* count, long long duration);
  *
  * \returns [=0] #YOGI_OK if successful
  * \returns [<0] An error code in case of a failure (see \ref EC)
- ******************************************************************************/
+ */
 YOGI_API int YOGI_ContextRunInBackground(void* context);
 
-/***************************************************************************//**
+/*!
  * Stops the context's event processing loop.
  *
  * This function signals the context to stop running its event processing loop.
@@ -1321,10 +1341,10 @@ YOGI_API int YOGI_ContextRunInBackground(void* context);
  *
  * \returns [=0] #YOGI_OK if successful
  * \returns [<0] An error code in case of a failure (see \ref EC)
- ******************************************************************************/
+ */
 YOGI_API int YOGI_ContextStop(void* context);
 
-/***************************************************************************//**
+/*!
  * Blocks until the context's event processing loop is being run or until the
  * specified timeout is reached.
  *
@@ -1343,10 +1363,10 @@ YOGI_API int YOGI_ContextStop(void* context);
  *
  * \returns [=0] #YOGI_OK if successful
  * \returns [<0] An error code in case of a failure (see \ref EC)
- ******************************************************************************/
+ */
 YOGI_API int YOGI_ContextWaitForRunning(void* context, long long duration);
 
-/***************************************************************************//**
+/*!
  * Blocks until no thread is running the context's event processing loop or
  * until the specified timeout is reached.
  *
@@ -1365,10 +1385,10 @@ YOGI_API int YOGI_ContextWaitForRunning(void* context, long long duration);
  *
  * \returns [=0] #YOGI_OK if successful
  * \returns [<0] An error code in case of a failure (see \ref EC)
- ******************************************************************************/
+ */
 YOGI_API int YOGI_ContextWaitForStopped(void* context, long long duration);
 
-/***************************************************************************//**
+/*!
  * Adds the given function to the context's event processing queue to be
  * executed and returns immediately.
  *
@@ -1382,11 +1402,11 @@ YOGI_API int YOGI_ContextWaitForStopped(void* context, long long duration);
  *
  * \returns [=0] #YOGI_OK if successful
  * \returns [<0] An error code in case of a failure (see \ref EC)
- ******************************************************************************/
+ */
 YOGI_API int YOGI_ContextPost(void* context, void (*fn)(void* userarg),
                               void* userarg);
 
-/***************************************************************************//**
+/*!
  * Raises a signal.
  *
  * Signals in Yogi are intended to be used similar to POSIX signals. They have
@@ -1400,8 +1420,9 @@ YOGI_API int YOGI_ContextPost(void* context, void (*fn)(void* userarg),
  * purposes. Once \p fn has been called, \p sigarg is not used any more and
  * can be destroyed.
  *
- * Note: The cleanup handler \p fn can get called either from within the
- *       YOGI_RaiseSignal() function or from any context within the program.
+ * \note
+ *   The cleanup handler \p fn can get called either from within the
+ *   YOGI_RaiseSignal() function or from any context within the program.
  *
  * \param[in] signal  The signal to raise (see \ref SIG)
  * \param[in] sigarg  User-defined data to pass to the signal handlers
@@ -1411,12 +1432,12 @@ YOGI_API int YOGI_ContextPost(void* context, void (*fn)(void* userarg),
  *
  * \returns [=0] #YOGI_OK if successful
  * \returns [<0] An error code in case of a failure (see \ref EC)
- ******************************************************************************/
+ */
 YOGI_API int YOGI_RaiseSignal(int signal, void* sigarg,
                               void (*fn)(void* sigarg, void* userarg),
                               void* userarg);
 
-/***************************************************************************//**
+/*!
  * Creates a new signal set.
  *
  * Signal sets are used to receive signals raised via YOGI_RaiseSignal().
@@ -1429,22 +1450,23 @@ YOGI_API int YOGI_RaiseSignal(int signal, void* sigarg,
  *
  * \returns [=0] #YOGI_OK if successful
  * \returns [<0] An error code in case of a failure (see \ref EC)
- ******************************************************************************/
+ */
 YOGI_API int YOGI_SignalSetCreate(void** sigset, void* context, int signals);
 
-/***************************************************************************//**
+/*!
  * Waits for a signal to be raised.
  *
  * The handler \p fn will be called after one of the signals in the signal set
  * is caught. The parameters passed to \p fn are:
- *  -# *res*: #YOGI_OK or error code in case of a failure (see \ref EC)
- *  -# *sig*: The caught signal (see \ref SIG)
- *  -# *sigarg*: User-defined parameter passed to YOGI_RaiseSignal()
- *  -# *userarg*: Value of the user-specified \p userarg parameter
+ *  -# __res__: #YOGI_OK or error code in case of a failure (see \ref EC)
+ *  -# __sig__: The caught signal (see \ref SIG)
+ *  -# __sigarg__: User-defined parameter passed to YOGI_RaiseSignal()
+ *  -# __userarg__: Value of the user-specified \p userarg parameter
  *
- * Note: Calling this function on the same context again before the signal has
- *       been caught will cause the previously registered handler function to
- *       be called with the the #YOGI_ERR_CANCELED error.
+ * \note
+ *   Calling this function on the same context again before the signal has been
+ *   caught will cause the previously registered handler function to be called
+ *   with the #YOGI_ERR_CANCELED error.
  *
  * \param[in] sigset  The signal set
  * \param[in] fn      The function to call
@@ -1452,13 +1474,13 @@ YOGI_API int YOGI_SignalSetCreate(void** sigset, void* context, int signals);
  *
  * \returns [=0] #YOGI_OK if successful
  * \returns [<0] An error code in case of a failure (see \ref EC)
- ******************************************************************************/
+ */
 YOGI_API int YOGI_SignalSetAwaitSignal(void* sigset,
                                        void (*fn)(int res, int sig,
                                                   void* sigarg, void* userarg),
                                        void* userarg);
 
-/***************************************************************************//**
+/*!
  * Cancels waiting for a signal.
  *
  * Causes the handler function registered via YOGI_SignalSetAwaitSignal() to be
@@ -1468,10 +1490,10 @@ YOGI_API int YOGI_SignalSetAwaitSignal(void* sigset,
  *
  * \returns [=0] #YOGI_OK if successful
  * \returns [<0] An error code in case of a failure (see \ref EC)
- ******************************************************************************/
+ */
 YOGI_API int YOGI_SignalSetCancelAwaitSignal(void* sigset);
 
-/***************************************************************************//**
+/*!
  * Creates a new timer.
  *
  * \param[out] timer   Pointer to the timer handle
@@ -1479,18 +1501,18 @@ YOGI_API int YOGI_SignalSetCancelAwaitSignal(void* sigset);
  *
  * \returns [=0] #YOGI_OK if successful
  * \returns [<0] An error code in case of a failure (see \ref EC)
- ******************************************************************************/
+ */
 YOGI_API int YOGI_TimerCreate(void** timer, void* context);
 
-/***************************************************************************//**
+/*!
  * Starts the given timer.
  *
  * If the timer is already running, the timer will be canceled first, as if
  * YOGI_TimerCancel() were called explicitly.
  *
  * The parameters of the handler function \p fn are:
- *  -# *res*: #YOGI_OK or error code in case of a failure (see \ref EC)
- *  -# *userarg*: Value of the user-specified \p userarg parameter
+ *  -# __res__: #YOGI_OK or error code in case of a failure (see \ref EC)
+ *  -# __userarg__: Value of the user-specified \p userarg parameter
  *
  * \param[in] timer    The timer to start
  * \param[in] duration Duration in nanoseconds (-1 for infinity)
@@ -1499,11 +1521,11 @@ YOGI_API int YOGI_TimerCreate(void** timer, void* context);
  *
  * \returns [=0] #YOGI_OK if successful
  * \returns [<0] An error code in case of a failure (see \ref EC)
- ******************************************************************************/
+ */
 YOGI_API int YOGI_TimerStart(void* timer, long long duration,
                              void (*fn)(int res, void* userarg), void* userarg);
 
-/***************************************************************************//**
+/*!
  * Cancels the given timer.
  *
  * Canceling a timer will result in the handler function registered via
@@ -1518,10 +1540,10 @@ YOGI_API int YOGI_TimerStart(void* timer, long long duration,
  *
  * \returns [=0] #YOGI_OK if successful
  * \returns [<0] An error code in case of a failure (see \ref EC)
- ******************************************************************************/
+ */
 YOGI_API int YOGI_TimerCancel(void* timer);
 
-/***************************************************************************//**
+/*!
  * Creates a new branch.
  *
  * A branch represents an entry point into a Yogi network. It advertises itself
@@ -1537,36 +1559,37 @@ YOGI_API int YOGI_TimerCancel(void* timer);
  * have the following structure:
  *
  * \code
- *    {
- *      "name":                 "Fan Controller",
- *      "description":          "Controls a fan via PWM",
- *      "path":                 "/Cooling System/Fan Controller",
- *      "network_name":         "Hardware Control",
- *      "network_password":     "secret",
- *      "advertising_address":  "ff31::8000:2439",
- *      "advertising_port":     13531,
- *      "advertising_interval": 1.0,
- *      "timeout":              3.0,
- *      "ghost_mode":           false
- *    }
+ *   {
+ *     "name":                 "Fan Controller",
+ *     "description":          "Controls a fan via PWM",
+ *     "path":                 "/Cooling System/Fan Controller",
+ *     "network_name":         "Hardware Control",
+ *     "network_password":     "secret",
+ *     "advertising_address":  "ff31::8000:2439",
+ *     "advertising_port":     13531,
+ *     "advertising_interval": 1.0,
+ *     "timeout":              3.0,
+ *     "ghost_mode":           false
+ *   }
  * \endcode
  *
  * All of the properties are optional and if unspecified (or set to _null_),
  * their respective default values will be used (see \ref CV). The properties
  * have the following meaning:
- *  - *name*: Name of the branch (default: PID\@hostname without the backslash).
- *  - *description*: Description of the branch.
- *  - *path*: Path of the branch in the network (default: /name where name is
+ *  - __name__: Name of the branch (default: PID\@hostname without the
+ *    backslash).
+ *  - __description__: Description of the branch.
+ *  - __path__: Path of the branch in the network (default: /name where name is
  *    the name of the branch). Must start with a slash.
- *  - *network_name*: Name of the network to join (default: the machine's
+ *  - __network_name__: Name of the network to join (default: the machine's
  *    hostname).
- *  - *network_password*: Password for the network (default: no password)
- *  - *advertising_address*: Multicast address to use for advertising, e.g.
+ *  - __network_password__: Password for the network (default: no password)
+ *  - __advertising_address__: Multicast address to use for advertising, e.g.
  *    239.255.0.1 for IPv4 or ff31::8000:1234 for IPv6.
- *  - *advertising_port*: Port to use for advertising.
- *  - *advertising_interval*: Time between advertising messages. Must be at
+ *  - __advertising_port__: Port to use for advertising.
+ *  - __advertising_interval__: Time between advertising messages. Must be at
  *    least 1 ms.
- *  - *ghost_mode*: Set to true to activate ghost mode (default: false).
+ *  - __ghost_mode__: Set to true to activate ghost mode (default: false).
  *
  * Advertising and establishing connections can be limited to certain network
  * interfaces via the _interface_ property. The default is to use all
@@ -1580,8 +1603,9 @@ YOGI_API int YOGI_TimerCancel(void* timer);
  * for obtaining information about active branches without actually becoming
  * part of the Yogi network.
  *
- * Note: Even though the authentication process via passwords is done in a
- *       secure manner, any further communication is done in plain text.
+ * \note
+ *   Even though the authentication process via passwords is done in a secure
+ *   manner, any further communication is done in plain text.
  *
  * \param[out] branch   Pointer to the branch handle
  * \param[in]  context  The context to use
@@ -1594,11 +1618,11 @@ YOGI_API int YOGI_TimerCancel(void* timer);
  *
  * \returns [=0] #YOGI_OK if successful
  * \returns [<0] An error code in case of a failure (see \ref EC)
- ******************************************************************************/
+ */
 YOGI_API int YOGI_BranchCreate(void** branch, void* context, const char* props,
                                const char* section, char* err, int errsize);
 
-/***************************************************************************//**
+/*!
  * Retrieves information about a local branch.
  *
  * This function writes the branch's UUID (16 bytes) in binary form to \p uuid.
@@ -1611,23 +1635,23 @@ YOGI_API int YOGI_BranchCreate(void** branch, void* context, const char* props,
  * The produced JSON string is as follows, without any unnecessary whitespace:
  *
  * \code
- *    {
- *      "uuid":                 "6ba7b810-9dad-11d1-80b4-00c04fd430c8",
- *      "name":                 "Fan Controller",
- *      "description":          "Controls a fan via PWM",
- *      "network_name":         "Hardware Control",
- *      "path":                 "/Cooling System/Fan Controller",
- *      "hostname":             "beaglebone",
- *      "pid":                  4124,
- *      "advertising_address":  "ff31::8000:2439",
- *      "advertising_port":     13531,
- *      "advertising_interval": 1.0,
- *      "tcp_server_address":   "::",
- *      "tcp_server_port":      53332,
- *      "start_time":           "2018-04-23T18:25:43.511Z",
- *      "timeout":              3.0,
- *      "ghost_mode":           false
- *    }
+ *   {
+ *     "uuid":                 "6ba7b810-9dad-11d1-80b4-00c04fd430c8",
+ *     "name":                 "Fan Controller",
+ *     "description":          "Controls a fan via PWM",
+ *     "network_name":         "Hardware Control",
+ *     "path":                 "/Cooling System/Fan Controller",
+ *     "hostname":             "beaglebone",
+ *     "pid":                  4124,
+ *     "advertising_address":  "ff31::8000:2439",
+ *     "advertising_port":     13531,
+ *     "advertising_interval": 1.0,
+ *     "tcp_server_address":   "::",
+ *     "tcp_server_port":      53332,
+ *     "start_time":           "2018-04-23T18:25:43.511Z",
+ *     "timeout":              3.0,
+ *     "ghost_mode":           false
+ *   }
  * \endcode
  *
  * \param[in]  branch   The branch handle
@@ -1639,11 +1663,11 @@ YOGI_API int YOGI_BranchCreate(void** branch, void* context, const char* props,
  *
  * \returns [=0] #YOGI_OK if successful
  * \returns [<0] An error code in case of a failure (see \ref EC)
- ******************************************************************************/
+ */
 YOGI_API int YOGI_BranchGetInfo(void* branch, void* uuid, char* json,
                                 int jsonsize);
 
-/***************************************************************************//**
+/*!
  * Retrieves information about all connected remote branches.
  *
  * For each of the connected remote branches, this function will:
@@ -1664,21 +1688,21 @@ YOGI_API int YOGI_BranchGetInfo(void* branch, void* uuid, char* json,
  * The produced JSON string is as follows, without any unnecessary whitespace:
  *
  * \code
- *    {
- *      "uuid":                 "123e4567-e89b-12d3-a456-426655440000",
- *      "name":                 "Pump Safety Logic",
- *      "description":          "Monitors the pump for safety",
- *      "network_name":         "Hardware Control",
- *      "path":                 "/Cooling System/Pump/Safety",
- *      "hostname":             "beaglebone",
- *      "pid":                  3321,
- *      "tcp_server_address":   "fe80::f086:b106:2c1b:c45",
- *      "tcp_server_port":      43384,
- *      "start_time":           "2018-04-23T18:25:43.511Z",
- *      "timeout":              3.0,
- *      "advertising_interval": 1.0,
- *      "ghost_mode":           false
- *    }
+ *   {
+ *     "uuid":                 "123e4567-e89b-12d3-a456-426655440000",
+ *     "name":                 "Pump Safety Logic",
+ *     "description":          "Monitors the pump for safety",
+ *     "network_name":         "Hardware Control",
+ *     "path":                 "/Cooling System/Pump/Safety",
+ *     "hostname":             "beaglebone",
+ *     "pid":                  3321,
+ *     "tcp_server_address":   "fe80::f086:b106:2c1b:c45",
+ *     "tcp_server_port":      43384,
+ *     "start_time":           "2018-04-23T18:25:43.511Z",
+ *     "timeout":              3.0,
+ *     "advertising_interval": 1.0,
+ *     "ghost_mode":           false
+ *   }
  * \endcode
  *
  * \param[in]  branch   The branch handle
@@ -1692,21 +1716,21 @@ YOGI_API int YOGI_BranchGetInfo(void* branch, void* uuid, char* json,
  *
  * \returns [=0] #YOGI_OK if successful
  * \returns [<0] An error code in case of a failure (see \ref EC)
- ******************************************************************************/
+ */
 YOGI_API int YOGI_BranchGetConnectedBranches(void* branch, void* uuid,
                                              char* json, int jsonsize,
                                              void (*fn)(int res, void* userarg),
                                              void* userarg);
 
-/***************************************************************************//**
+/*!
  * Wait for a branch event to occur.
  *
  * This function will register \p fn to be called once one of the given branch
  * \p events occurs on the given \p branch. The parameters passed to \p fn are:
- *  -# *res*: #YOGI_OK or error code associated with the wait operation
- *  -# *event*: The branch event that occurred (see \ref BEV)
- *  -# *evres*: #YOGI_OK or error code assitiated with the event
- *  -# *userarg*: Value of the user-specified \p userarg parameter
+ *  -# __res__: #YOGI_OK or error code associated with the wait operation
+ *  -# __event__: The branch event that occurred (see \ref BEV)
+ *  -# __evres__: #YOGI_OK or error code assitiated with the event
+ *  -# __userarg__: Value of the user-specified \p userarg parameter
  *
  * If this function is called while a previous wait operation is still active
  * then the previous operation will be canceled, i.e. \p fn for the previous
@@ -1726,8 +1750,9 @@ YOGI_API int YOGI_BranchGetConnectedBranches(void* branch, void* uuid,
  * \p jsonsize - 1 characters and a trailing zero and \p fn will be called with
  * the #YOGI_ERR_BUFFER_TOO_SMALL error for that particular branch.
  *
- * Note: Make sure that the two supplied buffers \p uuid and \p json remain
- *       valid until \p fn has been executed.
+ * \attention
+ *   Make sure that the two supplied buffers \p uuid and \p json remain valid
+ *   until \p fn has been executed.
  *
  * \param[in]  branch   The branch handle
  * \param[in]  events   Events to observe (see \ref BEV)
@@ -1741,12 +1766,12 @@ YOGI_API int YOGI_BranchGetConnectedBranches(void* branch, void* uuid,
  *
  * \returns [=0] #YOGI_OK if successful
  * \returns [<0] An error code in case of a failure (see \ref EC)
- ******************************************************************************/
+ */
 YOGI_API int YOGI_BranchAwaitEvent(
     void* branch, int events, void* uuid, char* json, int jsonsize,
     void (*fn)(int res, int event, int evres, void* userarg), void* userarg);
 
-/***************************************************************************//**
+/*!
  * Cancels waiting for a branch event.
  *
  * Calling this function will cause the handler registered via
@@ -1756,10 +1781,10 @@ YOGI_API int YOGI_BranchAwaitEvent(
  *
  * \returns [=0] #YOGI_OK if successful
  * \returns [<0] An error code in case of a failure (see \ref EC)
- ******************************************************************************/
+ */
 YOGI_API int YOGI_BranchCancelAwaitEvent(void* branch);
 
-/***************************************************************************//**
+/*!
  * Creates a new terminal.
  *
  * Terminals are the communication endpoints in Yogi. Each terminal is
@@ -1776,46 +1801,46 @@ YOGI_API int YOGI_BranchCancelAwaitEvent(void* branch);
  * counterpart.
  *
  * Each terminal is of one of the following types:
- *  - *Variable*: A single providing _Variable_ "owns" the variable. The value
+ *  - __Variable__: A single providing _Variable_ "owns" the variable. The value
  *    of the variable is the message that has last been sent over the provider
  *    or received by the provider from any of the consuming _Variable_
  *    terminals. Once the value of the variable changes, the provider sends
  *    the new value to all consumers. The value gets cached such that new
  *    consumers will receive the current value of the variable. Compatible
  *    types: _Variable_ (provider/consumer) and _ReadOnlyVariable_ (consumer).
- *  - *ReadOnlyVariable*: Same as _Variable_ but consumers cannot change the
+ *  - __ReadOnlyVariable__: Same as _Variable_ but consumers cannot change the
  *    value of the variable. Compatible types: _ReadOnlyVariable_
  *    (provider/consumer), _Variable_ (provider), and _Constant_ (provider).
- *  - *WriteOnlyVariable*: Same as _Variable_ but consumers cannot read the
+ *  - __WriteOnlyVariable__: Same as _Variable_ but consumers cannot read the
  *    value of the variable. Compatible types: _WriteOnlyVariable_
  *    (provider/consumer), _Variable_ (provider).
- *  - *Constant*: Same as _ReadOnlyVariable_ but the state of the variable
+ *  - __Constant__: Same as _ReadOnlyVariable_ but the state of the variable
  *    never changes after it has initially been set. Compatible types:
  *    _Constant_ (provider/consumer) and _ReadOnlyVariable_ (consumer).
- *  - *Publisher*: Publishes messages to an arbitrary number of _Subscriber_
+ *  - __Publisher__: Publishes messages to an arbitrary number of _Subscriber_
  *    terminals. Compatible types: _Subscriber_ (provider/consumer).
- *  - *Subscriber*: Receives messages published by _Publisher_ terminals.
+ *  - __Subscriber__: Receives messages published by _Publisher_ terminals.
  *    Compatible types: _Publisher_ (provider/consumer).
- *  - *Surveyor*: Sends a request message to an arbitrary number of
+ *  - __Surveyor__: Sends a request message to an arbitrary number of
  *    _Surveyee_ terminals that in turn answer with a response message.
  *    Compatible types: _Surveyee_ (provider/consumer).
- *  - *Surveyee*: Answers messages from _Surveyor_ terminals by sending a
+ *  - __Surveyee__: Answers messages from _Surveyor_ terminals by sending a
  *    response message for each received request. Compatible types:
  *    _Surveyor_ (provider/consumer).
- *  - *Pair*: Allows messaging between exactly one providing and one consuming
+ *  - __Pair__: Allows messaging between exactly one providing and one consuming
  *    _Pair_ terminal. Compatible types: _Pair_ (provider/consumer).
- *  - *Semaphore*: Can be acquired via _Lock_ terminals a configured number of
+ *  - __Semaphore__: Can be acquired via _Lock_ terminals a configured number of
  *    N times simultaneously. Compatible types: _Lock_ (provider/consumer).
- *  - *Mutex*: Special case of a _Semaphore_ where N = 1, i.e. it can only be
+ *  - __Mutex__: Special case of a _Semaphore_ where N = 1, i.e. it can only be
  *    acquired by a single _Lock_ terminal at a time. Compatible types:
  *    _Lock_ (provider/consumer).
- *  - *Lock*: Acquires _Semaphore_ and _Mutex_ terminals. Compatible types:
+ *  - __Lock__: Acquires _Semaphore_ and _Mutex_ terminals. Compatible types:
  *    _Semaphore_ (provider/consumer) and _Mutex_ (provider/consumer).
- *  - *Stream*: Allows streaming of data, e.g. for video or audio data. The
+ *  - __Stream__: Allows streaming of data, e.g. for video or audio data. The
  *    provider represents the source and the consumer represents of an arbitrary
  *    number of sinks of the stream. Compatible types: _Stream_
  *    (provider/consumer).
- *  - *File*: Allows transferring files. The provider supplies the file to an
+ *  - __File__: Allows transferring files. The provider supplies the file to an
  *    arbitrary number of consumers. Compatible types: _File_
  *    (provider/consumer).
  *
@@ -1823,35 +1848,36 @@ YOGI_API int YOGI_BranchCancelAwaitEvent(void* branch);
  * supplied JSON must have the following structure:
  *
  * \code
- *    {
- *      "path":        "Temperature",
- *      "type":        "Variable",
- *      "role":        "Provider",
- *      "description": "The engine's temperature",
- *      "data": [
- *        {
- *          "type":        "float",
- *          "description": "Temperature in degrees Celsius",
- *          "min":         -50,
- *          "max":         300
- *        }, {
- *          "type":        "int",
- *          "description": "Timestamp"
- *        }
- *      ]
- *    }
+ *   {
+ *     "path":        "Temperature",
+ *     "type":        "Variable",
+ *     "role":        "Provider",
+ *     "description": "The engine's temperature",
+ *     "data": [
+ *       {
+ *         "type":        "float",
+ *         "description": "Temperature in degrees Celsius",
+ *         "min":         -50,
+ *         "max":         300
+ *       }, {
+ *         "type":        "int",
+ *         "description": "Timestamp"
+ *       }
+ *     ]
+ *   }
  * \endcode
  *
  * The properties have the following meaning:
- *  - *path* (optional): Path of the terminal (prefixed by \p pathpfx)
- *  - *type*: Type of the terminal (see above for possible types)
- *  - *role* (optional): Role of the terminal
- *  - *description* (optional): Additional information about the terminal
- *  - *data*: Schema of the data type that is transmitted
+ *  - __path__ (optional): Path of the terminal (prefixed by \p pathpfx).
+ *  - __type__: Type of the terminal (see above for possible types).
+ *  - __role__ (optional): Role of the terminal.
+ *  - __description__ (optional): Additional information about the terminal.
+ *  - __data__: Schema for the data type that is transmitted.
  *
- * Note: The final path of the terminal will be determined by joining the
- *       \p pathpfx and the value of the _path_ string from the JSON above.
- *       At most one of these two may be empty or NULL.
+ * \note
+ *   The final path of the terminal will be determined by joining the \p pathpfx
+ *   and the value of the _path_ string from the JSON above. At most one of
+ *   these two may be empty or NULL.
  *
  * \param[out] terminal Pointer to the terminal handle
  * \param[in]  branch   The branch to use
@@ -1863,7 +1889,7 @@ YOGI_API int YOGI_BranchCancelAwaitEvent(void* branch);
  *
  * \returns [=0] #YOGI_OK if successful
  * \returns [<0] An error code in case of a failure (see \ref EC)
- ******************************************************************************/
+ */
 YOGI_API int YOGI_TerminalCreate(void** terminal, void* branch,
                                  const char* pathpfx, int rolesrc,
                                  const char* props, const char* section);
@@ -1880,7 +1906,7 @@ YOGI_API int YOGI_TerminalCreate(void** terminal, void* branch,
 // YOGI_API int YOGI_InterfaceGetTerminal(void** terminal, void* iface,
 //                                        const char* path);
 
-/***************************************************************************//**
+/*!
  * Destroys an object.
  *
  * Tries to destroy the object belonging to the given handle. The call fails and
@@ -1898,10 +1924,10 @@ YOGI_API int YOGI_TerminalCreate(void** terminal, void* branch,
  *
  * \returns [=0] #YOGI_OK if successful
  * \returns [<0] An error code in case of a failure (see \ref EC)
- ******************************************************************************/
+ */
 YOGI_API int YOGI_Destroy(void* object);
 
-/***************************************************************************//**
+/*!
  * Destroys all objects.
  *
  * Destroys all previously created objects. All handles will be invalidated and
@@ -1916,7 +1942,7 @@ YOGI_API int YOGI_Destroy(void* object);
  *
  * \returns [=0] #YOGI_OK if successful
  * \returns [<0] An error code in case of a failure (see \ref EC)
- ******************************************************************************/
+ */
 YOGI_API int YOGI_DestroyAll();
 
 //! @}
