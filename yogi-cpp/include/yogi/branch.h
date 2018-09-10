@@ -79,15 +79,11 @@ inline std::string ToString<BranchEvents>(const BranchEvents& events) {
   return s.substr(3);
 }
 
+////////////////////////////////////////////////////////////////////////////////
 /// Information about about a branch.
+////////////////////////////////////////////////////////////////////////////////
 class BranchInfo {
  public:
-  BranchInfo(const Uuid& uuid, std::string&& json_str)
-      : BranchInfo(uuid, Json::parse(json_str), json_str) {}
-
-  BranchInfo(const Uuid& uuid, Json json, std::string json_str)
-      : uuid_(uuid), json_(json), json_str_(json_str) {}
-
   virtual ~BranchInfo() {}
 
   /// Returns the UUID of the branch.
@@ -176,24 +172,37 @@ class BranchInfo {
   /// \return Branch information as a JSON object.
   const Json& ToJson() const { return json_; }
 
+ protected:
+  BranchInfo(const Uuid& uuid, std::string&& json_str)
+      : BranchInfo(uuid, Json::parse(json_str), json_str) {}
+
+  BranchInfo(const Uuid& uuid, Json json, std::string json_str)
+      : uuid_(uuid), json_(json), json_str_(json_str) {}
+
  private:
   const Uuid uuid_;
   const Json json_;
   const std::string json_str_;
 };
 
+////////////////////////////////////////////////////////////////////////////////
 /// Information about a remote branch.
+////////////////////////////////////////////////////////////////////////////////
 class RemoteBranchInfo : public BranchInfo {
- public:
+ friend class BranchQueriedEventInfo;
+ friend class Branch;
+
+ protected:
   using BranchInfo::BranchInfo;
 };
 
+////////////////////////////////////////////////////////////////////////////////
 /// Information about a local branch.
+////////////////////////////////////////////////////////////////////////////////
 class LocalBranchInfo : public BranchInfo {
- public:
-  LocalBranchInfo(const Uuid& uuid, std::string&& json_str)
-      : BranchInfo(uuid, std::move(json_str)) {}
+ friend class Branch;
 
+ public:
   /// Advertising IP address.
   ///
   /// \returns The advertising IP address.
@@ -205,18 +214,19 @@ class LocalBranchInfo : public BranchInfo {
   ///
   /// \returns The advertising port.
   int GetAdvertisingPort() const { return ToJson()["advertising_port"]; }
+
+ protected:
+  LocalBranchInfo(const Uuid& uuid, std::string&& json_str)
+      : BranchInfo(uuid, std::move(json_str)) {}
 };
 
+////////////////////////////////////////////////////////////////////////////////
 /// Information associated with a branch event.
+////////////////////////////////////////////////////////////////////////////////
 class BranchEventInfo {
+ friend class Branch;
+
  public:
-  BranchEventInfo() : BranchEventInfo({}, "{}") {}
-
-  BranchEventInfo(const Uuid& uuid, std::string&& json_str)
-      : uuid_(uuid),
-        json_(Json::parse(json_str)),
-        json_str_(std::move(json_str)) {}
-
   virtual ~BranchEventInfo() {}
 
   /// Returns the UUID of the branch.
@@ -234,18 +244,27 @@ class BranchEventInfo {
   /// \return Event information as a JSON object.
   const Json& ToJson() const { return json_; }
 
+ protected:
+  BranchEventInfo() : BranchEventInfo({}, "{}") {}
+
+  BranchEventInfo(const Uuid& uuid, std::string&& json_str)
+      : uuid_(uuid),
+        json_(Json::parse(json_str)),
+        json_str_(std::move(json_str)) {}
+
  private:
   const Uuid uuid_;
   const Json json_;
   const std::string json_str_;
 };
 
-/// Information associated with the BranchDiscovered branch event.
+////////////////////////////////////////////////////////////////////////////////
+/// Information associated with the BranchEvents::kBranchDiscovered event.
+////////////////////////////////////////////////////////////////////////////////
 class BranchDiscoveredEventInfo : public BranchEventInfo {
- public:
-  BranchDiscoveredEventInfo(const Uuid& uuid, std::string&& json_str)
-      : BranchEventInfo(uuid, std::move(json_str)) {}
+ friend class Branch;
 
+ public:
   /// Returns the address of the TCP server for incoming connections.
   ///
   /// \returns The address of the TCP server for incoming connections.
@@ -257,14 +276,19 @@ class BranchDiscoveredEventInfo : public BranchEventInfo {
   ///
   /// \returns The listening port of the TCP server for incoming connections.
   int GetTcpServerPort() const { return ToJson()["tcp_server_port"]; }
+
+ protected:
+  BranchDiscoveredEventInfo(const Uuid& uuid, std::string&& json_str)
+      : BranchEventInfo(uuid, std::move(json_str)) {}
 };
 
-/// Information associated with the BranchQueried branch event.
+////////////////////////////////////////////////////////////////////////////////
+/// Information associated with the BranchEvents::kBranchQueried event.
+////////////////////////////////////////////////////////////////////////////////
 class BranchQueriedEventInfo : public BranchEventInfo {
- public:
-  BranchQueriedEventInfo(const Uuid& uuid, std::string&& json_str)
-      : BranchEventInfo(uuid, std::move(json_str)) {}
+ friend class Branch;
 
+ public:
   /// Returns the name of the branch.
   ///
   /// \returns The name of the branch.
@@ -342,26 +366,39 @@ class BranchQueriedEventInfo : public BranchEventInfo {
   RemoteBranchInfo ToRemoteBranchInfo() const {
     return RemoteBranchInfo(GetUuid(), ToJson(), ToString());
   }
+
+ protected:
+  BranchQueriedEventInfo(const Uuid& uuid, std::string&& json_str)
+      : BranchEventInfo(uuid, std::move(json_str)) {}
 };
 
-/// Information associated with the ConnectFinished branch event.
+////////////////////////////////////////////////////////////////////////////////
+/// Information associated with the BranchEvents::kConnectFinished event.
+////////////////////////////////////////////////////////////////////////////////
 class ConnectFinishedEventInfo : public BranchEventInfo {
- public:
+ friend class Branch;
+
+ protected:
   using BranchEventInfo::BranchEventInfo;
 };
 
-/// Information associated with the ConnectionLost branch event.
+////////////////////////////////////////////////////////////////////////////////
+/// Information associated with the BranchEvents::kConnectionLost event.
+////////////////////////////////////////////////////////////////////////////////
 class ConnectionLostEventInfo : public BranchEventInfo {
- public:
+ friend class Branch;
+
+ protected:
   using BranchEventInfo::BranchEventInfo;
 };
 
 class Branch;
 using BranchPtr = std::shared_ptr<Branch>;
 
+////////////////////////////////////////////////////////////////////////////////
 /// Entry point into a Yogi network.
 ///
-/// A branch represents an entry point into a YOGI network. It advertises
+/// A branch represents an entry point into a Yogi network. It advertises
 /// itself via IP broadcasts/multicasts with its unique ID and information
 /// required for establishing a connection. If a branch detects other branches
 /// on the network, it connects to them via TCP to retrieve further
@@ -371,10 +408,18 @@ using BranchPtr = std::shared_ptr<Branch>;
 /// no other known branch with the same path then the branches can actively
 /// communicate as part of the Yogi network.
 ///
-/// Note: Even though the authentication process via passwords is done in a
-///       secure manner, any further communication is done in plain text.
+/// \note
+///   Even if the communication between branches is not encrypted, the
+///   authentication process via passwords is always done in a secure manner.
+////////////////////////////////////////////////////////////////////////////////
 class Branch : public ObjectT<Branch> {
  public:
+  /// Callback function used in AwaitEvent().
+  ///
+  /// \param res    %Result of the wait operation
+  /// \param event  The branch event that occurred
+  /// \param ev_res %Result associated with the event
+  /// \param info   Event information
   using AwaitEventFn =
       std::function<void(const Result& res, BranchEvents event,
                          const Result& ev_res, BranchEventInfo& info)>;
@@ -385,37 +430,37 @@ class Branch : public ObjectT<Branch> {
   /// must have the following structure:
   ///
   /// \code
-  ///    {
-  ///      "name":                 "Fan Controller",
-  ///      "description":          "Controls a fan via PWM",
-  ///      "path":                 "/Cooling System/Fan Controller",
-  ///      "network_name":         "Hardware Control",
-  ///      "network_password":     "secret",
-  ///      "advertising_address":  "ff31::8000:2439",
-  ///      "advertising_port":     13531,
-  ///      "advertising_interval": 1.0,
-  ///      "timeout":              3.0,
-  ///      "ghost_mode":           false
-  ///    }
+  ///   {
+  ///     "name":                 "Fan Controller",
+  ///     "description":          "Controls a fan via PWM",
+  ///     "path":                 "/Cooling System/Fan Controller",
+  ///     "network_name":         "Hardware Control",
+  ///     "network_password":     "secret",
+  ///     "advertising_address":  "ff31::8000:2439",
+  ///     "advertising_port":     13531,
+  ///     "advertising_interval": 1.0,
+  ///     "timeout":              3.0,
+  ///     "ghost_mode":           false
+  ///   }
   /// \endcode
   ///
   /// All of the properties are optional and if unspecified (or set to _null_),
-  /// their respective default values will be used (see \ref CV). The properties
-  /// have the following meaning:
-  ///  - *name*: Name of the branch (default: PID\@hostname without the
+  /// their respective default values will be used (see \ref constants). The
+  /// properties have the following meaning:
+  ///  - __name__: Name of the branch (default: PID\@hostname without the
   ///    backslash).
-  ///  - *description*: Description of the branch.
-  ///  - *path*: Path of the branch in the network (default: /name where name is
-  ///    the name of the branch). Must start with a slash.
-  ///  - *network_name*: Name of the network to join (default: the machine's
+  ///  - __description__: Description of the branch.
+  ///  - __path__: Path of the branch in the network (default: /name where name
+  ///    is the name of the branch). Must start with a slash.
+  ///  - __network_name__: Name of the network to join (default: the machine's
   ///    hostname).
-  ///  - *network_password*: Password for the network (default: no password)
-  ///  - *advertising_address*: Multicast address to use for advertising, e.g.
+  ///  - __network_password__: Password for the network (default: no password)
+  ///  - __advertising_address__: Multicast address to use for advertising, e.g.
   ///    239.255.0.1 for IPv4 or ff31::8000:1234 for IPv6.
-  ///  - *advertising_port*: Port to use for advertising.
-  ///  - *advertising_interval*: Time between advertising messages. Must be at
+  ///  - __advertising_port__: Port to use for advertising.
+  ///  - __advertising_interval__: Time between advertising messages. Must be at
   ///    least 1 ms.
-  ///  - *ghost_mode*: Set to true to activate ghost mode (default: false).
+  ///  - __ghost_mode__: Set to true to activate ghost mode (default: false).
   ///
   /// Advertising and establishing connections can be limited to certain network
   /// interfaces via the _interface_ property. The default is to use all
@@ -429,8 +474,8 @@ class Branch : public ObjectT<Branch> {
   /// and so on. This is useful for obtaining information about active branches
   /// without actually becoming part of the Yogi network.
   ///
-  /// \param context Context to use
-  /// \param props   Branch properties as serialized JSON
+  /// \param context %Context to use
+  /// \param props   %Branch properties as serialized JSON
   /// \param section Section in \p props to use instead of the root section;
   ///                syntax is JSON pointer (RFC 6901)
   ///

@@ -17,84 +17,90 @@
 /// Creates a log entry with fatal severity.
 ///
 /// Examples:
-/// \code
-///  // Logging to the App logger:
-///  YOGI_LOG_FATAL("My luck number is " << 42)
 ///
-///  // Logging to a custom logger:
-///  float rpm = 123.45;
-///  yogi::Logger logger("Engine");
-///  YOGI_LOG_FATAL(logger, "Speed exceeded " << rpm << " RPM")
+/// \code
+///   // Logging to the App logger:
+///   YOGI_LOG_FATAL("My luck number is " << 42)
+///
+///   // Logging to a custom logger:
+///   float rpm = 123.45;
+///   yogi::Logger logger("Engine");
+///   YOGI_LOG_FATAL(logger, "Speed exceeded " << rpm << " RPM")
 /// \endcode
 #define YOGI_LOG_FATAL(...) YOGI_LOG(kFatal, __VA_ARGS__)
 
 /// Creates a log entry with error severity.
 ///
 /// Examples:
-/// \code
-///  // Logging to the App logger:
-///  YOGI_LOG_ERROR("My luck number is " << 42)
 ///
-///  // Logging to a custom logger:
-///  float rpm = 123.45;
-///  yogi::Logger logger("Engine");
-///  YOGI_LOG_ERROR(logger, "Speed exceeded " << rpm << " RPM")
+/// \code
+///   // Logging to the App logger:
+///   YOGI_LOG_ERROR("My luck number is " << 42)
+///
+///   // Logging to a custom logger:
+///   float rpm = 123.45;
+///   yogi::Logger logger("Engine");
+///   YOGI_LOG_ERROR(logger, "Speed exceeded " << rpm << " RPM")
 /// \endcode
 #define YOGI_LOG_ERROR(...) YOGI_LOG(kError, __VA_ARGS__)
 
 /// Creates a log entry with warning severity.
 ///
 /// Examples:
-/// \code
-///  // Logging to the App logger:
-///  YOGI_LOG_WARNING("My luck number is " << 42)
 ///
-///  // Logging to a custom logger:
-///  float rpm = 123.45;
-///  yogi::Logger logger("Engine");
-///  YOGI_LOG_WARNING(logger, "Speed exceeded " << rpm << " RPM")
+/// \code
+///   // Logging to the App logger:
+///   YOGI_LOG_WARNING("My luck number is " << 42)
+///
+///   // Logging to a custom logger:
+///   float rpm = 123.45;
+///   yogi::Logger logger("Engine");
+///   YOGI_LOG_WARNING(logger, "Speed exceeded " << rpm << " RPM")
 /// \endcode
 #define YOGI_LOG_WARNING(...) YOGI_LOG(kWarning, __VA_ARGS__)
 
 /// Creates a log entry with info severity.
 ///
 /// Examples:
-/// \code
-///  // Logging to the App logger:
-///  YOGI_LOG_INFO("My luck number is " << 42)
 ///
-///  // Logging to a custom logger:
-///  float rpm = 123.45;
-///  yogi::Logger logger("Engine");
-///  YOGI_LOG_INFO(logger, "Speed exceeded " << rpm << " RPM")
+/// \code
+///   // Logging to the App logger:
+///   YOGI_LOG_INFO("My luck number is " << 42)
+///
+///   // Logging to a custom logger:
+///   float rpm = 123.45;
+///   yogi::Logger logger("Engine");
+///   YOGI_LOG_INFO(logger, "Speed exceeded " << rpm << " RPM")
 /// \endcode
 #define YOGI_LOG_INFO(...) YOGI_LOG(kInfo, __VA_ARGS__)
 
 /// Creates a log entry with debug severity.
 ///
 /// Examples:
-/// \code
-///  // Logging to the App logger:
-///  YOGI_LOG_DEBUG("My luck number is " << 42)
 ///
-///  // Logging to a custom logger:
-///  float rpm = 123.45;
-///  yogi::Logger logger("Engine");
-///  YOGI_LOG_DEBUG(logger, "Speed exceeded " << rpm << " RPM")
+/// \code
+///   // Logging to the App logger:
+///   YOGI_LOG_DEBUG("My luck number is " << 42)
+///
+///   // Logging to a custom logger:
+///   float rpm = 123.45;
+///   yogi::Logger logger("Engine");
+///   YOGI_LOG_DEBUG(logger, "Speed exceeded " << rpm << " RPM")
 /// \endcode
 #define YOGI_LOG_DEBUG(...) YOGI_LOG(kDebug, __VA_ARGS__)
 
 /// Creates a log entry with trace severity.
 ///
 /// Examples:
-/// \code
-///  // Logging to the App logger:
-///  YOGI_LOG_TRACE("My luck number is " << 42)
 ///
-///  // Logging to a custom logger:
-///  float rpm = 123.45;
-///  yogi::Logger logger("Engine");
-///  YOGI_LOG_TRACE(logger, "Speed exceeded " << rpm << " RPM")
+/// \code
+///   // Logging to the App logger:
+///   YOGI_LOG_TRACE("My luck number is " << 42)
+///
+///   // Logging to a custom logger:
+///   float rpm = 123.45;
+///   yogi::Logger logger("Engine");
+///   YOGI_LOG_TRACE(logger, "Speed exceeded " << rpm << " RPM")
 /// \endcode
 #define YOGI_LOG_TRACE(...) YOGI_LOG(kTrace, __VA_ARGS__)
 
@@ -103,14 +109,15 @@
 /// The severity parameter is the name of one of the Verbosity enum values.
 ///
 /// Examples:
-/// \code
-///  // Logging to the App logger:
-///  YOGI_LOG(kInfo, "My luck number is " << 42)
 ///
-///  // Logging to a custom logger:
-///  float rpm = 123.45;
-///  yogi::Logger logger("Engine");
-///  YOGI_LOG(kWarning, logger, "Speed exceeded " << rpm << " RPM")
+/// \code
+///   // Logging to the App logger:
+///   YOGI_LOG(kInfo, "My luck number is " << 42)
+///
+///   // Logging to a custom logger:
+///   float rpm = 123.45;
+///   yogi::Logger logger("Engine");
+///   YOGI_LOG(kWarning, logger, "Speed exceeded " << rpm << " RPM")
 /// \endcode
 #define YOGI_LOG(severity, ...)                                               \
   _YOGI_LOG_EXPAND(_YOGI_LOG_IMPL(                                            \
@@ -167,7 +174,7 @@ YOGI_DEFINE_API_FN(int, YOGI_LoggerLog,
 
 /// Levels of how verbose logging output is.
 ///
-/// The term "severity" is refers to the same type.
+/// The term _severity_ is refers to the same type.
 enum class Verbosity {
   /// Fatal errors are errors that require a process restart.
   kFatal = 0,
@@ -175,7 +182,7 @@ enum class Verbosity {
   /// Errors that the system can recover from.
   kError = 1,
 
-  /// >Warnings.
+  /// Warnings.
   kWarning = 2,
 
   /// Useful general information about the system state.
@@ -225,15 +232,14 @@ inline std::string ToString<Stream>(const Stream& st) {
   return {};
 }
 
-/// Allows the YOGI to write library-internal and user logging to stdout or
-/// stderr.
+/// Allows Yogi to write library-internal and user logging to stdout or stderr.
 ///
 /// This function supports colourizing the output if the terminal that the
 /// process is running in supports it. The color used for a log entry depends
 /// on the entry's severity. For example, errors will be printed in red and
 /// warnings in yellow.
 ///
-/// Each log entry contains the *component* tag which describes which part of
+/// Each log entry contains the _component_ tag which describes which part of
 /// a program issued the log entry. For entries created by the library itself,
 /// this parameter is prefixed with the string "Yogi.", followed by the
 /// internal component name. For example, the component tag for a branch would
@@ -241,31 +247,41 @@ inline std::string ToString<Stream>(const Stream& st) {
 ///
 /// The \p timefmt parameter describes the textual format of a log entry's
 /// timestamp. The following placeholders are supported:
-///     %Y: Four digit year.
-///     %m: Month name as a decimal 01 to 12.
-///     %d: Day of the month as decimal 01 to 31.
-///     %F: Equivalent to %Y-%m-%d (the ISO 8601 date format).
-///     %H: The hour as a decimal number using a 24-hour clock (00 to 23).
-///     %M: The minute as a decimal 00 to 59.
-///     %S: Seconds as a decimal 00 to 59.
-///     %T: Equivalent to %H:%M:%S (the ISO 8601 time format).
-///     %3: Milliseconds as decimal number 000 to 999.
-///     %6: Microseconds as decimal number 000 to 999.
-///     %9: Nanoseconds as decimal number 000 to 999.
+///  - \c \%Y: Four digit year.
+///  - \c \%m: Month name as a decimal 01 to 12.
+///  - \c \%d: Day of the month as decimal 01 to 31.
+///  - \c \%F: Equivalent to %Y-%m-%d (the ISO 8601 date format).
+///  - \c \%H: The hour as a decimal number using a 24-hour clock (00 to 23).
+///  - \c \%M: The minute as a decimal 00 to 59.
+///  - \c \%S: Seconds as a decimal 00 to 59.
+///  - \c \%T: Equivalent to %H:%M:%S (the ISO 8601 time format).
+///  - \c \%3: Milliseconds as decimal number 000 to 999.
+///  - \c \%6: Microseconds as decimal number 000 to 999.
+///  - \c \%9: Nanoseconds as decimal number 000 to 999.
 ///
 /// The \p fmt parameter describes the textual format of the complete log entry
 /// as it will appear on the console. The supported placeholders are:
-///     $t: Timestamp, formatted according to the timefmt parameter.
-///     $P: Process ID (PID).
-///     $T: Thread ID.
-///     $s: Severity as 3 letters (FAT, ERR, WRN, IFO, DBG or TRC).
-///     $m: Log message.
-///     $f: Source file name.
-///     $l: Source line number.
-///     $c: Component tag.
-///     $<: Set console color corresponding to severity.
-///     $>: Reset the colours (also done after each log entry).
-///     $$: A $ sign.
+///  - \c $t: Timestamp, formatted according to the timefmt parameter.
+///  - \c $P: Process ID (PID).
+///  - \c $T: Thread ID.
+///  - \c $s: Severity as 3 letters (FAT, ERR, WRN, IFO, DBG or TRC).
+///  - \c $m: Log message.
+///  - \c $f: Source file name.
+///  - \c $l: Source line number.
+///  - \c $c: Component tag.
+///  - \c $<: Set console color corresponding to severity.
+///  - \c $>: Reset the colours (also done after each log entry).
+///  - \c $$: A $ sign.
+///
+/// \note
+///   The placeholder syntax is a modulo or dollar sign repectively, followed by
+///   a single character. Any additional characters shown above are for Doxygen.
+///
+/// \param verbosity Maximum verbosity of messages to log
+/// \param stream    The stream to use
+/// \param color     Use colors in output
+/// \param timefmt   Format of the timestamp (see above for placeholders)
+/// \param fmt       Format of a log entry (see above for placeholders)
 inline void LogToConsole(Verbosity verbosity, Stream stream = Stream::kStderr,
                          bool color = true, StringView timefmt = {},
                          StringView fmt = {}) {
@@ -283,14 +299,13 @@ inline void LogToConsole() {
 
 /// Handler function type for the log hook.
 ///
-/// The parameters are:
-///  -# *severity*: Severity (verbosity) of the entry.
-///  -# *timestamp*: UTC Timestamp of the entry.
-///  -# *tid*: ID of the thread that created the entry.
-///  -# *file*: Source file name.
-///  -# *line*: Source file line number.
-///  -# *comp*: Component that created the entry.
-///  -# *msg*: Log message.
+/// \param severity  Severity (verbosity) of the entry
+/// \param timestamp UTC timestamp of the entry
+/// \param tid       ID of the thread that created the entry
+/// \param file      Source file name
+/// \param line      Source file line number
+/// \param comp      Component that created the entry
+/// \param msg       Log message
 using LogHookFn = std::function<void(Verbosity severity, Timestamp timestamp,
                                      int tid, std::string file, int line,
                                      std::string comp, std::string msg)>;
@@ -313,7 +328,7 @@ YOGI_WEAK_SYMBOL std::unique_ptr<LogHookFn> LogToHookData::log_hook_fn;
 /// further in user code.
 ///
 /// \param verbosity Maximum verbosity of messages to log.
-/// \param fn Callback function.
+/// \param fn        Callback function.
 inline void LogToHook(Verbosity verbosity, LogHookFn fn) {
   auto fn_ptr = std::make_unique<LogHookFn>(fn);
   static auto wrapper = [](int severity, long long timestamp, int tid,
@@ -350,41 +365,19 @@ inline void LogToHook() {
 /// information to. If the file with the given filename already exists then it
 /// will be overwritten.
 ///
-/// The filename parameter supports all placeholders that are valid for the
-/// timefmt parameter (see below).
+/// The \p timefmt and \p fmt parameters describe the textual format for a log
+/// entry. The \p filename parameter supports all placeholders that are valid
+/// for \p timefmt. See the LogToConsole() method for supported placeholders.
 ///
-/// The \p timefmt parameter describes the textual format of a log entry's
-/// timestamp. The following placeholders are supported:
-///     %Y: Four digit year.
-///     %m: Month name as a decimal 01 to 12.
-///     %d: Day of the month as decimal 01 to 31.
-///     %F: Equivalent to %Y-%m-%d (the ISO 8601 date format).
-///     %H: The hour as a decimal number using a 24-hour clock (00 to 23).
-///     %M: The minute as a decimal 00 to 59.
-///     %S: Seconds as a decimal 00 to 59.
-///     %T: Equivalent to %H:%M:%S (the ISO 8601 time format).
-///     %3: Milliseconds as decimal number 000 to 999.
-///     %6: Microseconds as decimal number 000 to 999.
-///     %9: Nanoseconds as decimal number 000 to 999.
+/// \note
+///   The color-related placeholders are ignored when writing to log files.
 ///
-/// The \p fmt parameter describes the textual format of the complete log entry
-/// as it will in the log file. The supported placeholders are:
-///     $t: Timestamp, formatted according to the timefmt parameter.
-///     $P: Process ID (PID).
-///     $T: Thread ID.
-///     $s: Severity as 3 letters (FAT, ERR, WRN, IFO, DBG or TRC).
-///     $m: Log message.
-///     $f: Source file name.
-///     $l: Source line number.
-///     $c: Component tag.
-///     $$: A $ sign.
+/// \param verbosity Maximum verbosity of messages to log
+/// \param filename  Path to the log file (see above for placeholders)
+/// \param timefmt   Format of the timestamp (see above for placeholders)
+/// \param fmt       Format of a log entry (see above for placeholders)
 ///
-/// \param verbosity Maximum verbosity of messages to log.
-/// \param filename Path to the log file (see above for placeholders).
-/// \param timefmt Format of the timestamp (see above for placeholders).
-/// \param fmt Format of a log entry (see above for placeholders).
-///
-/// \returns The generated filename with all placeholders resolved.
+/// \returns The generated filename with all placeholders resolved
 inline std::string LogToFile(Verbosity verbosity, StringView filename,
                              StringView timefmt = {},
                              StringView fmt = {}) {
@@ -404,6 +397,7 @@ inline void LogToFile() {
 class Logger;
 using LoggerPtr = std::shared_ptr<Logger>;
 
+////////////////////////////////////////////////////////////////////////////////
 /// Allows generating log entries.
 ///
 /// A logger is an object used for generating log entries that are tagged with
@@ -414,9 +408,11 @@ using LoggerPtr = std::shared_ptr<Logger>;
 /// The verbosity of a logger acts as a filter. Only messages with a verbosity
 /// less than or equal to the logger's verbosity are being logged.
 ///
-/// Note: The verbosity of a logger affects only messages logged through that
-///       particular logger, i.e. if two loggers have identical component tags
-///       their verbosity settings are still independent from each other.
+/// \note
+///   The verbosity of a logger affects only messages logged through that
+///   particular logger, i.e. if two loggers have identical component tags their
+///   verbosity settings are still independent from each other.
+////////////////////////////////////////////////////////////////////////////////
 class Logger : public ObjectT<Logger> {
  public:
   /// Sets the verbosity of all loggers matching a given component tag.
@@ -425,10 +421,10 @@ class Logger : public ObjectT<Logger> {
   /// expression given in the components parameter and sets their verbosity
   /// to the value of the verbosity parameter.
   ///
-  /// \param components Regex (ECMAScript) for the component tags to match.
-  /// \param verbosity Maximum verbosity entries to be logged.
+  /// \param components Regex (ECMAScript) for the component tags to match
+  /// \param verbosity  Maximum verbosity entries to be logged
   ///
-  /// \returns Number of matching loggers.
+  /// \returns Number of matching loggers
   static int SetComponentsVerbosity(StringView components,
                                     Verbosity verbosity) {
     int count;
@@ -440,18 +436,18 @@ class Logger : public ObjectT<Logger> {
 
   /// Creates a logger.
   ///
-  /// The verbosity of new loggers is Verbosity.Info by default.
+  /// The verbosity of new loggers is Verbosity::kInfo by default.
   ///
-  /// \param component The component tag to use.
+  /// \param component The component tag to use
   ///
-  /// \returns Newly created logger.
+  /// \returns Newly created logger
   static LoggerPtr Create(StringView component) {
     return LoggerPtr(new Logger(component));
   }
 
   /// Returns the verbosity of the logger.
   ///
-  /// \returns Verbosity of the logger.
+  /// \returns Verbosity of the logger
   Verbosity GetVerbosity() const {
     int vb;
     int res = internal::YOGI_LoggerGetVerbosity(GetHandle(), &vb);
@@ -461,7 +457,7 @@ class Logger : public ObjectT<Logger> {
 
   /// Sets the verbosity of the logger.
   ///
-  /// \param verbosity Verbosity.
+  /// \param verbosity Verbosity
   void SetVerbosity(Verbosity verbosity) {
     int res = internal::YOGI_LoggerSetVerbosity(GetHandle(),
                                                 static_cast<int>(verbosity));
@@ -470,10 +466,10 @@ class Logger : public ObjectT<Logger> {
 
   /// Creates a log entry.
   ///
-  /// \param severity Severity (verbosity) of the entry.
-  /// \param msg Log message.
-  /// \param file Source file name.
-  /// \param line Source file line number.
+  /// \param severity Severity (verbosity) of the entry
+  /// \param msg      Log message
+  /// \param file     Source file name
+  /// \param line     Source file line number
   void Log(Verbosity severity, StringView msg,
            StringView file, int line) {
     const char* short_file = file;
@@ -492,8 +488,8 @@ class Logger : public ObjectT<Logger> {
 
   /// Creates a log entry without file and line number information.
   ///
-  /// \param severity Severity (verbosity) of the entry.
-  /// \param msg Log message.
+  /// \param severity Severity (verbosity) of the entry
+  /// \param msg      Log message
   void Log(Verbosity severity, StringView msg) {
     Log(severity, msg, {}, 0);
   }
@@ -511,12 +507,14 @@ class Logger : public ObjectT<Logger> {
 class AppLogger;
 using AppLoggerPtr = std::shared_ptr<AppLogger>;
 
+////////////////////////////////////////////////////////////////////////////////
 /// Represents the App logger singleton.
 ///
 /// The App logger always exists and uses "App" as its component tag.
 /// Instances of this class can be created; however, they will always point to
 /// the same logger, i.e. changing its verbosity will change the verbosity of
 /// every AppLogger instance.
+////////////////////////////////////////////////////////////////////////////////
 class AppLogger : public Logger {
  public:
   /// Creates an app logger.

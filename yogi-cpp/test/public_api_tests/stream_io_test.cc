@@ -46,10 +46,6 @@ TEST(StreamIoTest, BranchInfo) {
   Check(branch->GetInfo());
 }
 
-TEST(StreamIoTest, BranchEventInfo) {
-  Check(yogi::BranchEventInfo(yogi::Uuid{}, "{}"));
-}
-
 TEST(StreamIoTest, Signals) {
   Check(yogi::Signals::kInt | yogi::Signals::kUsr3);
 }

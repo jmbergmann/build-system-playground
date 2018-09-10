@@ -846,8 +846,7 @@ YOGI_API int YOGI_FormatObject(void* object, char* str, int strsize,
                                const char* objfmt, const char* nullstr);
 
 /*!
- * Allows the Yogi to write library-internal and user logging to stdout or
- * stderr.
+ * Allows Yogi to write library-internal and user logging to stdout or stderr.
  *
  * This function supports colourizing the output if the terminal that the
  * process is running in supports it. The color used for a log entry depends on
@@ -857,7 +856,7 @@ YOGI_API int YOGI_FormatObject(void* object, char* str, int strsize,
  * Writing to the console can be disabled by setting \p verbosity to
  * #YOGI_VB_NONE.
  *
- * Each log entry contains the *component* tag which describes which part of a
+ * Each log entry contains the _component_ tag which describes which part of a
  * program issued the log entry. For entries created by the library itself, this
  * parameter is prefixed with the string "Yogi.", followed by the internal
  * component name. For example, the component tag for a branch would be
@@ -897,7 +896,7 @@ YOGI_API int YOGI_FormatObject(void* object, char* str, int strsize,
  *
  * \param[in] verbosity Maximum verbosity of messages to log
  * \param[in] stream    The stream to use (#YOGI_ST_STDOUT or #YOGI_ST_STDERR)
- * \param[in] color     Use colours in output (#YOGI_TRUE or #YOGI_FALSE)
+ * \param[in] color     Use colors in output (#YOGI_TRUE or #YOGI_FALSE)
  * \param[in] timefmt   Format of the timestamp (set to NULL for default)
  * \param[in] fmt       Format of a log entry (set to NULL for default)
  *
@@ -962,7 +961,7 @@ YOGI_API int YOGI_LogToHook(int verbosity,
  *
  * The \p timefmt and \p fmt parameters describe the textual format for a log
  * entry. The \p filename parameter supports all placeholders that are valid
- * for \p timefmt See the YOGI_LogToConsole() function for supported
+ * for \p timefmt. See the YOGI_LogToConsole() function for supported
  * placeholders.
  *
  * \note
@@ -1604,8 +1603,8 @@ YOGI_API int YOGI_TimerCancel(void* timer);
  * part of the Yogi network.
  *
  * \note
- *   Even though the authentication process via passwords is done in a secure
- *   manner, any further communication is done in plain text.
+ *   Even if the communication between branches is not encrypted, the
+ *   authentication process via passwords is always done in a secure manner.
  *
  * \param[out] branch   Pointer to the branch handle
  * \param[in]  context  The context to use
@@ -1729,7 +1728,7 @@ YOGI_API int YOGI_BranchGetConnectedBranches(void* branch, void* uuid,
  * \p events occurs on the given \p branch. The parameters passed to \p fn are:
  *  -# __res__: #YOGI_OK or error code associated with the wait operation
  *  -# __event__: The branch event that occurred (see \ref BEV)
- *  -# __evres__: #YOGI_OK or error code assitiated with the event
+ *  -# __evres__: #YOGI_OK or error code associated with the event
  *  -# __userarg__: Value of the user-specified \p userarg parameter
  *
  * If this function is called while a previous wait operation is still active

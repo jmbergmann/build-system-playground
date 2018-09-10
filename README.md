@@ -17,7 +17,9 @@ TODO:
 --------------------------------------------------
 * Checkout asio timer problem (see code below)
 * Check path validity when creating branches and terminals
-
+* Get YOGI_LOG(...) macros in yogi-cpp documented in Doxygen
+* Disabling logging via LogToConsole() with no parameters is not intuitive
+* Make all private macros in yogi-cpp start with _?
 
 #include <boost/asio.hpp>
 #include <chrono>

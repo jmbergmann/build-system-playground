@@ -194,11 +194,13 @@ inline std::string ToString<ErrorCode>(const ErrorCode& ec) {
   return {};
 }
 
+////////////////////////////////////////////////////////////////////////////////
 /// Represents a result of an operation.
 ///
 /// This is a wrapper around the result code returned by the functions from
 /// the Yogi Core library. A result is represented by a number which is >= 0
 /// in case of success and < 0 in case of a failure.
+////////////////////////////////////////////////////////////////////////////////
 class Result {
  public:
   /// Constructor
@@ -211,7 +213,6 @@ class Result {
   /// \param ec Error code.
   explicit Result(ErrorCode ec) : Result(static_cast<int>(ec)) {}
 
-  /// Destructor
   virtual ~Result() {}
 
   /// Returns the result code.
@@ -233,8 +234,16 @@ class Result {
     return internal::YOGI_GetErrorString(value_);
   }
 
+  /// Returns _true_ if the error code >= 0 (i.e. the operation succeeded).
+  ///
+  /// \returns _true_ if the error code >= 0.
   explicit operator bool() const { return value_ >= 0; }
+
+  /// Returns _true_ if the error code < 0 (i.e. the operation failed).
+  ///
+  /// \returns _true_ if the error code < 0.
   bool operator!() const { return value_ < 0; }
+
   bool operator==(const Result& rhs) const { return value_ == rhs.value_; }
   bool operator!=(const Result& rhs) const { return value_ != rhs.value_; }
   bool operator<(const Result& rhs) const { return value_ < rhs.value_; }
@@ -246,9 +255,11 @@ class Result {
   const int value_;
 };
 
+////////////////////////////////////////////////////////////////////////////////
 /// Represents the failure of an operation.
 ///
 /// The success of an operation is associated with a result code >= 0.
+////////////////////////////////////////////////////////////////////////////////
 class Success : public Result {
  public:
   /// Constructor
@@ -258,13 +269,15 @@ class Success : public Result {
     assert(value >= 0);  // The result code for Success must be >= 0.
   }
 
-  /// Constructor
+  /// Default constructor
   Success() : Success(static_cast<int>(ErrorCode::kOk)) {}
 };
 
+////////////////////////////////////////////////////////////////////////////////
 /// Represents the failure of an operation.
 ///
 /// The failure of an operation is associated with a result code < 0.
+////////////////////////////////////////////////////////////////////////////////
 class Failure : public Result {
  public:
   /// Constructor
@@ -273,16 +286,18 @@ class Failure : public Result {
   explicit Failure(ErrorCode ec) : Result(ec) {}
 };
 
+////////////////////////////////////////////////////////////////////////////////
 /// A failure of an operation that includes a description.
 ///
 /// Some functions in the Yogi Core library provide information in addition to
 /// the error code in case of a failure. This class contains both the error
 /// code and the additional information.
+////////////////////////////////////////////////////////////////////////////////
 class DescriptiveFailure : public Failure {
  public:
   /// Constructor
   ///
-  /// \param ec Error code.
+  /// \param ec          Error code.
   /// \param description Description of the error.
   DescriptiveFailure(ErrorCode ec, StringView description)
       : Failure(ec), description_(description) {}
@@ -304,12 +319,21 @@ class DescriptiveFailure : public Failure {
   const std::string description_;
 };
 
+////////////////////////////////////////////////////////////////////////////////
 /// Base class for all Yogi exceptions.
 ///
 /// All exceptions thrown by Yogi functions are derived from this class.
 ///
-/// \warning Not thread safe!
-class Exception : public std::exception {};
+/// \warning
+///   Not thread safe!
+////////////////////////////////////////////////////////////////////////////////
+class Exception : public std::exception {
+ public:
+  /// Returns a description of the error.
+  ///
+  /// \returns Description of the error.
+  virtual const char* what() const noexcept override =0;
+};
 
 /// Exception wrapping a Failure object.
 ///
@@ -326,9 +350,6 @@ class FailureException : public Exception {
   /// \returns The wrapped Failure object.
   virtual const Failure& GetFailure() const { return failure_; }
 
-  /// Returns a description of the error.
-  ///
-  /// \returns Description of the error.
   virtual const char* what() const noexcept override {
     if (what_.empty()) {
       what_ = GetFailure().ToString();
@@ -342,15 +363,17 @@ class FailureException : public Exception {
   mutable std::string what_;
 };
 
-/// Exception wrapping a DescriptiveFailure object.
+////////////////////////////////////////////////////////////////////////////////
+/// An exception class wrapping a DescriptiveFailure object.
 ///
 /// This exception type is used for failures that have detailed information
 /// available.
+////////////////////////////////////////////////////////////////////////////////
 class DescriptiveFailureException : public FailureException {
  public:
   /// Constructor
   ///
-  /// \param ec Error code.
+  /// \param ec          Error code.
   /// \param description Description of the error.
   DescriptiveFailureException(ErrorCode ec, StringView description)
       : FailureException(ec), failure_(ec, description) {}
@@ -361,12 +384,17 @@ class DescriptiveFailureException : public FailureException {
   const DescriptiveFailure failure_;
 };
 
-/// Exception for arithmetic errors.
+////////////////////////////////////////////////////////////////////////////////
+/// An exception class for arithmetic errors.
 ///
 /// This exception type is used when arithmetic errors occur in Yogi classes
 /// such as Duration and Timestamp.
+////////////////////////////////////////////////////////////////////////////////
 class ArithmeticException : public Exception {
  public:
+  /// Constructor
+  ///
+  /// \param what Description of the error.
   ArithmeticException(const char* what) : what_(what) {}
 
   virtual const char* what() const noexcept override { return what_; }
