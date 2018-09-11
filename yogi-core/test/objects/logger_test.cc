@@ -49,7 +49,8 @@ class LoggerTest : public Test {
     ASSERT_EQ(res, YOGI_OK);
     ASSERT_NE(logger_, nullptr);
 
-    res = YOGI_LogToHook(YOGI_VB_TRACE, &LoggerTest::Hook, &entries_);
+    res =
+        YOGI_ConfigureHookLogging(YOGI_VB_TRACE, &LoggerTest::Hook, &entries_);
     ASSERT_EQ(res, YOGI_OK);
   }
 
@@ -80,7 +81,8 @@ TEST_F(LoggerTest, Colours) {
 
   int streams[] = {YOGI_ST_STDOUT, YOGI_ST_STDERR};
   for (int stream : streams) {
-    YOGI_LogToConsole(YOGI_VB_TRACE, stream, YOGI_TRUE, nullptr, nullptr);
+    YOGI_ConfigureConsoleLogging(YOGI_VB_TRACE, stream, YOGI_TRUE, nullptr,
+                                 nullptr);
 
     YOGI_LoggerLog(logger_, YOGI_VB_FATAL, "myfile.cc", 123, "Hello");
     YOGI_LoggerLog(logger_, YOGI_VB_ERROR, "myfile.cc", 123, "Hello");
@@ -96,15 +98,15 @@ TEST_F(LoggerTest, LogToConsole) {
   // to the runtime which makes it impossible to capture STDOUT/STDERR easily.
 
   // Test stdout
-  int res = YOGI_LogToConsole(YOGI_VB_TRACE, YOGI_ST_STDOUT, YOGI_FALSE,
-                              custom_time_fmt_, custom_fmt_);
+  int res = YOGI_ConfigureConsoleLogging(
+      YOGI_VB_TRACE, YOGI_ST_STDOUT, YOGI_FALSE, custom_time_fmt_, custom_fmt_);
   ASSERT_EQ(res, YOGI_OK);
 
   YOGI_LoggerLog(logger_, YOGI_VB_ERROR, "myfile.cc", 123, "Hello");
 
   // Test stderr
-  res = YOGI_LogToConsole(YOGI_VB_TRACE, YOGI_ST_STDERR, YOGI_FALSE,
-                          custom_time_fmt_, custom_fmt_);
+  res = YOGI_ConfigureConsoleLogging(YOGI_VB_TRACE, YOGI_ST_STDERR, YOGI_FALSE,
+                                     custom_time_fmt_, custom_fmt_);
   ASSERT_EQ(res, YOGI_OK);
 
   YOGI_LoggerLog(logger_, YOGI_VB_ERROR, "myfile.cc", 123, "Hello");
@@ -112,23 +114,26 @@ TEST_F(LoggerTest, LogToConsole) {
 
 TEST_F(LoggerTest, FormatErrors) {
   for (auto time_fmt : {"%4", "%%", "", "%%T", "%", "bla%"}) {
-    int res = YOGI_LogToConsole(YOGI_VB_TRACE, YOGI_ST_STDOUT, YOGI_FALSE,
-                                time_fmt, nullptr);
+    int res = YOGI_ConfigureConsoleLogging(YOGI_VB_TRACE, YOGI_ST_STDOUT,
+                                           YOGI_FALSE, time_fmt, nullptr);
     EXPECT_EQ(res, YOGI_ERR_INVALID_PARAM) << time_fmt;
 
-    res = YOGI_LogToFile(YOGI_VB_TRACE, "logfile.txt", nullptr, 0, time_fmt, nullptr);
+    res = YOGI_ConfigureFileLogging(YOGI_VB_TRACE, "logfile.txt", nullptr, 0,
+                                    time_fmt, nullptr);
     EXPECT_EQ(res, YOGI_ERR_INVALID_PARAM) << time_fmt;
 
-    res = YOGI_LogToFile(YOGI_VB_TRACE, time_fmt, nullptr, 0, nullptr, nullptr);
+    res = YOGI_ConfigureFileLogging(YOGI_VB_TRACE, time_fmt, nullptr, 0,
+                                    nullptr, nullptr);
     EXPECT_EQ(res, YOGI_ERR_INVALID_PARAM) << time_fmt;
   }
 
   for (auto fmt : {"$;", "", "$$$", "$", "bla$"}) {
-    int res = YOGI_LogToConsole(YOGI_VB_TRACE, YOGI_ST_STDOUT, YOGI_FALSE,
-                                nullptr, fmt);
+    int res = YOGI_ConfigureConsoleLogging(YOGI_VB_TRACE, YOGI_ST_STDOUT,
+                                           YOGI_FALSE, nullptr, fmt);
     EXPECT_EQ(res, YOGI_ERR_INVALID_PARAM) << fmt;
 
-    res = YOGI_LogToFile(YOGI_VB_TRACE, "logfile.txt", nullptr, 0, nullptr, fmt);
+    res = YOGI_ConfigureFileLogging(YOGI_VB_TRACE, "logfile.txt", nullptr, 0,
+                                    nullptr, fmt);
     EXPECT_EQ(res, YOGI_ERR_INVALID_PARAM) << fmt;
   }
 }
@@ -149,8 +154,9 @@ TEST_F(LoggerTest, LogToHook) {
 
 TEST_F(LoggerTest, LogToFile) {
   char filename[100];
-  int res = YOGI_LogToFile(YOGI_VB_TRACE, "%F_%H%M%S.log", filename,
-                           sizeof(filename), custom_time_fmt_, custom_fmt_);
+  int res = YOGI_ConfigureFileLogging(YOGI_VB_TRACE, "%F_%H%M%S.log", filename,
+                                      sizeof(filename), custom_time_fmt_,
+                                      custom_fmt_);
   ASSERT_EQ(res, YOGI_OK);
   ASSERT_TRUE(boost::filesystem::exists(filename));
 
@@ -164,7 +170,8 @@ TEST_F(LoggerTest, LogToFile) {
   EXPECT_TRUE(CheckLineMatchesCustomLogFormat(content)) << content;
 
   // Close the logfile
-  res = YOGI_LogToFile(YOGI_VB_NONE, nullptr, nullptr, 0, nullptr, nullptr);
+  res = YOGI_ConfigureFileLogging(YOGI_VB_NONE, nullptr, nullptr, 0, nullptr,
+                                  nullptr);
   EXPECT_EQ(res, YOGI_OK);
 
   boost::filesystem::remove(filename);

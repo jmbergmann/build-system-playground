@@ -30,9 +30,10 @@ Test::Test() { SetupLogging(YOGI_VB_TRACE); }
 Test::~Test() {
   EXPECT_EQ(YOGI_DestroyAll(), YOGI_OK);
 
-  YOGI_LogToConsole(YOGI_VB_NONE, 0, 0, nullptr, nullptr);
-  YOGI_LogToHook(YOGI_VB_NONE, nullptr, nullptr);
-  YOGI_LogToFile(YOGI_VB_NONE, nullptr, nullptr, 0, nullptr, nullptr);
+  YOGI_ConfigureConsoleLogging(YOGI_VB_NONE, 0, 0, nullptr, nullptr);
+  YOGI_ConfigureHookLogging(YOGI_VB_NONE, nullptr, nullptr);
+  YOGI_ConfigureFileLogging(YOGI_VB_NONE, nullptr, nullptr, 0, nullptr,
+                            nullptr);
 }
 
 BranchEventRecorder::BranchEventRecorder(void* context, void* branch)
@@ -237,7 +238,8 @@ CommandLine::~CommandLine() {
 }
 
 void SetupLogging(int verbosity) {
-  YOGI_LogToConsole(YOGI_VB_TRACE, YOGI_ST_STDERR, YOGI_TRUE, nullptr, nullptr);
+  YOGI_ConfigureConsoleLogging(YOGI_VB_TRACE, YOGI_ST_STDERR, YOGI_TRUE,
+                               nullptr, nullptr);
   YOGI_LoggerSetComponentsVerbosity("Yogi\\..*", verbosity, nullptr);
 }
 

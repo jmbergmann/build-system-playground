@@ -847,7 +847,7 @@ YOGI_API int YOGI_FormatObject(void* object, char* str, int strsize,
                                const char* objfmt, const char* nullstr);
 
 /*!
- * Allows Yogi to write library-internal and user logging to stdout or stderr.
+ * Configures logging to the console.
  *
  * This function supports colourizing the output if the terminal that the
  * process is running in supports it. The color used for a log entry depends on
@@ -904,19 +904,19 @@ YOGI_API int YOGI_FormatObject(void* object, char* str, int strsize,
  * \returns [=0] #YOGI_OK if successful
  * \returns [<0] An error code in case of a failure (see \ref EC)
  */
-YOGI_API int YOGI_LogToConsole(int verbosity, int stream, int color,
-                               const char* timefmt, const char* fmt);
+YOGI_API int YOGI_ConfigureConsoleLogging(int verbosity, int stream, int color,
+                                          const char* timefmt, const char* fmt);
 
 /*!
- * Installs a callback function for receiving log entries.
+ * Configures logging to a user-defined function.
  *
  * This function can be used to get notified whenever the Yogi library itself or
  * the user produces log messages. These messages can then be processed further
  * in user code.
  *
- * Only one callback function can be registered. Calling LogToHook()
- * again will override the previous function. Setting \p fn to NULL or
- * \p verbosity to #YOGI_VB_NONE will disable the hook.
+ * Only one callback function can be registered. Calling
+ * YOGI_ConfigureHookLogging() again will override the previous function.
+ * Setting \p fn to NULL or \p verbosity to #YOGI_VB_NONE will disable the hook.
  *
  * \note
  *   The library will call \p fn from only one thread at a time, i.e. \p fn does
@@ -943,15 +943,14 @@ YOGI_API int YOGI_LogToConsole(int verbosity, int stream, int color,
  * \returns [=0] #YOGI_OK if successful
  * \returns [<0] An error code in case of a failure (see \ref EC)
  */
-YOGI_API int YOGI_LogToHook(int verbosity,
-                            void (*fn)(int severity, long long timestamp,
-                                       int tid, const char* file, int line,
-                                       const char* comp, const char* msg,
-                                       void* userarg),
-                            void* userarg);
+YOGI_API int YOGI_ConfigureHookLogging(
+    int verbosity,
+    void (*fn)(int severity, long long timestamp, int tid, const char* file,
+               int line, const char* comp, const char* msg, void* userarg),
+    void* userarg);
 
 /*!
- * Creates log file.
+ * Configures logging to a file.
  *
  * This function opens a file to write library-internal and user logging
  * information to. If the file with the given filename already exists then it
@@ -962,7 +961,7 @@ YOGI_API int YOGI_LogToHook(int verbosity,
  *
  * The \p timefmt and \p fmt parameters describe the textual format for a log
  * entry. The \p filename parameter supports all placeholders that are valid
- * for \p timefmt. See the YOGI_LogToConsole() function for supported
+ * for \p timefmt. See the YOGI_ConfigureConsoleLogging() function for supported
  * placeholders.
  *
  * \note
@@ -985,9 +984,9 @@ YOGI_API int YOGI_LogToHook(int verbosity,
  * \returns [=0] #YOGI_OK if successful
  * \returns [<0] An error code in case of a failure (see \ref EC)
  */
-YOGI_API int YOGI_LogToFile(int verbosity, const char* filename, char* genfn,
-                            int genfnsize, const char* timefmt,
-                            const char* fmt);
+YOGI_API int YOGI_ConfigureFileLogging(int verbosity, const char* filename,
+                                       char* genfn, int genfnsize,
+                                       const char* timefmt, const char* fmt);
 
 /*!
  * Creates a logger.

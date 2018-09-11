@@ -176,16 +176,16 @@
 
 namespace yogi {
 
-_YOGI_DEFINE_API_FN(int, YOGI_LogToConsole,
+_YOGI_DEFINE_API_FN(int, YOGI_ConfigureConsoleLogging,
                     (int verbosity, int stream, int color, const char* timefmt,
                      const char* fmt))
-_YOGI_DEFINE_API_FN(int, YOGI_LogToHook,
+_YOGI_DEFINE_API_FN(int, YOGI_ConfigureHookLogging,
                     (int verbosity,
                      void (*fn)(int severity, long long timestamp, int tid,
                                 const char* file, int line, const char* comp,
                                 const char* msg, void* userarg),
                      void* userarg))
-_YOGI_DEFINE_API_FN(int, YOGI_LogToFile,
+_YOGI_DEFINE_API_FN(int, YOGI_ConfigureFileLogging,
                     (int verbosity, const char* filename, char* genfn,
                      int genfnsize, const char* timefmt, const char* fmt))
 _YOGI_DEFINE_API_FN(int, YOGI_LoggerCreate,
@@ -324,15 +324,15 @@ inline std::string ToString<Stream>(const Stream& st) {
 inline void LogToConsole(Verbosity verbosity, Stream stream = Stream::kStderr,
                          bool color = true, StringView timefmt = {},
                          StringView fmt = {}) {
-  int res = internal::YOGI_LogToConsole(static_cast<int>(verbosity),
-                                        static_cast<int>(stream), color ? 1 : 0,
-                                        timefmt, fmt);
+  int res = internal::YOGI_ConfigureConsoleLogging(static_cast<int>(verbosity),
+                                                   static_cast<int>(stream),
+                                                   color ? 1 : 0, timefmt, fmt);
   internal::CheckErrorCode(res);
 }
 
 /// Disables logging to the console.
 inline void LogToConsole() {
-  int res = internal::YOGI_LogToConsole(-1, 0, 0, nullptr, nullptr);
+  int res = internal::YOGI_ConfigureConsoleLogging(-1, 0, 0, nullptr, nullptr);
   internal::CheckErrorCode(res);
 }
 
@@ -386,8 +386,8 @@ inline void LogToHook(Verbosity verbosity, LogHookFn fn) {
   };
   std::lock_guard<std::mutex> lock(internal::LogToHookData::mutex);
 
-  int res = internal::YOGI_LogToHook(static_cast<int>(verbosity), wrapper,
-                                     fn_ptr.get());
+  int res = internal::YOGI_ConfigureHookLogging(static_cast<int>(verbosity),
+                                                wrapper, fn_ptr.get());
   internal::CheckErrorCode(res);
 
   internal::LogToHookData::log_hook_fn = std::move(fn_ptr);
@@ -397,7 +397,7 @@ inline void LogToHook(Verbosity verbosity, LogHookFn fn) {
 inline void LogToHook() {
   std::lock_guard<std::mutex> lock(internal::LogToHookData::mutex);
 
-  int res = internal::YOGI_LogToHook(-1, nullptr, nullptr);
+  int res = internal::YOGI_ConfigureHookLogging(-1, nullptr, nullptr);
   internal::CheckErrorCode(res);
 
   internal::LogToHookData::log_hook_fn = {};
@@ -425,15 +425,17 @@ inline void LogToHook() {
 inline std::string LogToFile(Verbosity verbosity, StringView filename,
                              StringView timefmt = {}, StringView fmt = {}) {
   char genfn[256];
-  int res = internal::YOGI_LogToFile(static_cast<int>(verbosity), filename,
-                                     genfn, sizeof(genfn), timefmt, fmt);
+  int res =
+      internal::YOGI_ConfigureFileLogging(static_cast<int>(verbosity), filename,
+                                          genfn, sizeof(genfn), timefmt, fmt);
   internal::CheckErrorCode(res);
   return genfn;
 }
 
 /// Disables logging to a file
 inline void LogToFile() {
-  int res = internal::YOGI_LogToFile(-1, nullptr, nullptr, 0, nullptr, nullptr);
+  int res = internal::YOGI_ConfigureFileLogging(-1, nullptr, nullptr, 0,
+                                                nullptr, nullptr);
   internal::CheckErrorCode(res);
 }
 

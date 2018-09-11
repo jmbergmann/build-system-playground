@@ -22,8 +22,9 @@
 
 #include <regex>
 
-YOGI_API int YOGI_LogToConsole(int verbosity, int stream, int color,
-                               const char* timefmt, const char* fmt) {
+YOGI_API int YOGI_ConfigureConsoleLogging(int verbosity, int stream, int color,
+                                          const char* timefmt,
+                                          const char* fmt) {
   if (verbosity != YOGI_VB_NONE) {
     CHECK_PARAM(YOGI_VB_FATAL <= verbosity && verbosity <= YOGI_VB_TRACE);
     CHECK_PARAM(stream == YOGI_ST_STDOUT || stream == YOGI_ST_STDERR);
@@ -47,10 +48,11 @@ YOGI_API int YOGI_LogToConsole(int verbosity, int stream, int color,
   CATCH_AND_RETURN;
 }
 
-YOGI_API int YOGI_LogToHook(int verbosity,
-                            void (*fn)(int, long long, int, const char*, int,
-                                       const char*, const char*, void*),
-                            void* userarg) {
+YOGI_API int YOGI_ConfigureHookLogging(int verbosity,
+                                       void (*fn)(int, long long, int,
+                                                  const char*, int, const char*,
+                                                  const char*, void*),
+                                       void* userarg) {
   CHECK_PARAM(YOGI_VB_NONE <= verbosity && verbosity <= YOGI_VB_TRACE);
 
   try {
@@ -70,9 +72,9 @@ YOGI_API int YOGI_LogToHook(int verbosity,
   CATCH_AND_RETURN;
 }
 
-YOGI_API int YOGI_LogToFile(int verbosity, const char* filename, char* genfn,
-                            int genfnsize, const char* timefmt,
-                            const char* fmt) {
+YOGI_API int YOGI_ConfigureFileLogging(int verbosity, const char* filename,
+                                       char* genfn, int genfnsize,
+                                       const char* timefmt, const char* fmt) {
   if (verbosity != YOGI_VB_NONE) {
     CHECK_PARAM(YOGI_VB_FATAL <= verbosity && verbosity <= YOGI_VB_TRACE);
     CHECK_PARAM(filename == nullptr || IsTimeFormatValid(filename));

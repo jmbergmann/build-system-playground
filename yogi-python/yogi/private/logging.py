@@ -56,8 +56,9 @@ class Stream(IntEnum):
     STDERR = 1
 
 
-yogi.YOGI_LogToConsole.restype = api_result_handler
-yogi.YOGI_LogToConsole.argtypes = [c_int, c_int, c_int, c_char_p, c_char_p]
+yogi.YOGI_ConfigureConsoleLogging.restype = api_result_handler
+yogi.YOGI_ConfigureConsoleLogging.argtypes = [
+    c_int, c_int, c_int, c_char_p, c_char_p]
 
 
 def log_to_console(verbosity: Union[Verbosity, None],
@@ -121,13 +122,14 @@ def log_to_console(verbosity: Union[Verbosity, None],
         fmt = fmt.encode("utf-8")
 
     if verbosity is None:
-        yogi.YOGI_LogToConsole(-1, 0, 0, None, None)
+        yogi.YOGI_ConfigureConsoleLogging(-1, 0, 0, None, None)
     else:
-        yogi.YOGI_LogToConsole(verbosity, stream, color, timefmt, fmt)
+        yogi.YOGI_ConfigureConsoleLogging(
+            verbosity, stream, color, timefmt, fmt)
 
 
-yogi.YOGI_LogToHook.restype = api_result_handler
-yogi.YOGI_LogToHook.argtypes = [
+yogi.YOGI_ConfigureHookLogging.restype = api_result_handler
+yogi.YOGI_ConfigureHookLogging.argtypes = [
     c_int, CFUNCTYPE(
         None, c_int, c_longlong,
         c_int, c_char_p, c_int, c_char_p, c_char_p, c_void_p), c_void_p]
@@ -167,18 +169,18 @@ def log_to_hook(verbosity: Union[Verbosity, None],
            file.decode("utf-8"), line, comp.decode("utf-8"),
            msg.decode("utf-8"))
 
-    c_fn = yogi.YOGI_LogToHook.argtypes[1](wrapped_fn)
+    c_fn = yogi.YOGI_ConfigureHookLogging.argtypes[1](wrapped_fn)
     global _log_to_hook_fn
     _log_to_hook_fn = c_fn  # To prevent GC to destroy fn
 
     if verbosity is None:
-        yogi.YOGI_LogToHook(-1, c_fn, None)
+        yogi.YOGI_ConfigureHookLogging(-1, c_fn, None)
     else:
-        yogi.YOGI_LogToHook(verbosity, c_fn, None)
+        yogi.YOGI_ConfigureHookLogging(verbosity, c_fn, None)
 
 
-yogi.YOGI_LogToFile.restype = api_result_handler
-yogi.YOGI_LogToFile.argtypes = [
+yogi.YOGI_ConfigureFileLogging.restype = api_result_handler
+yogi.YOGI_ConfigureFileLogging.argtypes = [
     c_int, c_char_p, c_char_p, c_int, c_char_p, c_char_p]
 
 
@@ -231,7 +233,7 @@ def log_to_file(verbosity: Union[Verbosity, None], filename: str = None,
         The generated filename with all placeholders resolved.
     """
     if verbosity is None:
-        yogi.YOGI_LogToFile(-1, None, None, 0, None, None)
+        yogi.YOGI_ConfigureFileLogging(-1, None, None, 0, None, None)
         return
 
     assert filename is not None
@@ -244,8 +246,8 @@ def log_to_file(verbosity: Union[Verbosity, None], filename: str = None,
         fmt = fmt.encode("utf-8")
 
     gen_filename = create_string_buffer(256)
-    yogi.YOGI_LogToFile(verbosity, filename, gen_filename,
-                        sizeof(gen_filename), timefmt, fmt)
+    yogi.YOGI_ConfigureFileLogging(verbosity, filename, gen_filename,
+                                   sizeof(gen_filename), timefmt, fmt)
     return gen_filename.value.decode("utf-8")
 
 

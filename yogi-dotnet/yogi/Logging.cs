@@ -32,11 +32,11 @@ public static partial class Yogi
             [MarshalAs(UnmanagedType.LPStr)] string timefmt,
             [MarshalAs(UnmanagedType.LPStr)] string fmt);
 
-        public static LogToConsoleDelegate YOGI_LogToConsole
+        public static LogToConsoleDelegate YOGI_ConfigureConsoleLogging
             = Library.GetDelegateForFunction<LogToConsoleDelegate>(
-                "YOGI_LogToConsole");
+                "YOGI_ConfigureConsoleLogging");
 
-        // === YOGI_LogToHook ===
+        // === YOGI_ConfigureHookLogging ===
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public delegate void LogToHookFnDelegate(Verbosity severity, long timestamp,
             int tid, [MarshalAs(UnmanagedType.LPStr)] string file, int line,
@@ -47,11 +47,11 @@ public static partial class Yogi
         public delegate int LogToHookDelegate(int verbosity, LogToHookFnDelegate fn,
             IntPtr userarg);
 
-        public static LogToHookDelegate YOGI_LogToHook
+        public static LogToHookDelegate YOGI_ConfigureHookLogging
             = Library.GetDelegateForFunction<LogToHookDelegate>(
-                "YOGI_LogToHook");
+                "YOGI_ConfigureHookLogging");
 
-        // === YOGI_LogToFile ===
+        // === YOGI_ConfigureFileLogging ===
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public delegate int LogToFileDelegate(int verbosity,
             [MarshalAs(UnmanagedType.LPStr)] string filename,
@@ -59,9 +59,9 @@ public static partial class Yogi
             [MarshalAs(UnmanagedType.LPStr)] string timefmt,
             [MarshalAs(UnmanagedType.LPStr)] string fmt);
 
-        public static LogToFileDelegate YOGI_LogToFile
+        public static LogToFileDelegate YOGI_ConfigureFileLogging
             = Library.GetDelegateForFunction<LogToFileDelegate>(
-                "YOGI_LogToFile");
+                "YOGI_ConfigureFileLogging");
 
         // === YOGI_LoggerCreate ===
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
@@ -203,8 +203,8 @@ public static partial class Yogi
     {
         int vb = verbosity.HasValue ? (int)verbosity.Value : -1;
         int col = color.HasValue ? (color.Value ? 1 : 0) : 1;
-        int res = Api.YOGI_LogToConsole(vb, stream.GetValueOrDefault(Stream.Stderr), col, timefmt,
-            fmt);
+        int res = Api.YOGI_ConfigureConsoleLogging(vb, stream.GetValueOrDefault(Stream.Stderr), col,
+            timefmt, fmt);
         CheckErrorCode(res);
     }
 
@@ -245,7 +245,7 @@ public static partial class Yogi
             };
 
             int vb = verbosity.HasValue ? (int)verbosity.Value : -1;
-            int res = Api.YOGI_LogToHook(vb, wrapper, IntPtr.Zero);
+            int res = Api.YOGI_ConfigureHookLogging(vb, wrapper, IntPtr.Zero);
             logToHookFn = null;
             CheckErrorCode(res);
             logToHookFn = wrapper;  // Make sure it does not get GC'd
@@ -303,7 +303,7 @@ public static partial class Yogi
     {
         int vb = verbosity.HasValue ? (int)verbosity.Value : -1;
         var genFn = new StringBuilder(256);
-        int res = Api.YOGI_LogToFile(vb, filename, genFn, genFn.Capacity, timefmt, fmt);
+        int res = Api.YOGI_ConfigureFileLogging(vb, filename, genFn, genFn.Capacity, timefmt, fmt);
         CheckErrorCode(res);
         return genFn.ToString();
     }
