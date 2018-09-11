@@ -18,6 +18,10 @@
 #ifndef YOGI_INTERNAL_LIBRARY_IMPL_UNIX_H
 #define YOGI_INTERNAL_LIBRARY_IMPL_UNIX_H
 
+//! \file
+//!
+//! Unix-specific parts for handling the Yogi-Core library.
+
 #include <dlfcn.h>
 
 namespace yogi {

@@ -18,6 +18,10 @@
 #ifndef YOGI_JSON_VIEW_H
 #define YOGI_JSON_VIEW_H
 
+//! \file
+//!
+//! Helpers for passing JSON to functions.
+
 #include "json.h"
 
 #include <string>

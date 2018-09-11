@@ -18,6 +18,10 @@
 #ifndef YOGI_STRING_VIEW_H
 #define YOGI_STRING_VIEW_H
 
+//! \file
+//!
+//! Helpers for passing strings to functions.
+
 #include <string>
 
 namespace yogi {

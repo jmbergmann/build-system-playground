@@ -18,6 +18,10 @@
 #ifndef YOGI_JSON_H
 #define YOGI_JSON_H
 
+//! \file
+//!
+//! Includes Niels Lohmann's JSON library.
+
 #ifdef NLOHMANN_JSON_VERSION_MAJOR
 #if NLOHMANN_JSON_VERSION_MAJOR != 3
 #error "Incompatible version of Niels Lohmann's JSON library has been included"

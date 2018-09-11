@@ -18,6 +18,10 @@
 #ifndef YOGI_STREAM_IO_H
 #define YOGI_STREAM_IO_H
 
+//! \file
+//!
+//! Stream-based printing of various Yogi types.
+
 #include "io.h"
 #include "errors.h"
 #include "object.h"

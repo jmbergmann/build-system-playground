@@ -18,6 +18,10 @@
 #ifndef YOGI_BRANCH_H
 #define YOGI_BRANCH_H
 
+//! \file
+//!
+//! Branches (entry points into the Yogi network).
+
 #include "object.h"
 #include "context.h"
 #include "io.h"
@@ -278,7 +282,7 @@ class BranchEventInfo {
 };
 
 ////////////////////////////////////////////////////////////////////////////////
-/// Information associated with the BranchEvents::kBranchDiscovered event.
+/// Information associated with the kBranchDiscovered event.
 ////////////////////////////////////////////////////////////////////////////////
 class BranchDiscoveredEventInfo : public BranchEventInfo {
   friend class Branch;
@@ -302,7 +306,7 @@ class BranchDiscoveredEventInfo : public BranchEventInfo {
 };
 
 ////////////////////////////////////////////////////////////////////////////////
-/// Information associated with the BranchEvents::kBranchQueried event.
+/// Information associated with the kBranchQueried event.
 ////////////////////////////////////////////////////////////////////////////////
 class BranchQueriedEventInfo : public BranchEventInfo {
   friend class Branch;
@@ -392,7 +396,7 @@ class BranchQueriedEventInfo : public BranchEventInfo {
 };
 
 ////////////////////////////////////////////////////////////////////////////////
-/// Information associated with the BranchEvents::kConnectFinished event.
+/// Information associated with the kConnectFinished event.
 ////////////////////////////////////////////////////////////////////////////////
 class ConnectFinishedEventInfo : public BranchEventInfo {
   friend class Branch;
@@ -402,7 +406,7 @@ class ConnectFinishedEventInfo : public BranchEventInfo {
 };
 
 ////////////////////////////////////////////////////////////////////////////////
-/// Information associated with the BranchEvents::kConnectionLost event.
+/// Information associated with the kConnectionLost event.
 ////////////////////////////////////////////////////////////////////////////////
 class ConnectionLostEventInfo : public BranchEventInfo {
   friend class Branch;
@@ -412,6 +416,8 @@ class ConnectionLostEventInfo : public BranchEventInfo {
 };
 
 class Branch;
+
+/// Shared pointer to a branch.
 using BranchPtr = std::shared_ptr<Branch>;
 
 ////////////////////////////////////////////////////////////////////////////////

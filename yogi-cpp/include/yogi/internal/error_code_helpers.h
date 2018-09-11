@@ -18,6 +18,10 @@
 #ifndef YOGI_INTERNAL_ERROR_CODE_HELPERS_H
 #define YOGI_INTERNAL_ERROR_CODE_HELPERS_H
 
+//! \file
+//!
+//! Helpers for handling error codes.
+
 #include "../errors.h"
 
 #include <array>

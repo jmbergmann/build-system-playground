@@ -18,6 +18,14 @@
 #ifndef YOGI_H
 #define YOGI_H
 
+//! \file
+//!
+//! Includes the whole library.
+
+//! \namespace yogi
+//!
+//! Main namespace for yogi-cpp.
+
 #include "yogi/branch.h"
 #include "yogi/configuration.h"
 #include "yogi/constants.h"

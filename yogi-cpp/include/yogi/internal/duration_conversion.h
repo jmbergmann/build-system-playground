@@ -18,6 +18,10 @@
 #ifndef YOGI_INTERNAL_DURATION_CONVERSION_H
 #define YOGI_INTERNAL_DURATION_CONVERSION_H
 
+//! \file
+//!
+//! Helpers for converting durations.
+
 #include "../errors.h"
 #include "../duration.h"
 

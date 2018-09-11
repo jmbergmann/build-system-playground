@@ -18,6 +18,10 @@
 #ifndef YOGI_LICENSES_H
 #define YOGI_LICENSES_H
 
+//! \file
+//!
+//! Functions for getting license information.
+
 #include "internal/library.h"
 
 namespace yogi {

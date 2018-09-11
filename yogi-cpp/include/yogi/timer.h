@@ -18,6 +18,10 @@
 #ifndef YOGI_TIMER_H
 #define YOGI_TIMER_H
 
+//! \file
+//!
+//! Timer implementation.
+
 #include "duration.h"
 #include "object.h"
 #include "context.h"
@@ -34,6 +38,8 @@ YOGI_DEFINE_API_FN(int, YOGI_TimerStart,
 YOGI_DEFINE_API_FN(int, YOGI_TimerCancel, (void* timer))
 
 class Timer;
+
+/// Shared pointer to a timer.
 using TimerPtr = std::shared_ptr<Timer>;
 
 ////////////////////////////////////////////////////////////////////////////////

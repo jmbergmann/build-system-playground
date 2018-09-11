@@ -18,6 +18,10 @@
 #ifndef YOGI_INTERNAL_QUERY_STRING_H
 #define YOGI_INTERNAL_QUERY_STRING_H
 
+//! \file
+//!
+//! Helpers for obtaining strings from the Yogi Core library.
+
 #include "../errors.h"
 #include "error_code_helpers.h"
 

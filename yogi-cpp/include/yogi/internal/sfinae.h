@@ -18,6 +18,10 @@
 #ifndef YOGI_INTERNAL_SFINAE_H
 #define YOGI_INTERNAL_SFINAE_H
 
+//! \file
+//!
+//! Helpers related to Substitution Failure Is Not An Error.
+
 #include <type_traits>
 #include <string>
 

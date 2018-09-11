@@ -18,6 +18,10 @@
 #ifndef YOGI_UUID_H
 #define YOGI_UUID_H
 
+//! \file
+//!
+//! Representation of Universal Unique IDentifiers.
+
 #include "io.h"
 
 #include <string.h>

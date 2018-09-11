@@ -18,6 +18,10 @@
 #ifndef YOGI_CONSTANTS_H
 #define YOGI_CONSTANTS_H
 
+//! \file
+//!
+//! Constants.
+
 #include "logging.h"
 #include "duration.h"
 #include "internal/error_code_helpers.h"

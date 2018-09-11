@@ -18,6 +18,10 @@
 #ifndef YOGI_ERRORS_H
 #define YOGI_ERRORS_H
 
+//! \file
+//!
+//! Fucntionality related to error handling, including exceptions.
+
 #include "internal/library.h"
 #include "string_view.h"
 #include "io.h"
@@ -354,7 +358,7 @@ class Exception : public std::exception {
   virtual const char* what() const noexcept override = 0;
 };
 
-/// Exception wrapping a Failure object.
+/// %Exception wrapping a Failure object.
 ///
 /// This exception type is used for failures without a detailed description.
 class FailureException : public Exception {

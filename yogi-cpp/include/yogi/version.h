@@ -18,6 +18,10 @@
 #ifndef YOGI_VERSION_H
 #define YOGI_VERSION_H
 
+//! \file
+//!
+//! Version information.
+
 #include "internal/library.h"
 
 namespace yogi {

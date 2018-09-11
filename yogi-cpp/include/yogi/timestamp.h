@@ -18,6 +18,10 @@
 #ifndef YOGI_TIMESTAMP_H
 #define YOGI_TIMESTAMP_H
 
+//! \file
+//!
+//! Representation of points in time.
+
 #include "internal/library.h"
 #include "internal/error_code_helpers.h"
 #include "string_view.h"

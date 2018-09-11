@@ -18,6 +18,10 @@
 #ifndef YOGI_INTERNAL_LIBRARY_H
 #define YOGI_INTERNAL_LIBRARY_H
 
+//! \file
+//!
+//! Helpers for handling the Yogi Core library.
+
 #include <cstdlib>
 #include <string>
 #include <iostream>

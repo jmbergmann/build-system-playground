@@ -18,6 +18,10 @@
 #ifndef YOGI_INTERNAL_LIBRARY_IMPL_WIN_H
 #define YOGI_INTERNAL_LIBRARY_IMPL_WIN_H
 
+//! \file
+//!
+//! Windows-specific parts for handling the Yogi-Core library.
+
 #include <Windows.h>
 
 namespace yogi {

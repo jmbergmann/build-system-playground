@@ -18,6 +18,10 @@
 #ifndef YOGI_TIME_H
 #define YOGI_TIME_H
 
+//! \file
+//!
+//! Functions for handling time.
+
 #include "timestamp.h"
 
 namespace yogi {

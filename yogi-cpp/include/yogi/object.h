@@ -18,6 +18,10 @@
 #ifndef YOGI_OBJECT_H
 #define YOGI_OBJECT_H
 
+//! \file
+//!
+//! Base classes for Yogi objects.
+
 #include "io.h"
 #include "internal/library.h"
 #include "internal/error_code_helpers.h"
@@ -59,6 +63,8 @@ YOGI_DEFINE_API_FN(int, YOGI_FormatObject,
 YOGI_DEFINE_API_FN(int, YOGI_Destroy, (void* object))
 
 class Object;
+
+/// Shared pointer to an object.
 using ObjectPtr = std::shared_ptr<Object>;
 
 ////////////////////////////////////////////////////////////////////////////////

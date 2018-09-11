@@ -18,6 +18,10 @@
 #ifndef YOGI_CONTEXT_H
 #define YOGI_CONTEXT_H
 
+//! \file
+//!
+//! Contexts (schedulers for the execution of asynchronous operations).
+
 #include "object.h"
 #include "duration.h"
 #include "internal/duration_conversion.h"
@@ -45,6 +49,8 @@ YOGI_DEFINE_API_FN(int, YOGI_ContextPost,
                    (void* context, void (*fn)(void* userarg), void* userarg))
 
 class Context;
+
+/// Shared pointer to a context.
 using ContextPtr = std::shared_ptr<Context>;
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -18,6 +18,10 @@
 #ifndef YOGI_DURATION_H
 #define YOGI_DURATION_H
 
+//! \file
+//!
+//! Representation of time durations.
+
 #include "internal/library.h"
 #include "internal/error_code_helpers.h"
 #include "string_view.h"

@@ -18,6 +18,10 @@
 #ifndef YOGI_LOGGING_H
 #define YOGI_LOGGING_H
 
+//! \file
+//!
+//! Everthing related to logging.
+
 #include "io.h"
 #include "object.h"
 #include "time.h"
@@ -415,6 +419,8 @@ inline void LogToFile() {
 }
 
 class Logger;
+
+/// Shared pointer to a logger.
 using LoggerPtr = std::shared_ptr<Logger>;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -522,6 +528,8 @@ class Logger : public ObjectT<Logger> {
 };
 
 class AppLogger;
+
+/// Shared pointer to an app logger.
 using AppLoggerPtr = std::shared_ptr<AppLogger>;
 
 ////////////////////////////////////////////////////////////////////////////////

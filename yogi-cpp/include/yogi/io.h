@@ -18,6 +18,10 @@
 #ifndef YOGI_IO_H
 #define YOGI_IO_H
 
+//! \file
+//!
+//! Functions for printing various Yogi types.
+
 #include "internal/sfinae.h"
 
 #include <string>

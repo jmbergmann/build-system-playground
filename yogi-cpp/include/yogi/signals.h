@@ -18,6 +18,10 @@
 #ifndef YOGI_SIGNALS_H
 #define YOGI_SIGNALS_H
 
+//! \file
+//!
+//! Signal handling.
+
 #include "duration.h"
 #include "object.h"
 #include "context.h"
@@ -249,6 +253,8 @@ inline void RaiseSignalWithArg(Signals signal, Sigarg&& sigarg,
 }
 
 class SignalSet;
+
+/// Shared pointer to a signal set.
 using SignalSetPtr = std::shared_ptr<SignalSet>;
 
 ////////////////////////////////////////////////////////////////////////////////

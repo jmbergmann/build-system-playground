@@ -18,6 +18,10 @@
 #ifndef YOGI_CONFIGURATION_H
 #define YOGI_CONFIGURATION_H
 
+//! \file
+//!
+//! Configuration objects.
+
 #include "object.h"
 #include "io.h"
 #include "json.h"
@@ -189,14 +193,18 @@ inline std::string ToString<CommandLineOptions>(
 }
 
 class Configuration;
+
+/// Shared pointer to a configuration.
 using ConfigurationPtr = std::shared_ptr<Configuration>;
 
 ////////////////////////////////////////////////////////////////////////////////
 /// A configuration represents a set of parameters that usually remain constant
-/// throughout the runtime of a program. Parameters can come from different
-/// sources such as the command line or a file. Configurations are used for
-/// other parts of the library such as application objects, however, they are
-/// also intended to store user-defined parameters.
+/// throughout the runtime of a program.
+///
+/// Parameters can come from different sources such as the command line or a
+/// file. Configurations are used for other parts of the library such as
+/// application objects, however, they are also intended to store user-defined
+/// parameters.
 ////////////////////////////////////////////////////////////////////////////////
 class Configuration : public ObjectT<Configuration> {
  public:
