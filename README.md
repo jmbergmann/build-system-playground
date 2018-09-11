@@ -17,7 +17,6 @@ TODO:
 --------------------------------------------------
 * Checkout asio timer problem (see code below)
 * Check path validity when creating branches and terminals
-* Disabling logging via LogToConsole() with no parameters is not intuitive
 
 #include <boost/asio.hpp>
 #include <chrono>
