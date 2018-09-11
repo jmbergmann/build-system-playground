@@ -36,27 +36,27 @@
 
 #include <sstream>
 
-#define YOGI_DEFINE_OSTREAM_OPERATOR(type)                                   \
+#define _YOGI_DEFINE_OSTREAM_OPERATOR(type)                                  \
   inline std::ostream& operator<<(std::ostream& os, const yogi::type& val) { \
     os << yogi::ToString(val);                                               \
     return os;                                                               \
   }
 
-YOGI_DEFINE_OSTREAM_OPERATOR(ErrorCode)
-YOGI_DEFINE_OSTREAM_OPERATOR(Result)
-YOGI_DEFINE_OSTREAM_OPERATOR(Object)
-YOGI_DEFINE_OSTREAM_OPERATOR(Verbosity)
-YOGI_DEFINE_OSTREAM_OPERATOR(Stream)
-YOGI_DEFINE_OSTREAM_OPERATOR(BranchEvents)
-YOGI_DEFINE_OSTREAM_OPERATOR(Uuid)
-YOGI_DEFINE_OSTREAM_OPERATOR(Duration)
-YOGI_DEFINE_OSTREAM_OPERATOR(Timestamp)
-YOGI_DEFINE_OSTREAM_OPERATOR(BranchInfo)
-YOGI_DEFINE_OSTREAM_OPERATOR(BranchEventInfo)
-YOGI_DEFINE_OSTREAM_OPERATOR(Signals)
-YOGI_DEFINE_OSTREAM_OPERATOR(ConfigurationFlags)
-YOGI_DEFINE_OSTREAM_OPERATOR(CommandLineOptions)
+_YOGI_DEFINE_OSTREAM_OPERATOR(ErrorCode)
+_YOGI_DEFINE_OSTREAM_OPERATOR(Result)
+_YOGI_DEFINE_OSTREAM_OPERATOR(Object)
+_YOGI_DEFINE_OSTREAM_OPERATOR(Verbosity)
+_YOGI_DEFINE_OSTREAM_OPERATOR(Stream)
+_YOGI_DEFINE_OSTREAM_OPERATOR(BranchEvents)
+_YOGI_DEFINE_OSTREAM_OPERATOR(Uuid)
+_YOGI_DEFINE_OSTREAM_OPERATOR(Duration)
+_YOGI_DEFINE_OSTREAM_OPERATOR(Timestamp)
+_YOGI_DEFINE_OSTREAM_OPERATOR(BranchInfo)
+_YOGI_DEFINE_OSTREAM_OPERATOR(BranchEventInfo)
+_YOGI_DEFINE_OSTREAM_OPERATOR(Signals)
+_YOGI_DEFINE_OSTREAM_OPERATOR(ConfigurationFlags)
+_YOGI_DEFINE_OSTREAM_OPERATOR(CommandLineOptions)
 
-#undef YOGI_DEFINE_OSTREAM_OPERATOR
+#undef _YOGI_DEFINE_OSTREAM_OPERATOR
 
 #endif  // YOGI_STREAM_IO_H

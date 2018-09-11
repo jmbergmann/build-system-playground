@@ -57,10 +57,10 @@ inline void* CallApiCreateWithDescriptiveErrorCode(Fn fn, Args&&... args) {
 
 }  // namespace internal
 
-YOGI_DEFINE_API_FN(int, YOGI_FormatObject,
-                   (void* object, char* str, int strsize, const char* objfmt,
-                    const char* nullstr))
-YOGI_DEFINE_API_FN(int, YOGI_Destroy, (void* object))
+_YOGI_DEFINE_API_FN(int, YOGI_FormatObject,
+                    (void* object, char* str, int strsize, const char* objfmt,
+                     const char* nullstr))
+_YOGI_DEFINE_API_FN(int, YOGI_Destroy, (void* object))
 
 class Object;
 

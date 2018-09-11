@@ -32,7 +32,10 @@
 
 namespace yogi {
 
-YOGI_DEFINE_API_FN(const char*, YOGI_GetErrorString, (int err))
+_YOGI_DEFINE_API_FN(const char*, YOGI_GetErrorString, (int err))
+
+/// \addtogroup enums
+/// @{
 
 ////////////////////////////////////////////////////////////////////////////////
 /// Error codes
@@ -169,53 +172,55 @@ enum class ErrorCode {
 template <>
 inline std::string ToString<ErrorCode>(const ErrorCode& ec) {
   switch (ec) {
-    YOGI_TO_STRING_ENUM_CASE(ErrorCode, kOk)
-    YOGI_TO_STRING_ENUM_CASE(ErrorCode, kUnknown)
-    YOGI_TO_STRING_ENUM_CASE(ErrorCode, kObjectStillUsed)
-    YOGI_TO_STRING_ENUM_CASE(ErrorCode, kBadAlloc)
-    YOGI_TO_STRING_ENUM_CASE(ErrorCode, kInvalidParam)
-    YOGI_TO_STRING_ENUM_CASE(ErrorCode, kInvalidHandle)
-    YOGI_TO_STRING_ENUM_CASE(ErrorCode, kWrongObjectType)
-    YOGI_TO_STRING_ENUM_CASE(ErrorCode, kCanceled)
-    YOGI_TO_STRING_ENUM_CASE(ErrorCode, kBusy)
-    YOGI_TO_STRING_ENUM_CASE(ErrorCode, kTimeout)
-    YOGI_TO_STRING_ENUM_CASE(ErrorCode, kTimerExpired)
-    YOGI_TO_STRING_ENUM_CASE(ErrorCode, kBufferTooSmall)
-    YOGI_TO_STRING_ENUM_CASE(ErrorCode, kOpenSocketFailed)
-    YOGI_TO_STRING_ENUM_CASE(ErrorCode, kBindSocketFailed)
-    YOGI_TO_STRING_ENUM_CASE(ErrorCode, kListenSocketFailed)
-    YOGI_TO_STRING_ENUM_CASE(ErrorCode, kSetSocketOptionFailed)
-    YOGI_TO_STRING_ENUM_CASE(ErrorCode, kInvalidRegex)
-    YOGI_TO_STRING_ENUM_CASE(ErrorCode, kOpenFileFailed)
-    YOGI_TO_STRING_ENUM_CASE(ErrorCode, kRwSocketFailed)
-    YOGI_TO_STRING_ENUM_CASE(ErrorCode, kConnectSocketFailed)
-    YOGI_TO_STRING_ENUM_CASE(ErrorCode, kInvalidMagicPrefix)
-    YOGI_TO_STRING_ENUM_CASE(ErrorCode, kIncompatibleVersion)
-    YOGI_TO_STRING_ENUM_CASE(ErrorCode, kDeserializeMsgFailed)
-    YOGI_TO_STRING_ENUM_CASE(ErrorCode, kAcceptSocketFailed)
-    YOGI_TO_STRING_ENUM_CASE(ErrorCode, kLoopbackConnection)
-    YOGI_TO_STRING_ENUM_CASE(ErrorCode, kPasswordMismatch)
-    YOGI_TO_STRING_ENUM_CASE(ErrorCode, kNetNameMismatch)
-    YOGI_TO_STRING_ENUM_CASE(ErrorCode, kDuplicateBranchName)
-    YOGI_TO_STRING_ENUM_CASE(ErrorCode, kDuplicateBranchPath)
-    YOGI_TO_STRING_ENUM_CASE(ErrorCode, kMessageTooLarge)
-    YOGI_TO_STRING_ENUM_CASE(ErrorCode, kParsingCmdlineFailed)
-    YOGI_TO_STRING_ENUM_CASE(ErrorCode, kParsingJsonFailed)
-    YOGI_TO_STRING_ENUM_CASE(ErrorCode, kParsingFileFailed)
-    YOGI_TO_STRING_ENUM_CASE(ErrorCode, kConfigNotValid)
-    YOGI_TO_STRING_ENUM_CASE(ErrorCode, kHelpRequested)
-    YOGI_TO_STRING_ENUM_CASE(ErrorCode, kWriteToFileFailed)
-    YOGI_TO_STRING_ENUM_CASE(ErrorCode, kUndefinedVariables)
-    YOGI_TO_STRING_ENUM_CASE(ErrorCode, kNoVariableSupport)
-    YOGI_TO_STRING_ENUM_CASE(ErrorCode, kVariableUsedInKey)
-    YOGI_TO_STRING_ENUM_CASE(ErrorCode, kInvalidTimeFormat)
-    YOGI_TO_STRING_ENUM_CASE(ErrorCode, kParsingTimeFailed)
+    _YOGI_TO_STRING_ENUM_CASE(ErrorCode, kOk)
+    _YOGI_TO_STRING_ENUM_CASE(ErrorCode, kUnknown)
+    _YOGI_TO_STRING_ENUM_CASE(ErrorCode, kObjectStillUsed)
+    _YOGI_TO_STRING_ENUM_CASE(ErrorCode, kBadAlloc)
+    _YOGI_TO_STRING_ENUM_CASE(ErrorCode, kInvalidParam)
+    _YOGI_TO_STRING_ENUM_CASE(ErrorCode, kInvalidHandle)
+    _YOGI_TO_STRING_ENUM_CASE(ErrorCode, kWrongObjectType)
+    _YOGI_TO_STRING_ENUM_CASE(ErrorCode, kCanceled)
+    _YOGI_TO_STRING_ENUM_CASE(ErrorCode, kBusy)
+    _YOGI_TO_STRING_ENUM_CASE(ErrorCode, kTimeout)
+    _YOGI_TO_STRING_ENUM_CASE(ErrorCode, kTimerExpired)
+    _YOGI_TO_STRING_ENUM_CASE(ErrorCode, kBufferTooSmall)
+    _YOGI_TO_STRING_ENUM_CASE(ErrorCode, kOpenSocketFailed)
+    _YOGI_TO_STRING_ENUM_CASE(ErrorCode, kBindSocketFailed)
+    _YOGI_TO_STRING_ENUM_CASE(ErrorCode, kListenSocketFailed)
+    _YOGI_TO_STRING_ENUM_CASE(ErrorCode, kSetSocketOptionFailed)
+    _YOGI_TO_STRING_ENUM_CASE(ErrorCode, kInvalidRegex)
+    _YOGI_TO_STRING_ENUM_CASE(ErrorCode, kOpenFileFailed)
+    _YOGI_TO_STRING_ENUM_CASE(ErrorCode, kRwSocketFailed)
+    _YOGI_TO_STRING_ENUM_CASE(ErrorCode, kConnectSocketFailed)
+    _YOGI_TO_STRING_ENUM_CASE(ErrorCode, kInvalidMagicPrefix)
+    _YOGI_TO_STRING_ENUM_CASE(ErrorCode, kIncompatibleVersion)
+    _YOGI_TO_STRING_ENUM_CASE(ErrorCode, kDeserializeMsgFailed)
+    _YOGI_TO_STRING_ENUM_CASE(ErrorCode, kAcceptSocketFailed)
+    _YOGI_TO_STRING_ENUM_CASE(ErrorCode, kLoopbackConnection)
+    _YOGI_TO_STRING_ENUM_CASE(ErrorCode, kPasswordMismatch)
+    _YOGI_TO_STRING_ENUM_CASE(ErrorCode, kNetNameMismatch)
+    _YOGI_TO_STRING_ENUM_CASE(ErrorCode, kDuplicateBranchName)
+    _YOGI_TO_STRING_ENUM_CASE(ErrorCode, kDuplicateBranchPath)
+    _YOGI_TO_STRING_ENUM_CASE(ErrorCode, kMessageTooLarge)
+    _YOGI_TO_STRING_ENUM_CASE(ErrorCode, kParsingCmdlineFailed)
+    _YOGI_TO_STRING_ENUM_CASE(ErrorCode, kParsingJsonFailed)
+    _YOGI_TO_STRING_ENUM_CASE(ErrorCode, kParsingFileFailed)
+    _YOGI_TO_STRING_ENUM_CASE(ErrorCode, kConfigNotValid)
+    _YOGI_TO_STRING_ENUM_CASE(ErrorCode, kHelpRequested)
+    _YOGI_TO_STRING_ENUM_CASE(ErrorCode, kWriteToFileFailed)
+    _YOGI_TO_STRING_ENUM_CASE(ErrorCode, kUndefinedVariables)
+    _YOGI_TO_STRING_ENUM_CASE(ErrorCode, kNoVariableSupport)
+    _YOGI_TO_STRING_ENUM_CASE(ErrorCode, kVariableUsedInKey)
+    _YOGI_TO_STRING_ENUM_CASE(ErrorCode, kInvalidTimeFormat)
+    _YOGI_TO_STRING_ENUM_CASE(ErrorCode, kParsingTimeFailed)
   }
 
   bool should_never_get_here = false;
   assert(should_never_get_here);
   return {};
 }
+
+/// @} enums
 
 ////////////////////////////////////////////////////////////////////////////////
 /// Represents a result of an operation.

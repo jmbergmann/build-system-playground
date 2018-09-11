@@ -31,11 +31,11 @@
 
 namespace yogi {
 
-YOGI_DEFINE_API_FN(int, YOGI_TimerCreate, (void** timer, void* context))
-YOGI_DEFINE_API_FN(int, YOGI_TimerStart,
-                   (void* timer, long long duration,
-                    void (*fn)(int res, void* userarg), void* userarg))
-YOGI_DEFINE_API_FN(int, YOGI_TimerCancel, (void* timer))
+_YOGI_DEFINE_API_FN(int, YOGI_TimerCreate, (void** timer, void* context))
+_YOGI_DEFINE_API_FN(int, YOGI_TimerStart,
+                    (void* timer, long long duration,
+                     void (*fn)(int res, void* userarg), void* userarg))
+_YOGI_DEFINE_API_FN(int, YOGI_TimerCancel, (void* timer))
 
 class Timer;
 

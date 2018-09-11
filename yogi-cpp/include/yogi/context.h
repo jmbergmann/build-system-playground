@@ -32,21 +32,21 @@
 
 namespace yogi {
 
-YOGI_DEFINE_API_FN(int, YOGI_ContextCreate, (void** context))
-YOGI_DEFINE_API_FN(int, YOGI_ContextPoll, (void* context, int* count))
-YOGI_DEFINE_API_FN(int, YOGI_ContextPollOne, (void* context, int* count))
-YOGI_DEFINE_API_FN(int, YOGI_ContextRun,
-                   (void* context, int* count, long long duration))
-YOGI_DEFINE_API_FN(int, YOGI_ContextRunOne,
-                   (void* context, int* count, long long duration))
-YOGI_DEFINE_API_FN(int, YOGI_ContextRunInBackground, (void* context))
-YOGI_DEFINE_API_FN(int, YOGI_ContextStop, (void* context))
-YOGI_DEFINE_API_FN(int, YOGI_ContextWaitForRunning,
-                   (void* context, long long duration))
-YOGI_DEFINE_API_FN(int, YOGI_ContextWaitForStopped,
-                   (void* context, long long duration))
-YOGI_DEFINE_API_FN(int, YOGI_ContextPost,
-                   (void* context, void (*fn)(void* userarg), void* userarg))
+_YOGI_DEFINE_API_FN(int, YOGI_ContextCreate, (void** context))
+_YOGI_DEFINE_API_FN(int, YOGI_ContextPoll, (void* context, int* count))
+_YOGI_DEFINE_API_FN(int, YOGI_ContextPollOne, (void* context, int* count))
+_YOGI_DEFINE_API_FN(int, YOGI_ContextRun,
+                    (void* context, int* count, long long duration))
+_YOGI_DEFINE_API_FN(int, YOGI_ContextRunOne,
+                    (void* context, int* count, long long duration))
+_YOGI_DEFINE_API_FN(int, YOGI_ContextRunInBackground, (void* context))
+_YOGI_DEFINE_API_FN(int, YOGI_ContextStop, (void* context))
+_YOGI_DEFINE_API_FN(int, YOGI_ContextWaitForRunning,
+                    (void* context, long long duration))
+_YOGI_DEFINE_API_FN(int, YOGI_ContextWaitForStopped,
+                    (void* context, long long duration))
+_YOGI_DEFINE_API_FN(int, YOGI_ContextPost,
+                    (void* context, void (*fn)(void* userarg), void* userarg))
 
 class Context;
 

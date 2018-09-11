@@ -40,25 +40,28 @@
 
 namespace yogi {
 
-YOGI_DEFINE_API_FN(int, YOGI_BranchCreate,
-                   (void** branch, void* context, const char* props,
-                    const char* section, char* err, int errsize))
-YOGI_DEFINE_API_FN(int, YOGI_BranchGetInfo,
-                   (void* branch, void* uuid, char* json, int jsonsize))
-YOGI_DEFINE_API_FN(int, YOGI_BranchGetConnectedBranches,
-                   (void* branch, void* uuid, char* json, int jsonsize,
-                    void (*fn)(int res, void* userarg), void* userarg))
-YOGI_DEFINE_API_FN(int, YOGI_BranchAwaitEvent,
-                   (void* branch, int events, void* uuid, char* json,
-                    int jsonsize,
-                    void (*fn)(int res, int event, int ev_res, void* userarg),
-                    void* userarg))
-YOGI_DEFINE_API_FN(int, YOGI_BranchCancelAwaitEvent, (void* branch))
+_YOGI_DEFINE_API_FN(int, YOGI_BranchCreate,
+                    (void** branch, void* context, const char* props,
+                     const char* section, char* err, int errsize))
+_YOGI_DEFINE_API_FN(int, YOGI_BranchGetInfo,
+                    (void* branch, void* uuid, char* json, int jsonsize))
+_YOGI_DEFINE_API_FN(int, YOGI_BranchGetConnectedBranches,
+                    (void* branch, void* uuid, char* json, int jsonsize,
+                     void (*fn)(int res, void* userarg), void* userarg))
+_YOGI_DEFINE_API_FN(int, YOGI_BranchAwaitEvent,
+                    (void* branch, int events, void* uuid, char* json,
+                     int jsonsize,
+                     void (*fn)(int res, int event, int ev_res, void* userarg),
+                     void* userarg))
+_YOGI_DEFINE_API_FN(int, YOGI_BranchCancelAwaitEvent, (void* branch))
+
+/// \addtogroup enums
+/// @{
 
 ////////////////////////////////////////////////////////////////////////////////
-/// Branch events.
+/// %Branch events.
 ///
-/// Branch events are events that can be observed on a branch.
+/// %Branch events are events that can be observed on a branch.
 ////////////////////////////////////////////////////////////////////////////////
 enum class BranchEvents {
   /// No events.
@@ -81,26 +84,28 @@ enum class BranchEvents {
       kBranchDiscovered | kBranchQueried | kConnectFinished | kConnectionLost,
 };
 
-YOGI_DEFINE_FLAG_OPERATORS(BranchEvents)
+_YOGI_DEFINE_FLAG_OPERATORS(BranchEvents)
 
 template <>
 inline std::string ToString<BranchEvents>(const BranchEvents& events) {
   switch (events) {
-    YOGI_TO_STRING_ENUM_CASE(BranchEvents, kNone)
-    YOGI_TO_STRING_ENUM_CASE(BranchEvents, kBranchDiscovered)
-    YOGI_TO_STRING_ENUM_CASE(BranchEvents, kBranchQueried)
-    YOGI_TO_STRING_ENUM_CASE(BranchEvents, kConnectFinished)
-    YOGI_TO_STRING_ENUM_CASE(BranchEvents, kConnectionLost)
-    YOGI_TO_STRING_ENUM_CASE(BranchEvents, kAll)
+    _YOGI_TO_STRING_ENUM_CASE(BranchEvents, kNone)
+    _YOGI_TO_STRING_ENUM_CASE(BranchEvents, kBranchDiscovered)
+    _YOGI_TO_STRING_ENUM_CASE(BranchEvents, kBranchQueried)
+    _YOGI_TO_STRING_ENUM_CASE(BranchEvents, kConnectFinished)
+    _YOGI_TO_STRING_ENUM_CASE(BranchEvents, kConnectionLost)
+    _YOGI_TO_STRING_ENUM_CASE(BranchEvents, kAll)
   }
 
   std::string s;
-  YOGI_TO_STRING_FLAG_APPENDER(events, BranchEvents, kBranchDiscovered)
-  YOGI_TO_STRING_FLAG_APPENDER(events, BranchEvents, kBranchQueried)
-  YOGI_TO_STRING_FLAG_APPENDER(events, BranchEvents, kConnectFinished)
-  YOGI_TO_STRING_FLAG_APPENDER(events, BranchEvents, kConnectionLost)
+  _YOGI_TO_STRING_FLAG_APPENDER(events, BranchEvents, kBranchDiscovered)
+  _YOGI_TO_STRING_FLAG_APPENDER(events, BranchEvents, kBranchQueried)
+  _YOGI_TO_STRING_FLAG_APPENDER(events, BranchEvents, kConnectFinished)
+  _YOGI_TO_STRING_FLAG_APPENDER(events, BranchEvents, kConnectionLost)
   return s.substr(3);
 }
+
+/// @} enums
 
 ////////////////////////////////////////////////////////////////////////////////
 /// Information about about a branch.

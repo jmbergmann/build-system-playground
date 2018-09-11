@@ -32,16 +32,19 @@
 
 namespace yogi {
 
-YOGI_DEFINE_API_FN(int, YOGI_RaiseSignal,
-                   (int signal, void* sigarg,
-                    void (*fn)(void* sigarg, void* userarg), void* userarg))
-YOGI_DEFINE_API_FN(int, YOGI_SignalSetCreate,
-                   (void** sigset, void* context, int signals))
-YOGI_DEFINE_API_FN(int, YOGI_SignalSetAwaitSignal,
-                   (void* sigset,
-                    void (*fn)(int res, int sig, void* sigarg, void* userarg),
-                    void* userarg))
-YOGI_DEFINE_API_FN(int, YOGI_SignalSetCancelAwaitSignal, (void* sigset))
+_YOGI_DEFINE_API_FN(int, YOGI_RaiseSignal,
+                    (int signal, void* sigarg,
+                     void (*fn)(void* sigarg, void* userarg), void* userarg))
+_YOGI_DEFINE_API_FN(int, YOGI_SignalSetCreate,
+                    (void** sigset, void* context, int signals))
+_YOGI_DEFINE_API_FN(int, YOGI_SignalSetAwaitSignal,
+                    (void* sigset,
+                     void (*fn)(int res, int sig, void* sigarg, void* userarg),
+                     void* userarg))
+_YOGI_DEFINE_API_FN(int, YOGI_SignalSetCancelAwaitSignal, (void* sigset))
+
+/// \addtogroup enums
+/// @{
 
 ////////////////////////////////////////////////////////////////////////////////
 /// Signals.
@@ -85,38 +88,40 @@ enum class Signals {
          kUsr8
 };
 
-YOGI_DEFINE_FLAG_OPERATORS(Signals)
+_YOGI_DEFINE_FLAG_OPERATORS(Signals)
 
 template <>
 inline std::string ToString<Signals>(const Signals& signals) {
   switch (signals) {
-    YOGI_TO_STRING_ENUM_CASE(Signals, kNone)
-    YOGI_TO_STRING_ENUM_CASE(Signals, kInt)
-    YOGI_TO_STRING_ENUM_CASE(Signals, kTerm)
-    YOGI_TO_STRING_ENUM_CASE(Signals, kUsr1)
-    YOGI_TO_STRING_ENUM_CASE(Signals, kUsr2)
-    YOGI_TO_STRING_ENUM_CASE(Signals, kUsr3)
-    YOGI_TO_STRING_ENUM_CASE(Signals, kUsr4)
-    YOGI_TO_STRING_ENUM_CASE(Signals, kUsr5)
-    YOGI_TO_STRING_ENUM_CASE(Signals, kUsr6)
-    YOGI_TO_STRING_ENUM_CASE(Signals, kUsr7)
-    YOGI_TO_STRING_ENUM_CASE(Signals, kUsr8)
-    YOGI_TO_STRING_ENUM_CASE(Signals, kAll)
+    _YOGI_TO_STRING_ENUM_CASE(Signals, kNone)
+    _YOGI_TO_STRING_ENUM_CASE(Signals, kInt)
+    _YOGI_TO_STRING_ENUM_CASE(Signals, kTerm)
+    _YOGI_TO_STRING_ENUM_CASE(Signals, kUsr1)
+    _YOGI_TO_STRING_ENUM_CASE(Signals, kUsr2)
+    _YOGI_TO_STRING_ENUM_CASE(Signals, kUsr3)
+    _YOGI_TO_STRING_ENUM_CASE(Signals, kUsr4)
+    _YOGI_TO_STRING_ENUM_CASE(Signals, kUsr5)
+    _YOGI_TO_STRING_ENUM_CASE(Signals, kUsr6)
+    _YOGI_TO_STRING_ENUM_CASE(Signals, kUsr7)
+    _YOGI_TO_STRING_ENUM_CASE(Signals, kUsr8)
+    _YOGI_TO_STRING_ENUM_CASE(Signals, kAll)
   }
 
   std::string s;
-  YOGI_TO_STRING_FLAG_APPENDER(signals, Signals, kInt)
-  YOGI_TO_STRING_FLAG_APPENDER(signals, Signals, kTerm)
-  YOGI_TO_STRING_FLAG_APPENDER(signals, Signals, kUsr1)
-  YOGI_TO_STRING_FLAG_APPENDER(signals, Signals, kUsr2)
-  YOGI_TO_STRING_FLAG_APPENDER(signals, Signals, kUsr3)
-  YOGI_TO_STRING_FLAG_APPENDER(signals, Signals, kUsr4)
-  YOGI_TO_STRING_FLAG_APPENDER(signals, Signals, kUsr5)
-  YOGI_TO_STRING_FLAG_APPENDER(signals, Signals, kUsr6)
-  YOGI_TO_STRING_FLAG_APPENDER(signals, Signals, kUsr7)
-  YOGI_TO_STRING_FLAG_APPENDER(signals, Signals, kUsr8)
+  _YOGI_TO_STRING_FLAG_APPENDER(signals, Signals, kInt)
+  _YOGI_TO_STRING_FLAG_APPENDER(signals, Signals, kTerm)
+  _YOGI_TO_STRING_FLAG_APPENDER(signals, Signals, kUsr1)
+  _YOGI_TO_STRING_FLAG_APPENDER(signals, Signals, kUsr2)
+  _YOGI_TO_STRING_FLAG_APPENDER(signals, Signals, kUsr3)
+  _YOGI_TO_STRING_FLAG_APPENDER(signals, Signals, kUsr4)
+  _YOGI_TO_STRING_FLAG_APPENDER(signals, Signals, kUsr5)
+  _YOGI_TO_STRING_FLAG_APPENDER(signals, Signals, kUsr6)
+  _YOGI_TO_STRING_FLAG_APPENDER(signals, Signals, kUsr7)
+  _YOGI_TO_STRING_FLAG_APPENDER(signals, Signals, kUsr8)
   return s.substr(3);
 }
+
+/// @} enums
 
 namespace internal {
 
@@ -141,6 +146,9 @@ class SigargWrapperT : public SigargWrapper {
 /// Handler function to be called once the signal raised via RaiseSignal() has
 /// been delivered to all signal sets.
 using RaiseSignalFinishedFn = std::function<void()>;
+
+/// \addtogroup freefn
+/// @{
 
 /// Raises a signal.
 ///
@@ -182,6 +190,8 @@ inline void RaiseSignal(Signals signal, RaiseSignalFinishedFn fn = {}) {
   data.release();
 }
 
+/// @} freefn
+
 /// Handler function to be called once the signal raised via RaiseSignal() has
 /// been delivered to all signal sets.
 ///
@@ -193,6 +203,9 @@ inline void RaiseSignal(Signals signal, RaiseSignalFinishedFn fn = {}) {
 ///               signal.
 template <typename Sigarg>
 using RaiseSignalFinishedFnT = std::function<void(Sigarg* sigarg)>;
+
+/// \addtogroup freefn
+/// @{
 
 /// Raises a signal.
 ///
@@ -251,6 +264,8 @@ inline void RaiseSignalWithArg(Signals signal, Sigarg&& sigarg,
   internal::CheckErrorCode(res);
   data.release();
 }
+
+/// @} freefn
 
 class SignalSet;
 

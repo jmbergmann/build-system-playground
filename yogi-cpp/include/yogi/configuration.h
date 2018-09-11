@@ -35,20 +35,24 @@
 
 namespace yogi {
 
-YOGI_DEFINE_API_FN(int, YOGI_ConfigurationCreate, (void** config, int flags))
-YOGI_DEFINE_API_FN(int, YOGI_ConfigurationUpdateFromCommandLine,
-                   (void* config, int argc, const char* const* argv,
-                    int options, char* err, int errsize))
-YOGI_DEFINE_API_FN(int, YOGI_ConfigurationUpdateFromJson,
-                   (void* config, const char* json, char* err, int errsize))
-YOGI_DEFINE_API_FN(int, YOGI_ConfigurationUpdateFromFile,
-                   (void* config, const char* filename, char* err, int errsize))
-YOGI_DEFINE_API_FN(int, YOGI_ConfigurationDump,
-                   (void* config, char* json, int jsonsize, int resvars,
-                    int indent))
-YOGI_DEFINE_API_FN(int, YOGI_ConfigurationWriteToFile,
-                   (void* config, const char* filename, int resvars,
-                    int indent))
+_YOGI_DEFINE_API_FN(int, YOGI_ConfigurationCreate, (void** config, int flags))
+_YOGI_DEFINE_API_FN(int, YOGI_ConfigurationUpdateFromCommandLine,
+                    (void* config, int argc, const char* const* argv,
+                     int options, char* err, int errsize))
+_YOGI_DEFINE_API_FN(int, YOGI_ConfigurationUpdateFromJson,
+                    (void* config, const char* json, char* err, int errsize))
+_YOGI_DEFINE_API_FN(int, YOGI_ConfigurationUpdateFromFile,
+                    (void* config, const char* filename, char* err,
+                     int errsize))
+_YOGI_DEFINE_API_FN(int, YOGI_ConfigurationDump,
+                    (void* config, char* json, int jsonsize, int resvars,
+                     int indent))
+_YOGI_DEFINE_API_FN(int, YOGI_ConfigurationWriteToFile,
+                    (void* config, const char* filename, int resvars,
+                     int indent))
+
+/// \addtogroup enums
+/// @{
 
 ////////////////////////////////////////////////////////////////////////////////
 /// Flags used to change a configuration object's behaviour.
@@ -65,20 +69,20 @@ enum class ConfigurationFlags {
   kMutableCmdLine = (1 << 1),
 };
 
-YOGI_DEFINE_FLAG_OPERATORS(ConfigurationFlags)
+_YOGI_DEFINE_FLAG_OPERATORS(ConfigurationFlags)
 
 template <>
 inline std::string ToString<ConfigurationFlags>(
     const ConfigurationFlags& flags) {
   switch (flags) {
-    YOGI_TO_STRING_ENUM_CASE(ConfigurationFlags, kNone)
-    YOGI_TO_STRING_ENUM_CASE(ConfigurationFlags, kDisableVariables)
-    YOGI_TO_STRING_ENUM_CASE(ConfigurationFlags, kMutableCmdLine)
+    _YOGI_TO_STRING_ENUM_CASE(ConfigurationFlags, kNone)
+    _YOGI_TO_STRING_ENUM_CASE(ConfigurationFlags, kDisableVariables)
+    _YOGI_TO_STRING_ENUM_CASE(ConfigurationFlags, kMutableCmdLine)
   }
 
   std::string s;
-  YOGI_TO_STRING_FLAG_APPENDER(flags, ConfigurationFlags, kDisableVariables)
-  YOGI_TO_STRING_FLAG_APPENDER(flags, ConfigurationFlags, kMutableCmdLine)
+  _YOGI_TO_STRING_FLAG_APPENDER(flags, ConfigurationFlags, kDisableVariables)
+  _YOGI_TO_STRING_FLAG_APPENDER(flags, ConfigurationFlags, kMutableCmdLine)
   return s.substr(3);
 }
 
@@ -142,55 +146,57 @@ enum class CommandLineOptions {
       kLogging | kBranchAll | kFiles | kFilesRequired | kOverrides | kVariables,
 };
 
-YOGI_DEFINE_FLAG_OPERATORS(CommandLineOptions)
+_YOGI_DEFINE_FLAG_OPERATORS(CommandLineOptions)
 
 template <>
 inline std::string ToString<CommandLineOptions>(
     const CommandLineOptions& options) {
   switch (options) {
-    YOGI_TO_STRING_ENUM_CASE(CommandLineOptions, kNone)
-    YOGI_TO_STRING_ENUM_CASE(CommandLineOptions, kLogging)
-    YOGI_TO_STRING_ENUM_CASE(CommandLineOptions, kBranchName)
-    YOGI_TO_STRING_ENUM_CASE(CommandLineOptions, kBranchDescription)
-    YOGI_TO_STRING_ENUM_CASE(CommandLineOptions, kBranchNetwork)
-    YOGI_TO_STRING_ENUM_CASE(CommandLineOptions, kBranchPassword)
-    YOGI_TO_STRING_ENUM_CASE(CommandLineOptions, kBranchPath)
-    YOGI_TO_STRING_ENUM_CASE(CommandLineOptions, kBranchAdvAddr)
-    YOGI_TO_STRING_ENUM_CASE(CommandLineOptions, kBranchAdvPort)
-    YOGI_TO_STRING_ENUM_CASE(CommandLineOptions, kBranchAdvInt)
-    YOGI_TO_STRING_ENUM_CASE(CommandLineOptions, kBranchTimeout)
-    YOGI_TO_STRING_ENUM_CASE(CommandLineOptions, kFiles)
-    YOGI_TO_STRING_ENUM_CASE(CommandLineOptions, kFilesRequired)
-    YOGI_TO_STRING_ENUM_CASE(CommandLineOptions, kOverrides)
-    YOGI_TO_STRING_ENUM_CASE(CommandLineOptions, kVariables)
-    YOGI_TO_STRING_ENUM_CASE(CommandLineOptions, kBranchAll)
-    YOGI_TO_STRING_ENUM_CASE(CommandLineOptions, kAll)
+    _YOGI_TO_STRING_ENUM_CASE(CommandLineOptions, kNone)
+    _YOGI_TO_STRING_ENUM_CASE(CommandLineOptions, kLogging)
+    _YOGI_TO_STRING_ENUM_CASE(CommandLineOptions, kBranchName)
+    _YOGI_TO_STRING_ENUM_CASE(CommandLineOptions, kBranchDescription)
+    _YOGI_TO_STRING_ENUM_CASE(CommandLineOptions, kBranchNetwork)
+    _YOGI_TO_STRING_ENUM_CASE(CommandLineOptions, kBranchPassword)
+    _YOGI_TO_STRING_ENUM_CASE(CommandLineOptions, kBranchPath)
+    _YOGI_TO_STRING_ENUM_CASE(CommandLineOptions, kBranchAdvAddr)
+    _YOGI_TO_STRING_ENUM_CASE(CommandLineOptions, kBranchAdvPort)
+    _YOGI_TO_STRING_ENUM_CASE(CommandLineOptions, kBranchAdvInt)
+    _YOGI_TO_STRING_ENUM_CASE(CommandLineOptions, kBranchTimeout)
+    _YOGI_TO_STRING_ENUM_CASE(CommandLineOptions, kFiles)
+    _YOGI_TO_STRING_ENUM_CASE(CommandLineOptions, kFilesRequired)
+    _YOGI_TO_STRING_ENUM_CASE(CommandLineOptions, kOverrides)
+    _YOGI_TO_STRING_ENUM_CASE(CommandLineOptions, kVariables)
+    _YOGI_TO_STRING_ENUM_CASE(CommandLineOptions, kBranchAll)
+    _YOGI_TO_STRING_ENUM_CASE(CommandLineOptions, kAll)
   }
 
   std::string s;
-  YOGI_TO_STRING_FLAG_APPENDER(options, CommandLineOptions, kLogging)
+  _YOGI_TO_STRING_FLAG_APPENDER(options, CommandLineOptions, kLogging)
   if ((options & CommandLineOptions::kBranchAll) ==
       CommandLineOptions::kBranchAll) {
-    YOGI_TO_STRING_FLAG_APPENDER(options, CommandLineOptions, kBranchAll)
+    _YOGI_TO_STRING_FLAG_APPENDER(options, CommandLineOptions, kBranchAll)
   } else {
-    YOGI_TO_STRING_FLAG_APPENDER(options, CommandLineOptions, kBranchName)
-    YOGI_TO_STRING_FLAG_APPENDER(options, CommandLineOptions,
-                                 kBranchDescription)
-    YOGI_TO_STRING_FLAG_APPENDER(options, CommandLineOptions, kBranchNetwork)
-    YOGI_TO_STRING_FLAG_APPENDER(options, CommandLineOptions, kBranchPassword)
-    YOGI_TO_STRING_FLAG_APPENDER(options, CommandLineOptions, kBranchPath)
-    YOGI_TO_STRING_FLAG_APPENDER(options, CommandLineOptions, kBranchAdvAddr)
-    YOGI_TO_STRING_FLAG_APPENDER(options, CommandLineOptions, kBranchAdvPort)
-    YOGI_TO_STRING_FLAG_APPENDER(options, CommandLineOptions, kBranchAdvInt)
-    YOGI_TO_STRING_FLAG_APPENDER(options, CommandLineOptions, kBranchTimeout)
+    _YOGI_TO_STRING_FLAG_APPENDER(options, CommandLineOptions, kBranchName)
+    _YOGI_TO_STRING_FLAG_APPENDER(options, CommandLineOptions,
+                                  kBranchDescription)
+    _YOGI_TO_STRING_FLAG_APPENDER(options, CommandLineOptions, kBranchNetwork)
+    _YOGI_TO_STRING_FLAG_APPENDER(options, CommandLineOptions, kBranchPassword)
+    _YOGI_TO_STRING_FLAG_APPENDER(options, CommandLineOptions, kBranchPath)
+    _YOGI_TO_STRING_FLAG_APPENDER(options, CommandLineOptions, kBranchAdvAddr)
+    _YOGI_TO_STRING_FLAG_APPENDER(options, CommandLineOptions, kBranchAdvPort)
+    _YOGI_TO_STRING_FLAG_APPENDER(options, CommandLineOptions, kBranchAdvInt)
+    _YOGI_TO_STRING_FLAG_APPENDER(options, CommandLineOptions, kBranchTimeout)
   }
 
-  YOGI_TO_STRING_FLAG_APPENDER(options, CommandLineOptions, kFiles)
-  YOGI_TO_STRING_FLAG_APPENDER(options, CommandLineOptions, kFilesRequired)
-  YOGI_TO_STRING_FLAG_APPENDER(options, CommandLineOptions, kOverrides)
-  YOGI_TO_STRING_FLAG_APPENDER(options, CommandLineOptions, kVariables)
+  _YOGI_TO_STRING_FLAG_APPENDER(options, CommandLineOptions, kFiles)
+  _YOGI_TO_STRING_FLAG_APPENDER(options, CommandLineOptions, kFilesRequired)
+  _YOGI_TO_STRING_FLAG_APPENDER(options, CommandLineOptions, kOverrides)
+  _YOGI_TO_STRING_FLAG_APPENDER(options, CommandLineOptions, kVariables)
   return s.substr(3);
 }
+
+/// @} enums
 
 class Configuration;
 

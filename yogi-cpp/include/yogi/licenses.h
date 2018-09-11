@@ -26,8 +26,11 @@
 
 namespace yogi {
 
-YOGI_DEFINE_API_FN(const char*, YOGI_GetLicense, ())
-YOGI_DEFINE_API_FN(const char*, YOGI_Get3rdPartyLicenses, ())
+_YOGI_DEFINE_API_FN(const char*, YOGI_GetLicense, ())
+_YOGI_DEFINE_API_FN(const char*, YOGI_Get3rdPartyLicenses, ())
+
+/// \addtogroup freefn
+/// @{
 
 /// Get the license that Yogi is published under.
 ///
@@ -49,6 +52,8 @@ inline const std::string& Get3rdPartyLicenses() {
   static std::string s = internal::YOGI_Get3rdPartyLicenses();
   return s;
 }
+
+/// @} freefn
 
 }  // namespace yogi
 

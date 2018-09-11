@@ -132,6 +132,8 @@
     "xstddef": "cpp",
     "*.ipp": "cpp",
     "random": "cpp",
-    "queue": "cpp"
+    "queue": "cpp",
+    "strstream": "cpp",
+    "unordered_set": "cpp"
   }
 }

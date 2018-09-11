@@ -25,7 +25,7 @@
 #include <type_traits>
 #include <string>
 
-#define YOGI_DEFINE_SFINAE_METHOD_TESTER(class_name, test_expression)     \
+#define _YOGI_DEFINE_SFINAE_METHOD_TESTER(class_name, test_expression)    \
   namespace internal {                                                    \
   template <typename T>                                                   \
   struct class_name {                                                     \

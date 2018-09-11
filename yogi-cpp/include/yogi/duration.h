@@ -38,9 +38,9 @@ static_assert(std::numeric_limits<double>::has_infinity,
 
 namespace yogi {
 
-YOGI_DEFINE_API_FN(int, YOGI_FormatDuration,
-                   (long long dur, int neg, char* str, int strsize,
-                    const char* durfmt, const char* infstr))
+_YOGI_DEFINE_API_FN(int, YOGI_FormatDuration,
+                    (long long dur, int neg, char* str, int strsize,
+                     const char* durfmt, const char* infstr))
 
 class Duration;
 
@@ -672,9 +672,9 @@ class Duration {
   long long ns_count_;
 };
 
-YOGI_WEAK_SYMBOL const Duration Duration::kZero;
-YOGI_WEAK_SYMBOL const Duration Duration::kInfinity(internal::kPositive);
-YOGI_WEAK_SYMBOL const Duration
+_YOGI_WEAK_SYMBOL const Duration Duration::kZero;
+_YOGI_WEAK_SYMBOL const Duration Duration::kInfinity(internal::kPositive);
+_YOGI_WEAK_SYMBOL const Duration
     Duration::kNegativeInfinity(internal::kNegative);
 
 namespace internal {

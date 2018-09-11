@@ -35,6 +35,9 @@
 #include <mutex>
 #include <sstream>
 
+/// \addtogroup logmacros
+/// @{
+
 /// Creates a log entry with fatal severity.
 ///
 /// Examples:
@@ -145,6 +148,8 @@
       severity, _YOGI_LOG_SELECT(_YOGI_LOG_LOGGER, __VA_ARGS__)(__VA_ARGS__), \
       _YOGI_LOG_SELECT(_YOGI_LOG_STREAM, __VA_ARGS__)(__VA_ARGS__)))
 
+/// @} logmacros
+
 #define _YOGI_LOG_EXPAND(x) x
 #define _YOGI_LOG_CAT(a, b) _YOGI_LOG_CAT2(a, b)
 #define _YOGI_LOG_CAT2(a, b) a##b
@@ -171,27 +176,31 @@
 
 namespace yogi {
 
-YOGI_DEFINE_API_FN(int, YOGI_LogToConsole,
-                   (int verbosity, int stream, int color, const char* timefmt,
-                    const char* fmt))
-YOGI_DEFINE_API_FN(int, YOGI_LogToHook,
-                   (int verbosity,
-                    void (*fn)(int severity, long long timestamp, int tid,
-                               const char* file, int line, const char* comp,
-                               const char* msg, void* userarg),
-                    void* userarg))
-YOGI_DEFINE_API_FN(int, YOGI_LogToFile,
-                   (int verbosity, const char* filename, char* genfn,
-                    int genfnsize, const char* timefmt, const char* fmt))
-YOGI_DEFINE_API_FN(int, YOGI_LoggerCreate,
-                   (void** logger, const char* component))
-YOGI_DEFINE_API_FN(int, YOGI_LoggerGetVerbosity, (void* logger, int* verbosity))
-YOGI_DEFINE_API_FN(int, YOGI_LoggerSetVerbosity, (void* logger, int verbosity))
-YOGI_DEFINE_API_FN(int, YOGI_LoggerSetComponentsVerbosity,
-                   (const char* components, int verbosity, int* count))
-YOGI_DEFINE_API_FN(int, YOGI_LoggerLog,
-                   (void* logger, int severity, const char* file, int line,
-                    const char* msg))
+_YOGI_DEFINE_API_FN(int, YOGI_LogToConsole,
+                    (int verbosity, int stream, int color, const char* timefmt,
+                     const char* fmt))
+_YOGI_DEFINE_API_FN(int, YOGI_LogToHook,
+                    (int verbosity,
+                     void (*fn)(int severity, long long timestamp, int tid,
+                                const char* file, int line, const char* comp,
+                                const char* msg, void* userarg),
+                     void* userarg))
+_YOGI_DEFINE_API_FN(int, YOGI_LogToFile,
+                    (int verbosity, const char* filename, char* genfn,
+                     int genfnsize, const char* timefmt, const char* fmt))
+_YOGI_DEFINE_API_FN(int, YOGI_LoggerCreate,
+                    (void** logger, const char* component))
+_YOGI_DEFINE_API_FN(int, YOGI_LoggerGetVerbosity,
+                    (void* logger, int* verbosity))
+_YOGI_DEFINE_API_FN(int, YOGI_LoggerSetVerbosity, (void* logger, int verbosity))
+_YOGI_DEFINE_API_FN(int, YOGI_LoggerSetComponentsVerbosity,
+                    (const char* components, int verbosity, int* count))
+_YOGI_DEFINE_API_FN(int, YOGI_LoggerLog,
+                    (void* logger, int severity, const char* file, int line,
+                     const char* msg))
+
+/// \addtogroup enums
+/// @{
 
 ////////////////////////////////////////////////////////////////////////////////
 /// Levels of how verbose logging output is.
@@ -221,12 +230,12 @@ enum class Verbosity {
 template <>
 inline std::string ToString<Verbosity>(const Verbosity& vb) {
   switch (vb) {
-    YOGI_TO_STRING_ENUM_CASE(Verbosity, kFatal)
-    YOGI_TO_STRING_ENUM_CASE(Verbosity, kError)
-    YOGI_TO_STRING_ENUM_CASE(Verbosity, kWarning)
-    YOGI_TO_STRING_ENUM_CASE(Verbosity, kInfo)
-    YOGI_TO_STRING_ENUM_CASE(Verbosity, kDebug)
-    YOGI_TO_STRING_ENUM_CASE(Verbosity, kTrace)
+    _YOGI_TO_STRING_ENUM_CASE(Verbosity, kFatal)
+    _YOGI_TO_STRING_ENUM_CASE(Verbosity, kError)
+    _YOGI_TO_STRING_ENUM_CASE(Verbosity, kWarning)
+    _YOGI_TO_STRING_ENUM_CASE(Verbosity, kInfo)
+    _YOGI_TO_STRING_ENUM_CASE(Verbosity, kDebug)
+    _YOGI_TO_STRING_ENUM_CASE(Verbosity, kTrace)
   }
 
   bool should_never_get_here = false;
@@ -248,14 +257,19 @@ enum class Stream {
 template <>
 inline std::string ToString<Stream>(const Stream& st) {
   switch (st) {
-    YOGI_TO_STRING_ENUM_CASE(Stream, kStdout)
-    YOGI_TO_STRING_ENUM_CASE(Stream, kStderr)
+    _YOGI_TO_STRING_ENUM_CASE(Stream, kStdout)
+    _YOGI_TO_STRING_ENUM_CASE(Stream, kStderr)
   }
 
   bool should_never_get_here = false;
   assert(should_never_get_here);
   return {};
 }
+
+/// @} enums
+
+/// \addtogroup freefn
+/// @{
 
 /// Allows Yogi to write library-internal and user logging to stdout or stderr.
 ///
@@ -322,6 +336,8 @@ inline void LogToConsole() {
   internal::CheckErrorCode(res);
 }
 
+/// @} freefn
+
 /// Handler function type for the log hook.
 ///
 /// \param severity  Severity (verbosity) of the entry
@@ -341,10 +357,13 @@ struct LogToHookData {
   static std::unique_ptr<LogHookFn> log_hook_fn;
 };
 
-YOGI_WEAK_SYMBOL std::mutex LogToHookData::mutex;
-YOGI_WEAK_SYMBOL std::unique_ptr<LogHookFn> LogToHookData::log_hook_fn;
+_YOGI_WEAK_SYMBOL std::mutex LogToHookData::mutex;
+_YOGI_WEAK_SYMBOL std::unique_ptr<LogHookFn> LogToHookData::log_hook_fn;
 
 }  // namespace internal
+
+/// \addtogroup freefn
+/// @{
 
 /// Installs a callback function for receiving log entries.
 ///
@@ -417,6 +436,8 @@ inline void LogToFile() {
   int res = internal::YOGI_LogToFile(-1, nullptr, nullptr, 0, nullptr, nullptr);
   internal::CheckErrorCode(res);
 }
+
+/// @} freefn
 
 class Logger;
 

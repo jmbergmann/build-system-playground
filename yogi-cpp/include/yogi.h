@@ -26,6 +26,15 @@
 //!
 //! Main namespace for yogi-cpp.
 
+//! \addtogroup enums Enums
+//! Enumerations.
+
+//! \addtogroup freefn Free Functions
+//! Free functions.
+
+//! \addtogroup logmacros Logging Macros
+//! Macros for creating log entries.
+
 #include "yogi/branch.h"
 #include "yogi/configuration.h"
 #include "yogi/constants.h"

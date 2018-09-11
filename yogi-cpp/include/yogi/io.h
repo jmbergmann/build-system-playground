@@ -26,19 +26,22 @@
 
 #include <string>
 
-#define YOGI_TO_STRING_ENUM_CASE(enum_type, enum_element) \
-  case enum_type::enum_element:                           \
+#define _YOGI_TO_STRING_ENUM_CASE(enum_type, enum_element) \
+  case enum_type::enum_element:                            \
     return #enum_element;
 
-#define YOGI_TO_STRING_FLAG_APPENDER(var, enum_type, enum_element) \
-  if ((var & enum_type::enum_element) != enum_type::kNone) {       \
-    s += " | " #enum_element;                                      \
+#define _YOGI_TO_STRING_FLAG_APPENDER(var, enum_type, enum_element) \
+  if ((var & enum_type::enum_element) != enum_type::kNone) {        \
+    s += " | " #enum_element;                                       \
   }
 
 namespace yogi {
 
-YOGI_DEFINE_SFINAE_METHOD_TESTER(HasToStringMethod,
-                                 .ToString() == std::string())
+_YOGI_DEFINE_SFINAE_METHOD_TESTER(HasToStringMethod,
+                                  .ToString() == std::string())
+
+/// \addtogroup freefn
+/// @{
 
 /// Converts a given Yogi enum value or object to a string.
 ///
@@ -54,6 +57,8 @@ inline std::string ToString(const T& printable) {
 
   return printable.ToString();
 }
+
+/// @} freefn
 
 }  // namespace yogi
 

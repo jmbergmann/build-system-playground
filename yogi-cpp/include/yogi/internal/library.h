@@ -31,14 +31,14 @@
 #endif
 
 #ifdef _WIN32
-#define YOGI_WEAK_SYMBOL __declspec(selectany)
+#define _YOGI_WEAK_SYMBOL __declspec(selectany)
 #else
-#define YOGI_WEAK_SYMBOL __attribute__((weak))
+#define _YOGI_WEAK_SYMBOL __attribute__((weak))
 #endif
 
-#define YOGI_DEFINE_API_FN(ret_type, name, arg_types)            \
+#define _YOGI_DEFINE_API_FN(ret_type, name, arg_types)           \
   namespace internal {                                           \
-  YOGI_WEAK_SYMBOL ret_type(*name) arg_types =                   \
+  _YOGI_WEAK_SYMBOL ret_type(*name) arg_types =                  \
       Library::GetFunctionAddress<ret_type(*) arg_types>(#name); \
   }
 
@@ -101,7 +101,7 @@ class Library final {
   static inline std::string GetLastErrorString();
 };
 
-YOGI_WEAK_SYMBOL Library::LibraryHandle Library::lib_handle_;
+_YOGI_WEAK_SYMBOL Library::LibraryHandle Library::lib_handle_;
 
 }  // namespace internal
 }  // namespace yogi

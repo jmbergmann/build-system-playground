@@ -26,7 +26,10 @@
 
 namespace yogi {
 
-YOGI_DEFINE_API_FN(const char*, YOGI_GetVersion, ())
+_YOGI_DEFINE_API_FN(const char*, YOGI_GetVersion, ())
+
+/// \addtogroup freefn
+/// @{
 
 /// Returns the version string of the loaded Yogi Core library.
 ///
@@ -35,6 +38,8 @@ inline const std::string& GetVersion() {
   static std::string s = internal::YOGI_GetVersion();
   return s;
 }
+
+/// @} freefn
 
 }  // namespace yogi
 

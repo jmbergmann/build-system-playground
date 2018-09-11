@@ -33,12 +33,13 @@
 
 namespace yogi {
 
-YOGI_DEFINE_API_FN(int, YOGI_GetCurrentTime, (long long* timestamp))
-YOGI_DEFINE_API_FN(int, YOGI_FormatTime,
-                   (long long timestamp, char* str, int strsize,
-                    const char* timefmt))
-YOGI_DEFINE_API_FN(int, YOGI_ParseTime,
-                   (long long* timestamp, const char* str, const char* timefmt))
+_YOGI_DEFINE_API_FN(int, YOGI_GetCurrentTime, (long long* timestamp))
+_YOGI_DEFINE_API_FN(int, YOGI_FormatTime,
+                    (long long timestamp, char* str, int strsize,
+                     const char* timefmt))
+_YOGI_DEFINE_API_FN(int, YOGI_ParseTime,
+                    (long long* timestamp, const char* str,
+                     const char* timefmt))
 
 ////////////////////////////////////////////////////////////////////////////////
 /// Represents a UTC timestamp.
