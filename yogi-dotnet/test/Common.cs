@@ -123,9 +123,9 @@ namespace test
 
         public void Dispose()
         {
-            Yogi.LogToConsole();
-            Yogi.LogToHook();
-            Yogi.LogToFile();
+            Yogi.DisableConsoleLogging();
+            Yogi.DisableHookLogging();
+            Yogi.DisableFileLogging();
 
             GC.Collect();
         }

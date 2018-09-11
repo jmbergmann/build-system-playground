@@ -148,10 +148,7 @@ public static partial class Yogi
     }
 
     /// <summary>
-    /// Allows the YOGI to write library-internal and user logging to stdout or
-    /// stderr.
-    ///
-    /// Calling this function without any parameters disables logging to the console.
+    /// Configures logging to the console.
     ///
     /// This function supports colourizing the output if the terminal that the
     /// process is running in supports it. The color used for a log entry depends
@@ -197,14 +194,22 @@ public static partial class Yogi
     /// <param name="color">Use colours in output.</param>
     /// <param name="timefmt">Format of the timestamp (see above for placeholders).</param>
     /// <param name="fmt">Format of a log entry (see above for placeholders).</param>
-    public static void LogToConsole([Optional] Verbosity? verbosity, [Optional] Stream? stream,
-                                    [Optional] bool? color, [Optional] string timefmt,
-                                    [Optional] string fmt)
+    public static void SetupConsoleLogging(Verbosity verbosity, [Optional] Stream? stream,
+                                           [Optional] bool? color, [Optional] string timefmt,
+                                           [Optional] string fmt)
     {
-        int vb = verbosity.HasValue ? (int)verbosity.Value : -1;
         int col = color.HasValue ? (color.Value ? 1 : 0) : 1;
-        int res = Api.YOGI_ConfigureConsoleLogging(vb, stream.GetValueOrDefault(Stream.Stderr), col,
-            timefmt, fmt);
+        int res = Api.YOGI_ConfigureConsoleLogging((int)verbosity,
+            stream.GetValueOrDefault(Stream.Stderr), col, timefmt, fmt);
+        CheckErrorCode(res);
+    }
+
+    /// <summary>
+    /// Disables console logging.
+    /// </summary>
+    public static void DisableConsoleLogging()
+    {
+        int res = Api.YOGI_ConfigureConsoleLogging(-1, 0, 0, null, null);
         CheckErrorCode(res);
     }
 
@@ -222,18 +227,15 @@ public static partial class Yogi
                                              string file, int line, string comp, string msg);
 
     /// <summary>
-    /// Installs a callback function for receiving log entries.
+    /// Configures logging to a user-defined function.
     ///
     /// This function can be used to get notified whenever the Yogi library itself
     /// or the user produces log messages. These messages can then be processed
     /// further in user code.
-    ///
-    /// Calling this function without any parameters disables the hook.
     /// </summary>
     /// <param name="verbosity">Maximum verbosity of messages to log.</param>
     /// <param name="fn">Callback function.</param>
-    public static void LogToHook([Optional] Verbosity? verbosity,
-                                 [Optional] LogToHookFnDelegate fn)
+    public static void SetupHookLogging(Verbosity verbosity, [Optional] LogToHookFnDelegate fn)
     {
         lock (logToHookFnLock)
         {
@@ -244,25 +246,31 @@ public static partial class Yogi
                 fn(severity, ts, tid, file, line, comp, msg);
             };
 
-            int vb = verbosity.HasValue ? (int)verbosity.Value : -1;
-            int res = Api.YOGI_ConfigureHookLogging(vb, wrapper, IntPtr.Zero);
+            int res = Api.YOGI_ConfigureHookLogging((int)verbosity, wrapper, IntPtr.Zero);
             logToHookFn = null;
             CheckErrorCode(res);
             logToHookFn = wrapper;  // Make sure it does not get GC'd
         }
     }
 
+    /// <summary>
+    /// Disables logging to user-defined functions.
+    /// </summary>
+    public static void DisableHookLogging()
+    {
+        int res = Api.YOGI_ConfigureHookLogging(-1, null, IntPtr.Zero);
+        CheckErrorCode(res);
+    }
+
     static object logToHookFnLock = new object();
     static Api.LogToHookFnDelegate logToHookFn;
 
     /// <summary>
-    /// Creates a log file.
+    /// Configures logging to a file.
     ///
     /// This function opens a file to write library-internal and user logging
     /// information to. If the file with the given filename already exists then it
     /// will be overwritten.
-    ///
-    /// Calling this function without any parameters disables logging to a file.
     ///
     /// The filename parameter supports all placeholders that are valid for the
     /// timefmt parameter (see below).
@@ -298,14 +306,23 @@ public static partial class Yogi
     /// <param name="timefmt">Format of the timestamp (see above for placeholders).</param>
     /// <param name="fmt">Format of a log entry (see above for placeholders).</param>
     /// <returns>The generated filename with all placeholders resolved.</returns>
-    public static string LogToFile([Optional] Verbosity? verbosity, [Optional] string filename,
-                                   [Optional] string timefmt, [Optional] string fmt)
+    public static string SetupFileLogging(Verbosity verbosity, [Optional] string filename,
+                                          [Optional] string timefmt, [Optional] string fmt)
     {
-        int vb = verbosity.HasValue ? (int)verbosity.Value : -1;
         var genFn = new StringBuilder(256);
-        int res = Api.YOGI_ConfigureFileLogging(vb, filename, genFn, genFn.Capacity, timefmt, fmt);
+        int res = Api.YOGI_ConfigureFileLogging((int)verbosity, filename, genFn, genFn.Capacity,
+            timefmt, fmt);
         CheckErrorCode(res);
         return genFn.ToString();
+    }
+
+    /// <summary>
+    /// Disables file logging.
+    /// </summary>
+    public static void DisableFileLogging()
+    {
+        int res = Api.YOGI_ConfigureFileLogging(-1, null, null, 0, null, null);
+        CheckErrorCode(res);
     }
 
     /// <summary>

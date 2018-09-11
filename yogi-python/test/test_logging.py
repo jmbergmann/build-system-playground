@@ -33,9 +33,9 @@ class TestLogging(TestCase):
         shutil.rmtree(cls.temp_dir)
 
     def tearDown(self):
-        yogi.log_to_console(None)
-        yogi.log_to_hook(None)
-        yogi.log_to_file(None)
+        yogi.disable_console_logging()
+        yogi.disable_hook_logging()
+        yogi.disable_file_logging()
 
     def test_verbosity_enum(self):
         self.assertEnumMatches("YOGI_VB_", yogi.Verbosity)
@@ -43,14 +43,15 @@ class TestLogging(TestCase):
     def test_stream_enum(self):
         self.assertEnumMatches("YOGI_ST_", yogi.Stream)
 
-    def test_log_to_console(self):
-        yogi.log_to_console(yogi.Verbosity.INFO, yogi.Stream.STDERR, True)
+    def test_setup_console_logging(self):
+        yogi.setup_console_logging(yogi.Verbosity.INFO, yogi.Stream.STDERR,
+                                   True)
         yogi.app_logger.log(yogi.Verbosity.WARNING, "Warning message")
-        yogi.log_to_console(yogi.Verbosity.DEBUG, yogi.Stream.STDERR, False,
-                            "%S.%3", "$t - $m")
+        yogi.setup_console_logging(yogi.Verbosity.DEBUG, yogi.Stream.STDERR,
+                                   False, "%S.%3", "$t - $m")
         yogi.app_logger.log(yogi.Verbosity.ERROR, "Error message")
 
-    def test_log_to_hook(self):
+    def test_setup_hook_logging(self):
         fn_severity = None
         fn_timestamp = None
         fn_tid = None
@@ -72,7 +73,7 @@ class TestLogging(TestCase):
             fn_msg = msg
             fn_called = True
 
-        yogi.log_to_hook(yogi.Verbosity.DEBUG, fn)
+        yogi.setup_hook_logging(yogi.Verbosity.DEBUG, fn)
         yogi.app_logger.log(yogi.Verbosity.WARNING, "A warning")
         self.assertTrue(fn_called)
         self.assertIsInstance(fn_severity, yogi.Verbosity)
@@ -90,15 +91,17 @@ class TestLogging(TestCase):
         self.assertIsInstance(fn_msg, str)
         self.assertEqual(fn_msg, "A warning")
 
-    def test_log_to_file(self):
+    def test_setup_file_logging(self):
         file_prefix = os.path.join(self.temp_dir, "logfile_%Y_")
 
-        filename = yogi.log_to_file(yogi.Verbosity.INFO, file_prefix + "1")
+        filename = yogi.setup_file_logging(yogi.Verbosity.INFO,
+                                           file_prefix + "1")
         self.assertFalse("%Y" in filename)
         self.assertTrue(os.path.exists(filename))
 
-        filename = yogi.log_to_file(yogi.Verbosity.INFO, file_prefix + "2",
-                                    "%S.%3", "$t - $m")
+        filename = yogi.setup_file_logging(yogi.Verbosity.INFO,
+                                           file_prefix + "2",
+                                           "%S.%3", "$t - $m")
         self.assertFalse("%Y" in filename)
         self.assertTrue(os.path.exists(filename))
 
@@ -133,7 +136,7 @@ class TestLogging(TestCase):
             fn_msg = msg
             fn_called = True
 
-        yogi.log_to_hook(yogi.Verbosity.INFO, fn)
+        yogi.setup_hook_logging(yogi.Verbosity.INFO, fn)
         logger.log(yogi.Verbosity.WARNING, "Hey dude")
         self.assertTrue(fn_called)
         self.assertEqual(fn_severity, yogi.Verbosity.WARNING)
@@ -150,7 +153,7 @@ class TestLogging(TestCase):
             fn_line = line
             fn_called = True
 
-        yogi.log_to_hook(yogi.Verbosity.INFO, fn2)
+        yogi.setup_hook_logging(yogi.Verbosity.INFO, fn2)
         logger.log(yogi.Verbosity.WARNING, "Hey dude",
                    file="my file", line=123)
         self.assertTrue(fn_called)

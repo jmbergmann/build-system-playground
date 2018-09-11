@@ -61,13 +61,10 @@ yogi.YOGI_ConfigureConsoleLogging.argtypes = [
     c_int, c_int, c_int, c_char_p, c_char_p]
 
 
-def log_to_console(verbosity: Union[Verbosity, None],
-                   stream: Stream = Stream.STDERR, color: bool = True,
-                   timefmt: str = None, fmt: str = None) -> None:
-    """Allows the YOGI to write library-internal and user logging to stdout or
-    stderr.
-
-    Setting verbosity to Verbosity.None disables logging to the console.
+def setup_console_logging(verbosity: Verbosity, stream: Stream = Stream.STDERR,
+                          color: bool = True, timefmt: str = None,
+                          fmt: str = None) -> None:
+    """Configures logging to the console.
 
     This function supports colourizing the output if the terminal that the
     process is running in supports it. The color used for a log entry depends
@@ -121,11 +118,12 @@ def log_to_console(verbosity: Union[Verbosity, None],
     if fmt is not None:
         fmt = fmt.encode("utf-8")
 
-    if verbosity is None:
-        yogi.YOGI_ConfigureConsoleLogging(-1, 0, 0, None, None)
-    else:
-        yogi.YOGI_ConfigureConsoleLogging(
-            verbosity, stream, color, timefmt, fmt)
+    yogi.YOGI_ConfigureConsoleLogging(verbosity, stream, color, timefmt, fmt)
+
+
+def disable_console_logging() -> None:
+    """Disables logging to the console."""
+    yogi.YOGI_ConfigureConsoleLogging(-1, 0, 0, None, None)
 
 
 yogi.YOGI_ConfigureHookLogging.restype = api_result_handler
@@ -135,16 +133,14 @@ yogi.YOGI_ConfigureHookLogging.argtypes = [
         c_int, c_char_p, c_int, c_char_p, c_char_p, c_void_p), c_void_p]
 
 
-def log_to_hook(verbosity: Union[Verbosity, None],
-                fn: Callable[[Verbosity, Timestamp, int, str, int,
-                              str, str], Any] = None) -> None:
-    """Installs a callback function for receiving log entries.
+def setup_hook_logging(verbosity: Verbosity,
+                       fn: Callable[[Verbosity, Timestamp, int, str, int,
+                                     str, str], Any]) -> None:
+    """Configures logging to a user-defined function.
 
     This function can be used to get notified whenever the Yogi library itself
     or the user produces log messages. These messages can then be processed
     further in user code.
-
-    Setting verbosity to Verbosity.None disables the hook.
 
     The parameters passed to fn are (from left to right):
         severity:  Severity (verbosity) of the entry.
@@ -173,10 +169,13 @@ def log_to_hook(verbosity: Union[Verbosity, None],
     global _log_to_hook_fn
     _log_to_hook_fn = c_fn  # To prevent GC to destroy fn
 
-    if verbosity is None:
-        yogi.YOGI_ConfigureHookLogging(-1, c_fn, None)
-    else:
-        yogi.YOGI_ConfigureHookLogging(verbosity, c_fn, None)
+    yogi.YOGI_ConfigureHookLogging(verbosity, c_fn, None)
+
+
+def disable_hook_logging() -> None:
+    """Disables logging to user-defined functions."""
+    c_fn = yogi.YOGI_ConfigureHookLogging.argtypes[1]()
+    yogi.YOGI_ConfigureHookLogging(-1, c_fn, None)
 
 
 yogi.YOGI_ConfigureFileLogging.restype = api_result_handler
@@ -184,15 +183,13 @@ yogi.YOGI_ConfigureFileLogging.argtypes = [
     c_int, c_char_p, c_char_p, c_int, c_char_p, c_char_p]
 
 
-def log_to_file(verbosity: Union[Verbosity, None], filename: str = None,
-                timefmt: str = None, fmt: str = None) -> str:
-    """Creates log file.
+def setup_file_logging(verbosity: Verbosity, filename: str,
+                       timefmt: str = None, fmt: str = None) -> str:
+    """Configures logging to a file.
 
     This function opens a file to write library-internal and user logging
     information to. If the file with the given filename already exists then it
     will be overwritten.
-
-    Setting verbosity to Verbosity.None disables logging to a file.
 
     The filename parameter supports all placeholders that are valid for the
     timefmt parameter (see below).
@@ -232,10 +229,6 @@ def log_to_file(verbosity: Union[Verbosity, None], filename: str = None,
     Returns:
         The generated filename with all placeholders resolved.
     """
-    if verbosity is None:
-        yogi.YOGI_ConfigureFileLogging(-1, None, None, 0, None, None)
-        return
-
     assert filename is not None
     filename = filename.encode("utf-8")
 
@@ -249,6 +242,11 @@ def log_to_file(verbosity: Union[Verbosity, None], filename: str = None,
     yogi.YOGI_ConfigureFileLogging(verbosity, filename, gen_filename,
                                    sizeof(gen_filename), timefmt, fmt)
     return gen_filename.value.decode("utf-8")
+
+
+def disable_file_logging() -> None:
+    """Disables logging to the a file."""
+    yogi.YOGI_ConfigureFileLogging(-1, None, None, 0, None, None)
 
 
 yogi.YOGI_LoggerCreate.restype = api_result_handler

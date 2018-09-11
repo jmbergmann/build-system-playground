@@ -26,7 +26,9 @@ from .private.errors import ErrorCode, Result, Failure, DescriptiveFailure, \
     Success, Exception, FailureException, DescriptiveFailureException
 from .private.licenses import get_license, get_3rd_party_licenses
 from .private.logging import Verbosity, Stream, Logger, AppLogger, \
-    app_logger, log_to_console, log_to_file, log_to_hook
+    app_logger, setup_console_logging, disable_console_logging, \
+    setup_hook_logging, disable_hook_logging, setup_file_logging, \
+    disable_file_logging
 from .private.object import Object
 from .private.signals import Signals, raise_signal, SignalSet
 from .private.time import get_current_time

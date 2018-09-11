@@ -271,7 +271,7 @@ inline std::string ToString<Stream>(const Stream& st) {
 /// \addtogroup freefn
 /// @{
 
-/// Allows Yogi to write library-internal and user logging to stdout or stderr.
+/// Configures logging to the console.
 ///
 /// This function supports colourizing the output if the terminal that the
 /// process is running in supports it. The color used for a log entry depends
@@ -321,9 +321,10 @@ inline std::string ToString<Stream>(const Stream& st) {
 /// \param color     Use colors in output
 /// \param timefmt   Format of the timestamp (see above for placeholders)
 /// \param fmt       Format of a log entry (see above for placeholders)
-inline void LogToConsole(Verbosity verbosity, Stream stream = Stream::kStderr,
-                         bool color = true, StringView timefmt = {},
-                         StringView fmt = {}) {
+inline void SetupConsoleLogging(Verbosity verbosity,
+                                Stream stream = Stream::kStderr,
+                                bool color = true, StringView timefmt = {},
+                                StringView fmt = {}) {
   int res = internal::YOGI_ConfigureConsoleLogging(static_cast<int>(verbosity),
                                                    static_cast<int>(stream),
                                                    color ? 1 : 0, timefmt, fmt);
@@ -331,7 +332,7 @@ inline void LogToConsole(Verbosity verbosity, Stream stream = Stream::kStderr,
 }
 
 /// Disables logging to the console.
-inline void LogToConsole() {
+inline void DisableConsoleLogging() {
   int res = internal::YOGI_ConfigureConsoleLogging(-1, 0, 0, nullptr, nullptr);
   internal::CheckErrorCode(res);
 }
@@ -365,7 +366,7 @@ _YOGI_WEAK_SYMBOL std::unique_ptr<LogHookFn> LogToHookData::log_hook_fn;
 /// \addtogroup freefn
 /// @{
 
-/// Installs a callback function for receiving log entries.
+/// Configures logging to a user-defined function.
 ///
 /// This function can be used to get notified whenever the Yogi library itself
 /// or the user produces log messages. These messages can then be processed
@@ -373,7 +374,7 @@ _YOGI_WEAK_SYMBOL std::unique_ptr<LogHookFn> LogToHookData::log_hook_fn;
 ///
 /// \param verbosity Maximum verbosity of messages to log.
 /// \param fn        Callback function.
-inline void LogToHook(Verbosity verbosity, LogHookFn fn) {
+inline void SetupHookLogging(Verbosity verbosity, LogHookFn fn) {
   auto fn_ptr = std::make_unique<LogHookFn>(fn);
   static auto wrapper = [](int severity, long long timestamp, int tid,
                            const char* file, int line, const char* comp,
@@ -393,8 +394,8 @@ inline void LogToHook(Verbosity verbosity, LogHookFn fn) {
   internal::LogToHookData::log_hook_fn = std::move(fn_ptr);
 }
 
-/// Disables logging to the hook function.
-inline void LogToHook() {
+/// Disables logging to user-defined functions.
+inline void DisableHookLogging() {
   std::lock_guard<std::mutex> lock(internal::LogToHookData::mutex);
 
   int res = internal::YOGI_ConfigureHookLogging(-1, nullptr, nullptr);
@@ -403,7 +404,7 @@ inline void LogToHook() {
   internal::LogToHookData::log_hook_fn = {};
 }
 
-/// Creates a log file.
+/// Configures logging to a file.
 ///
 /// This function opens a file to write library-internal and user logging
 /// information to. If the file with the given filename already exists then it
@@ -422,8 +423,9 @@ inline void LogToHook() {
 /// \param fmt       Format of a log entry (see above for placeholders)
 ///
 /// \returns The generated filename with all placeholders resolved
-inline std::string LogToFile(Verbosity verbosity, StringView filename,
-                             StringView timefmt = {}, StringView fmt = {}) {
+inline std::string SetupFileLogging(Verbosity verbosity, StringView filename,
+                                    StringView timefmt = {},
+                                    StringView fmt = {}) {
   char genfn[256];
   int res =
       internal::YOGI_ConfigureFileLogging(static_cast<int>(verbosity), filename,
@@ -433,7 +435,7 @@ inline std::string LogToFile(Verbosity verbosity, StringView filename,
 }
 
 /// Disables logging to a file
-inline void LogToFile() {
+inline void DisableFileLogging() {
   int res = internal::YOGI_ConfigureFileLogging(-1, nullptr, nullptr, 0,
                                                 nullptr, nullptr);
   internal::CheckErrorCode(res);

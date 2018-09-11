@@ -30,9 +30,9 @@ class LoggingTest : public ::testing::Test {
   }
 
   virtual void TearDown() override {
-    yogi::LogToConsole();
-    yogi::LogToHook();
-    yogi::LogToFile();
+    yogi::DisableConsoleLogging();
+    yogi::DisableHookLogging();
+    yogi::DisableFileLogging();
 
     boost::filesystem::remove_all(temp_dir_);
   }
@@ -58,53 +58,55 @@ TEST_F(LoggingTest, StreamEnum) {
   // clang-format on
 }
 
-TEST_F(LoggingTest, LogToConsole) {
-  yogi::LogToConsole(yogi::Verbosity::kInfo, yogi::Stream::kStdout, true);
+TEST_F(LoggingTest, SetupConsoleLogging) {
+  yogi::SetupConsoleLogging(yogi::Verbosity::kInfo, yogi::Stream::kStdout,
+                            true);
   yogi::app_logger->Log(yogi::Verbosity::kWarning, "Warning message");
-  yogi::LogToConsole(yogi::Verbosity::kDebug, yogi::Stream::kStdout, false,
-                     "%S.%3", "$t - $m");
+  yogi::SetupConsoleLogging(yogi::Verbosity::kDebug, yogi::Stream::kStdout,
+                            false, "%S.%3", "$t - $m");
   yogi::app_logger->Log(yogi::Verbosity::kError, "Error message");
 }
 
-TEST_F(LoggingTest, LogToHook) {
+TEST_F(LoggingTest, SetupHookLogging) {
   bool called = false;
-  yogi::LogToHook(yogi::Verbosity::kDebug,
-                  [&](auto severity, auto timestamp, int tid, auto file,
-                      int line, auto comp, auto msg) {
-                    EXPECT_EQ(severity, yogi::Verbosity::kWarning);
-                    EXPECT_LE(timestamp, yogi::GetCurrentTime());
-                    EXPECT_GT(tid, 0);
-                    EXPECT_EQ(file, "file.cc");
-                    EXPECT_EQ(line, 123);
-                    EXPECT_FALSE(comp.empty());
-                    EXPECT_EQ(msg, "A warning");
-                    called = true;
-                  });
+  yogi::SetupHookLogging(yogi::Verbosity::kDebug,
+                         [&](auto severity, auto timestamp, int tid, auto file,
+                             int line, auto comp, auto msg) {
+                           EXPECT_EQ(severity, yogi::Verbosity::kWarning);
+                           EXPECT_LE(timestamp, yogi::GetCurrentTime());
+                           EXPECT_GT(tid, 0);
+                           EXPECT_EQ(file, "file.cc");
+                           EXPECT_EQ(line, 123);
+                           EXPECT_FALSE(comp.empty());
+                           EXPECT_EQ(msg, "A warning");
+                           called = true;
+                         });
 
   yogi::app_logger->Log(yogi::Verbosity::kWarning, "A warning", "file.cc", 123);
   EXPECT_TRUE(called);
 
   called = false;
-  yogi::LogToHook(yogi::Verbosity::kDebug,
-                  [&](auto, auto, int, auto file, int line, auto, auto) {
-                    EXPECT_TRUE(file.empty());
-                    EXPECT_EQ(line, 0);
-                    called = true;
-                  });
+  yogi::SetupHookLogging(yogi::Verbosity::kDebug,
+                         [&](auto, auto, int, auto file, int line, auto, auto) {
+                           EXPECT_TRUE(file.empty());
+                           EXPECT_EQ(line, 0);
+                           called = true;
+                         });
 
   yogi::app_logger->Log(yogi::Verbosity::kWarning, "A warning");
   EXPECT_TRUE(called);
 }
 
-TEST_F(LoggingTest, LogToFile) {
+TEST_F(LoggingTest, SetupFileLogging) {
   auto file_prefix = (temp_dir_ / "logfile_%Y_").string();
 
-  auto filename = yogi::LogToFile(yogi::Verbosity::kInfo, file_prefix + "1");
+  auto filename =
+      yogi::SetupFileLogging(yogi::Verbosity::kInfo, file_prefix + "1");
   EXPECT_EQ(filename.find("%Y"), std::string::npos);
   EXPECT_TRUE(boost::filesystem::exists(filename));
 
-  filename = yogi::LogToFile(yogi::Verbosity::kInfo, file_prefix + "2", "%S.%3",
-                             "$t - $m");
+  filename = yogi::SetupFileLogging(yogi::Verbosity::kInfo, file_prefix + "2",
+                                    "%S.%3", "$t - $m");
   EXPECT_EQ(filename.find("%Y"), std::string::npos);
   EXPECT_TRUE(boost::filesystem::exists(filename));
 }
@@ -127,7 +129,7 @@ TEST_F(LoggingTest, Log) {
   auto logger = yogi::Logger::Create("My logger");
 
   bool called = false;
-  yogi::LogToHook(
+  yogi::SetupHookLogging(
       yogi::Verbosity::kDebug,
       [&](auto severity, auto, int, auto file, int line, auto comp, auto msg) {
         EXPECT_EQ(severity, yogi::Verbosity::kWarning);
@@ -161,7 +163,7 @@ TEST_F(LoggingTest, Macros) {
   };
   std::vector<Entry> entries;
 
-  yogi::LogToHook(
+  yogi::SetupHookLogging(
       yogi::Verbosity::kTrace,
       [&](auto severity, auto, int, auto file, int line, auto comp, auto msg) {
         Entry entry = {severity, file, line, comp, msg};
@@ -172,19 +174,27 @@ TEST_F(LoggingTest, Macros) {
   logger->SetVerbosity(yogi::Verbosity::kTrace);
   yogi::app_logger->SetVerbosity(yogi::Verbosity::kTrace);
 
-  YOGI_LOG_FATAL(logger, "a" << "b");
+  YOGI_LOG_FATAL(logger, "a"
+                             << "b");
   YOGI_LOG_FATAL(123 << 45);
-  YOGI_LOG_ERROR(logger, "a" << "b");
+  YOGI_LOG_ERROR(logger, "a"
+                             << "b");
   YOGI_LOG_ERROR(123 << 45);
-  YOGI_LOG_WARNING(logger, "a" << "b");
+  YOGI_LOG_WARNING(logger, "a"
+                               << "b");
   YOGI_LOG_WARNING(123 << 45);
-  YOGI_LOG_INFO(logger, "a" << "b");
+  YOGI_LOG_INFO(logger, "a"
+                            << "b");
   YOGI_LOG_INFO(123 << 45);
-  YOGI_LOG_DEBUG(logger, "a" << "b");
+  YOGI_LOG_DEBUG(logger, "a"
+                             << "b");
   YOGI_LOG_DEBUG(123 << 45);
-  YOGI_LOG_TRACE(logger, "a" << "b");
+  YOGI_LOG_TRACE(logger, "a"
+                             << "b");
   YOGI_LOG_TRACE(123 << 45);
-  YOGI_LOG(kInfo, logger, "a" << "b");
+  YOGI_LOG(kInfo, logger,
+           "a"
+               << "b");
   YOGI_LOG(kInfo, 123 << 45);
 
   ASSERT_EQ(entries.size(), 14);

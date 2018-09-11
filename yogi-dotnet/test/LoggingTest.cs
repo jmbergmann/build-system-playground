@@ -56,20 +56,22 @@ namespace test
         }
 
         [Fact]
-        public void LogToConsole()
+        public void SetupConsoleLogging()
         {
-            Yogi.LogToConsole(Yogi.Verbosity.Info, Yogi.Stream.Stdout, true);
+            Yogi.SetupConsoleLogging(Yogi.Verbosity.Info, Yogi.Stream.Stdout, true);
             Yogi.AppLogger.Log(Yogi.Verbosity.Warning, "Warning message");
-            Yogi.LogToConsole(Yogi.Verbosity.Debug, Yogi.Stream.Stdout, false, "%S.%3", "$t - $m");
+            Yogi.SetupConsoleLogging(Yogi.Verbosity.Debug, Yogi.Stream.Stdout, false, "%S.%3",
+                "$t - $m");
             Yogi.AppLogger.Log(Yogi.Verbosity.Error, "Error message");
         }
 
         [Fact]
-        public void LogToHook()
+        public void SetupHookLogging()
         {
             bool called = false;
-            Yogi.LogToHook(Yogi.Verbosity.Debug,
-                (severity, timestamp, tid, file, line, comp, msg) => {
+            Yogi.SetupHookLogging(Yogi.Verbosity.Debug,
+                (severity, timestamp, tid, file, line, comp, msg) =>
+                {
                     Assert.IsType<Yogi.Verbosity>(severity);
                     Assert.Equal(Yogi.Verbosity.Warning, severity);
                     Assert.IsType<Yogi.Timestamp>(timestamp);
@@ -93,15 +95,16 @@ namespace test
         }
 
         [Fact]
-        public void LogToFile()
+        public void SetupFileLogging()
         {
             var filePrefix = Path.Combine(tempDir, "logfile_%Y_");
 
-            var filename = Yogi.LogToFile(Yogi.Verbosity.Info, filePrefix + "1");
+            var filename = Yogi.SetupFileLogging(Yogi.Verbosity.Info, filePrefix + "1");
             Assert.DoesNotContain("%Y", filename);
             Assert.True(File.Exists(filename));
 
-            filename = Yogi.LogToFile(Yogi.Verbosity.Info, filePrefix + "2", "%S.%3", "$t - $m");
+            filename = Yogi.SetupFileLogging(Yogi.Verbosity.Info, filePrefix + "2", "%S.%3",
+                "$t - $m");
             Assert.DoesNotContain("%Y", filename);
             Assert.True(File.Exists(filename));
         }
@@ -130,8 +133,9 @@ namespace test
             var logger = new Yogi.Logger("My logger");
 
             bool called = false;
-            Yogi.LogToHook(Yogi.Verbosity.Debug,
-                (severity, timestamp, tid, file, line, comp, msg) => {
+            Yogi.SetupHookLogging(Yogi.Verbosity.Debug,
+                (severity, timestamp, tid, file, line, comp, msg) =>
+                {
                     Assert.Equal(Yogi.Verbosity.Warning, severity);
                     Assert.Equal("My logger", comp);
                     Assert.Equal("Hey dude", msg);
@@ -145,8 +149,9 @@ namespace test
             Assert.True(called);
 
             called = false;
-            Yogi.LogToHook(Yogi.Verbosity.Debug,
-                (severity, timestamp, tid, file, line, comp, msg) => {
+            Yogi.SetupHookLogging(Yogi.Verbosity.Debug,
+                (severity, timestamp, tid, file, line, comp, msg) =>
+                {
                     Assert.Equal("my file", file);
                     Assert.Equal(123, line);
                     called = true;
