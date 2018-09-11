@@ -1,3 +1,20 @@
+/*
+ * This file is part of the Yogi distribution https://github.com/yohummus/yogi.
+ * Copyright (c) 2018 Johannes Bergmann.
+ *
+ * This library is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, version 3.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this library. If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #ifndef YOGI_ERRORS_H
 #define YOGI_ERRORS_H
 
@@ -13,10 +30,12 @@ namespace yogi {
 
 YOGI_DEFINE_API_FN(const char*, YOGI_GetErrorString, (int err))
 
+////////////////////////////////////////////////////////////////////////////////
 /// Error codes
 ///
 /// Yogi error codes indicating failures are always < 0. A human-readable
 /// description can be obtained via the Result class.
+////////////////////////////////////////////////////////////////////////////////
 enum class ErrorCode {
   /// Operation completed successfully
   kOk = 0,
@@ -332,7 +351,7 @@ class Exception : public std::exception {
   /// Returns a description of the error.
   ///
   /// \returns Description of the error.
-  virtual const char* what() const noexcept override =0;
+  virtual const char* what() const noexcept override = 0;
 };
 
 /// Exception wrapping a Failure object.

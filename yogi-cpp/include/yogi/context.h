@@ -1,3 +1,20 @@
+/*
+ * This file is part of the Yogi distribution https://github.com/yohummus/yogi.
+ * Copyright (c) 2018 Johannes Bergmann.
+ *
+ * This library is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, version 3.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this library. If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #ifndef YOGI_CONTEXT_H
 #define YOGI_CONTEXT_H
 
@@ -30,11 +47,13 @@ YOGI_DEFINE_API_FN(int, YOGI_ContextPost,
 class Context;
 using ContextPtr = std::shared_ptr<Context>;
 
+////////////////////////////////////////////////////////////////////////////////
 /// Scheduler for the execution of asynchronous operations.
 ///
 /// Once an asynchronous operation finishes, the corresponding handler function
 /// is added to the context's event queue and executed through once of the
 /// Poll... or Run... functions.
+////////////////////////////////////////////////////////////////////////////////
 class Context : public ObjectT<Context> {
  public:
   using HandlerFn = std::function<void()>;

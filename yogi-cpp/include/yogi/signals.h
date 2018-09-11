@@ -1,3 +1,20 @@
+/*
+ * This file is part of the Yogi distribution https://github.com/yohummus/yogi.
+ * Copyright (c) 2018 Johannes Bergmann.
+ *
+ * This library is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, version 3.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this library. If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #ifndef YOGI_SIGNALS_H
 #define YOGI_SIGNALS_H
 
@@ -22,7 +39,9 @@ YOGI_DEFINE_API_FN(int, YOGI_SignalSetAwaitSignal,
                     void* userarg))
 YOGI_DEFINE_API_FN(int, YOGI_SignalSetCancelAwaitSignal, (void* sigset))
 
+////////////////////////////////////////////////////////////////////////////////
 /// Signals.
+////////////////////////////////////////////////////////////////////////////////
 enum class Signals {
   /// No signal.
   kNone = 0,
@@ -129,8 +148,9 @@ using RaiseSignalFinishedFn = std::function<void()>;
 /// The cleanup handler \p fn will be called once all signal handlers have been
 /// called.
 ///
-/// Note: The cleanup handler \p fn can get called either from within the
-///       RaiseSignal() function or from any context within the program.
+/// \note
+///   The cleanup handler \p fn can get called either from within the
+///   RaiseSignal() function or from any context within the program.
 ///
 /// \param signal The signal to raise.
 /// \param fn     Function to call after all signal sets have been notified.
@@ -160,8 +180,15 @@ inline void RaiseSignal(Signals signal, RaiseSignalFinishedFn fn = {}) {
 
 /// Handler function to be called once the signal raised via RaiseSignal() has
 /// been delivered to all signal sets.
+///
+/// \tparam Sigarg Type of the \p sigarg signal argument passed to
+///                RaiseSignalWithArg().
+///
+/// \param sigarg Signal argument passed to RaiseSignalWithArg(); will be
+///               nullptr if no signal argument was specified when raising the
+///               signal.
 template <typename Sigarg>
-using RaiseSignalFinishedFnT = std::function<void(Sigarg*)>;
+using RaiseSignalFinishedFnT = std::function<void(Sigarg* sigarg)>;
 
 /// Raises a signal.
 ///
@@ -176,8 +203,9 @@ using RaiseSignalFinishedFnT = std::function<void(Sigarg*)>;
 /// The cleanup handler \p fn will be called once all signal handlers have been
 /// called.
 ///
-/// Note: The cleanup handler \p fn can get called either from within the
-///       RaiseSignal() function or from any context within the program.
+/// \note
+///   The cleanup handler \p fn can get called either from within the
+///   RaiseSignal() function or from any context within the program.
 ///
 /// \tparam Sigarg Type of the \p sigarg signal argument.
 ///
@@ -223,11 +251,32 @@ inline void RaiseSignalWithArg(Signals signal, Sigarg&& sigarg,
 class SignalSet;
 using SignalSetPtr = std::shared_ptr<SignalSet>;
 
+////////////////////////////////////////////////////////////////////////////////
+/// A set of signals to receive when raised via RaiseSignal() and
+/// RaiseSignalWithArg().
+///
+/// \note
+///   The signals are queued until they can be delivered by means of calls to
+///   AwaitSignal().
+////////////////////////////////////////////////////////////////////////////////
 class SignalSet : public ObjectT<SignalSet> {
  public:
+  /// Handler function used for the AwaitSignal() function.
+  ///
+  /// \param res    %Result of the wait operation.
+  /// \param signal The raised signal.
   using SignalHandlerFn =
       std::function<void(const Result& res, Signals signal)>;
 
+  /// Handler function used for the AwaitSignal<Sigarg>() function.
+  ///
+  /// \tparam Type of the signal argument passed to RaiseSignalWithArg().
+  ///
+  /// \param res    %Result of the wait operation.
+  /// \param signal The raised signal.
+  /// \param sigarg Value of the signal argument passed to RaiseSignalWithArg();
+  ///               will be nullptr if no signal argument was specified when
+  ///               raising the signal.
   template <typename Sigarg>
   using SignalHandlerFnT =
       std::function<void(const Result& res, Signals signal, Sigarg* sigarg)>;
@@ -281,7 +330,7 @@ class SignalSet : public ObjectT<SignalSet> {
   /// If casting to T fails, then an exception will be thrown. In order to
   /// receive any type of signal argument, chose the default Sigarg type for T.
   ///
-  /// \tparam Sigarg Type of the sigarg parameter passed to RaiseSignal().
+  /// \tparam Sigarg Type of the signal argument passed to RaiseSignalWithArg().
   ///
   /// \param fn Handler function to call.
   template <typename Sigarg>
@@ -306,7 +355,7 @@ class SignalSet : public ObjectT<SignalSet> {
             Sigarg* typed_sigarg = nullptr;
             if (sigarg_wrapper_p) {
               // Next line throws if Sigarg is incompatible with the type used
-              // for RaiseSignal()
+              // for RaiseSignalWithArg()
               dynamic_cast<internal::SigargWrapperT<Sigarg>&>(
                   *sigarg_wrapper_p);
 

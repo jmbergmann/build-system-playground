@@ -1,3 +1,20 @@
+/*
+ * This file is part of the Yogi distribution https://github.com/yohummus/yogi.
+ * Copyright (c) 2018 Johannes Bergmann.
+ *
+ * This library is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, version 3.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this library. If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #ifndef YOGI_LOGGING_H
 #define YOGI_LOGGING_H
 
@@ -172,9 +189,11 @@ YOGI_DEFINE_API_FN(int, YOGI_LoggerLog,
                    (void* logger, int severity, const char* file, int line,
                     const char* msg))
 
+////////////////////////////////////////////////////////////////////////////////
 /// Levels of how verbose logging output is.
 ///
 /// The term _severity_ is refers to the same type.
+////////////////////////////////////////////////////////////////////////////////
 enum class Verbosity {
   /// Fatal errors are errors that require a process restart.
   kFatal = 0,
@@ -211,7 +230,9 @@ inline std::string ToString<Verbosity>(const Verbosity& vb) {
   return {};
 }
 
+////////////////////////////////////////////////////////////////////////////////
 /// Output streams for writing to the terminal.
+////////////////////////////////////////////////////////////////////////////////
 enum class Stream {
   /// Standard output.
   kStdout = 0,
@@ -379,8 +400,7 @@ inline void LogToHook() {
 ///
 /// \returns The generated filename with all placeholders resolved
 inline std::string LogToFile(Verbosity verbosity, StringView filename,
-                             StringView timefmt = {},
-                             StringView fmt = {}) {
+                             StringView timefmt = {}, StringView fmt = {}) {
   char genfn[256];
   int res = internal::YOGI_LogToFile(static_cast<int>(verbosity), filename,
                                      genfn, sizeof(genfn), timefmt, fmt);
@@ -470,8 +490,7 @@ class Logger : public ObjectT<Logger> {
   /// \param msg      Log message
   /// \param file     Source file name
   /// \param line     Source file line number
-  void Log(Verbosity severity, StringView msg,
-           StringView file, int line) {
+  void Log(Verbosity severity, StringView msg, StringView file, int line) {
     const char* short_file = file;
     if (short_file) {
       for (const char* ch = short_file; *ch; ++ch) {
@@ -490,9 +509,7 @@ class Logger : public ObjectT<Logger> {
   ///
   /// \param severity Severity (verbosity) of the entry
   /// \param msg      Log message
-  void Log(Verbosity severity, StringView msg) {
-    Log(severity, msg, {}, 0);
-  }
+  void Log(Verbosity severity, StringView msg) { Log(severity, msg, {}, 0); }
 
  protected:
   // For the AppLogger
@@ -525,6 +542,7 @@ class AppLogger : public Logger {
   virtual std::string ToString() const override { return "AppLogger"; }
 };
 
+/// Static app logger instance to use in user code.
 static const AppLoggerPtr app_logger = AppLogger::Create();
 
 }  // namespace yogi

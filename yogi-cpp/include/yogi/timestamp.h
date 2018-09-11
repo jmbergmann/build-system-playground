@@ -1,3 +1,20 @@
+/*
+ * This file is part of the Yogi distribution https://github.com/yohummus/yogi.
+ * Copyright (c) 2018 Johannes Bergmann.
+ *
+ * This library is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, version 3.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this library. If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #ifndef YOGI_TIMESTAMP_H
 #define YOGI_TIMESTAMP_H
 
@@ -19,16 +36,18 @@ YOGI_DEFINE_API_FN(int, YOGI_FormatTime,
 YOGI_DEFINE_API_FN(int, YOGI_ParseTime,
                    (long long* timestamp, const char* str, const char* timefmt))
 
+////////////////////////////////////////////////////////////////////////////////
 /// Represents a UTC timestamp.
 ///
 /// Timestamps are expressed in nanoseconds since 01/01/1970 UTC.
+////////////////////////////////////////////////////////////////////////////////
 class Timestamp {
  public:
   /// Creates a timestamp from a duration since the epoch 01/01/1970 UTC.
   ///
-  /// \param dur_since_epoch Duration since the epoch.
+  /// \param dur_since_epoch %Duration since the epoch.
   ///
-  /// \returns Timestamp instance.
+  /// \returns %Timestamp instance.
   static Timestamp FromDurationSinceEpoch(const Duration& dur_since_epoch) {
     if (!dur_since_epoch.IsFinite() || dur_since_epoch < Duration::kZero) {
       throw ArithmeticException(
@@ -42,7 +61,7 @@ class Timestamp {
 
   /// Creates a timestamp from the current time.
   ///
-  /// \returns Timestamp corresponding to the current time.
+  /// \returns %Timestamp corresponding to the current time.
   static Timestamp Now() {
     long long timestamp;
     int res = internal::YOGI_GetCurrentTime(&timestamp);
@@ -55,27 +74,30 @@ class Timestamp {
   ///
   /// The \p timefmt parameter describes the format of the conversion. The
   /// following placeholders are supported:
-  ///  - *%Y*: Four digit year
-  ///  - *%m*: Month name as a decimal 01 to 12
-  ///  - *%d*: Day of the month as decimal 01 to 31
-  ///  - *%F*: Equivalent to %Y-%m-%d (the ISO 8601 date format)
-  ///  - *%H*: The hour as a decimal number using a 24-hour clock (00 to 23)
-  ///  - *%M*: The minute as a decimal 00 to 59
-  ///  - *%S*: Seconds as a decimal 00 to 59
-  ///  - *%T*: Equivalent to %H:%M:%S (the ISO 8601 time format)
-  ///  - *%3*: Milliseconds as decimal number 000 to 999
-  ///  - *%6*: Microseconds as decimal number 000 to 999
-  ///  - *%9*: Nanoseconds as decimal number 000 to 999
+  ///  - \c \%Y: Four digit year
+  ///  - \c \%m: Month name as a decimal 01 to 12
+  ///  - \c \%d: Day of the month as decimal 01 to 31
+  ///  - \c \%F: Equivalent to %Y-%m-%d (the ISO 8601 date format)
+  ///  - \c \%H: The hour as a decimal number using a 24-hour clock (00 to 23)
+  ///  - \c \%M: The minute as a decimal 00 to 59
+  ///  - \c \%S: Seconds as a decimal 00 to 59
+  ///  - \c \%T: Equivalent to %H:%M:%S (the ISO 8601 time format)
+  ///  - \c \%3: Milliseconds as decimal number 000 to 999
+  ///  - \c \%6: Microseconds as decimal number 000 to 999
+  ///  - \c \%9: Nanoseconds as decimal number 000 to 999
+  ///
+  /// \note
+  ///   The placeholder syntax is a modulo sign followed by a single character.
+  ///   Any additional characters shown above are for Doxygen.
   ///
   /// By default, the string \p str will be parsed in the format
   /// "2018-04-23T18:25:43.511Z".
   ///
-  /// \param str The string to parse.
+  /// \param str     The string to parse.
   /// \param timefmt Format of the time string.
   ///
   /// \returns The parsed timestamp.
-  static Timestamp Parse(StringView str,
-                         StringView timefmt = {}) {
+  static Timestamp Parse(StringView str, StringView timefmt = {}) {
     long long timestamp;
     int res = internal::YOGI_ParseTime(&timestamp, str, timefmt);
     internal::CheckErrorCode(res);
@@ -87,7 +109,7 @@ class Timestamp {
 
   /// Returns the duration since 01/01/1970 UTC.
   ///
-  /// \returns Duration since 01/01/1970 UTC.
+  /// \returns %Duration since 01/01/1970 UTC.
   Duration DurationSinceEpoch() const { return dur_since_epoch_; }
 
   /// Returns the nanoseconds fraction of the timestamp.
@@ -109,22 +131,24 @@ class Timestamp {
   ///
   /// The \p timefmt parameter describes the format of the conversion. The
   /// following placeholders are supported:
-  ///  - *%Y*: Four digit year
-  ///  - *%m*: Month name as a decimal 01 to 12
-  ///  - *%d*: Day of the month as decimal 01 to 31
-  ///  - *%F*: Equivalent to %Y-%m-%d (the ISO 8601 date format)
-  ///  - *%H*: The hour as a decimal number using a 24-hour clock (00 to 23)
-  ///  - *%M*: The minute as a decimal 00 to 59
-  ///  - *%S*: Seconds as a decimal 00 to 59
-  ///  - *%T*: Equivalent to %H:%M:%S (the ISO 8601 time format)
-  ///  - *%3*: Milliseconds as decimal number 000 to 999
-  ///  - *%6*: Microseconds as decimal number 000 to 999
-  ///  - *%9*: Nanoseconds as decimal number 000 to 999
+  ///  - \c \%Y: Four digit year
+  ///  - \c \%m: Month name as a decimal 01 to 12
+  ///  - \c \%d: Day of the month as decimal 01 to 31
+  ///  - \c \%F: Equivalent to %Y-%m-%d (the ISO 8601 date format)
+  ///  - \c \%H: The hour as a decimal number using a 24-hour clock (00 to 23)
+  ///  - \c \%M: The minute as a decimal 00 to 59
+  ///  - \c \%S: Seconds as a decimal 00 to 59
+  ///  - \c \%T: Equivalent to %H:%M:%S (the ISO 8601 time format)
+  ///  - \c \%3: Milliseconds as decimal number 000 to 999
+  ///  - \c \%6: Microseconds as decimal number 000 to 999
+  ///  - \c \%9: Nanoseconds as decimal number 000 to 999
+  ///
+  /// \note
+  ///   The placeholder syntax is a modulo sign followed by a single character.
+  ///   Any additional characters shown above are for Doxygen.
   ///
   /// By default, the timestamp will be formatted as an ISO-8601 string with
   /// up to millisecond resolution, e.g. "2018-04-23T18:25:43.511Z".
-  ///
-  /// \tparam String Type of the \p timefmt string.
   ///
   /// \param timefmt Format of the time string.
   ///

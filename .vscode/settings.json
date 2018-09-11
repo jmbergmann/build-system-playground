@@ -131,6 +131,7 @@
     "xmemory0": "cpp",
     "xstddef": "cpp",
     "*.ipp": "cpp",
-    "random": "cpp"
+    "random": "cpp",
+    "queue": "cpp"
   }
 }

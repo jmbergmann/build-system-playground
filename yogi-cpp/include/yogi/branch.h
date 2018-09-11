@@ -1,3 +1,20 @@
+/*
+ * This file is part of the Yogi distribution https://github.com/yohummus/yogi.
+ * Copyright (c) 2018 Johannes Bergmann.
+ *
+ * This library is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, version 3.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this library. If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #ifndef YOGI_BRANCH_H
 #define YOGI_BRANCH_H
 
@@ -34,9 +51,11 @@ YOGI_DEFINE_API_FN(int, YOGI_BranchAwaitEvent,
                     void* userarg))
 YOGI_DEFINE_API_FN(int, YOGI_BranchCancelAwaitEvent, (void* branch))
 
+////////////////////////////////////////////////////////////////////////////////
 /// Branch events.
 ///
 /// Branch events are events that can be observed on a branch.
+////////////////////////////////////////////////////////////////////////////////
 enum class BranchEvents {
   /// No events.
   kNone = 0,
@@ -189,8 +208,8 @@ class BranchInfo {
 /// Information about a remote branch.
 ////////////////////////////////////////////////////////////////////////////////
 class RemoteBranchInfo : public BranchInfo {
- friend class BranchQueriedEventInfo;
- friend class Branch;
+  friend class BranchQueriedEventInfo;
+  friend class Branch;
 
  protected:
   using BranchInfo::BranchInfo;
@@ -200,7 +219,7 @@ class RemoteBranchInfo : public BranchInfo {
 /// Information about a local branch.
 ////////////////////////////////////////////////////////////////////////////////
 class LocalBranchInfo : public BranchInfo {
- friend class Branch;
+  friend class Branch;
 
  public:
   /// Advertising IP address.
@@ -224,7 +243,7 @@ class LocalBranchInfo : public BranchInfo {
 /// Information associated with a branch event.
 ////////////////////////////////////////////////////////////////////////////////
 class BranchEventInfo {
- friend class Branch;
+  friend class Branch;
 
  public:
   virtual ~BranchEventInfo() {}
@@ -262,7 +281,7 @@ class BranchEventInfo {
 /// Information associated with the BranchEvents::kBranchDiscovered event.
 ////////////////////////////////////////////////////////////////////////////////
 class BranchDiscoveredEventInfo : public BranchEventInfo {
- friend class Branch;
+  friend class Branch;
 
  public:
   /// Returns the address of the TCP server for incoming connections.
@@ -286,7 +305,7 @@ class BranchDiscoveredEventInfo : public BranchEventInfo {
 /// Information associated with the BranchEvents::kBranchQueried event.
 ////////////////////////////////////////////////////////////////////////////////
 class BranchQueriedEventInfo : public BranchEventInfo {
- friend class Branch;
+  friend class Branch;
 
  public:
   /// Returns the name of the branch.
@@ -376,7 +395,7 @@ class BranchQueriedEventInfo : public BranchEventInfo {
 /// Information associated with the BranchEvents::kConnectFinished event.
 ////////////////////////////////////////////////////////////////////////////////
 class ConnectFinishedEventInfo : public BranchEventInfo {
- friend class Branch;
+  friend class Branch;
 
  protected:
   using BranchEventInfo::BranchEventInfo;
@@ -386,7 +405,7 @@ class ConnectFinishedEventInfo : public BranchEventInfo {
 /// Information associated with the BranchEvents::kConnectionLost event.
 ////////////////////////////////////////////////////////////////////////////////
 class ConnectionLostEventInfo : public BranchEventInfo {
- friend class Branch;
+  friend class Branch;
 
  protected:
   using BranchEventInfo::BranchEventInfo;
@@ -693,8 +712,7 @@ class Branch : public ObjectT<Branch> {
   }
 
  private:
-  Branch(ContextPtr context, JsonView props,
-         StringView section)
+  Branch(ContextPtr context, JsonView props, StringView section)
       : ObjectT(internal::CallApiCreateWithDescriptiveErrorCode(
                     internal::YOGI_BranchCreate, GetForeignHandle(context),
                     props, section),

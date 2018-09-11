@@ -722,8 +722,9 @@ YOGI_API int YOGI_GetCurrentTime(long long* timestamp);
  *   The placeholder syntax is a modulo sign followed by a single character. Any
  *   additional characters shown above are for Doxygen.
  *
- * If \p timefmt is set to NULL, then the timestamp will be formatted in the
- * format "2009-02-11T12:53:09.123Z".
+ * If \p timefmt is set to NULL, then the timestamp will be formatted as an
+ * ISO-8601 string with up to milliseconds resolution, e.g.
+ * "2009-02-11T12:53:09.123Z".
  *
  * \param[in]  timestamp Timestamp in nanoseconds since 01/01/1970 UTC
  * \param[out] str       Pointer to a string for storing the result
@@ -1440,7 +1441,7 @@ YOGI_API int YOGI_RaiseSignal(int signal, void* sigarg,
  * Creates a new signal set.
  *
  * Signal sets are used to receive signals raised via YOGI_RaiseSignal().
- * The signals are queued until they can be delived by means of calls to
+ * The signals are queued until they can be delivered by means of calls to
  * YOGI_SignalSetAwaitSignal().
  *
  * \param[out] sigset  Pointer to the signal set handle

@@ -1,3 +1,20 @@
+/*
+ * This file is part of the Yogi distribution https://github.com/yohummus/yogi.
+ * Copyright (c) 2018 Johannes Bergmann.
+ *
+ * This library is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, version 3.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this library. If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #ifndef YOGI_CONFIGURATION_H
 #define YOGI_CONFIGURATION_H
 
@@ -29,7 +46,9 @@ YOGI_DEFINE_API_FN(int, YOGI_ConfigurationWriteToFile,
                    (void* config, const char* filename, int resvars,
                     int indent))
 
+////////////////////////////////////////////////////////////////////////////////
 /// Flags used to change a configuration object's behaviour.
+////////////////////////////////////////////////////////////////////////////////
 enum class ConfigurationFlags {
   /// No flags.
   kNone = 0,
@@ -59,7 +78,9 @@ inline std::string ToString<ConfigurationFlags>(
   return s.substr(3);
 }
 
+////////////////////////////////////////////////////////////////////////////////
 /// Flags used to adjust how command line options are parsed.
+////////////////////////////////////////////////////////////////////////////////
 enum class CommandLineOptions {
   /// No options.
   kNone = 0,
@@ -170,11 +191,13 @@ inline std::string ToString<CommandLineOptions>(
 class Configuration;
 using ConfigurationPtr = std::shared_ptr<Configuration>;
 
+////////////////////////////////////////////////////////////////////////////////
 /// A configuration represents a set of parameters that usually remain constant
 /// throughout the runtime of a program. Parameters can come from different
 /// sources such as the command line or a file. Configurations are used for
 /// other parts of the library such as application objects, however, they are
 /// also intended to store user-defined parameters.
+////////////////////////////////////////////////////////////////////////////////
 class Configuration : public ObjectT<Configuration> {
  public:
   /// Creates a configuration.
@@ -266,7 +289,7 @@ class Configuration : public ObjectT<Configuration> {
 
   /// Retrieves the configuration as a JSON-formatted string.
   ///
-  /// Configuration variables get resolved if the configuration supports them.
+  /// %Configuration variables get resolved if the configuration supports them.
   ///
   /// \param indentation Number of space characters to use for indentation;
   ///                    must be >= 0.
@@ -284,7 +307,7 @@ class Configuration : public ObjectT<Configuration> {
 
   /// Retrieves the configuration as a JSON-formatted string.
   ///
-  /// Configuration variables get resolved if the configuration supports them.
+  /// %Configuration variables get resolved if the configuration supports them.
   ///
   /// No indentation and no newlines will be generated; i.e. the returned string
   /// will be as compact as possible.
@@ -318,19 +341,17 @@ class Configuration : public ObjectT<Configuration> {
   ///
   /// \param filename          Path to the output file.
   /// \param resolve_variables Resolve all configuration variables.
-  void WriteToFile(StringView filename,
-                   bool resolve_variables) const {
+  void WriteToFile(StringView filename, bool resolve_variables) const {
     WriteToFileImpl(filename, resolve_variables, -1);
   }
 
   /// Writes the configuration to a file in JSON format.
   ///
-  /// Configuration variables get resolved if the configuration supports them.
+  /// %Configuration variables get resolved if the configuration supports them.
   ///
-  /// \param filename          Path to the output file.
-  /// \param resolve_variables Resolve all configuration variables.
-  /// \param indentation       Number of space characters to use for
-  ///                          indentation; must be >= 0.
+  /// \param filename    Path to the output file.
+  /// \param indentation Number of space characters to use for indentation; must
+  ///                    be >= 0.
   void WriteToFile(StringView filename, int indentation) const {
     if (indentation < 0) {
       throw Failure(ErrorCode::kInvalidParam);
@@ -344,15 +365,12 @@ class Configuration : public ObjectT<Configuration> {
 
   /// Writes the configuration to a file in JSON format.
   ///
-  /// Configuration variables get resolved if the configuration supports them.
+  /// %Configuration variables get resolved if the configuration supports them.
   ///
   /// No indentation and no newlines will be generated; i.e. the returned string
   /// will be as compact as possible.
   ///
-  /// \param filename          Path to the output file.
-  /// \param resolve_variables Resolve all configuration variables.
-  /// \param indentation       Number of space characters to use for
-  ///                          indentation; must be >= 0.
+  /// \param filename Path to the output file.
   void WriteToFile(StringView filename) const {
     WriteToFileImpl(filename,
                     (flags_ & ConfigurationFlags::kDisableVariables) ==

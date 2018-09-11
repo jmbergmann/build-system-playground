@@ -1,3 +1,20 @@
+/*
+ * This file is part of the Yogi distribution https://github.com/yohummus/yogi.
+ * Copyright (c) 2018 Johannes Bergmann.
+ *
+ * This library is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, version 3.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this library. If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #ifndef YOGI_TIMER_H
 #define YOGI_TIMER_H
 
@@ -19,15 +36,21 @@ YOGI_DEFINE_API_FN(int, YOGI_TimerCancel, (void* timer))
 class Timer;
 using TimerPtr = std::shared_ptr<Timer>;
 
+////////////////////////////////////////////////////////////////////////////////
+/// Simple timer implementation.
+////////////////////////////////////////////////////////////////////////////////
 class Timer : public ObjectT<Timer> {
  public:
+  /// Handler function to be called once a timer expires.
+  ///
+  /// \param res %Result of the wait operation.
   using HandlerFn = std::function<void(const Result& res)>;
 
   /// Creates a timer.
   ///
   /// \param context The context to use.
   ///
-  /// \returns The created Timer.
+  /// \returns The created timer.
   static TimerPtr Create(ContextPtr context) {
     return TimerPtr(new Timer(context));
   }

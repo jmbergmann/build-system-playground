@@ -1,3 +1,20 @@
+/*
+ * This file is part of the Yogi distribution https://github.com/yohummus/yogi.
+ * Copyright (c) 2018 Johannes Bergmann.
+ *
+ * This library is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, version 3.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this library. If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #ifndef YOGI_DURATION_H
 #define YOGI_DURATION_H
 
@@ -170,10 +187,12 @@ inline Duration DurationFromTimeUnit(T val);
 
 }  // namespace internal
 
+////////////////////////////////////////////////////////////////////////////////
 /// Represents a time duration.
 ///
 /// The resolution of a time duration is in nanoseconds. Durations can be
 /// positive or negative. Exceptions are thrown in case of arithmetic errors.
+////////////////////////////////////////////////////////////////////////////////
 class Duration {
  public:
   /// Zero duration
@@ -502,8 +521,7 @@ class Duration {
   /// \param[in] inf_fmt Format to use for infinity
   ///
   /// \returns The formatted duration string
-  std::string Format(StringView dur_fmt = {},
-                     StringView inf_fmt = {}) const {
+  std::string Format(StringView dur_fmt = {}, StringView inf_fmt = {}) const {
     char str[128];
     int res = internal::YOGI_FormatDuration(IsFinite() ? ns_count_ : -1,
                                             ns_count_ < 0 ? 1 : 0, str,

@@ -1,3 +1,20 @@
+/*
+ * This file is part of the Yogi distribution https://github.com/yohummus/yogi.
+ * Copyright (c) 2018 Johannes Bergmann.
+ *
+ * This library is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, version 3.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this library. If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #ifndef YOGI_OBJECT_H
 #define YOGI_OBJECT_H
 
@@ -44,10 +61,12 @@ YOGI_DEFINE_API_FN(int, YOGI_Destroy, (void* object))
 class Object;
 using ObjectPtr = std::shared_ptr<Object>;
 
+////////////////////////////////////////////////////////////////////////////////
 /// Base class for all "creatable" objects.
 ///
 /// "Creatable" Yogi objects are objects that get instantiated and live until
 /// they are destroyed by the user.
+////////////////////////////////////////////////////////////////////////////////
 class Object : public std::enable_shared_from_this<Object> {
  public:
   virtual ~Object() {
@@ -60,7 +79,7 @@ class Object : public std::enable_shared_from_this<Object> {
   ///
   /// The \p objfmt parameter describes the format of the string. The following
   /// placeholders are supported:
-  ///  - *$T*: Type of the object (e.g. Branch)
+  ///  - *$T*: Type of the object (e.g. %Branch)
   ///  - *$x*: Handle of the object in lower-case hex notation
   ///  - *$X*: Handle of the object in upper-case hex notation
   ///
@@ -74,8 +93,7 @@ class Object : public std::enable_shared_from_this<Object> {
   /// \param nullstr String to use if the object's handle is NULL
   ///
   /// \returns Formatted string.
-  std::string Format(StringView fmt = {},
-                     StringView nullstr = {}) const {
+  std::string Format(StringView fmt = {}, StringView nullstr = {}) const {
     char str[128];
     int res =
         internal::YOGI_FormatObject(handle_, str, sizeof(str), fmt, nullstr);
@@ -106,12 +124,14 @@ class Object : public std::enable_shared_from_this<Object> {
   const std::initializer_list<ObjectPtr> dependencies_;
 };
 
+////////////////////////////////////////////////////////////////////////////////
 /// Templated base class for all "creatable" objects.
 ///
 /// "Creatable" Yogi objects are objects that get instantiated and live until
 /// they are destroyed by the user.
 ///
 /// \tparam T Class that derives from ObjectT.
+////////////////////////////////////////////////////////////////////////////////
 template <typename T>
 class ObjectT : public Object {
  public:
