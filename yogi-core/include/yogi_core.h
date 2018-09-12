@@ -569,6 +569,20 @@
 
 //! @}
 //!
+//! @defgroup ENC Encoding Types
+//!
+//! Possible data/payload encoding types.
+//!
+//! @{
+
+//! Data is encoded as JSON
+#define YOGI_ENC_JSON 0
+
+//! Data is encoded as MessagePack
+#define YOGI_ENC_MSGPACK 1
+
+//! @}
+//!
 //! @defgroup RLS Provider-Consumer Role Source
 //!
 //! When creating a terminal or interface, a provider/consumer role has to be
@@ -1763,7 +1777,7 @@ YOGI_API int YOGI_BranchGetConnectedBranches(void* branch, void* uuid,
  * \param[out] json     Pointer to a char array for storing event information
  *                      (can be set to NULL)
  * \param[in]  jsonsize Maximum number of bytes to write to \p json
- * \param[in]  fn       Handler to call
+ * \param[in]  fn       Handler to call for the received event
  * \param[in]  userarg  User-specified argument to be passed to \p fn
  *
  * \returns [=0] #YOGI_OK if successful
@@ -1787,6 +1801,79 @@ YOGI_API int YOGI_BranchAwaitEvent(
 YOGI_API int YOGI_BranchCancelAwaitEvent(void* branch);
 
 /*!
+ * Sends a broadcast message to all connected branches.
+ *
+ * Broadcast messages contain arbitrary data encoded as JSON or MessagePack. As
+ * opposed to sending messages via terminals, broadcast messages don't have to
+ * comply with a defined schema for the payload; any data that can be encoded
+ * is valid. This implies that validating the data is entirely up to the user
+ * code.
+ *
+ * \note
+ *   The payload in \p data can be given encoded in either JSON or MessagePack
+ *   as specified in the \p datafmt parameter. It does not matter which format
+ *   is chosen since the receivers can specify their desired format and the
+ *   library performs the necessary conversions automatically.
+ *
+ * \param[in] branch   The branch handle
+ * \param[in] datafmt  Encoding type used for \p data (see \ref ENC)
+ * \param[in] data     Payload encoded according to \p datafmt
+ * \param[in] datasize Number of bytes in \p data
+ *
+ * \returns [=0] #YOGI_OK if successful
+ * \returns [<0] An error code in case of a failure (see \ref EC)
+ */
+YOGI_API int YOGI_BranchSendBroadcast(void* branch, int datafmt,
+                                      const void* data, int datasize);
+
+/*!
+ * Receives a broadcast message from any of the connected branches.
+ *
+ * Broadcast messages contain arbitrary data encoded as JSON or MessagePack. As
+ * opposed to sending messages via terminals, broadcast messages don't have to
+ * comply with a defined schema for the payload; any data that can be encoded
+ * is valid. This implies that validating the data is entirely up to the user
+ * code.
+ *
+ * \note
+ *   The desired encoding of the received payload can be set via \p datafmt.
+ *   The library will automatically perform any necessary conversions.
+ *
+ * This function will register \p fn to be called once a broadcast message has
+ * been received. The parameters passed to \p fn are:
+ *  -# __res__: #YOGI_OK or error code in case of a failure (see \ref EC)
+ *  -# __size__: Number of bytes written to \p data
+ *  -# __userarg__: Value of the user-specified \p userarg parameter
+ *
+ * If the received payload does not fit into \p data, i.e. if \p datasize is too
+ * small, then \p fn will be called with the #YOGI_ERR_BUFFER_TOO_SMALL error
+ * after populating \p data
+ *  - with the first \p datasize - 1 characters of the received payload plus a
+ *    trailing zero if \p datafmt is #YOGI_ENC_JSON; and
+ *  - with the first \p datasize bytes of the received payload if \p datafmt is
+ *    #YOGI_ENC_MSGPACK.
+ *
+ * \attention
+ *   Broadcast messages do not get queued, i.e. if a branches is not actively
+ *   receiving broadcast messages then they will be discarded. To ensure that
+ *   no messages get missed, call YOGI_BranchReceiveBroadcast() again from
+ *   within the handler \p fn.
+ *
+ * \param[in]  branch   The branch handle
+ * \param[in]  datafmt  Encoding type to use for \p data (see \ref ENC)
+ * \param[out] data     Pointer to a buffer to store the received payload in
+ * \param[in]  datasize Maximum number of bytes to write to \p data
+ * \param[in]  fn       Handler to call for the received broadcast message
+ * \param[in]  userarg  User-specified argument to be passed to \p fn
+ *
+ * \returns [=0] #YOGI_OK if successful
+ * \returns [<0] An error code in case of a failure (see \ref EC)
+ */
+YOGI_API int YOGI_BranchReceiveBroadcast(
+    void* branch, int datafmt, void* data, int datasize,
+    void (*fn)(int res, int size, void* userarg), void* userarg);
+
+/*!
  * Creates a new terminal.
  *
  * Terminals are the communication endpoints in Yogi. Each terminal is
@@ -1805,17 +1892,9 @@ YOGI_API int YOGI_BranchCancelAwaitEvent(void* branch);
  * See \ref termtypes for a description of the different terminal types along
  * with their properties as configured via the \p props parameter.
  *
- *
- * The properties have the following meaning:
- *  - __path__ (optional): Path of the terminal (prefixed by \p pathpfx).
- *  - __type__: Type of the terminal (see above for possible types).
- *  - __role__ (optional): Role of the terminal.
- *  - __description__ (optional): Additional information about the terminal.
- *  - __data__: Schema for the data type that is transmitted.
- *
  * \note
  *   The final path of the terminal will be determined by joining the \p pathpfx
- *   and the value of the _path_ string from the JSON above. At most one of
+ *   and the value of the _path_ string from the \p props JSON. At most one of
  *   these two may be empty or NULL.
  *
  * \param[out] terminal Pointer to the terminal handle
