@@ -18,6 +18,9 @@
 #ifndef YOGI_CORE_H
 #define YOGI_CORE_H
 
+//! \file
+//! \brief Definition the public API of the Yogi Core library.
+
 //! @defgroup VS Version Macros
 //!
 //! Various macros describing the version of the header file. Note that those
@@ -1949,5 +1952,19 @@ YOGI_API int YOGI_DestroyAll();
 #ifdef __cplusplus
 } // extern "C"
 #endif
+
+/**
+ * \page termtypes Terminal Types
+ * \brief Description of the different terminal types.
+ *
+ * TBD
+ */
+
+/**
+ * \page dataschema Data Schemas
+ * \brief Description of the syntax and semantics of data schemas.
+ *
+ * TBD
+ */
 
 #endif // YOGI_CORE_H
