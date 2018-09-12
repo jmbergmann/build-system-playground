@@ -97,3 +97,9 @@ add_test (
 set_property (TEST yogi-cpp-test PROPERTY
   ENVIRONMENT "YOGI_CORE_LIBRARY=$<TARGET_FILE:yogi-core>"
 )
+
+# Documentation
+add_custom_target (yogi-cpp-doc
+  COMMAND doxygen
+  WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/doc
+)

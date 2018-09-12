@@ -188,3 +188,9 @@ if (VALGRIND_EXECUTABLE)
 else ()
   message (STATUS "Valgrind not found. Targets disabled.")
 endif ()
+
+# Documentation
+add_custom_target (yogi-core-doc
+  COMMAND doxygen
+  WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/doc
+)

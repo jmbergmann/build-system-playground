@@ -17,6 +17,7 @@ include (nodejs)
 
 enable_testing ()
 
+# Sub-projects
 add_subdirectory (yogi-core)
 add_subdirectory (yogi-cpp)
 add_subdirectory (yogi-hub)
@@ -32,3 +33,7 @@ endif ()
 if (NODEJS_EXECUTABLE AND NPM_EXECUTABLE)
   add_subdirectory (yogi-javascript)
 endif ()
+
+# Documentation
+add_custom_target (doc)
+add_dependencies (doc yogi-core-doc yogi-cpp-doc)
