@@ -436,6 +436,9 @@
 //! Include the \c --timeout switch for setting the branch timeout
 #define YOGI_CLO_BRANCH_TIMEOUT (1<<9)
 
+//! Include the \c --ghost_mode switch for enabling ghost mode for the branch
+#define YOGI_CLO_BRANCH_GHOST_MODE (1<<10)
+
 //! Parse configuration files given on the command line
 //!
 //! The files will be parsed from left to right, i.e. if the same value is set
@@ -472,6 +475,7 @@
                             | YOGI_CLO_BRANCH_ADV_PORT    \
                             | YOGI_CLO_BRANCH_ADV_INT     \
                             | YOGI_CLO_BRANCH_TIMEOUT     \
+                            | YOGI_CLO_BRANCH_GHOST_MODE  \
                             )
 
 //! Combination of all flags

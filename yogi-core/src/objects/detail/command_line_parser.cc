@@ -193,6 +193,15 @@ void CommandLineParser::AddBranchOptions() {
       "timeout", po::value<float>()->notifier([&](auto& val) {
         direct_json_["branch"]["timeout"] = val;
       }),
+      "Ghost mode"
+    );
+  }
+
+  if (options_ & api::kBranchGhostModeOption) {
+    visible_options_.add_options()(
+      "ghost", po::value<bool>()->notifier([&](auto& val) {
+        direct_json_["branch"]["ghost_mode"] = val;
+      })->implicit_value(true),
       "Branch timeout in seconds (e.g. --timeout 3.0)"
     );
   }

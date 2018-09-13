@@ -178,6 +178,13 @@ TEST_F(CommandLineParserTest, BranchTimeoutOption) {
                           "timeout");
 }
 
+TEST_F(CommandLineParserTest, BranchGhostModeOption) {
+  CheckParsingSingleValue("--ghost", true, api::kBranchGhostModeOption,
+                          "branch", "ghost_mode");
+  CheckParsingSingleValue("--ghost", false, api::kBranchGhostModeOption,
+                          "branch", "ghost_mode");
+}
+
 TEST_F(CommandLineParserTest, FileOption) {
   TemporaryWorkdirGuard workdir;
   {

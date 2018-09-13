@@ -54,6 +54,7 @@ enum CommandLineOptions {
   kBranchAdvPortOption = YOGI_CLO_BRANCH_ADV_PORT,
   kBranchAdvIntervalOption = YOGI_CLO_BRANCH_ADV_INT,
   kBranchTimeoutOption = YOGI_CLO_BRANCH_TIMEOUT,
+  kBranchGhostModeOption = YOGI_CLO_BRANCH_GHOST_MODE,
   kFileOption = YOGI_CLO_FILES,
   kFileRequiredOption = YOGI_CLO_FILES_REQUIRED,
   kOverrideOption = YOGI_CLO_OVERRIDES,
