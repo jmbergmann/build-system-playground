@@ -27,14 +27,15 @@ namespace detail {
 
 class HookLogSink : public LogSink {
  public:
-  typedef std::function<void(Verbosity, const utils::Timestamp&, int,
+  typedef std::function<void(api::Verbosity, const utils::Timestamp&, int,
                              const char*, int, const std::string&, const char*)>
       HookFn;
 
-  HookLogSink(Verbosity verbosity, HookFn fn);
+  HookLogSink(api::Verbosity verbosity, HookFn fn);
 
-  virtual void WriteEntry(Verbosity severity, const utils::Timestamp& timestamp,
-                          int tid, const char* file, int line,
+  virtual void WriteEntry(api::Verbosity severity,
+                          const utils::Timestamp& timestamp, int tid,
+                          const char* file, int line,
                           const std::string& component,
                           const char* msg) override;
 

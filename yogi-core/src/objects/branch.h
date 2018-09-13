@@ -19,16 +19,16 @@
 
 #include "../config.h"
 #include "context.h"
+#include "detail/branch/broadcast_manager.h"
 #include "detail/branch/connection_manager.h"
 
 namespace objects {
 
 class Branch : public api::ExposedObjectT<Branch, api::ObjectType::kBranch> {
  public:
-  typedef detail::ConnectionManager::BranchEvents BranchEvents;
-  typedef detail::ConnectionManager::BranchEventHandler BranchEventHandler;
-  typedef detail::ConnectionManager::BranchInfoStringsList
-      BranchInfoStringsList;
+  using BranchEventHandler = detail::ConnectionManager::BranchEventHandler;
+  using BranchInfoStringsList =
+      detail::ConnectionManager::BranchInfoStringsList;
 
   Branch(ContextPtr context, std::string name, std::string description,
          std::string net_name, std::string password, std::string path,
@@ -42,9 +42,10 @@ class Branch : public api::ExposedObjectT<Branch, api::ObjectType::kBranch> {
   std::string MakeInfoString() const;
   BranchInfoStringsList MakeConnectedBranchesInfoStrings() const;
 
-  void AwaitEvent(BranchEvents events, BranchEventHandler handler) {
+  void AwaitEvent(api::BranchEvents events, BranchEventHandler handler) {
     connection_manager_->AwaitEvent(events, handler);
   }
+
   void CancelAwaitEvent() { connection_manager_->CancelAwaitEvent(); }
 
  private:
@@ -58,6 +59,7 @@ class Branch : public api::ExposedObjectT<Branch, api::ObjectType::kBranch> {
   const ContextPtr context_;
   const detail::ConnectionManagerPtr connection_manager_;
   const detail::BranchInfoPtr info_;
+  const detail::BroadcastManagerPtr broadcast_manager_;
 };
 
 typedef std::shared_ptr<Branch> BranchPtr;

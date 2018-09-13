@@ -35,23 +35,21 @@
 #define YOGI_LOG_DEBUG(logger, ...) YOGI_LOG(kDebug, logger, __VA_ARGS__)
 #define YOGI_LOG_TRACE(logger, ...) YOGI_LOG(kTrace, logger, __VA_ARGS__)
 
-#define YOGI_LOG(severity, logger, stream)                                    \
-  {                                                                           \
-    if (::objects::Logger::Verbosity::severity <= (logger)->GetVerbosity()) { \
-      std::stringstream ss;                                                   \
-      ss << stream;                                                           \
-      (logger)->Log(::objects::Logger::Verbosity::severity, __FILE__,         \
-                    __LINE__, ss.str().c_str());                              \
-    }                                                                         \
+#define YOGI_LOG(severity, logger, stream)                          \
+  {                                                                 \
+    if (::api::Verbosity::severity <= (logger)->GetVerbosity()) {   \
+      std::stringstream ss;                                         \
+      ss << stream;                                                 \
+      (logger)->Log(::api::Verbosity::severity, __FILE__, __LINE__, \
+                    ss.str().c_str());                              \
+    }                                                               \
   }
 
 namespace objects {
 
 class Logger : public api::ExposedObjectT<Logger, api::ObjectType::kLogger> {
  public:
-  typedef detail::LogSink::Verbosity Verbosity;
-
-  static Verbosity StringToVerbosity(const std::string& str);
+  static api::Verbosity StringToVerbosity(const std::string& str);
   static void SetSink(detail::ConsoleLogSinkPtr&& sink);
   static void SetSink(detail::HookLogSinkPtr&& sink);
   static void SetSink(detail::FileLogSinkPtr&& sink);
@@ -65,9 +63,10 @@ class Logger : public api::ExposedObjectT<Logger, api::ObjectType::kLogger> {
   Logger(std::string component);
 
   const std::string& GetComponent() const { return component_; }
-  Verbosity GetVerbosity() const { return verbosity_; }
-  void SetVerbosity(Verbosity verbosity) { verbosity_ = verbosity; }
-  void Log(Verbosity severity, const char* file, int line, const char* msg);
+  api::Verbosity GetVerbosity() const { return verbosity_; }
+  void SetVerbosity(api::Verbosity verbosity) { verbosity_ = verbosity; }
+  void Log(api::Verbosity severity, const char* file, int line,
+           const char* msg);
 
  private:
   static std::mutex sinks_mutex_;
@@ -79,7 +78,7 @@ class Logger : public api::ExposedObjectT<Logger, api::ObjectType::kLogger> {
   static std::vector<std::weak_ptr<Logger>>& InternalLoggers();
 
   const std::string component_;
-  std::atomic<Verbosity> verbosity_;
+  std::atomic<api::Verbosity> verbosity_;
 };
 
 typedef std::shared_ptr<Logger> LoggerPtr;

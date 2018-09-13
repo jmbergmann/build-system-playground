@@ -22,7 +22,7 @@
 YOGI_API int YOGI_RaiseSignal(int signal, void* sigarg,
                               void (*fn)(void* sigarg, void* userarg),
                               void* userarg) {
-  using Signals = objects::SignalSet::Signals;
+  using Signals = api::Signals;
 
   CHECK_FLAGS(signal, Signals::kAllSignals);
   CHECK_PARAM(IsExactlyOneBitSet(signal));
@@ -42,7 +42,7 @@ YOGI_API int YOGI_RaiseSignal(int signal, void* sigarg,
 }
 
 YOGI_API int YOGI_SignalSetCreate(void** sigset, void* context, int signals) {
-  using Signals = objects::SignalSet::Signals;
+  using Signals = api::Signals;
 
   CHECK_PARAM(sigset != nullptr);
   CHECK_PARAM(context != nullptr);

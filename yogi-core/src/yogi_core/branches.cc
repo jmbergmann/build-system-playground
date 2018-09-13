@@ -150,10 +150,8 @@ YOGI_API int YOGI_BranchAwaitEvent(void* branch, int events, void* uuid,
                                    char* json, int jsonsize,
                                    void (*fn)(int, int, int, void*),
                                    void* userarg) {
-  using BranchEvents = objects::Branch::BranchEvents;
-
   CHECK_PARAM(branch != nullptr);
-  CHECK_FLAGS(events, BranchEvents::kAllEvents);
+  CHECK_FLAGS(events, api::BranchEvents::kAllEvents);
   CHECK_PARAM(json == nullptr || jsonsize > 0);
   CHECK_PARAM(fn != nullptr);
 
@@ -161,7 +159,7 @@ YOGI_API int YOGI_BranchAwaitEvent(void* branch, int events, void* uuid,
     auto brn = api::ObjectRegister::Get<objects::Branch>(branch);
 
     brn->AwaitEvent(
-        ConvertFlags(events, BranchEvents::kNoEvent),
+        ConvertFlags(events, api::BranchEvents::kNoEvent),
         [=](auto& res, auto event, auto& evres, auto& tmp_uuid,
             auto& tmp_json) {
           if (res != api::kSuccess) {
@@ -188,4 +186,21 @@ YOGI_API int YOGI_BranchCancelAwaitEvent(void* branch) {
     brn->CancelAwaitEvent();
   }
   CATCH_AND_RETURN;
+}
+
+YOGI_API int YOGI_BranchSendBroadcast(void* branch, int enc, const void* data,
+                                      int datasize) {
+  CHECK_PARAM(branch != nullptr);
+  CHECK_PARAM(enc == api::Encoding::kJson || enc == api::Encoding::kMsgPack);
+  CHECK_PARAM(data != nullptr);
+  CHECK_PARAM(datasize > 0);
+}
+
+YOGI_API int YOGI_BranchReceiveBroadcast(
+    void* branch, int enc, void* data, int datasize,
+    void (*fn)(int res, int size, void* userarg), void* userarg) {
+  CHECK_PARAM(branch != nullptr);
+  CHECK_PARAM(enc == api::Encoding::kJson || enc == api::Encoding::kMsgPack);
+  CHECK_PARAM(data != nullptr || datasize == 0);
+  CHECK_PARAM(fn != nullptr);
 }

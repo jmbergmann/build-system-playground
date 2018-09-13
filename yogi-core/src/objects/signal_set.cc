@@ -21,9 +21,9 @@
 
 namespace objects {
 
-void SignalSet::RaiseSignal(Signals signal, void* sigarg,
+void SignalSet::RaiseSignal(api::Signals signal, void* sigarg,
                             CleanupHandler cleanup_handler) {
-  YOGI_ASSERT(signal != kNoSignal);
+  YOGI_ASSERT(signal != api::kNoSignal);
 
   auto data = std::make_shared<SignalData>();
   data->signal = signal;
@@ -44,7 +44,7 @@ void SignalSet::RaiseSignal(Signals signal, void* sigarg,
   }
 }
 
-SignalSet::SignalSet(ContextPtr context, Signals signals)
+SignalSet::SignalSet(ContextPtr context, api::Signals signals)
     : context_(context), signals_(signals) {}
 
 void SignalSet::Await(AwaitHandler handler) {
@@ -53,7 +53,7 @@ void SignalSet::Await(AwaitHandler handler) {
   if (handler_) {
     auto old_handler = handler_;
     context_->Post([old_handler] {
-      old_handler(api::Error(YOGI_ERR_CANCELED), kNoSignal, nullptr);
+      old_handler(api::Error(YOGI_ERR_CANCELED), api::kNoSignal, nullptr);
     });
   }
 

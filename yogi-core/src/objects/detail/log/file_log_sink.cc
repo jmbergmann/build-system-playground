@@ -21,7 +21,7 @@
 namespace objects {
 namespace detail {
 
-FileLogSink::FileLogSink(Verbosity verbosity, std::string filename,
+FileLogSink::FileLogSink(api::Verbosity verbosity, std::string filename,
                          std::string time_fmt, std::string fmt)
     : TextBasedLogSink(verbosity, time_fmt, fmt, true),
       filename_(utils::Timestamp::Now().ToFormattedString(filename)) {

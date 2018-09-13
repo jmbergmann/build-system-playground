@@ -23,9 +23,9 @@ namespace fs = boost::filesystem;
 
 class CommandLineParserTest : public Test {
  protected:
-  nlohmann::json CheckParsingSucceeds(
-      const CommandLine& cmdline, CommandLineParser::CommandLineOptions options,
-      const char* section_name) {
+  nlohmann::json CheckParsingSucceeds(const CommandLine& cmdline,
+                                      api::CommandLineOptions options,
+                                      const char* section_name) {
     CommandLineParser parser(cmdline.argc, cmdline.argv, options);
     EXPECT_NO_THROW(parser.Parse()) << parser.GetLastErrorString();
 
@@ -36,15 +36,14 @@ class CommandLineParserTest : public Test {
   }
 
   void CheckParsingFailsWithNoOptions(const CommandLine& cmdline) {
-    CommandLineParser parser(cmdline.argc, cmdline.argv,
-                             CommandLineParser::kNoOptions);
+    CommandLineParser parser(cmdline.argc, cmdline.argv, api::kNoOptions);
     EXPECT_THROW_ERROR(parser.Parse(), YOGI_ERR_PARSING_CMDLINE_FAILED);
     EXPECT_FALSE(parser.GetLastErrorString().empty());
   }
 
   template <typename T>
   void CheckParsingSingleValue(const char* cmdline_option, T val,
-                               CommandLineParser::CommandLineOptions options,
+                               api::CommandLineOptions options,
                                const char* section_name, const char* key) {
     CommandLine cmdline{
         cmdline_option,
@@ -60,7 +59,7 @@ class CommandLineParserTest : public Test {
   }
 
   void CheckParsingSingleValue(const char* cmdline_option, const char* val,
-                               CommandLineParser::CommandLineOptions options,
+                               api::CommandLineOptions options,
                                const char* section_name, const char* key) {
     CommandLine cmdline{
         cmdline_option,
@@ -82,8 +81,7 @@ TEST_F(CommandLineParserTest, HelpOption) {
   };
   // clang-format on
 
-  CommandLineParser parser(cmdline.argc, cmdline.argv,
-                           CommandLineParser::kNoOptions);
+  CommandLineParser parser(cmdline.argc, cmdline.argv, api::kNoOptions);
 
   EXPECT_THROW_ERROR(parser.Parse(), YOGI_ERR_HELP_REQUESTED);
   EXPECT_FALSE(parser.GetLastErrorString().empty());
@@ -96,8 +94,7 @@ TEST_F(CommandLineParserTest, HelpLoggingOption) {
   };
   // clang-format on
 
-  CommandLineParser parser(cmdline.argc, cmdline.argv,
-                           CommandLineParser::kLoggingOptions);
+  CommandLineParser parser(cmdline.argc, cmdline.argv, api::kLoggingOptions);
 
   EXPECT_THROW_ERROR(parser.Parse(), YOGI_ERR_HELP_REQUESTED);
   EXPECT_FALSE(parser.GetLastErrorString().empty());
@@ -118,8 +115,7 @@ TEST_F(CommandLineParserTest, LoggingOptions) {
   };
   // clang-format on
 
-  auto section = CheckParsingSucceeds(
-      cmdline, CommandLineParser::kLoggingOptions, "logging");
+  auto section = CheckParsingSucceeds(cmdline, api::kLoggingOptions, "logging");
 
   EXPECT_EQ(section.value("file", "NOT FOUND"), "/tmp/logfile.txt");
   EXPECT_EQ(section.value("console", "NOT FOUND"), "STDOUT");
@@ -137,56 +133,48 @@ TEST_F(CommandLineParserTest, LoggingOptions) {
 }
 
 TEST_F(CommandLineParserTest, BranchNameOption) {
-  CheckParsingSingleValue("--name", "My Branch",
-                          CommandLineParser::kBranchNameOption, "branch",
-                          "name");
+  CheckParsingSingleValue("--name", "My Branch", api::kBranchNameOption,
+                          "branch", "name");
 }
 
 TEST_F(CommandLineParserTest, BranchDescriptionOption) {
   CheckParsingSingleValue("--description", "Some text...",
-                          CommandLineParser::kBranchDescriptionOption, "branch",
+                          api::kBranchDescriptionOption, "branch",
                           "description");
 }
 
 TEST_F(CommandLineParserTest, BranchNetworkOption) {
-  CheckParsingSingleValue("--network", "General",
-                          CommandLineParser::kBranchNetworkOption, "branch",
-                          "network");
+  CheckParsingSingleValue("--network", "General", api::kBranchNetworkOption,
+                          "branch", "network");
 }
 
 TEST_F(CommandLineParserTest, BranchPasswordOption) {
-  CheckParsingSingleValue("--password", "Secret",
-                          CommandLineParser::kBranchPasswordOption, "branch",
-                          "password");
+  CheckParsingSingleValue("--password", "Secret", api::kBranchPasswordOption,
+                          "branch", "password");
 }
 
 TEST_F(CommandLineParserTest, BranchPathOption) {
-  CheckParsingSingleValue("--path", "/some/path",
-                          CommandLineParser::kBranchPathOption, "branch",
-                          "path");
+  CheckParsingSingleValue("--path", "/some/path", api::kBranchPathOption,
+                          "branch", "path");
 }
 
 TEST_F(CommandLineParserTest, BranchAdvertisingAddressOption) {
-  CheckParsingSingleValue("--adv-addr", "0::0",
-                          CommandLineParser::kBranchAdvAddressOption, "branch",
-                          "advertising-address");
+  CheckParsingSingleValue("--adv-addr", "0::0", api::kBranchAdvAddressOption,
+                          "branch", "advertising-address");
 }
 
 TEST_F(CommandLineParserTest, BranchAdvertisingPortOption) {
-  CheckParsingSingleValue("--adv-port", 12345,
-                          CommandLineParser::kBranchAdvPortOption, "branch",
-                          "advertising-port");
+  CheckParsingSingleValue("--adv-port", 12345, api::kBranchAdvPortOption,
+                          "branch", "advertising-port");
 }
 
 TEST_F(CommandLineParserTest, BranchAdvertisingIntervalOption) {
-  CheckParsingSingleValue("--adv-int", 3.5,
-                          CommandLineParser::kBranchAdvIntervalOption, "branch",
-                          "advertising-interval");
+  CheckParsingSingleValue("--adv-int", 3.5, api::kBranchAdvIntervalOption,
+                          "branch", "advertising-interval");
 }
 
 TEST_F(CommandLineParserTest, BranchTimeoutOption) {
-  CheckParsingSingleValue("--timeout", 6.6,
-                          CommandLineParser::kBranchTimeoutOption, "branch",
+  CheckParsingSingleValue("--timeout", 6.6, api::kBranchTimeoutOption, "branch",
                           "timeout");
 }
 
@@ -208,8 +196,7 @@ TEST_F(CommandLineParserTest, FileOption) {
   };
   // clang-format on
 
-  CommandLineParser parser(cmdline.argc, cmdline.argv,
-                           CommandLineParser::kFileOption);
+  CommandLineParser parser(cmdline.argc, cmdline.argv, api::kFileOption);
   EXPECT_NO_THROW(parser.Parse()) << parser.GetLastErrorString();
 
   auto section = parser.GetFilesConfiguration()["person"];
@@ -234,8 +221,7 @@ TEST_F(CommandLineParserTest, FileOptionCorruptFile) {
   };
   // clang-format on
 
-  CommandLineParser parser(cmdline.argc, cmdline.argv,
-                           CommandLineParser::kFileOption);
+  CommandLineParser parser(cmdline.argc, cmdline.argv, api::kFileOption);
   EXPECT_THROW_ERROR(parser.Parse(), YOGI_ERR_PARSING_FILE_FAILED);
   EXPECT_FALSE(parser.GetLastErrorString().empty());
 }
@@ -249,8 +235,7 @@ TEST_F(CommandLineParserTest, OverrideOption) {
   };
   // clang-format on
 
-  auto section = CheckParsingSucceeds(
-      cmdline, CommandLineParser::kOverrideOption, "person");
+  auto section = CheckParsingSucceeds(cmdline, api::kOverrideOption, "person");
 
   EXPECT_EQ(section.value("age", -1), 42);
   EXPECT_EQ(section.value("name", "NOT FOUND"), "Marc");
@@ -268,8 +253,8 @@ TEST_F(CommandLineParserTest, VariableOptions) {
   };
   // clang-format on
 
-  auto section = CheckParsingSucceeds(
-      cmdline, CommandLineParser::kVariableOption, "variables");
+  auto section =
+      CheckParsingSucceeds(cmdline, api::kVariableOption, "variables");
 
   EXPECT_EQ(section.value("DIR", "NOT FOUND"), "/usr/local");
   EXPECT_EQ(section.value("NAME", "NOT FOUND"), "Yohummus");

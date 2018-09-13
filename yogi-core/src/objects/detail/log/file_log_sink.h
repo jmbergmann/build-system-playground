@@ -27,8 +27,8 @@ namespace detail {
 
 class FileLogSink : public TextBasedLogSink {
  public:
-  FileLogSink(Verbosity verbosity, std::string filename, std::string time_fmt,
-              std::string fmt);
+  FileLogSink(api::Verbosity verbosity, std::string filename,
+              std::string time_fmt, std::string fmt);
 
   const std::string& GetGeneratedFilename() const { return filename_; }
 

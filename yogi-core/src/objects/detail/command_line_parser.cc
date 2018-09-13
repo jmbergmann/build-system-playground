@@ -33,7 +33,7 @@ namespace objects {
 namespace detail {
 
 CommandLineParser::CommandLineParser(int argc, const char* const* argv,
-                                     CommandLineOptions options)
+                                     api::CommandLineOptions options)
     : argc_(argc),
       argv_(argv),
       options_(options),
@@ -67,7 +67,7 @@ void CommandLineParser::AddHelpOptions() {
     "Show this help message"
   );
 
-  if (options_ & kLoggingOptions) {
+  if (options_ & api::kLoggingOptions) {
     visible_options_.add_options()(
       "help-logging",
       "Shows information about the logging options"
@@ -78,7 +78,7 @@ void CommandLineParser::AddHelpOptions() {
 
 void CommandLineParser::AddLoggingOptions() {
   // clang-format off
-  if (options_ & kLoggingOptions) {
+  if (options_ & api::kLoggingOptions) {
     visible_options_.add_options()(
       "log-file", po::value<std::string>()->notifier([&](auto& val) {
         this->LogFileNotifier(val);
@@ -116,7 +116,7 @@ void CommandLineParser::AddLoggingOptions() {
 
 void CommandLineParser::AddBranchOptions() {
   // clang-format off
-  if (options_ & kBranchNameOption) {
+  if (options_ & api::kBranchNameOption) {
     visible_options_.add_options()(
       "name", po::value<std::string>()->notifier([&](auto& val) {
         direct_json_["branch"]["name"] = val;
@@ -125,7 +125,7 @@ void CommandLineParser::AddBranchOptions() {
     );
   }
 
-  if (options_ & kBranchDescriptionOption) {
+  if (options_ & api::kBranchDescriptionOption) {
     visible_options_.add_options()(
       "description", po::value<std::string>()->notifier([&](auto& val) {
         direct_json_["branch"]["description"] = val;
@@ -134,7 +134,7 @@ void CommandLineParser::AddBranchOptions() {
     );
   }
 
-  if (options_ & kBranchNetworkOption) {
+  if (options_ & api::kBranchNetworkOption) {
     visible_options_.add_options()(
       "network", po::value<std::string>()->notifier([&](auto& val) {
         direct_json_["branch"]["network"] = val;
@@ -143,7 +143,7 @@ void CommandLineParser::AddBranchOptions() {
     );
   }
 
-  if (options_ & kBranchPasswordOption) {
+  if (options_ & api::kBranchPasswordOption) {
     visible_options_.add_options()(
       "password", po::value<std::string>()->notifier([&](auto& val) {
         direct_json_["branch"]["password"] = val;
@@ -152,7 +152,7 @@ void CommandLineParser::AddBranchOptions() {
     );
   }
 
-  if (options_ & kBranchPathOption) {
+  if (options_ & api::kBranchPathOption) {
     visible_options_.add_options()(
       "path", po::value<std::string>()->notifier([&](auto& val) {
         direct_json_["branch"]["path"] = val;
@@ -161,7 +161,7 @@ void CommandLineParser::AddBranchOptions() {
     );
   }
 
-  if (options_ & kBranchAdvAddressOption) {
+  if (options_ & api::kBranchAdvAddressOption) {
     visible_options_.add_options()(
       "adv-addr", po::value<std::string>()->notifier([&](auto& val) {
         direct_json_["branch"]["advertising-address"] = val;
@@ -170,7 +170,7 @@ void CommandLineParser::AddBranchOptions() {
     );
   }
 
-  if (options_ & kBranchAdvPortOption) {
+  if (options_ & api::kBranchAdvPortOption) {
     visible_options_.add_options()(
       "adv-port", po::value<unsigned>()->notifier([&](auto& val) {
         direct_json_["branch"]["advertising-port"] = val;
@@ -179,7 +179,7 @@ void CommandLineParser::AddBranchOptions() {
     );
   }
 
-  if (options_ & kBranchAdvIntervalOption) {
+  if (options_ & api::kBranchAdvIntervalOption) {
     visible_options_.add_options()(
       "adv-int", po::value<float>()->notifier([&](auto& val) {
         direct_json_["branch"]["advertising-interval"] = val;
@@ -188,7 +188,7 @@ void CommandLineParser::AddBranchOptions() {
     );
   }
 
-  if (options_ & kBranchTimeoutOption) {
+  if (options_ & api::kBranchTimeoutOption) {
     visible_options_.add_options()(
       "timeout", po::value<float>()->notifier([&](auto& val) {
         direct_json_["branch"]["timeout"] = val;
@@ -201,7 +201,7 @@ void CommandLineParser::AddBranchOptions() {
 
 void CommandLineParser::AddFileOptions() {
   // clang-format off
-  if (options_ & kFileOption || options_ & kFileRequiredOption) {
+  if (options_ & api::kFileOption || options_ & api::kFileRequiredOption) {
     auto name = "_cfg_files";
     hidden_options_.add_options()(
       name, po::value<std::vector<std::string>>()->notifier([&](auto& val) {
@@ -218,7 +218,7 @@ void CommandLineParser::AddFileOptions() {
 
 void CommandLineParser::AddOverrideOptions() {
   // clang-format off
-  if (options_ & kOverrideOption) {
+  if (options_ & api::kOverrideOption) {
     visible_options_.add_options()(
       "override,o", po::value<std::vector<std::string>>()->notifier([&](auto& val) {
         this->OverrideNotifier(val);
@@ -233,7 +233,7 @@ void CommandLineParser::AddOverrideOptions() {
 
 void CommandLineParser::AddVariableOptions() {
   // clang-format off
-  if (options_ & kVariableOption) {
+  if (options_ & api::kVariableOption) {
     visible_options_.add_options()(
       "var,v", po::value<std::vector<std::string>>()->notifier([&](auto& val) {
         this->VariableNotifier(val);
@@ -271,9 +271,9 @@ void CommandLineParser::HandleHelpOptions() {
 
     std::stringstream ss;
     ss << "Usage: " << binary_name << " [options]";
-    if (options_ & kFileOption || options_ & kFileRequiredOption) {
-      ss << (options_ & kFileRequiredOption ? " config.json"
-                                            : " [config.json]");
+    if (options_ & api::kFileOption || options_ & api::kFileRequiredOption) {
+      ss << (options_ & api::kFileRequiredOption ? " config.json"
+                                                 : " [config.json]");
       ss << " [config2.json ...]";
     }
     ss << std::endl;
@@ -421,7 +421,7 @@ void CommandLineParser::FileNotifier(const std::vector<std::string>& val) {
     throw api::Error(YOGI_ERR_PARSING_CMDLINE_FAILED);
   }
 
-  if (options_ & kFileRequiredOption && config_files_.empty()) {
+  if (options_ & api::kFileRequiredOption && config_files_.empty()) {
     err_description_ = "No configuration files specified.";
     throw api::Error(YOGI_ERR_PARSING_CMDLINE_FAILED);
   }

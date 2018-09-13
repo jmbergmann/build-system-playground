@@ -39,7 +39,7 @@ YOGI_API int YOGI_ConfigureConsoleLogging(int verbosity, int stream, int color,
     } else {
       objects::Logger::SetSink(
           std::make_unique<objects::detail::ConsoleLogSink>(
-              static_cast<objects::Logger::Verbosity>(verbosity),
+              static_cast<api::Verbosity>(verbosity),
               stream == YOGI_ST_STDOUT ? stdout : stderr, !!color,
               timefmt ? timefmt : api::kDefaultLogTimeFormat,
               fmt ? fmt : api::kDefaultLogFormat));
@@ -66,7 +66,7 @@ YOGI_API int YOGI_ConfigureHookLogging(int verbosity,
            component.c_str(), msg, userarg);
       };
       objects::Logger::SetSink(std::make_unique<objects::detail::HookLogSink>(
-          static_cast<objects::Logger::Verbosity>(verbosity), hook_fn));
+          static_cast<api::Verbosity>(verbosity), hook_fn));
     }
   }
   CATCH_AND_RETURN;
@@ -88,7 +88,7 @@ YOGI_API int YOGI_ConfigureFileLogging(int verbosity, const char* filename,
     objects::Logger::SetSink(objects::detail::FileLogSinkPtr());
     if (filename != nullptr && verbosity != YOGI_VB_NONE) {
       auto sink = std::make_unique<objects::detail::FileLogSink>(
-          static_cast<objects::Logger::Verbosity>(verbosity), filename,
+          static_cast<api::Verbosity>(verbosity), filename,
           timefmt ? timefmt : api::kDefaultLogTimeFormat,
           fmt ? fmt : api::kDefaultLogFormat);
       auto gen_filename = sink->GetGeneratedFilename();
@@ -125,7 +125,7 @@ YOGI_API int YOGI_LoggerSetVerbosity(void* logger, int verbosity) {
   try {
     auto log = logger ? api::ObjectRegister::Get<objects::Logger>(logger)
                       : objects::Logger::GetAppLogger();
-    log->SetVerbosity(static_cast<objects::Logger::Verbosity>(verbosity));
+    log->SetVerbosity(static_cast<api::Verbosity>(verbosity));
   }
   CATCH_AND_RETURN;
 }
@@ -153,7 +153,7 @@ YOGI_API int YOGI_LoggerSetComponentsVerbosity(const char* components,
 
     auto fn = [&](const objects::LoggerPtr& log) {
       if (std::regex_match(log->GetComponent(), m, re)) {
-        log->SetVerbosity(static_cast<objects::Logger::Verbosity>(verbosity));
+        log->SetVerbosity(static_cast<api::Verbosity>(verbosity));
         ++n;
       }
     };
@@ -191,7 +191,7 @@ YOGI_API int YOGI_LoggerLog(void* logger, int severity, const char* file,
   try {
     auto log = logger ? api::ObjectRegister::Get<objects::Logger>(logger)
                       : objects::Logger::GetAppLogger();
-    log->Log(static_cast<objects::Logger::Verbosity>(severity), file, line,
+    log->Log(static_cast<api::Verbosity>(severity), file, line,
              msg);
   }
   CATCH_AND_RETURN;

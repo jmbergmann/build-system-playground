@@ -18,28 +18,25 @@
 #pragma once
 
 #include "../../../config.h"
-#include "text_based_log_sink.h"
+#include "../../context.h"
+#include "../../logger.h"
 
 namespace objects {
 namespace detail {
 
-class ConsoleLogSink : public TextBasedLogSink {
+class BroadcastManager final
+    : public std::enable_shared_from_this<BroadcastManager> {
  public:
-  ConsoleLogSink(api::Verbosity verbosity, FILE* stream, bool color,
-                 std::string time_fmt, std::string fmt);
-
- protected:
-  virtual void WritePartialOutput(const std::string& str) override;
-  virtual void SetOutputColours(api::Verbosity severity) override;
-  virtual void ResetOutputColours() override;
-  virtual void Flush() override;
+  BroadcastManager(ContextPtr context);
+  virtual ~BroadcastManager();
 
  private:
-  FILE* const stream_;
-  const bool colour_;
+  static const LoggerPtr logger_;
+
+  const ContextPtr context_;
 };
 
-typedef std::unique_ptr<ConsoleLogSink> ConsoleLogSinkPtr;
+typedef std::shared_ptr<BroadcastManager> BroadcastManagerPtr;
 
 }  // namespace detail
 }  // namespace objects

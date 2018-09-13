@@ -25,14 +25,14 @@ using namespace std::string_literals;
 
 namespace objects {
 
-Configuration::Configuration(ConfigurationFlags flags)
-    : variables_supported_(!(flags & kDisableVariables)),
-      mutable_cmdline_(flags & kMutableCmdLine),
+Configuration::Configuration(api::ConfigurationFlags flags)
+    : variables_supported_(!(flags & api::kDisableVariables)),
+      mutable_cmdline_(flags & api::kMutableCmdLine),
       json_({}),
       immutable_json_({}) {}
 
 void Configuration::UpdateFromCommandLine(int argc, const char* const* argv,
-                                          CommandLineOptions options,
+                                          api::CommandLineOptions options,
                                           std::string* err_desc) {
   detail::CommandLineParser parser(argc, argv, options);
 

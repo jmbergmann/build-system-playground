@@ -22,7 +22,7 @@
 #include <iostream>
 
 YOGI_API int YOGI_ConfigurationCreate(void** config, int flags) {
-  using Flags = objects::Configuration::ConfigurationFlags;
+  using Flags = api::ConfigurationFlags;
 
   CHECK_PARAM(config != nullptr);
   CHECK_FLAGS(flags, Flags::kAllFlags);
@@ -39,7 +39,7 @@ YOGI_API int YOGI_ConfigurationUpdateFromCommandLine(void* config, int argc,
                                                      const char* const* argv,
                                                      int options, char* err,
                                                      int errsize) {
-  using Options = objects::Configuration::CommandLineOptions;
+  using Options = api::CommandLineOptions;
 
   CHECK_PARAM(config != nullptr);
   CHECK_PARAM(argc > 0);

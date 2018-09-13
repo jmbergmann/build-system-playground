@@ -20,7 +20,7 @@
 #include "../config.h"
 #include "../api/object.h"
 #include "../api/error.h"
-#include "../utils/types.h"
+#include "../api/enums.h"
 #include "detail/command_line_parser.h"
 #include "logger.h"
 
@@ -33,19 +33,11 @@ class Configuration
     : public api::ExposedObjectT<Configuration,
                                  api::ObjectType::kConfiguration> {
  public:
-  enum ConfigurationFlags {
-    kNoFlags = YOGI_CFG_NONE,
-    kDisableVariables = YOGI_CFG_DISABLE_VARIABLES,
-    kMutableCmdLine = YOGI_CFG_MUTABLE_CMD_LINE,
-    kAllFlags = kDisableVariables | kMutableCmdLine,
-  };
-
-  using CommandLineOptions = detail::CommandLineParser::CommandLineOptions;
-
-  Configuration(ConfigurationFlags flags);
+  Configuration(api::ConfigurationFlags flags);
 
   void UpdateFromCommandLine(int argc, const char* const* argv,
-                             CommandLineOptions options, std::string* err_desc);
+                             api::CommandLineOptions options,
+                             std::string* err_desc);
   void UpdateFromString(const std::string& json_str, std::string* err_desc);
   void UpdateFromFile(const std::string& filename, std::string* err_desc);
   std::string Dump(bool resolve_variables, int indentation_width) const;
@@ -86,7 +78,5 @@ class Configuration
 };
 
 typedef std::shared_ptr<Configuration> ConfigurationPtr;
-
-YOGI_DEFINE_FLAG_OPERATORS(Configuration::ConfigurationFlags)
 
 }  // namespace objects

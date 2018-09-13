@@ -38,7 +38,8 @@ Branch::Branch(ContextPtr context, std::string name, std::string description,
       info_(detail::BranchInfo::CreateLocal(
           name, description, net_name, path,
           connection_manager_->GetTcpServerEndpoint(), timeout, adv_interval,
-          ghost_mode)) {
+          ghost_mode)),
+      broadcast_manager_(std::make_shared<detail::BroadcastManager>(context)) {
   if (name.empty() || net_name.empty() || path.empty() || path.front() != '/' ||
       adv_interval < 1ms || timeout < 1ms) {
     throw api::Error(YOGI_ERR_INVALID_PARAM);

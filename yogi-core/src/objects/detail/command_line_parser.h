@@ -19,7 +19,7 @@
 
 #include "../../config.h"
 #include "../../api/error.h"
-#include "../../utils/types.h"
+#include "../../api/enums.h"
 
 #include <nlohmann/json.hpp>
 #include <boost/program_options.hpp>
@@ -31,27 +31,8 @@ namespace detail {
 
 class CommandLineParser {
  public:
-  enum CommandLineOptions {
-    kNoOptions = YOGI_CLO_NONE,
-    kLoggingOptions = YOGI_CLO_LOGGING,
-    kBranchNameOption = YOGI_CLO_BRANCH_NAME,
-    kBranchDescriptionOption = YOGI_CLO_BRANCH_DESCRIPTION,
-    kBranchNetworkOption = YOGI_CLO_BRANCH_NETWORK,
-    kBranchPasswordOption = YOGI_CLO_BRANCH_PASSWORD,
-    kBranchPathOption = YOGI_CLO_BRANCH_PATH,
-    kBranchAdvAddressOption = YOGI_CLO_BRANCH_ADV_ADDR,
-    kBranchAdvPortOption = YOGI_CLO_BRANCH_ADV_PORT,
-    kBranchAdvIntervalOption = YOGI_CLO_BRANCH_ADV_INT,
-    kBranchTimeoutOption = YOGI_CLO_BRANCH_TIMEOUT,
-    kFileOption = YOGI_CLO_FILES,
-    kFileRequiredOption = YOGI_CLO_FILES_REQUIRED,
-    kOverrideOption = YOGI_CLO_OVERRIDES,
-    kVariableOption = YOGI_CLO_VARIABLES,
-    kAllOptions = YOGI_CLO_ALL,
-  };
-
   CommandLineParser(int argc, const char* const* argv,
-                    CommandLineOptions options);
+                    api::CommandLineOptions options);
 
   void Parse();
   const std::string& GetLastErrorString() const { return err_description_; }
@@ -87,7 +68,7 @@ class CommandLineParser {
 
   const int argc_;
   const char* const* const argv_;
-  const CommandLineOptions options_;
+  const api::CommandLineOptions options_;
   std::string err_description_;
 
   boost::program_options::options_description visible_options_;
@@ -100,8 +81,6 @@ class CommandLineParser {
   std::vector<std::string> config_files_;
   std::vector<Override> overrides_;
 };
-
-YOGI_DEFINE_FLAG_OPERATORS(CommandLineParser::CommandLineOptions)
 
 }  // namespace detail
 }  // namespace objects

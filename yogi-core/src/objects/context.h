@@ -19,7 +19,7 @@
 
 #include "../config.h"
 #include "../api/object.h"
-#include "../utils/types.h"
+#include "../api/enums.h"
 #include "logger.h"
 
 #include <boost/asio/io_context.hpp>
@@ -34,14 +34,7 @@ namespace objects {
 
 class Context : public api::ExposedObjectT<Context, api::ObjectType::kContext> {
  public:
-  enum Signals {
-    kNoSignal = 0,
-    kSigInt = YOGI_SIG_INT,
-    kSigTerm = YOGI_SIG_TERM,
-    kAllSignals = YOGI_SIG_INT | YOGI_SIG_TERM,
-  };
-
-  typedef std::function<void(const api::Error&, Signals)> SignalHandler;
+  typedef std::function<void(const api::Error&, api::Signals)> SignalHandler;
 
   Context();
   virtual ~Context();
@@ -57,7 +50,7 @@ class Context : public api::ExposedObjectT<Context, api::ObjectType::kContext> {
   bool WaitForRunning(std::chrono::nanoseconds timeout);
   bool WaitForStopped(std::chrono::nanoseconds timeout);
   void Post(std::function<void()> fn);
-  void AwaitSignal(Signals signals, SignalHandler signal_handler);
+  void AwaitSignal(api::Signals signals, SignalHandler signal_handler);
   void CancelAwaitSignal();
 
  private:
@@ -79,7 +72,5 @@ class Context : public api::ExposedObjectT<Context, api::ObjectType::kContext> {
 };
 
 typedef std::shared_ptr<Context> ContextPtr;
-
-YOGI_DEFINE_FLAG_OPERATORS(Context::Signals)
 
 }  // namespace objects

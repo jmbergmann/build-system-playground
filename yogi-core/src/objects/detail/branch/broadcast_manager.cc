@@ -15,31 +15,17 @@
  * along with this library. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
-
-#include "../../../config.h"
-#include "text_based_log_sink.h"
+#include "broadcast_manager.h"
 
 namespace objects {
 namespace detail {
 
-class ConsoleLogSink : public TextBasedLogSink {
- public:
-  ConsoleLogSink(api::Verbosity verbosity, FILE* stream, bool color,
-                 std::string time_fmt, std::string fmt);
+BroadcastManager::BroadcastManager(ContextPtr context) : context_(context) {}
 
- protected:
-  virtual void WritePartialOutput(const std::string& str) override;
-  virtual void SetOutputColours(api::Verbosity severity) override;
-  virtual void ResetOutputColours() override;
-  virtual void Flush() override;
+BroadcastManager::~BroadcastManager() {}
 
- private:
-  FILE* const stream_;
-  const bool colour_;
-};
-
-typedef std::unique_ptr<ConsoleLogSink> ConsoleLogSinkPtr;
+const LoggerPtr BroadcastManager::logger_ =
+    Logger::CreateStaticInternalLogger("Branch.BroadcastManager");
 
 }  // namespace detail
 }  // namespace objects

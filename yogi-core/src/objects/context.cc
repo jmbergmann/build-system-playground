@@ -110,13 +110,14 @@ bool Context::WaitForStopped(std::chrono::nanoseconds timeout) {
 
 void Context::Post(std::function<void()> fn) { boost::asio::post(ioc_, fn); }
 
-void Context::AwaitSignal(Signals sigs, SignalHandler signal_handler) {
+void Context::AwaitSignal(api::Signals sigs, SignalHandler signal_handler) {
   std::lock_guard<std::mutex> lock(mutex_);
 
   boost::system::error_code ec;
   signals_.cancel(ec);
   if (ec) {
-    YOGI_LOG_ERROR(logger_, "Could not cancel wait for signal operation: " << ec.message());
+    YOGI_LOG_ERROR(logger_, "Could not cancel wait for signal operation: "
+                                << ec.message());
     throw api::Error(YOGI_ERR_UNKNOWN);
   }
 
@@ -126,11 +127,11 @@ void Context::AwaitSignal(Signals sigs, SignalHandler signal_handler) {
     throw api::Error(YOGI_ERR_UNKNOWN);
   }
 
-  if (sigs & kSigInt) {
+  if (sigs & api::kSigInt) {
     signals_.add(SIGINT, ec);
   }
 
-  if (!ec && sigs & kSigTerm) {
+  if (!ec && sigs & api::kSigTerm) {
     signals_.add(SIGTERM, ec);
   }
 
@@ -147,11 +148,11 @@ void Context::AwaitSignal(Signals sigs, SignalHandler signal_handler) {
     if (!ec) {
       switch (sig_num) {
         case SIGINT:
-          sig = kSigInt;
+          sig = api::kSigInt;
           break;
 
         case SIGTERM:
-          sig = kSigTerm;
+          sig = api::kSigTerm;
           break;
 
         default:

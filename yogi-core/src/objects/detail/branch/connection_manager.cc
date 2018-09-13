@@ -41,7 +41,7 @@ ConnectionManager::ConnectionManager(
             this->OnAdvertisementReceived(uuid, ep);
           })),
       acceptor_(context->IoContext()),
-      observed_events_(kNoEvent) {
+      observed_events_(api::kNoEvent) {
   if (adv_ep.port() == 0) {
     throw api::Error(YOGI_ERR_INVALID_PARAM);
   }
@@ -80,15 +80,15 @@ ConnectionManager::MakeConnectedBranchesInfoStrings() const {
   return branches;
 }
 
-void ConnectionManager::AwaitEvent(BranchEvents events,
+void ConnectionManager::AwaitEvent(api::BranchEvents events,
                                    BranchEventHandler handler) {
   std::lock_guard<std::recursive_mutex> lock(event_mutex_);
 
   if (event_handler_) {
     auto old_handler = event_handler_;
     context_->Post([old_handler] {
-      old_handler(api::Error(YOGI_ERR_CANCELED), kNoEvent, api::kSuccess, {},
-                  {});
+      old_handler(api::Error(YOGI_ERR_CANCELED), api::kNoEvent, api::kSuccess,
+                  {}, {});
     });
   }
 
@@ -96,7 +96,7 @@ void ConnectionManager::AwaitEvent(BranchEvents events,
   event_handler_ = handler;
 }
 
-void ConnectionManager::CancelAwaitEvent() { AwaitEvent(kNoEvent, {}); }
+void ConnectionManager::CancelAwaitEvent() { AwaitEvent(api::kNoEvent, {}); }
 
 void ConnectionManager::SetupAcceptor(const boost::asio::ip::tcp& protocol) {
   boost::system::error_code ec;
@@ -163,7 +163,7 @@ void ConnectionManager::OnAdvertisementReceived(
     this->OnConnectFinished(err, adv_uuid, socket);
   });
 
-  EmitBranchEvent(kBranchDiscoveredEvent, api::kSuccess, adv_uuid, [&] {
+  EmitBranchEvent(api::kBranchDiscoveredEvent, api::kSuccess, adv_uuid, [&] {
     return nlohmann::json{
         {"uuid", boost::uuids::to_string(adv_uuid)},
         {"tcp_server_address", utils::MakeIpAddressString(ep)},
@@ -175,7 +175,7 @@ void ConnectionManager::OnConnectFinished(const api::Error& err,
                                           const boost::uuids::uuid& adv_uuid,
                                           utils::TimedTcpSocketPtr socket) {
   if (err) {
-    EmitBranchEvent(kBranchQueriedEvent, err, adv_uuid);
+    EmitBranchEvent(api::kBranchQueriedEvent, err, adv_uuid);
     pending_connects_.erase(adv_uuid);
     return;
   }
@@ -233,13 +233,13 @@ void ConnectionManager::OnExchangeBranchInfoFinished(
   res.first->second = conn;
 
   if (!conn_already_exists) {
-    EmitBranchEvent(kBranchQueriedEvent, api::kSuccess, remote_uuid,
+    EmitBranchEvent(api::kBranchQueriedEvent, api::kSuccess, remote_uuid,
                     [&] { return remote_info->ToJson(); });
 
     // If a connection already exists, the following check has already been
     // performed successfully, so we don't do it again
     if (auto chk_err = CheckRemoteBranchInfo(remote_info)) {
-      EmitBranchEvent(kConnectFinishedEvent, chk_err, remote_uuid);
+      EmitBranchEvent(api::kConnectFinishedEvent, chk_err, remote_uuid);
       return;
     }
   }
@@ -378,7 +378,7 @@ void ConnectionManager::OnAuthenticateFinished(const api::Error& err,
     std::lock_guard<std::mutex> lock(connections_mutex_);
     connections_.erase(uuid);
 
-    EmitBranchEvent(kConnectFinishedEvent, err, uuid);
+    EmitBranchEvent(api::kConnectFinishedEvent, err, uuid);
   } else {
     YOGI_LOG_DEBUG(logger_, info_ << " Successfully authenticated with "
                                   << conn->GetRemoteBranchInfo());
@@ -393,7 +393,7 @@ void ConnectionManager::StartSession(BranchConnectionPtr conn) {
     this->OnSessionTerminated(err, weak_conn.lock());
   });
 
-  EmitBranchEvent(kConnectFinishedEvent, api::kSuccess,
+  EmitBranchEvent(api::kConnectFinishedEvent, api::kSuccess,
                   conn->GetRemoteBranchInfo()->GetUuid());
 
   YOGI_LOG_DEBUG(logger_, info_ << " Successfully started session for "
@@ -408,7 +408,7 @@ void ConnectionManager::OnSessionTerminated(const api::Error& err,
                                 << conn->GetRemoteBranchInfo()
                                 << " terminated: " << err);
 
-  EmitBranchEvent(kConnectionLostEvent, err,
+  EmitBranchEvent(api::kConnectionLostEvent, err,
                   conn->GetRemoteBranchInfo()->GetUuid());
 
   std::lock_guard<std::mutex> lock(connections_mutex_);
@@ -448,7 +448,7 @@ BranchConnectionPtr ConnectionManager::StopKeepingConnectionAlive(
 }
 
 template <typename Fn>
-void ConnectionManager::EmitBranchEvent(BranchEvents event,
+void ConnectionManager::EmitBranchEvent(api::BranchEvents event,
                                         const api::Error& ev_res,
                                         const boost::uuids::uuid& uuid,
                                         Fn make_json_fn) {
@@ -464,7 +464,7 @@ void ConnectionManager::EmitBranchEvent(BranchEvents event,
   handler(api::kSuccess, event, ev_res, uuid, make_json_fn().dump());
 }
 
-void ConnectionManager::EmitBranchEvent(BranchEvents event,
+void ConnectionManager::EmitBranchEvent(api::BranchEvents event,
                                         const api::Error& ev_res,
                                         const boost::uuids::uuid& uuid) {
   return EmitBranchEvent(event, ev_res, uuid, [&] {
@@ -473,33 +473,33 @@ void ConnectionManager::EmitBranchEvent(BranchEvents event,
 }
 
 template <typename Fn>
-void ConnectionManager::LogBranchEvent(BranchEvents event,
+void ConnectionManager::LogBranchEvent(api::BranchEvents event,
                                        const api::Error& ev_res,
                                        Fn make_json_fn) {
   switch (event) {
-    case kNoEvent:
-    case kAllEvents:
+    case api::kNoEvent:
+    case api::kAllEvents:
       break;
 
-    case kBranchDiscoveredEvent:
+    case api::kBranchDiscoveredEvent:
       YOGI_LOG_DEBUG(logger_,
                      info_ << " Event: YOGI_BEV_BRANCH_DISCOVERED; ev_res=\""
                            << ev_res << "; json=\"" << make_json_fn() << "\"");
       break;
 
-    case kBranchQueriedEvent:
+    case api::kBranchQueriedEvent:
       YOGI_LOG_INFO(logger_,
                     info_ << " Event: YOGI_BEV_BRANCH_QUERIED; ev_res=\""
                           << ev_res << "; json=\"" << make_json_fn() << "\"");
       break;
 
-    case kConnectFinishedEvent:
+    case api::kConnectFinishedEvent:
       YOGI_LOG_INFO(logger_,
                     info_ << " Event: YOGI_BEV_CONNECT_FINISHED; ev_res=\""
                           << ev_res << "; json=\"" << make_json_fn() << "\"");
       break;
 
-    case kConnectionLostEvent:
+    case api::kConnectionLostEvent:
       YOGI_LOG_WARNING(
           logger_, info_ << " Event: YOGI_BEV_CONNECTION_LOST; ev_res=\""
                          << ev_res << "; json=\"" << make_json_fn() << "\"");

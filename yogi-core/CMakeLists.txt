@@ -48,6 +48,7 @@ add_library (yogi-core-static STATIC
   src/objects/detail/branch/advertising_sender.cc
   src/objects/detail/branch/branch_connection.cc
   src/objects/detail/branch/branch_info.cc
+  src/objects/detail/branch/broadcast_manager.cc
   src/objects/detail/branch/connection_manager.cc
   src/objects/detail/command_line_parser.cc
   src/objects/detail/log/console_log_sink.cc

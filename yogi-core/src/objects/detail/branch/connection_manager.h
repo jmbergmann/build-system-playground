@@ -18,7 +18,7 @@
 #pragma once
 
 #include "../../../config.h"
-#include "../../../utils/types.h"
+#include "../../../api/enums.h"
 #include "advertising_receiver.h"
 #include "advertising_sender.h"
 #include "branch_connection.h"
@@ -36,18 +36,10 @@ namespace detail {
 class ConnectionManager final
     : public std::enable_shared_from_this<ConnectionManager> {
  public:
-  enum BranchEvents {
-    kNoEvent = 0,
-    kBranchDiscoveredEvent = YOGI_BEV_BRANCH_DISCOVERED,
-    kBranchQueriedEvent = YOGI_BEV_BRANCH_QUERIED,
-    kConnectFinishedEvent = YOGI_BEV_CONNECT_FINISHED,
-    kConnectionLostEvent = YOGI_BEV_CONNECTION_LOST,
-    kAllEvents = YOGI_BEV_ALL,
-  };
-
-  typedef utils::ByteVector ByteVector;
-  typedef std::function<void(const api::Error&, BranchEvents, const api::Error&,
-                             const boost::uuids::uuid&, const std::string&)>
+  using ByteVector = utils::ByteVector;
+  typedef std::function<void(const api::Error&, api::BranchEvents,
+                             const api::Error&, const boost::uuids::uuid&,
+                             const std::string&)>
       BranchEventHandler;
   typedef std::function<void(const api::Error&, BranchConnectionPtr)>
       ConnectionChangedHandler;
@@ -75,7 +67,7 @@ class ConnectionManager final
 
   BranchInfoStringsList MakeConnectedBranchesInfoStrings() const;
 
-  void AwaitEvent(BranchEvents events, BranchEventHandler handler);
+  void AwaitEvent(api::BranchEvents events, BranchEventHandler handler);
   void CancelAwaitEvent();
 
  private:
@@ -127,13 +119,13 @@ class ConnectionManager final
       const BranchConnectionWeakPtr& weak_conn);
 
   template <typename Fn>
-  void EmitBranchEvent(BranchEvents event, const api::Error& ev_res,
+  void EmitBranchEvent(api::BranchEvents event, const api::Error& ev_res,
                        const boost::uuids::uuid& uuid, Fn make_json_fn);
-  void EmitBranchEvent(BranchEvents event, const api::Error& ev_res,
+  void EmitBranchEvent(api::BranchEvents event, const api::Error& ev_res,
                        const boost::uuids::uuid& uuid);
 
   template <typename Fn>
-  void LogBranchEvent(BranchEvents event, const api::Error& ev_res,
+  void LogBranchEvent(api::BranchEvents event, const api::Error& ev_res,
                       Fn make_json_fn);
 
   static const LoggerPtr logger_;
@@ -155,13 +147,11 @@ class ConnectionManager final
   mutable std::mutex connections_mutex_;
 
   BranchEventHandler event_handler_;
-  BranchEvents observed_events_;
+  api::BranchEvents observed_events_;
   std::recursive_mutex event_mutex_;
 };
 
 typedef std::shared_ptr<ConnectionManager> ConnectionManagerPtr;
-
-YOGI_DEFINE_FLAG_OPERATORS(ConnectionManager::BranchEvents)
 
 }  // namespace detail
 }  // namespace objects

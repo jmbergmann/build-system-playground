@@ -1816,15 +1816,15 @@ YOGI_API int YOGI_BranchCancelAwaitEvent(void* branch);
  *   library performs the necessary conversions automatically.
  *
  * \param[in] branch   The branch handle
- * \param[in] datafmt  Encoding type used for \p data (see \ref ENC)
+ * \param[in] enc      Encoding type used for \p data (see \ref ENC)
  * \param[in] data     Payload encoded according to \p datafmt
  * \param[in] datasize Number of bytes in \p data
  *
  * \returns [=0] #YOGI_OK if successful
  * \returns [<0] An error code in case of a failure (see \ref EC)
  */
-YOGI_API int YOGI_BranchSendBroadcast(void* branch, int datafmt,
-                                      const void* data, int datasize);
+YOGI_API int YOGI_BranchSendBroadcast(void* branch, int enc, const void* data,
+                                      int datasize);
 
 /*!
  * Receives a broadcast message from any of the connected branches.
@@ -1860,7 +1860,7 @@ YOGI_API int YOGI_BranchSendBroadcast(void* branch, int datafmt,
  *   within the handler \p fn.
  *
  * \param[in]  branch   The branch handle
- * \param[in]  datafmt  Encoding type to use for \p data (see \ref ENC)
+ * \param[in]  enc      Encoding type to use for \p data (see \ref ENC)
  * \param[out] data     Pointer to a buffer to store the received payload in
  * \param[in]  datasize Maximum number of bytes to write to \p data
  * \param[in]  fn       Handler to call for the received broadcast message
@@ -1870,7 +1870,7 @@ YOGI_API int YOGI_BranchSendBroadcast(void* branch, int datafmt,
  * \returns [<0] An error code in case of a failure (see \ref EC)
  */
 YOGI_API int YOGI_BranchReceiveBroadcast(
-    void* branch, int datafmt, void* data, int datasize,
+    void* branch, int enc, void* data, int datasize,
     void (*fn)(int res, int size, void* userarg), void* userarg);
 
 /*!

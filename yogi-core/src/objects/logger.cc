@@ -27,14 +27,14 @@ using namespace std::string_literals;
 
 namespace objects {
 
-Logger::Verbosity Logger::StringToVerbosity(const std::string& str) {
-  if (boost::iequals(str, "NONE")) return Verbosity::kNone;
-  if (boost::iequals(str, "FATAL")) return Verbosity::kFatal;
-  if (boost::iequals(str, "ERROR")) return Verbosity::kError;
-  if (boost::iequals(str, "WARNING")) return Verbosity::kWarning;
-  if (boost::iequals(str, "INFO")) return Verbosity::kInfo;
-  if (boost::iequals(str, "DEBUG")) return Verbosity::kDebug;
-  if (boost::iequals(str, "TRACE")) return Verbosity::kTrace;
+api::Verbosity Logger::StringToVerbosity(const std::string& str) {
+  if (boost::iequals(str, "NONE")) return api::Verbosity::kNone;
+  if (boost::iequals(str, "FATAL")) return api::Verbosity::kFatal;
+  if (boost::iequals(str, "ERROR")) return api::Verbosity::kError;
+  if (boost::iequals(str, "WARNING")) return api::Verbosity::kWarning;
+  if (boost::iequals(str, "INFO")) return api::Verbosity::kInfo;
+  if (boost::iequals(str, "DEBUG")) return api::Verbosity::kDebug;
+  if (boost::iequals(str, "TRACE")) return api::Verbosity::kTrace;
 
   throw std::runtime_error("Invalid verbosity \""s + str + "\"");
 }
@@ -62,9 +62,9 @@ LoggerPtr Logger::CreateStaticInternalLogger(const std::string& component) {
 
 Logger::Logger(std::string component)
     : component_(component),
-      verbosity_(static_cast<Verbosity>(api::kDefaultLoggerVerbosity)) {}
+      verbosity_(static_cast<api::Verbosity>(api::kDefaultLoggerVerbosity)) {}
 
-void Logger::Log(Verbosity severity, const char* file, int line,
+void Logger::Log(api::Verbosity severity, const char* file, int line,
                  const char* msg) {
   if (severity > verbosity_) {
     return;

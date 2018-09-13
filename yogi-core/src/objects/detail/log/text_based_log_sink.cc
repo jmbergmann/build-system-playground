@@ -23,14 +23,15 @@
 namespace objects {
 namespace detail {
 
-TextBasedLogSink::TextBasedLogSink(Verbosity verbosity, std::string time_fmt,
-                                   std::string fmt, bool ignore_colour)
+TextBasedLogSink::TextBasedLogSink(api::Verbosity verbosity,
+                                   std::string time_fmt, std::string fmt,
+                                   bool ignore_colour)
     : LogSink(verbosity),
       time_fmt_(time_fmt),
       fmt_(fmt),
       ignore_colour_(ignore_colour) {}
 
-void TextBasedLogSink::WriteEntry(Verbosity severity,
+void TextBasedLogSink::WriteEntry(api::Verbosity severity,
                                   const utils::Timestamp& timestamp, int tid,
                                   const char* file, int line,
                                   const std::string& component,
@@ -43,7 +44,7 @@ void TextBasedLogSink::WriteEntry(Verbosity severity,
   while (pos != std::string::npos) {
     if (pos > old_pos) {
       ss.write(fmt_.c_str() + old_pos,
-	           static_cast<std::streamsize>(pos - old_pos));
+               static_cast<std::streamsize>(pos - old_pos));
     }
 
     switch (fmt_[pos + 1]) {
@@ -61,24 +62,30 @@ void TextBasedLogSink::WriteEntry(Verbosity severity,
 
       case 's':
         switch (severity) {
-          case kFatal:
+          case api::kFatal:
             ss << "FAT";
             break;
-          case kError:
+
+          case api::kError:
             ss << "ERR";
             break;
-          case kWarning:
+
+          case api::kWarning:
             ss << "WRN";
             break;
-          case kInfo:
+
+          case api::kInfo:
             ss << "IFO";
             break;
-          case kDebug:
+
+          case api::kDebug:
             ss << "DBG";
             break;
-          case kTrace:
+
+          case api::kTrace:
             ss << "TRC";
             break;
+
           default:
             YOGI_NEVER_REACHED;
             break;
