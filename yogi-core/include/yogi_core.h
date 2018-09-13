@@ -1878,6 +1878,19 @@ YOGI_API int YOGI_BranchReceiveBroadcast(
     void (*fn)(int res, int size, void* userarg), void* userarg);
 
 /*!
+ * Cancels receiving a broadcast message.
+ *
+ * Calling this function will cause the handler registered via
+ * YOGI_BranchReceiveBroadcast() to be called with the #YOGI_ERR_CANCELED error.
+ *
+ * \param[in] branch The branch handle
+ *
+ * \returns [=0] #YOGI_OK if successful
+ * \returns [<0] An error code in case of a failure (see \ref EC)
+ */
+YOGI_API int YOGI_BranchCancelReceiveBroadcast(void* branch);
+
+/*!
  * Creates a new terminal.
  *
  * Terminals are the communication endpoints in Yogi. Each terminal is

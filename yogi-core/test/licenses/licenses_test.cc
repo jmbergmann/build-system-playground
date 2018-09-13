@@ -18,6 +18,7 @@
 #include "../common.h"
 
 #include <vector>
+#include <sstream>
 #include <string.h>
 
 class LicensesTest : public Test {
@@ -63,25 +64,46 @@ TEST_F(LicensesTest, YogiLicense) {
 }
 
 TEST_F(LicensesTest, JsonLicense) {
+  std::stringstream ss;
+  ss << "version " << NLOHMANN_JSON_VERSION_MAJOR << '.'
+     << NLOHMANN_JSON_VERSION_MINOR << '.' << NLOHMANN_JSON_VERSION_PATCH;
+
+  // clang-format off
   Check3rdPartyLicense({
     "JSON for Modern C++",
     "https://github.com/nlohmann/json",
-    "Licensed under the MIT License"
+    "Licensed under the MIT License",
+    ss.str()
   });
+  // clang-format on
 }
 
 TEST_F(LicensesTest, JsoOpenSslLicense) {
+  // clang-format off
   Check3rdPartyLicense({
     "OpenSSL License",
     "The OpenSSL Project",
     "http://www.openssl.org",
     "Original SSLeay License"
   });
+  // clang-format on
 }
 
 TEST_F(LicensesTest, BoostLicense) {
+  // clang-format off
   Check3rdPartyLicense({
     "Boost Software License - Version 1.0",
     "WITHOUT WARRANTY OF ANY KIND"
   });
+  // clang-format on
+}
+
+TEST_F(LicensesTest, MessagePackLicense) {
+  // clang-format off
+  Check3rdPartyLicense({
+    "Msgpack for C/C++",
+    "Boost Software License - Version 1.0",
+    "FURUHASHI Sadayuki"
+  });
+  // clang-format on
 }

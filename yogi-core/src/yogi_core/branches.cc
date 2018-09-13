@@ -194,6 +194,11 @@ YOGI_API int YOGI_BranchSendBroadcast(void* branch, int enc, const void* data,
   CHECK_PARAM(enc == api::Encoding::kJson || enc == api::Encoding::kMsgPack);
   CHECK_PARAM(data != nullptr);
   CHECK_PARAM(datasize > 0);
+
+  try {
+    auto brn = api::ObjectRegister::Get<objects::Branch>(branch);
+  }
+  CATCH_AND_RETURN;
 }
 
 YOGI_API int YOGI_BranchReceiveBroadcast(
@@ -203,4 +208,19 @@ YOGI_API int YOGI_BranchReceiveBroadcast(
   CHECK_PARAM(enc == api::Encoding::kJson || enc == api::Encoding::kMsgPack);
   CHECK_PARAM(data != nullptr || datasize == 0);
   CHECK_PARAM(fn != nullptr);
+
+  try {
+    auto brn = api::ObjectRegister::Get<objects::Branch>(branch);
+  }
+  CATCH_AND_RETURN;
+}
+
+YOGI_API int YOGI_BranchCancelReceiveBroadcast(void* branch) {
+  CHECK_PARAM(branch != nullptr);
+
+  try {
+    auto brn = api::ObjectRegister::Get<objects::Branch>(branch);
+    // brn->CancelReceiveBroadcast();
+  }
+  CATCH_AND_RETURN;
 }
