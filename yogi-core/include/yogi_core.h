@@ -445,10 +445,10 @@
 //! in two supplied configuration files, then the value from the rightmost file
 //! will be used. However, values given directly on the command line, i.e. not
 //! through files, have higher priority.
-#define YOGI_CLO_FILES (1<<10)
+#define YOGI_CLO_FILES (1<<11)
 
 //! Same as #YOGI_CLO_FILES but at least one configuration must be given
-#define YOGI_CLO_FILES_REQUIRED (1<<11)
+#define YOGI_CLO_FILES_REQUIRED (1<<12)
 
 //! Include the \c --override switch for overriding arbitrary configuration
 //! sections
@@ -460,10 +460,10 @@
 //!   Parameters supplied in this way override the same parameters in any
 //!   given configuration file. If the same parameter is set directly on the
 //!   command line multiple times, then the rightmost value is used.
-#define YOGI_CLO_OVERRIDES (1<<12)
+#define YOGI_CLO_OVERRIDES (1<<13)
 
 //! Include the \c --var switch for setting variables
-#define YOGI_CLO_VARIABLES (1<<13)
+#define YOGI_CLO_VARIABLES (1<<14)
 
 //! Combination of all branch flags
 #define YOGI_CLO_BRANCH_ALL ( YOGI_CLO_BRANCH_NAME        \

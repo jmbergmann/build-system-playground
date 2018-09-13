@@ -47,6 +47,7 @@ TEST(ConfigurationTest, CommandLineOptions) {
   CHECK_ENUM_ELEMENT(CommandLineOptions, kBranchAdvPort,     YOGI_CLO_BRANCH_ADV_PORT);
   CHECK_ENUM_ELEMENT(CommandLineOptions, kBranchAdvInt,      YOGI_CLO_BRANCH_ADV_INT);
   CHECK_ENUM_ELEMENT(CommandLineOptions, kBranchTimeout,     YOGI_CLO_BRANCH_TIMEOUT);
+  CHECK_ENUM_ELEMENT(CommandLineOptions, kBranchGhostMode,   YOGI_CLO_BRANCH_GHOST_MODE);
   CHECK_ENUM_ELEMENT(CommandLineOptions, kFiles,             YOGI_CLO_FILES);
   CHECK_ENUM_ELEMENT(CommandLineOptions, kFilesRequired,     YOGI_CLO_FILES_REQUIRED);
   CHECK_ENUM_ELEMENT(CommandLineOptions, kOverrides,         YOGI_CLO_OVERRIDES);
@@ -89,6 +90,11 @@ TEST(ConfigurationTest, CommandLineOptions) {
             "kBranchPassword | kBranchPath | kBranchAdvAddr | kBranchAdvPort | "
             "kBranchAdvInt");
   options |= yogi::CommandLineOptions::kBranchTimeout;
+  EXPECT_EQ(yogi::ToString(options),
+            "kLogging | kBranchName | kBranchDescription | kBranchNetwork | "
+            "kBranchPassword | kBranchPath | kBranchAdvAddr | kBranchAdvPort | "
+            "kBranchAdvInt | kBranchTimeout");
+  options |= yogi::CommandLineOptions::kBranchGhostMode;
   EXPECT_EQ(yogi::ToString(options), "kLogging | kBranchAll");
   options |= yogi::CommandLineOptions::kFiles;
   EXPECT_EQ(yogi::ToString(options), "kLogging | kBranchAll | kFiles");

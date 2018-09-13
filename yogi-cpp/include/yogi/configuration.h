@@ -123,23 +123,26 @@ enum class CommandLineOptions {
   /// Include branch timeout configuration.
   kBranchTimeout = (1 << 9),
 
+  /// Include ghost mode configuration.
+  kBranchGhostMode = (1 << 10),
+
   /// Parse configuration files given on the command line.
-  kFiles = (1 << 10),
+  kFiles = (1 << 11),
 
   /// Same as the Files option but at least one configuration file must be
   /// given.
-  kFilesRequired = (1 << 11),
+  kFilesRequired = (1 << 12),
 
   /// Allow overriding arbitrary configuration sections.
-  kOverrides = (1 << 12),
+  kOverrides = (1 << 13),
 
   /// Allow setting variables via a dedicated switch.
-  kVariables = (1 << 13),
+  kVariables = (1 << 14),
 
   /// Combination of all branch flags.
   kBranchAll = kBranchName | kBranchDescription | kBranchNetwork |
                kBranchPassword | kBranchPath | kBranchAdvAddr | kBranchAdvPort |
-               kBranchAdvInt | kBranchTimeout,
+               kBranchAdvInt | kBranchTimeout | kBranchGhostMode,
 
   /// Combination of all flags.
   kAll =
@@ -163,6 +166,7 @@ inline std::string ToString<CommandLineOptions>(
     _YOGI_TO_STRING_ENUM_CASE(CommandLineOptions, kBranchAdvPort)
     _YOGI_TO_STRING_ENUM_CASE(CommandLineOptions, kBranchAdvInt)
     _YOGI_TO_STRING_ENUM_CASE(CommandLineOptions, kBranchTimeout)
+    _YOGI_TO_STRING_ENUM_CASE(CommandLineOptions, kBranchGhostMode)
     _YOGI_TO_STRING_ENUM_CASE(CommandLineOptions, kFiles)
     _YOGI_TO_STRING_ENUM_CASE(CommandLineOptions, kFilesRequired)
     _YOGI_TO_STRING_ENUM_CASE(CommandLineOptions, kOverrides)
@@ -187,6 +191,7 @@ inline std::string ToString<CommandLineOptions>(
     _YOGI_TO_STRING_FLAG_APPENDER(options, CommandLineOptions, kBranchAdvPort)
     _YOGI_TO_STRING_FLAG_APPENDER(options, CommandLineOptions, kBranchAdvInt)
     _YOGI_TO_STRING_FLAG_APPENDER(options, CommandLineOptions, kBranchTimeout)
+    _YOGI_TO_STRING_FLAG_APPENDER(options, CommandLineOptions, kBranchGhostMode)
   }
 
   _YOGI_TO_STRING_FLAG_APPENDER(options, CommandLineOptions, kFiles)

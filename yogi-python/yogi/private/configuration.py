@@ -54,6 +54,7 @@ class CommandLineOptions(IntEnum):
         BRANCH_ADV_PORT    Include branch advertising port configuration.
         BRANCH_ADV_INT     Include branch advertising interval configuration.
         BRANCH_TIMEOUT     Include branch timeout configuration.
+        BRANCH_GHOST_MDOE  Include ghost mode configuration.
         FILES              Parse configuration files given on the command
                            line.
         FILES_REQUIRED     Same as FILES but at least one configuration file
@@ -74,13 +75,15 @@ class CommandLineOptions(IntEnum):
     BRANCH_ADV_PORT = (1 << 7)
     BRANCH_ADV_INT = (1 << 8)
     BRANCH_TIMEOUT = (1 << 9)
-    FILES = (1 << 10)
-    FILES_REQUIRED = (1 << 11)
-    OVERRIDES = (1 << 12)
-    VARIABLES = (1 << 13)
+    BRANCH_GHOST_MODE = (1 << 10)
+    FILES = (1 << 11)
+    FILES_REQUIRED = (1 << 12)
+    OVERRIDES = (1 << 13)
+    VARIABLES = (1 << 14)
     BRANCH_ALL = BRANCH_NAME | BRANCH_DESCRIPTION | BRANCH_NETWORK \
         | BRANCH_PASSWORD | BRANCH_PATH | BRANCH_ADV_ADDR \
-        | BRANCH_ADV_PORT | BRANCH_ADV_INT | BRANCH_TIMEOUT
+        | BRANCH_ADV_PORT | BRANCH_ADV_INT | BRANCH_TIMEOUT \
+        | BRANCH_GHOST_MODE
     ALL = LOGGING | BRANCH_ALL | FILES | FILES_REQUIRED | OVERRIDES \
         | VARIABLES
 

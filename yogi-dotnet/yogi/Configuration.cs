@@ -140,22 +140,25 @@ public static partial class Yogi
         /// <summary>Include branch timeout configuration.</summary>
         BranchTimeout = (1 << 9),
 
+        /// <summary>Include ghost mode configuration.</summary>
+        BranchGhostMode = (1 << 10),
+
         /// <summary>Parse configuration files given on the command line.</summary>
-        Files = (1 << 10),
+        Files = (1 << 11),
 
         /// <summary>Same as the Files option but at least one configuration file must be
         /// given.</summary>
-        FilesRequired = (1 << 11),
+        FilesRequired = (1 << 12),
 
         /// <summary>Allow overriding arbitrary configuration sections.</summary>
-        Overrides = (1 << 12),
+        Overrides = (1 << 13),
 
         /// <summary>Allow setting variables via a dedicated switch.</summary>
-        Variables = (1 << 13),
+        Variables = (1 << 14),
 
         /// <summary>Combination of all branch flags.</summary>
         BranchAll = BranchName | BranchDescription | BranchNetwork | BranchPassword | BranchPath
-            | BranchAdvAddr | BranchAdvPort | BranchAdvInt | BranchTimeout,
+            | BranchAdvAddr | BranchAdvPort | BranchAdvInt | BranchTimeout | BranchGhostMode,
 
         /// <summary>Combination of all flags.</summary>
         All = Logging | BranchAll | Files | FilesRequired | Overrides | Variables,
