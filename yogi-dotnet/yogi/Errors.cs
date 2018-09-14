@@ -78,7 +78,8 @@ public static partial class Yogi
         NoVariableSupport = -37,
         VariableUsedInKey = -38,
         InvalidTimeFormat = -39,
-        ParsingTimeFailed = -40
+        ParsingTimeFailed = -40,
+        TxQueueFull = -41,
     }
 
     /// <summary>

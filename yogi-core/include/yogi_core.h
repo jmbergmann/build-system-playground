@@ -229,6 +229,9 @@
 //! Could not parse time string
 #define YOGI_ERR_PARSING_TIME_FAILED -40
 
+//! A send queue to a remote branch is full
+#define YOGI_ERR_TX_QUEUE_FULL -41
+
 //! @}
 //!
 //! @defgroup VB Log verbosity/severity
@@ -1813,6 +1816,13 @@ YOGI_API int YOGI_BranchCancelAwaitEvent(void* branch);
  * is valid. This implies that validating the data is entirely up to the user
  * code.
  *
+ * The \p block parameter determines the behaviour if one or more of the send
+ * queues to other branches do not have enough free space to hold the \p data.
+ * If set to #YOGI_TRUE, the function will block until enough space is
+ * available in all send queues before sending the message; if set to
+ * #YOGI_FALSE, the function will not send the message to any branch and return
+ * with the #YOGI_ERR_TX_QUEUE_FULL error.
+ *
  * \note
  *   The payload in \p data can be given encoded in either JSON or MessagePack
  *   as specified in the \p datafmt parameter. It does not matter which format
@@ -1823,12 +1833,13 @@ YOGI_API int YOGI_BranchCancelAwaitEvent(void* branch);
  * \param[in] enc      Encoding type used for \p data (see \ref ENC)
  * \param[in] data     Payload encoded according to \p datafmt
  * \param[in] datasize Number of bytes in \p data
+ * \param[in] block    Block if send queue is full (#YOGI_TRUE or #YOGI_FALSE)
  *
  * \returns [=0] #YOGI_OK if successful
  * \returns [<0] An error code in case of a failure (see \ref EC)
  */
 YOGI_API int YOGI_BranchSendBroadcast(void* branch, int enc, const void* data,
-                                      int datasize);
+                                      int datasize, int block);
 
 /*!
  * Receives a broadcast message from any of the connected branches.

@@ -149,6 +149,9 @@ const char* Result::GetDescription() const noexcept {
 
     case YOGI_ERR_PARSING_TIME_FAILED:
       return "Could not parse time string";
+
+    case YOGI_ERR_TX_QUEUE_FULL:
+      return "A send queue to a remote branch is full";
   }
 
   return "Invalid error code";

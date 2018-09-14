@@ -63,6 +63,7 @@ TEST(ErrorsTest, ErrorCodeEnum) {
   CHECK_ENUM_ELEMENT(ErrorCode, kVariableUsedInKey,     YOGI_ERR_VARIABLE_USED_IN_KEY);
   CHECK_ENUM_ELEMENT(ErrorCode, kInvalidTimeFormat,     YOGI_ERR_INVALID_TIME_FORMAT);
   CHECK_ENUM_ELEMENT(ErrorCode, kParsingTimeFailed,     YOGI_ERR_PARSING_TIME_FAILED);
+  CHECK_ENUM_ELEMENT(ErrorCode, kTxQueueFull,           YOGI_ERR_TX_QUEUE_FULL);
   // clang-format on
 }
 

@@ -18,6 +18,12 @@ TODO:
 * Checkout asio timer problem (see code below)
 * Check path validity when creating branches and terminals
 * Whether or not a branch is actively receiving broadcasts must be conveyed when connecting to other branches in one of the initial messages to avoid missing broadcasts
+* Add connection statistics (msg/sec, bytes/sec, etc.)
+
+Outgoing data queue design:
+* Needs size limit, otherwise it could potentially grow to GBs if the user does something dumb
+* Could block send() if queue is full. That's fine if context.run() is running in a background thread.
+* Give send() function an option to block or fail when queue is full. If context.run() is not running in background thread user might be screwed if blocking is set.
 
 #include <boost/asio.hpp>
 #include <chrono>

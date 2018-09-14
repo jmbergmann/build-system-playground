@@ -166,7 +166,10 @@ enum class ErrorCode {
   kInvalidTimeFormat = -39,
 
   /// Could not parse time string
-  kParsingTimeFailed = -40
+  kParsingTimeFailed = -40,
+
+  /// A send queue to a remote branch is full
+  kTxQueueFull = -41,
 };
 
 template <>
@@ -213,6 +216,7 @@ inline std::string ToString<ErrorCode>(const ErrorCode& ec) {
     _YOGI_TO_STRING_ENUM_CASE(ErrorCode, kVariableUsedInKey)
     _YOGI_TO_STRING_ENUM_CASE(ErrorCode, kInvalidTimeFormat)
     _YOGI_TO_STRING_ENUM_CASE(ErrorCode, kParsingTimeFailed)
+    _YOGI_TO_STRING_ENUM_CASE(ErrorCode, kTxQueueFull)
   }
 
   bool should_never_get_here = false;
