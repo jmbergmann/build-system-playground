@@ -108,6 +108,36 @@ class TestConstants(TestCase):
         self.assertIsInstance(c, str)
         self.assertTrue("$T" in c)
 
+    def test_min_tx_queue_size(self):
+        c = yogi.Constants.MIN_TX_QUEUE_SIZE
+        self.assertIsInstance(c, int)
+        self.assertGreaterEqual(c, yogi.Constants.MAX_MESSAGE_SIZE)
+
+    def test_max_tx_queue_size(self):
+        c = yogi.Constants.MAX_TX_QUEUE_SIZE
+        self.assertIsInstance(c, int)
+        self.assertGreater(c, yogi.Constants.MIN_TX_QUEUE_SIZE)
+
+    def test_default_tx_queue_size(self):
+        c = yogi.Constants.DEFAULT_TX_QUEUE_SIZE
+        self.assertIsInstance(c, int)
+        self.assertLess(c, yogi.Constants.MAX_TX_QUEUE_SIZE)
+
+    def test_min_rx_queue_size(self):
+        c = yogi.Constants.MIN_RX_QUEUE_SIZE
+        self.assertIsInstance(c, int)
+        self.assertGreaterEqual(c, yogi.Constants.MAX_MESSAGE_SIZE)
+
+    def test_max_rx_queue_size(self):
+        c = yogi.Constants.MAX_RX_QUEUE_SIZE
+        self.assertIsInstance(c, int)
+        self.assertGreater(c, yogi.Constants.MIN_RX_QUEUE_SIZE)
+
+    def test_default_rx_queue_size(self):
+        c = yogi.Constants.DEFAULT_RX_QUEUE_SIZE
+        self.assertIsInstance(c, int)
+        self.assertLess(c, yogi.Constants.MAX_RX_QUEUE_SIZE)
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -151,7 +151,7 @@ const char* Result::GetDescription() const noexcept {
       return "Could not parse time string";
 
     case YOGI_ERR_TX_QUEUE_FULL:
-      return "A send queue to a remote branch is full";
+      return "A send queue for a remote branch is full";
   }
 
   return "Invalid error code";

@@ -139,5 +139,47 @@ namespace test
             Assert.IsType<string>(Yogi.Constants.DefaultObjectFormat);
             Assert.Contains("$T", Yogi.Constants.DefaultObjectFormat);
         }
+
+        [Fact]
+        public void MinTxQueueSize()
+        {
+            Assert.IsType<int>(Yogi.Constants.MinTxQueueSize);
+            Assert.True(Yogi.Constants.MinTxQueueSize >= Yogi.Constants.MaxMessageSize);
+        }
+
+        [Fact]
+        public void MaxTxQueueSize()
+        {
+            Assert.IsType<int>(Yogi.Constants.MaxTxQueueSize);
+            Assert.True(Yogi.Constants.MaxTxQueueSize > Yogi.Constants.MinTxQueueSize);
+        }
+
+        [Fact]
+        public void DefaultTxQueueSize()
+        {
+            Assert.IsType<int>(Yogi.Constants.DefaultTxQueueSize);
+            Assert.True(Yogi.Constants.DefaultTxQueueSize < Yogi.Constants.MaxTxQueueSize);
+        }
+
+        [Fact]
+        public void MinRxQueueSize()
+        {
+            Assert.IsType<int>(Yogi.Constants.MinRxQueueSize);
+            Assert.True(Yogi.Constants.MinRxQueueSize >= Yogi.Constants.MaxMessageSize);
+        }
+
+        [Fact]
+        public void MaxRxQueueSize()
+        {
+            Assert.IsType<int>(Yogi.Constants.MaxRxQueueSize);
+            Assert.True(Yogi.Constants.MaxRxQueueSize > Yogi.Constants.MinRxQueueSize);
+        }
+
+        [Fact]
+        public void DefaultRxQueueSize()
+        {
+            Assert.IsType<int>(Yogi.Constants.DefaultRxQueueSize);
+            Assert.True(Yogi.Constants.DefaultRxQueueSize < Yogi.Constants.MaxRxQueueSize);
+        }
     }
 }

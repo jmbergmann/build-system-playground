@@ -118,6 +118,36 @@ class MetaConstants(type):
         """Default textual format for strings describing an object."""
         return get_constant(17, c_char_p)
 
+    @property
+    def MIN_TX_QUEUE_SIZE(self) -> int:
+        """Minimum size of a send queue for a remote branch."""
+        return get_constant(18, c_int)
+
+    @property
+    def MAX_TX_QUEUE_SIZE(self) -> int:
+        """Maximum size of a send queue for a remote branch."""
+        return get_constant(19, c_int)
+
+    @property
+    def DEFAULT_TX_QUEUE_SIZE(self) -> int:
+        """Default size of a send queue for a remote branch."""
+        return get_constant(20, c_int)
+
+    @property
+    def MIN_RX_QUEUE_SIZE(self) -> int:
+        """Minimum size of a receive queue for a remote branch."""
+        return get_constant(21, c_int)
+
+    @property
+    def MAX_RX_QUEUE_SIZE(self) -> int:
+        """Maximum size of a receive queue for a remote branch."""
+        return get_constant(22, c_int)
+
+    @property
+    def DEFAULT_RX_QUEUE_SIZE(self) -> int:
+        """Default size of a receive queue for a remote branch."""
+        return get_constant(23, c_int)
+
 
 class Constants(metaclass=MetaConstants):
     """Constants built into the Yogi Core library."""

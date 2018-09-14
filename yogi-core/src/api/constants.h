@@ -40,6 +40,12 @@ SCC char*     kDefaultInfiniteDurationString = "%-inf";
 SCC char*     kDefaultDurationFormat         = "%-%dd %T.%3%6%9";
 SCC char*     kDefaultInvalidHandleString    = "INVALID HANDLE";
 SCC char*     kDefaultObjectFormat           = "$T [$x]";
+SCC int       kMinTxQueueSize                = kMaxMessageSize;
+SCC int       kMaxTxQueueSize                = 10'000'000;
+SCC int       kDefaultTxQueueSize            = 1'000'000;
+SCC int       kMinRxQueueSize                = kMaxMessageSize;
+SCC int       kMaxRxQueueSize                = 10'000'000;
+SCC int       kDefaultRxQueueSize            = 1'000'000;
 #undef SCC
 // clang-format on
 

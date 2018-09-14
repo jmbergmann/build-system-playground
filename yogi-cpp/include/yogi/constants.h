@@ -86,20 +86,38 @@ struct constants {
   /// Maximum size of a message between two branches.
   static const int kMaxMessageSize;
 
-  /// Default textual format for timestamps
+  /// Default textual format for timestamps.
   static const std::string kDefaultTimeFormat;
 
-  /// Default string to denote an infinite duration
+  /// Default string to denote an infinite duration.
   static const std::string kDefaultInfiniteDurationString;
 
-  /// Default textual format for duration strings
+  /// Default textual format for duration strings.
   static const std::string kDefaultDurationFormat;
 
-  /// Default string to denote an invalid object handle
+  /// Default string to denote an invalid object handle.
   static const std::string kDefaultInvalidHandleString;
 
-  /// Default textual format for strings describing an object
+  /// Default textual format for strings describing an object.
   static const std::string kDefaultObjectFormat;
+
+  /// Minimum size of a send queue for a remote branch (int).
+  static const int kMinTxQueueSize;
+
+  /// Maximum size of a send queue for a remote branch (int).
+  static const int kMaxTxQueueSize;
+
+  /// Default size of a send queue for a remote branch (int).
+  static const int kDefaultTxQueueSize;
+
+  /// Minimum size of a receive queue for a remote branch (int).
+  static const int kMinRxQueueSize;
+
+  /// Maximum size of a receive queue for a remote branch (int).
+  static const int kMaxRxQueueSize;
+
+  /// Default size of a receive queue for a remote branch (int).
+  static const int kDefaultRxQueueSize;
 };
 
 _YOGI_WEAK_SYMBOL const std::string constants::kVersionNumber =
@@ -152,6 +170,24 @@ _YOGI_WEAK_SYMBOL const std::string constants::kDefaultInvalidHandleString =
 
 _YOGI_WEAK_SYMBOL const std::string constants::kDefaultObjectFormat =
     internal::GetConstant<char*>(17);
+
+_YOGI_WEAK_SYMBOL const int constants::kMinTxQueueSize =
+    internal::GetConstant<int>(18);
+
+_YOGI_WEAK_SYMBOL const int constants::kMaxTxQueueSize =
+    internal::GetConstant<int>(19);
+
+_YOGI_WEAK_SYMBOL const int constants::kDefaultTxQueueSize =
+    internal::GetConstant<int>(20);
+
+_YOGI_WEAK_SYMBOL const int constants::kMinRxQueueSize =
+    internal::GetConstant<int>(21);
+
+_YOGI_WEAK_SYMBOL const int constants::kMaxRxQueueSize =
+    internal::GetConstant<int>(22);
+
+_YOGI_WEAK_SYMBOL const int constants::kDefaultRxQueueSize =
+    internal::GetConstant<int>(23);
 
 }  // namespace yogi
 

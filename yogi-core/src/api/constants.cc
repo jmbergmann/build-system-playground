@@ -92,6 +92,30 @@ void GetConstant(void* dest, int constant) {
       *static_cast<const char**>(dest) = kDefaultObjectFormat;
       break;
 
+    case YOGI_CONST_MIN_TX_QUEUE_SIZE:
+      *static_cast<int*>(dest) = kMinTxQueueSize;
+      break;
+
+    case YOGI_CONST_MAX_TX_QUEUE_SIZE:
+      *static_cast<int*>(dest) = kMaxTxQueueSize;
+      break;
+
+    case YOGI_CONST_DEFAULT_TX_QUEUE_SIZE:
+      *static_cast<int*>(dest) = kDefaultTxQueueSize;
+      break;
+
+    case YOGI_CONST_MIN_RX_QUEUE_SIZE:
+      *static_cast<int*>(dest) = kMinRxQueueSize;
+      break;
+
+    case YOGI_CONST_MAX_RX_QUEUE_SIZE:
+      *static_cast<int*>(dest) = kMaxRxQueueSize;
+      break;
+
+    case YOGI_CONST_DEFAULT_RX_QUEUE_SIZE:
+      *static_cast<int*>(dest) = kDefaultRxQueueSize;
+      break;
+
     default:
       throw Error(YOGI_ERR_INVALID_PARAM);
   }

@@ -92,3 +92,29 @@ TEST(ConstantsTest, kDefaultObjectFormat) {
   EXPECT_NE(yogi::constants::kDefaultObjectFormat.find("$T"),
             std::string::npos);
 }
+
+TEST(ConstantsTest, kMinTxQueueSize) {
+  EXPECT_GE(yogi::constants::kMinTxQueueSize, yogi::constants::kMaxMessageSize);
+}
+
+TEST(ConstantsTest, kMaxTxQueueSize) {
+  EXPECT_GE(yogi::constants::kMaxTxQueueSize, yogi::constants::kMinTxQueueSize);
+}
+
+TEST(ConstantsTest, kDefaultTxQueueSize) {
+  EXPECT_LT(yogi::constants::kDefaultTxQueueSize,
+            yogi::constants::kMaxTxQueueSize);
+}
+
+TEST(ConstantsTest, kMinRxQueueSize) {
+  EXPECT_GE(yogi::constants::kMinRxQueueSize, yogi::constants::kMaxMessageSize);
+}
+
+TEST(ConstantsTest, kMaxRxQueueSize) {
+  EXPECT_GE(yogi::constants::kMaxRxQueueSize, yogi::constants::kMinRxQueueSize);
+}
+
+TEST(ConstantsTest, kDefaultRxQueueSize) {
+  EXPECT_LT(yogi::constants::kDefaultRxQueueSize,
+            yogi::constants::kMaxRxQueueSize);
+}

@@ -82,20 +82,38 @@
 //! Maximum size of a message (int)
 #define YOGI_CONST_MAX_MESSAGE_SIZE 12
 
-//! Default textual format for timestamps
+//! Default textual format for timestamps (const char*)
 #define YOGI_CONST_DEFAULT_TIME_FORMAT 13
 
-//! Default string to denote an infinite duration
+//! Default string to denote an infinite duration (const char*)
 #define YOGI_CONST_DEFAULT_INF_DURATION_STRING 14
 
-//! Default textual format for duration strings
+//! Default textual format for duration strings (const char*)
 #define YOGI_CONST_DEFAULT_DURATION_FORMAT 15
 
-//! Default string to denote an invalid object handle
+//! Default string to denote an invalid object handle (const char*)
 #define YOGI_CONST_DEFAULT_INVALID_HANDLE_STRING 16
 
-//! Default textual format for strings describing an object
+//! Default textual format for strings describing an object (const char*)
 #define YOGI_CONST_DEFAULT_OBJECT_FORMAT 17
+
+//! Minimum size of a send queue for a remote branch (int)
+#define YOGI_CONST_MIN_TX_QUEUE_SIZE 18
+
+//! Maximum size of a send queue for a remote branch (int)
+#define YOGI_CONST_MAX_TX_QUEUE_SIZE 19
+
+//! Default size of a send queue for a remote branch (int)
+#define YOGI_CONST_DEFAULT_TX_QUEUE_SIZE 20
+
+// Minimum size of a receive queue for a remote branch (int)
+#define YOGI_CONST_MIN_RX_QUEUE_SIZE 21
+
+// Maximum size of a receive queue for a remote branch (int)
+#define YOGI_CONST_MAX_RX_QUEUE_SIZE 22
+
+// Default size of a receive queue for a remote branch (int)
+#define YOGI_CONST_DEFAULT_RX_QUEUE_SIZE 23
 
 //! @}
 //!
@@ -229,7 +247,7 @@
 //! Could not parse time string
 #define YOGI_ERR_PARSING_TIME_FAILED -40
 
-//! A send queue to a remote branch is full
+//! A send queue for a remote branch is full
 #define YOGI_ERR_TX_QUEUE_FULL -41
 
 //! @}

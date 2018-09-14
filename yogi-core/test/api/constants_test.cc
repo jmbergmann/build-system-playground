@@ -68,5 +68,11 @@ TEST(ConstantsTest, GetEachConstant) {
   check(YOGI_CONST_DEFAULT_DURATION_FORMAT,       kDefaultDurationFormat);
   check(YOGI_CONST_DEFAULT_INVALID_HANDLE_STRING, kDefaultInvalidHandleString);
   check(YOGI_CONST_DEFAULT_OBJECT_FORMAT,         kDefaultObjectFormat);
+  check(YOGI_CONST_MIN_TX_QUEUE_SIZE,             kMinTxQueueSize);
+  check(YOGI_CONST_MAX_TX_QUEUE_SIZE,             kMaxTxQueueSize);
+  check(YOGI_CONST_DEFAULT_TX_QUEUE_SIZE,         kDefaultTxQueueSize);
+  check(YOGI_CONST_MIN_RX_QUEUE_SIZE,             kMinRxQueueSize);
+  check(YOGI_CONST_MAX_RX_QUEUE_SIZE,             kMaxRxQueueSize);
+  check(YOGI_CONST_DEFAULT_RX_QUEUE_SIZE,         kDefaultRxQueueSize);
   // clang-format on
 }

@@ -101,6 +101,24 @@ public static partial class Yogi
         /// <summary>Default textual format for strings describing an object.</summary>
         public static readonly string DefaultObjectFormat;
 
+        /// <summary>Minimum size of a send queue for a remote branch.</summary>
+        public static readonly int MinTxQueueSize;
+
+        /// <summary>Maximum size of a send queue for a remote branch.</summary>
+        public static readonly int MaxTxQueueSize;
+
+        /// <summary>Default size of a send queue for a remote branch.</summary>
+        public static readonly int DefaultTxQueueSize;
+
+        /// <summary>Minimum size of a receive queue for a remote branch.</summary>
+        public static readonly int MinRxQueueSize;
+
+        /// <summary>Maximum size of a receive queue for a remote branch.</summary>
+        public static readonly int MaxRxQueueSize;
+
+        /// <summary>Default size of a receive queue for a remote branch.</summary>
+        public static readonly int DefaultRxQueueSize;
+
         static Constants()
         {
             IntPtr str = new IntPtr();
@@ -149,6 +167,14 @@ public static partial class Yogi
 
             CheckErrorCode(Api.YOGI_GetStringConstant(ref str, 17));
             DefaultObjectFormat = Marshal.PtrToStringAnsi(str);
+
+            CheckErrorCode(Api.YOGI_GetIntConstant(ref MinTxQueueSize, 18));
+            CheckErrorCode(Api.YOGI_GetIntConstant(ref MaxTxQueueSize, 19));
+            CheckErrorCode(Api.YOGI_GetIntConstant(ref DefaultTxQueueSize, 20));
+
+            CheckErrorCode(Api.YOGI_GetIntConstant(ref MinRxQueueSize, 21));
+            CheckErrorCode(Api.YOGI_GetIntConstant(ref MaxRxQueueSize, 22));
+            CheckErrorCode(Api.YOGI_GetIntConstant(ref DefaultRxQueueSize, 23));
         }
     }
 }
