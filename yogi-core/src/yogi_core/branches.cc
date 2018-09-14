@@ -207,17 +207,19 @@ YOGI_API int YOGI_BranchCancelAwaitEvent(void* branch) {
 }
 
 YOGI_API int YOGI_BranchSendBroadcast(void* branch, int enc, const void* data,
-                                      int datasize) {
+                                      int datasize, int block) {
   CHECK_PARAM(branch != nullptr);
   CHECK_PARAM(enc == api::Encoding::kJson || enc == api::Encoding::kMsgPack);
   CHECK_PARAM(data != nullptr);
   CHECK_PARAM(datasize > 0);
+  CHECK_PARAM(block == YOGI_TRUE || block == YOGI_FALSE);
 
   try {
     auto brn = api::ObjectRegister::Get<objects::Branch>(branch);
     brn->SendBroadcast(
         static_cast<api::Encoding>(enc),
-        boost::asio::buffer(data, static_cast<std::size_t>(datasize)));
+        boost::asio::buffer(data, static_cast<std::size_t>(datasize)),
+        block == YOGI_TRUE);
   }
   CATCH_AND_RETURN;
 }

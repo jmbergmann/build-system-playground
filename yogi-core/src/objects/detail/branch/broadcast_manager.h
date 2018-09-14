@@ -35,7 +35,8 @@ class BroadcastManager final
   BroadcastManager(ContextPtr context);
   virtual ~BroadcastManager();
 
-  void SendBroadcast(api::Encoding enc, boost::asio::const_buffer data);
+  void SendBroadcast(api::Encoding enc, boost::asio::const_buffer data,
+                     bool block);
 
   void ReceiveBroadcast(api::Encoding enc, boost::asio::mutable_buffer data,
                         ReceiveBroadcastHanlder handler);

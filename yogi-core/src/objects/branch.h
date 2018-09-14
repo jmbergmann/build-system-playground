@@ -52,8 +52,9 @@ class Branch : public api::ExposedObjectT<Branch, api::ObjectType::kBranch> {
 
   void CancelAwaitEvent() { connection_manager_->CancelAwaitEvent(); }
 
-  void SendBroadcast(api::Encoding enc, boost::asio::const_buffer data) {
-    broadcast_manager_->SendBroadcast(enc, data);
+  void SendBroadcast(api::Encoding enc, boost::asio::const_buffer data,
+                     bool block) {
+    broadcast_manager_->SendBroadcast(enc, data, block);
   }
 
   void ReceiveBroadcast(api::Encoding enc, boost::asio::mutable_buffer data,

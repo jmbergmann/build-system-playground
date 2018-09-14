@@ -25,7 +25,8 @@ BroadcastManager::BroadcastManager(ContextPtr context) : context_(context) {}
 BroadcastManager::~BroadcastManager() {}
 
 void BroadcastManager::SendBroadcast(api::Encoding enc,
-                                     boost::asio::const_buffer data) {}
+                                     boost::asio::const_buffer data,
+                                     bool block) {}
 
 void BroadcastManager::ReceiveBroadcast(api::Encoding enc,
                                         boost::asio::mutable_buffer data,
