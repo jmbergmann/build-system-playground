@@ -19,7 +19,7 @@
 
 #include "../config.h"
 #include "../api/object.h"
-#include "../api/error.h"
+#include "../api/errors.h"
 #include "../api/enums.h"
 #include "detail/command_line_parser.h"
 #include "logger.h"

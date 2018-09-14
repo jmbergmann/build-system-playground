@@ -19,7 +19,7 @@
 
 #include "../config.h"
 #include "../../include/yogi_core.h"
-#include "../api/error.h"
+#include "../api/errors.h"
 
 #include <stdexcept>
 #include <regex>
@@ -56,7 +56,7 @@
 
 #define CATCH_AND_RETURN            \
   catch (const api::Error& err) {   \
-    return err.error_code();        \
+    return err.GetValue();          \
   }                                 \
   catch (const std::bad_alloc&) {   \
     return YOGI_ERR_BAD_ALLOC;      \

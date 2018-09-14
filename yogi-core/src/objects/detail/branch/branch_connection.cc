@@ -36,7 +36,7 @@ BranchConnection::BranchConnection(utils::TimedTcpSocketPtr socket,
       ack_msg_(utils::MakeSharedByteVector(utils::ByteVector{0x55})),
       session_started_(false),
       heartbeat_timer_(context_->IoContext()),
-      next_error_(api::kSuccess) {}
+      next_result_(api::kSuccess) {}
 
 std::string BranchConnection::MakeInfoString() const {
   auto json = remote_info_->ToJson();
@@ -47,9 +47,9 @@ std::string BranchConnection::MakeInfoString() const {
 void BranchConnection::ExchangeBranchInfo(CompletionHandler handler) {
   YOGI_ASSERT(!remote_info_);
 
-  socket_->Send(local_info_->MakeInfoMessage(), [this, handler](auto& err) {
-    if (err) {
-      handler(err);
+  socket_->Send(local_info_->MakeInfoMessage(), [this, handler](auto& res) {
+    if (res.IsError()) {
+      handler(res);
     } else {
       this->OnInfoSent(handler);
     }
@@ -60,14 +60,14 @@ void BranchConnection::Authenticate(utils::SharedByteVector password_hash,
                                     CompletionHandler handler) {
   YOGI_ASSERT(remote_info_);
 
-  if (!CheckNextError(handler)) return;
+  if (!CheckNextResult(handler)) return;
 
   auto my_challenge =
       utils::MakeSharedByteVector(utils::GenerateRandomBytes(8));
   socket_->Send(my_challenge,
-                [this, my_challenge, password_hash, handler](auto& err) {
-                  if (err) {
-                    handler(err);
+                [this, my_challenge, password_hash, handler](auto& res) {
+                  if (res.IsError()) {
+                    handler(res);
                   } else {
                     this->OnChallengeSent(my_challenge, password_hash, handler);
                   }
@@ -78,7 +78,7 @@ void BranchConnection::RunSession(CompletionHandler handler) {
   YOGI_ASSERT(remote_info_);
   YOGI_ASSERT(!session_started_);
 
-  if (!CheckNextError(handler)) return;
+  if (!CheckNextResult(handler)) return;
 
   RestartHeartbeatTimer();
   StartReceive();
@@ -89,9 +89,9 @@ void BranchConnection::RunSession(CompletionHandler handler) {
 void BranchConnection::OnInfoSent(CompletionHandler handler) {
   socket_->ReceiveExactly(
       BranchInfo::kInfoMessageHeaderSize,
-      [this, handler](const auto& err, const auto& info_msg_hdr) {
-        if (err) {
-          handler(err);
+      [this, handler](const auto& res, const auto& info_msg_hdr) {
+        if (res.IsError()) {
+          handler(res);
         } else {
           this->OnInfoHeaderReceived(info_msg_hdr, handler);
         }
@@ -101,9 +101,10 @@ void BranchConnection::OnInfoSent(CompletionHandler handler) {
 void BranchConnection::OnInfoHeaderReceived(
     const utils::ByteVector& info_msg_hdr, CompletionHandler handler) {
   std::size_t body_size;
-  if (auto err = BranchInfo::DeserializeInfoMessageBodySize(&body_size,
-                                                            info_msg_hdr)) {
-    handler(err);
+  auto res =
+      BranchInfo::DeserializeInfoMessageBodySize(&body_size, info_msg_hdr);
+  if (res.IsError()) {
+    handler(res);
     return;
   }
 
@@ -113,9 +114,9 @@ void BranchConnection::OnInfoHeaderReceived(
   }
 
   socket_->ReceiveExactly(
-      body_size, [this, info_msg_hdr, handler](auto& err, auto& info_msg_body) {
-        if (err) {
-          handler(err);
+      body_size, [this, info_msg_hdr, handler](auto& res, auto& info_msg_body) {
+        if (res.IsError()) {
+          handler(res);
         } else {
           this->OnInfoBodyReceived(info_msg_hdr, info_msg_body, handler);
         }
@@ -139,9 +140,9 @@ void BranchConnection::OnInfoBodyReceived(
     return;
   }
 
-  socket_->Send(ack_msg_, [this, handler](auto& err) {
-    if (err) {
-      handler(err);
+  socket_->Send(ack_msg_, [this, handler](auto& res) {
+    if (res.IsError()) {
+      handler(res);
     } else {
       this->OnInfoAckSent(handler);
     }
@@ -150,15 +151,15 @@ void BranchConnection::OnInfoBodyReceived(
 
 void BranchConnection::OnInfoAckSent(CompletionHandler handler) {
   socket_->ReceiveExactly(ack_msg_->size(),
-                          [this, handler](auto& err, auto& ack_msg) {
-                            this->OnInfoAckReceived(err, ack_msg, handler);
+                          [this, handler](auto& res, auto& ack_msg) {
+                            this->OnInfoAckReceived(res, ack_msg, handler);
                           });
 }
 
-void BranchConnection::OnInfoAckReceived(const api::Error& err,
+void BranchConnection::OnInfoAckReceived(const api::Result& res,
                                          const utils::ByteVector& ack_msg,
                                          CompletionHandler handler) {
-  CheckAckAndSetNextError(err, ack_msg);
+  CheckAckAndSetNextResult(res, ack_msg);
   handler(api::kSuccess);
 }
 
@@ -167,9 +168,9 @@ void BranchConnection::OnChallengeSent(utils::SharedByteVector my_challenge,
                                        CompletionHandler handler) {
   socket_->ReceiveExactly(
       my_challenge->size(), [this, my_challenge, password_hash, handler](
-                                auto& err, auto& remote_challenge) {
-        if (err) {
-          handler(err);
+                                auto& res, auto& remote_challenge) {
+        if (res.IsError()) {
+          handler(res);
         } else {
           this->OnChallengeReceived(remote_challenge, my_challenge,
                                     password_hash, handler);
@@ -183,9 +184,9 @@ void BranchConnection::OnChallengeReceived(
     CompletionHandler handler) {
   auto my_solution = SolveChallenge(*my_challenge, *password_hash);
   auto remote_solution = SolveChallenge(remote_challenge, *password_hash);
-  socket_->Send(remote_solution, [this, my_solution, handler](auto& err) {
-    if (err) {
-      handler(err);
+  socket_->Send(remote_solution, [this, my_solution, handler](auto& res) {
+    if (res.IsError()) {
+      handler(res);
     } else {
       this->OnSolutionSent(my_solution, handler);
     }
@@ -204,9 +205,9 @@ void BranchConnection::OnSolutionSent(utils::SharedByteVector my_solution,
                                       CompletionHandler handler) {
   socket_->ReceiveExactly(
       my_solution->size(),
-      [this, my_solution, handler](auto& err, auto& received_solution) {
-        if (err) {
-          handler(err);
+      [this, my_solution, handler](auto& res, auto& received_solution) {
+        if (res.IsError()) {
+          handler(res);
         } else {
           this->OnSolutionReceived(received_solution, my_solution, handler);
         }
@@ -217,9 +218,9 @@ void BranchConnection::OnSolutionReceived(
     const utils::ByteVector& received_solution,
     utils::SharedByteVector my_solution, CompletionHandler handler) {
   bool solutions_match = received_solution == *my_solution;
-  socket_->Send(ack_msg_, [this, solutions_match, handler](auto& err) {
-    if (err) {
-      handler(err);
+  socket_->Send(ack_msg_, [this, solutions_match, handler](auto& res) {
+    if (res.IsError()) {
+      handler(res);
     } else {
       this->OnSolutionAckSent(solutions_match, handler);
     }
@@ -229,15 +230,16 @@ void BranchConnection::OnSolutionReceived(
 void BranchConnection::OnSolutionAckSent(bool solutions_match,
                                          CompletionHandler handler) {
   socket_->ReceiveExactly(ack_msg_->size(), [this, solutions_match, handler](
-                                                auto& err, auto& ack_msg) {
-    this->OnSolutionAckReceived(err, solutions_match, ack_msg, handler);
+                                                auto& res, auto& ack_msg) {
+    this->OnSolutionAckReceived(res, solutions_match, ack_msg, handler);
   });
 }
 
-void BranchConnection::OnSolutionAckReceived(const api::Error& err, bool solutions_match,
+void BranchConnection::OnSolutionAckReceived(const api::Result& res,
+                                             bool solutions_match,
                                              const utils::ByteVector& ack_msg,
                                              CompletionHandler handler) {
-  CheckAckAndSetNextError(err, ack_msg);
+  CheckAckAndSetNextResult(res, ack_msg);
 
   if (!solutions_match) {
     handler(api::Error(YOGI_ERR_PASSWORD_MISMATCH));
@@ -263,12 +265,12 @@ void BranchConnection::RestartHeartbeatTimer() {
 
 void BranchConnection::OnHeartbeatTimerExpired() {
   auto weak_self = std::weak_ptr<BranchConnection>(shared_from_this());
-  socket_->Send(heartbeat_msg_, [weak_self](auto& err) {
+  socket_->Send(heartbeat_msg_, [weak_self](auto& res) {
     auto self = weak_self.lock();
     if (!self) return;
 
-    if (err) {
-      self->OnSessionError(err);
+    if (res.IsError()) {
+      self->OnSessionError(res.ToError());
     } else {
       self->RestartHeartbeatTimer();
     }
@@ -278,12 +280,12 @@ void BranchConnection::OnHeartbeatTimerExpired() {
 void BranchConnection::StartReceive() {
   // TODO: make this properly without ReceiveExactly and stuff
   auto weak_self = std::weak_ptr<BranchConnection>(shared_from_this());
-  socket_->ReceiveExactly(1, [weak_self](auto& err, auto& /*data*/) {
+  socket_->ReceiveExactly(1, [weak_self](auto& res, auto& /*data*/) {
     auto self = weak_self.lock();
     if (!self) return;
 
-    if (err) {
-      self->OnSessionError(err);
+    if (res.IsError()) {
+      self->OnSessionError(res.ToError());
     } else {
       self->StartReceive();
     }
@@ -295,19 +297,19 @@ void BranchConnection::OnSessionError(const api::Error& err) {
   session_completion_handler_(err);
 }
 
-void BranchConnection::CheckAckAndSetNextError(
-    const api::Error& err, const utils::ByteVector& ack_msg) {
-  if (err) {
-    next_error_ = err;
+void BranchConnection::CheckAckAndSetNextResult(
+    const api::Result& res, const utils::ByteVector& ack_msg) {
+  if (res.IsError()) {
+    next_result_ = res;
   } else if (ack_msg != *ack_msg_) {
-    next_error_ = api::Error(YOGI_ERR_DESERIALIZE_MSG_FAILED);
+    next_result_ = api::Error(YOGI_ERR_DESERIALIZE_MSG_FAILED);
   }
 }
 
-bool BranchConnection::CheckNextError(CompletionHandler handler) {
-  if (next_error_) {
-    auto err = next_error_;
-    context_->Post([err, handler] { handler(err); });
+bool BranchConnection::CheckNextResult(CompletionHandler handler) {
+  if (next_result_.IsError()) {
+    auto res = next_result_;
+    context_->Post([=] { handler(res); });
 
     return false;
   }

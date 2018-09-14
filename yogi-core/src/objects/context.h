@@ -34,7 +34,7 @@ namespace objects {
 
 class Context : public api::ExposedObjectT<Context, api::ObjectType::kContext> {
  public:
-  typedef std::function<void(const api::Error&, api::Signals)> SignalHandler;
+  typedef std::function<void(const api::Result&, api::Signals)> SignalHandler;
 
   Context();
   virtual ~Context();

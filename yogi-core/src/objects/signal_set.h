@@ -18,7 +18,7 @@
 #pragma once
 
 #include "../config.h"
-#include "../api/error.h"
+#include "../api/errors.h"
 #include "../api/enums.h"
 #include "context.h"
 
@@ -32,7 +32,7 @@ class SignalSet
     : public api::ExposedObjectT<SignalSet, api::ObjectType::kSignalSet> {
  public:
   typedef std::function<void()> CleanupHandler;
-  typedef std::function<void(const api::Error& res, api::Signals signal,
+  typedef std::function<void(const api::Result& res, api::Signals signal,
                              void* sigarg)>
       AwaitHandler;
 

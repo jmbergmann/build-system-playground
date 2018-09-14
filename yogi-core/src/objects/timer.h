@@ -30,10 +30,11 @@ namespace objects {
 
 class Timer : public api::ExposedObjectT<Timer, api::ObjectType::kTimer> {
  public:
+  typedef std::function<void(const api::Result&)> HandlerFn;
+
   Timer(ContextPtr context);
 
-  void Start(std::chrono::nanoseconds timeout,
-             std::function<void(const api::Error& res)> fn);
+  void Start(std::chrono::nanoseconds timeout, HandlerFn fn);
   bool Cancel();
 
  private:

@@ -40,7 +40,7 @@ YOGI_API int YOGI_TimerStart(void* timer, long long duration,
   try {
     auto tmr = api::ObjectRegister::Get<objects::Timer>(timer);
     auto timeout = ConvertDuration(duration);
-    tmr->Start(timeout, [=](auto& res) { fn(res.error_code(), userarg); });
+    tmr->Start(timeout, [=](auto& res) { fn(res.GetValue(), userarg); });
   }
   CATCH_AND_RETURN;
 }

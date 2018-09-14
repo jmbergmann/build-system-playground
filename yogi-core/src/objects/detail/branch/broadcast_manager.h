@@ -21,14 +21,26 @@
 #include "../../context.h"
 #include "../../logger.h"
 
+#include <boost/asio/buffer.hpp>
+
 namespace objects {
 namespace detail {
 
 class BroadcastManager final
     : public std::enable_shared_from_this<BroadcastManager> {
  public:
+  typedef std::function<void(const api::Error& res, std::size_t size)>
+      ReceiveBroadcastHanlder;
+
   BroadcastManager(ContextPtr context);
   virtual ~BroadcastManager();
+
+  void SendBroadcast(api::Encoding enc, boost::asio::const_buffer data);
+
+  void ReceiveBroadcast(api::Encoding enc, boost::asio::mutable_buffer data,
+                        ReceiveBroadcastHanlder handler);
+
+  void CancelReceiveBroadcast();
 
  private:
   static const LoggerPtr logger_;

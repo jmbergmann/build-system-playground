@@ -31,7 +31,7 @@ Branch::Branch(ContextPtr context, std::string name, std::string description,
     : context_(context),
       connection_manager_(std::make_shared<detail::ConnectionManager>(
           context, password, adv_ep,
-          [&](auto& err, auto conn) { this->OnConnectionChanged(err, conn); },
+          [&](auto& res, auto conn) { this->OnConnectionChanged(res, conn); },
           [&](auto& msg, auto size, auto& conn) {
             this->OnMessageReceived(msg, size, conn);
           })),
@@ -60,10 +60,10 @@ Branch::BranchInfoStringsList Branch::MakeConnectedBranchesInfoStrings() const {
   return connection_manager_->MakeConnectedBranchesInfoStrings();
 }
 
-void Branch::OnConnectionChanged(const api::Error& err,
+void Branch::OnConnectionChanged(const api::Result& res,
                                  const detail::BranchConnectionPtr& conn) {
   YOGI_LOG_INFO(logger_, "Connection to " << conn->GetRemoteBranchInfo()
-                                          << " changed: " << err);
+                                          << " changed: " << res);
   // TODO
 }
 

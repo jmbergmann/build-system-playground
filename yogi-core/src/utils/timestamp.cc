@@ -16,7 +16,7 @@
  */
 
 #include "timestamp.h"
-#include "../api/error.h"
+#include "../api/errors.h"
 
 #include <boost/algorithm/string.hpp>
 #include <time.h>

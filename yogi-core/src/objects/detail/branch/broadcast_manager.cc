@@ -24,6 +24,15 @@ BroadcastManager::BroadcastManager(ContextPtr context) : context_(context) {}
 
 BroadcastManager::~BroadcastManager() {}
 
+void BroadcastManager::SendBroadcast(api::Encoding enc,
+                                     boost::asio::const_buffer data) {}
+
+void BroadcastManager::ReceiveBroadcast(api::Encoding enc,
+                                        boost::asio::mutable_buffer data,
+                                        ReceiveBroadcastHanlder handler) {}
+
+void BroadcastManager::CancelReceiveBroadcast() {}
+
 const LoggerPtr BroadcastManager::logger_ =
     Logger::CreateStaticInternalLogger("Branch.BroadcastManager");
 

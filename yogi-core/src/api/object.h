@@ -18,7 +18,7 @@
 #pragma once
 
 #include "../config.h"
-#include "error.h"
+#include "errors.h"
 
 #include <memory>
 #include <mutex>

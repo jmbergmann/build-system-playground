@@ -16,7 +16,7 @@
  */
 
 #include "file_log_sink.h"
-#include "../../../api/error.h"
+#include "../../../api/errors.h"
 
 namespace objects {
 namespace detail {

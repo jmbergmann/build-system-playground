@@ -38,7 +38,7 @@ using namespace std::chrono_literals;
   try {                                      \
     x;                                       \
   } catch (const api::Error& err) {          \
-    EXPECT_EQ(err.error_code(), ec);         \
+    EXPECT_EQ(err.GetValue(), ec);           \
   } catch (...) {                            \
     FAIL() << "Wrong exception type thrown"; \
   }

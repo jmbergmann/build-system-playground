@@ -16,15 +16,14 @@
  */
 
 #include "timer.h"
-#include "../api/error.h"
+#include "../api/errors.h"
 
 namespace objects {
 
 Timer::Timer(ContextPtr context)
     : context_(context), timer_(context->IoContext()) {}
 
-void Timer::Start(std::chrono::nanoseconds timeout,
-                  std::function<void(const api::Error& res)> fn) {
+void Timer::Start(std::chrono::nanoseconds timeout, HandlerFn fn) {
   timer_.expires_after(timeout);
   timer_.async_wait([=](const auto& ec) {
     YOGI_ASSERT(!ec || ec == boost::asio::error::operation_aborted);

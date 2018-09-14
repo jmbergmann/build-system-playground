@@ -30,8 +30,8 @@ YOGI_API const char* YOGI_Get3rdPartyLicenses() {
   return licenses::k3rdPartyLicenses.c_str();
 }
 
-YOGI_API const char* YOGI_GetErrorString(int err) {
-  return api::Error(err).what();
+YOGI_API const char* YOGI_GetErrorString(int res) {
+  return api::Result(res).GetDescription();
 }
 
 YOGI_API int YOGI_GetConstant(void* dest, int constant) {

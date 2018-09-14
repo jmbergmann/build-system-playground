@@ -16,7 +16,7 @@
  */
 
 #include "advertising_receiver.h"
-#include "../../../api/error.h"
+#include "../../../api/errors.h"
 
 #include <boost/asio/ip/multicast.hpp>
 
@@ -91,11 +91,12 @@ void AdvertisingReceiver::OnReceivedAdvertisementFinished(
 
   boost::uuids::uuid uuid;
   unsigned short tcp_port;
-  if (auto err = BranchInfo::DeserializeAdvertisingMessage(&uuid, &tcp_port,
-                                                           *buffer_)) {
+  auto res =
+      BranchInfo::DeserializeAdvertisingMessage(&uuid, &tcp_port, *buffer_);
+  if (res.IsError()) {
     YOGI_LOG_WARNING(logger_,
                      info_ << " Invalid advertising message received from "
-                           << sender_ep_.address() << ": " << err);
+                           << sender_ep_.address() << ": " << res);
     StartReceiveAdvertisement();
     return;
   }

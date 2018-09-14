@@ -18,7 +18,7 @@
 #pragma once
 
 #include "../../../config.h"
-#include "../../../api/error.h"
+#include "../../../api/errors.h"
 #include "../../../utils/timestamp.h"
 #include "../../../utils/types.h"
 
@@ -49,11 +49,11 @@ class BranchInfo {
   static std::shared_ptr<BranchInfo> CreateFromInfoMessage(
       const utils::ByteVector& info_msg, const boost::asio::ip::address& addr);
 
-  static api::Error DeserializeAdvertisingMessage(
+  static api::Result DeserializeAdvertisingMessage(
       boost::uuids::uuid* uuid, unsigned short* tcp_port,
       const utils::ByteVector& adv_msg);
 
-  static api::Error DeserializeInfoMessageBodySize(
+  static api::Result DeserializeInfoMessageBodySize(
       std::size_t* body_size, const utils::ByteVector& info_msg_hdr);
 
   const boost::uuids::uuid& GetUuid() const { return uuid_; }
@@ -94,7 +94,7 @@ class BranchInfo {
   const nlohmann::json& ToJson() const { return json_; }
 
  private:
-  static api::Error CheckMagicPrefixAndVersion(
+  static api::Result CheckMagicPrefixAndVersion(
       const utils::ByteVector& adv_msg);
 
   void PopulateMessages();

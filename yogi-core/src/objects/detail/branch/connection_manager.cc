@@ -118,20 +118,20 @@ void ConnectionManager::StartAccept() {
   auto weak_socket = utils::TimedTcpSocketWeakPtr(socket);
 
   auto weak_self = std::weak_ptr<ConnectionManager>{shared_from_this()};
-  socket->Accept(&acceptor_, [weak_self, weak_socket](auto& err) {
+  socket->Accept(&acceptor_, [weak_self, weak_socket](auto& res) {
     auto self = weak_self.lock();
     if (!self) return;
 
     auto socket = self->StopKeepingSocketAlive(weak_socket);
-    self->OnAcceptFinished(err, socket);
+    self->OnAcceptFinished(res, socket);
   });
 }
 
-void ConnectionManager::OnAcceptFinished(const api::Error& err,
+void ConnectionManager::OnAcceptFinished(const api::Result& res,
                                          utils::TimedTcpSocketPtr socket) {
-  if (err) {
+  if (res.IsError()) {
     YOGI_LOG_ERROR(logger_,
-                   info_ << " Accepting incoming TCP connection failed: " << err
+                   info_ << " Accepting incoming TCP connection failed: " << res
                          << ". No more connections will be accepted.");
     return;
   }
@@ -158,9 +158,9 @@ void ConnectionManager::OnAdvertisementReceived(
 
   auto socket = MakeSocketAndKeepItAlive();
   auto weak_socket = utils::TimedTcpSocketWeakPtr(socket);
-  socket->Connect(ep, [this, adv_uuid, weak_socket](auto& err) {
+  socket->Connect(ep, [this, adv_uuid, weak_socket](auto& res) {
     auto socket = this->StopKeepingSocketAlive(weak_socket);
-    this->OnConnectFinished(err, adv_uuid, socket);
+    this->OnConnectFinished(res, adv_uuid, socket);
   });
 
   EmitBranchEvent(api::kBranchDiscoveredEvent, api::kSuccess, adv_uuid, [&] {
@@ -171,11 +171,11 @@ void ConnectionManager::OnAdvertisementReceived(
   });
 }
 
-void ConnectionManager::OnConnectFinished(const api::Error& err,
+void ConnectionManager::OnConnectFinished(const api::Result& res,
                                           const boost::uuids::uuid& adv_uuid,
                                           utils::TimedTcpSocketPtr socket) {
-  if (err) {
-    EmitBranchEvent(api::kBranchQueriedEvent, err, adv_uuid);
+  if (res.IsError()) {
+    EmitBranchEvent(api::kBranchQueriedEvent, res, adv_uuid);
     pending_connects_.erase(adv_uuid);
     return;
   }
@@ -190,18 +190,18 @@ void ConnectionManager::StartExchangeBranchInfo(
     utils::TimedTcpSocketPtr socket, const boost::uuids::uuid& adv_uuid) {
   auto conn = MakeConnectionAndKeepItAlive(socket);
   auto weak_conn = BranchConnectionWeakPtr(conn);
-  conn->ExchangeBranchInfo([this, weak_conn, adv_uuid](auto& err) {
+  conn->ExchangeBranchInfo([this, weak_conn, adv_uuid](auto& res) {
     YOGI_ASSERT(weak_conn.lock());
-    this->OnExchangeBranchInfoFinished(err, weak_conn.lock(), adv_uuid);
+    this->OnExchangeBranchInfoFinished(res, weak_conn.lock(), adv_uuid);
     this->StopKeepingConnectionAlive(weak_conn);
     this->pending_connects_.erase(adv_uuid);
   });
 }
 
 void ConnectionManager::OnExchangeBranchInfoFinished(
-    const api::Error& err, BranchConnectionPtr conn,
+    const api::Result& res, BranchConnectionPtr conn,
     const boost::uuids::uuid& adv_uuid) {
-  if (!CheckExchangeBranchInfoError(err, conn)) {
+  if (!CheckExchangeBranchInfoError(res, conn)) {
     return;
   }
 
@@ -223,14 +223,14 @@ void ConnectionManager::OnExchangeBranchInfoFinished(
                        << ")");
 
   std::lock_guard<std::mutex> lock(connections_mutex_);
-  auto res = connections_.insert(std::make_pair(remote_uuid, conn));
-  bool conn_already_exists = !res.second;
+  auto con_res = connections_.insert(std::make_pair(remote_uuid, conn));
+  bool conn_already_exists = !con_res.second;
 
   if (!VerifyConnectionHasHigherPriority(conn_already_exists, conn)) {
     return;
   }
 
-  res.first->second = conn;
+  con_res.first->second = conn;
 
   if (!conn_already_exists) {
     EmitBranchEvent(api::kBranchQueriedEvent, api::kSuccess, remote_uuid,
@@ -238,8 +238,9 @@ void ConnectionManager::OnExchangeBranchInfoFinished(
 
     // If a connection already exists, the following check has already been
     // performed successfully, so we don't do it again
-    if (auto chk_err = CheckRemoteBranchInfo(remote_info)) {
-      EmitBranchEvent(api::kConnectFinishedEvent, chk_err, remote_uuid);
+    auto chk_res = CheckRemoteBranchInfo(remote_info);
+    if (chk_res.IsError()) {
+      EmitBranchEvent(api::kConnectFinishedEvent, chk_res, remote_uuid);
       return;
     }
   }
@@ -252,8 +253,8 @@ void ConnectionManager::OnExchangeBranchInfoFinished(
 }
 
 bool ConnectionManager::CheckExchangeBranchInfoError(
-    const api::Error& err, const BranchConnectionPtr& conn) {
-  if (!err) {
+    const api::Result& res, const BranchConnectionPtr& conn) {
+  if (res.IsSuccess()) {
     return true;
   }
 
@@ -262,13 +263,13 @@ bool ConnectionManager::CheckExchangeBranchInfoError(
         logger_,
         info_ << " Exchanging branch info with TCP server connection from "
               << utils::MakeIpAddressString(conn->GetRemoteEndpoint())
-              << " failed: " << err);
+              << " failed: " << res);
   } else {
     YOGI_LOG_ERROR(
         logger_,
         info_ << " Exchanging branch info with TCP client connection to "
               << utils::MakeIpAddressString(conn->GetRemoteEndpoint()) << ":"
-              << conn->GetRemoteEndpoint().port() << " failed: " << err);
+              << conn->GetRemoteEndpoint().port() << " failed: " << res);
   }
 
   return false;
@@ -323,7 +324,7 @@ bool ConnectionManager::VerifyConnectionHasHigherPriority(
   return false;
 }
 
-api::Error ConnectionManager::CheckRemoteBranchInfo(
+api::Result ConnectionManager::CheckRemoteBranchInfo(
     const BranchInfoPtr& remote_info) {
   if (remote_info->GetNetworkName() != info_->GetNetworkName()) {
     blacklisted_uuids_.insert(remote_info->GetUuid());
@@ -360,25 +361,25 @@ api::Error ConnectionManager::CheckRemoteBranchInfo(
 
 void ConnectionManager::StartAuthenticate(BranchConnectionPtr conn) {
   auto weak_conn = BranchConnectionWeakPtr(conn);
-  conn->Authenticate(password_hash_, [this, weak_conn](auto& err) {
+  conn->Authenticate(password_hash_, [this, weak_conn](auto& res) {
     YOGI_ASSERT(weak_conn.lock());
-    this->OnAuthenticateFinished(err, weak_conn.lock());
+    this->OnAuthenticateFinished(res, weak_conn.lock());
   });
 }
 
-void ConnectionManager::OnAuthenticateFinished(const api::Error& err,
+void ConnectionManager::OnAuthenticateFinished(const api::Result& res,
                                                BranchConnectionPtr conn) {
   auto& uuid = conn->GetRemoteBranchInfo()->GetUuid();
 
-  if (err) {
-    if (err == api::Error(YOGI_ERR_PASSWORD_MISMATCH)) {
+  if (res.IsError()) {
+    if (res == api::Error(YOGI_ERR_PASSWORD_MISMATCH)) {
       blacklisted_uuids_.insert(uuid);
     }
 
     std::lock_guard<std::mutex> lock(connections_mutex_);
     connections_.erase(uuid);
 
-    EmitBranchEvent(api::kConnectFinishedEvent, err, uuid);
+    EmitBranchEvent(api::kConnectFinishedEvent, res, uuid);
   } else {
     YOGI_LOG_DEBUG(logger_, info_ << " Successfully authenticated with "
                                   << conn->GetRemoteBranchInfo());
@@ -388,9 +389,9 @@ void ConnectionManager::OnAuthenticateFinished(const api::Error& err,
 
 void ConnectionManager::StartSession(BranchConnectionPtr conn) {
   auto weak_conn = BranchConnectionWeakPtr(conn);
-  conn->RunSession([this, weak_conn](auto& err) {
+  conn->RunSession([this, weak_conn](auto& res) {
     YOGI_ASSERT(weak_conn.lock());
-    this->OnSessionTerminated(err, weak_conn.lock());
+    this->OnSessionTerminated(res.ToError(), weak_conn.lock());
   });
 
   EmitBranchEvent(api::kConnectFinishedEvent, api::kSuccess,
@@ -449,7 +450,7 @@ BranchConnectionPtr ConnectionManager::StopKeepingConnectionAlive(
 
 template <typename Fn>
 void ConnectionManager::EmitBranchEvent(api::BranchEvents event,
-                                        const api::Error& ev_res,
+                                        const api::Result& ev_res,
                                         const boost::uuids::uuid& uuid,
                                         Fn make_json_fn) {
   LogBranchEvent(event, ev_res, make_json_fn);
@@ -465,7 +466,7 @@ void ConnectionManager::EmitBranchEvent(api::BranchEvents event,
 }
 
 void ConnectionManager::EmitBranchEvent(api::BranchEvents event,
-                                        const api::Error& ev_res,
+                                        const api::Result& ev_res,
                                         const boost::uuids::uuid& uuid) {
   return EmitBranchEvent(event, ev_res, uuid, [&] {
     return nlohmann::json{{"uuid", boost::uuids::to_string(uuid)}};
@@ -474,7 +475,7 @@ void ConnectionManager::EmitBranchEvent(api::BranchEvents event,
 
 template <typename Fn>
 void ConnectionManager::LogBranchEvent(api::BranchEvents event,
-                                       const api::Error& ev_res,
+                                       const api::Result& ev_res,
                                        Fn make_json_fn) {
   switch (event) {
     case api::kNoEvent:

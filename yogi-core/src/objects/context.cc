@@ -16,7 +16,7 @@
  */
 
 #include "context.h"
-#include "../api/error.h"
+#include "../api/errors.h"
 
 #include <boost/asio/post.hpp>
 #include <signal.h>

@@ -40,7 +40,7 @@ find_package (Threads REQUIRED)
 # Static library
 add_library (yogi-core-static STATIC
   src/api/constants.cc
-  src/api/error.cc
+  src/api/errors.cc
   src/api/object.cc
   src/licenses/3rd_party_licenses.cc
   src/licenses/yogi_license.cc

@@ -34,7 +34,7 @@ namespace detail {
 class BranchConnection final
     : public std::enable_shared_from_this<BranchConnection> {
  public:
-  typedef std::function<void(const api::Error&)> CompletionHandler;
+  typedef std::function<void(const api::Result&)> CompletionHandler;
 
   BranchConnection(utils::TimedTcpSocketPtr socket, BranchInfoPtr local_info);
 
@@ -61,7 +61,7 @@ class BranchConnection final
                           const utils::ByteVector& info_msg_body,
                           CompletionHandler handler);
   void OnInfoAckSent(CompletionHandler handler);
-  void OnInfoAckReceived(const api::Error& err,
+  void OnInfoAckReceived(const api::Result& res,
                          const utils::ByteVector& ack_msg,
                          CompletionHandler handler);
   void OnChallengeSent(utils::SharedByteVector my_challenge,
@@ -80,16 +80,16 @@ class BranchConnection final
                           utils::SharedByteVector my_solution,
                           CompletionHandler handler);
   void OnSolutionAckSent(bool solutions_match, CompletionHandler handler);
-  void OnSolutionAckReceived(const api::Error& err, bool solutions_match,
+  void OnSolutionAckReceived(const api::Result& res, bool solutions_match,
                              const utils::ByteVector& ack_msg,
                              CompletionHandler handler);
   void RestartHeartbeatTimer();
   void OnHeartbeatTimerExpired();
   void StartReceive();
   void OnSessionError(const api::Error& err);
-  void CheckAckAndSetNextError(const api::Error& err,
-                               const utils::ByteVector& ack_msg);
-  bool CheckNextError(CompletionHandler handler);
+  void CheckAckAndSetNextResult(const api::Result& res,
+                                const utils::ByteVector& ack_msg);
+  bool CheckNextResult(CompletionHandler handler);
 
   static const LoggerPtr logger_;
 
@@ -103,7 +103,7 @@ class BranchConnection final
   std::atomic<bool> session_started_;
   CompletionHandler session_completion_handler_;
   boost::asio::steady_timer heartbeat_timer_;
-  api::Error next_error_;
+  api::Result next_result_;
 };
 
 typedef std::shared_ptr<BranchConnection> BranchConnectionPtr;

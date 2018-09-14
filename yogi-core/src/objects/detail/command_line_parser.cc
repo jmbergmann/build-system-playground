@@ -16,7 +16,7 @@
  */
 
 #include "command_line_parser.h"
-#include "../../api/error.h"
+#include "../../api/errors.h"
 #include "../../objects/logger.h"
 #include "../../utils/glob.h"
 

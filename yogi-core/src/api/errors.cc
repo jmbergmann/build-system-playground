@@ -15,16 +15,20 @@
  * along with this library. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "error.h"
+#include "errors.h"
 
 namespace api {
 
-const char* Error::what() const noexcept {
-  if (err_ >= 0) {
-    return "Success";
-  }
+Error Result::ToError() const {
+  YOGI_ASSERT(IsError());
+  return Error(ec_);
+}
 
-  switch (err_) {
+const char* Result::GetDescription() const noexcept {
+  switch (GetErrorCode()) {
+    case YOGI_OK:
+      return "Success";
+
     case YOGI_ERR_UNKNOWN:
       return "Unknown internal error";
 
@@ -150,9 +154,13 @@ const char* Error::what() const noexcept {
   return "Invalid error code";
 }
 
+const char* Error::what() const noexcept {
+  return GetDescription();
+}
+
 }  // namespace api
 
-std::ostream& operator<<(std::ostream& os, const api::Error& err) {
-  os << err.what();
+std::ostream& operator<<(std::ostream& os, const api::Result& res) {
+  os << res.GetDescription();
   return os;
 }

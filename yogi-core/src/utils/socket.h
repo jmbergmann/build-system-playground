@@ -20,7 +20,7 @@
 #include "../config.h"
 #include "../objects/context.h"
 #include "../objects/logger.h"
-#include "../api/error.h"
+#include "../api/errors.h"
 #include "types.h"
 
 #include <boost/asio.hpp>
@@ -34,8 +34,8 @@ namespace utils {
 
 class TimedTcpSocket : public std::enable_shared_from_this<TimedTcpSocket> {
  public:
-  typedef std::function<void(const api::Error&)> CompletionHandler;
-  typedef std::function<void(const api::Error&, const ByteVector&)>
+  typedef std::function<void(const api::Result&)> CompletionHandler;
+  typedef std::function<void(const api::Result&, const ByteVector&)>
       ReceiveHandler;
 
   TimedTcpSocket(objects::ContextPtr context, std::chrono::nanoseconds timeout);

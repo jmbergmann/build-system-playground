@@ -68,8 +68,9 @@ BranchInfoPtr BranchInfo::CreateFromInfoMessage(
   auto info = std::make_shared<BranchInfo>();
 
   unsigned short port;
-  if (auto err = DeserializeAdvertisingMessage(&info->uuid_, &port, info_msg)) {
-    throw err;
+  auto res = DeserializeAdvertisingMessage(&info->uuid_, &port, info_msg);
+  if (res.IsError()) {
+    throw res.ToError();
   }
 
   info->tcp_ep_.port(port);
@@ -92,12 +93,14 @@ BranchInfoPtr BranchInfo::CreateFromInfoMessage(
   return info;
 }
 
-api::Error BranchInfo::DeserializeAdvertisingMessage(
+api::Result BranchInfo::DeserializeAdvertisingMessage(
     boost::uuids::uuid* uuid, unsigned short* tcp_port,
     const utils::ByteVector& adv_msg) {
   YOGI_ASSERT(adv_msg.size() >= kAdvertisingMessageSize);
-  if (auto err = CheckMagicPrefixAndVersion(adv_msg)) {
-    return err;
+
+  auto res = CheckMagicPrefixAndVersion(adv_msg);
+  if (res.IsError()) {
+    return res;
   }
 
   auto it = adv_msg.cbegin() + 7;
@@ -107,11 +110,13 @@ api::Error BranchInfo::DeserializeAdvertisingMessage(
   return api::kSuccess;
 }
 
-api::Error BranchInfo::DeserializeInfoMessageBodySize(
+api::Result BranchInfo::DeserializeInfoMessageBodySize(
     std::size_t* body_size, const utils::ByteVector& info_msg_hdr) {
   YOGI_ASSERT(info_msg_hdr.size() >= kInfoMessageHeaderSize);
-  if (auto err = CheckMagicPrefixAndVersion(info_msg_hdr)) {
-    return err;
+
+  auto res = CheckMagicPrefixAndVersion(info_msg_hdr);
+  if (res.IsError()) {
+    return res;
   }
 
   auto it = info_msg_hdr.cbegin() + kAdvertisingMessageSize;
@@ -120,7 +125,7 @@ api::Error BranchInfo::DeserializeInfoMessageBodySize(
   return api::kSuccess;
 }
 
-api::Error BranchInfo::CheckMagicPrefixAndVersion(
+api::Result BranchInfo::CheckMagicPrefixAndVersion(
     const utils::ByteVector& adv_msg) {
   YOGI_ASSERT(adv_msg.size() >= kAdvertisingMessageSize);
   if (std::memcmp(adv_msg.data(), "YOGI", 5)) {

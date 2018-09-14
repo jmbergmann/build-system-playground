@@ -37,11 +37,11 @@ class ConnectionManager final
     : public std::enable_shared_from_this<ConnectionManager> {
  public:
   using ByteVector = utils::ByteVector;
-  typedef std::function<void(const api::Error&, api::BranchEvents,
-                             const api::Error&, const boost::uuids::uuid&,
+  typedef std::function<void(const api::Result&, api::BranchEvents,
+                             const api::Result&, const boost::uuids::uuid&,
                              const std::string&)>
       BranchEventHandler;
-  typedef std::function<void(const api::Error&, BranchConnectionPtr)>
+  typedef std::function<void(const api::Result&, BranchConnectionPtr)>
       ConnectionChangedHandler;
   typedef std::function<void(const ByteVector&, std::size_t,
                              const BranchConnectionPtr&)>
@@ -84,18 +84,19 @@ class ConnectionManager final
 
   void SetupAcceptor(const boost::asio::ip::tcp& protocol);
   void StartAccept();
-  void OnAcceptFinished(const api::Error& err, utils::TimedTcpSocketPtr socket);
+  void OnAcceptFinished(const api::Result& res,
+                        utils::TimedTcpSocketPtr socket);
   void OnAdvertisementReceived(const boost::uuids::uuid& adv_uuid,
                                const boost::asio::ip::tcp::endpoint& ep);
-  void OnConnectFinished(const api::Error& err,
+  void OnConnectFinished(const api::Result& res,
                          const boost::uuids::uuid& adv_uuid,
                          utils::TimedTcpSocketPtr socket);
   void StartExchangeBranchInfo(utils::TimedTcpSocketPtr socket,
                                const boost::uuids::uuid& adv_uuid);
-  void OnExchangeBranchInfoFinished(const api::Error& err,
+  void OnExchangeBranchInfoFinished(const api::Result& res,
                                     BranchConnectionPtr conn,
                                     const boost::uuids::uuid& adv_uuid);
-  bool CheckExchangeBranchInfoError(const api::Error& err,
+  bool CheckExchangeBranchInfoError(const api::Result& res,
                                     const BranchConnectionPtr& conn);
   bool VerifyUuidsMatch(const boost::uuids::uuid& remote_uuid,
                         const boost::uuids::uuid& adv_uuid);
@@ -105,9 +106,9 @@ class ConnectionManager final
   void PublishExchangeBranchInfoError(const api::Error& err,
                                       BranchConnectionPtr conn,
                                       ConnectionsMapEntry* entry);
-  api::Error CheckRemoteBranchInfo(const BranchInfoPtr& remote_info);
+  api::Result CheckRemoteBranchInfo(const BranchInfoPtr& remote_info);
   void StartAuthenticate(BranchConnectionPtr conn);
-  void OnAuthenticateFinished(const api::Error& err, BranchConnectionPtr conn);
+  void OnAuthenticateFinished(const api::Result& res, BranchConnectionPtr conn);
   void StartSession(BranchConnectionPtr conn);
   void OnSessionTerminated(const api::Error& err, BranchConnectionPtr conn);
   utils::TimedTcpSocketPtr MakeSocketAndKeepItAlive();
@@ -119,13 +120,13 @@ class ConnectionManager final
       const BranchConnectionWeakPtr& weak_conn);
 
   template <typename Fn>
-  void EmitBranchEvent(api::BranchEvents event, const api::Error& ev_res,
+  void EmitBranchEvent(api::BranchEvents event, const api::Result& ev_res,
                        const boost::uuids::uuid& uuid, Fn make_json_fn);
-  void EmitBranchEvent(api::BranchEvents event, const api::Error& ev_res,
+  void EmitBranchEvent(api::BranchEvents event, const api::Result& ev_res,
                        const boost::uuids::uuid& uuid);
 
   template <typename Fn>
-  void LogBranchEvent(api::BranchEvents event, const api::Error& ev_res,
+  void LogBranchEvent(api::BranchEvents event, const api::Result& ev_res,
                       Fn make_json_fn);
 
   static const LoggerPtr logger_;

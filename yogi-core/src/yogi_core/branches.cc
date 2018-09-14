@@ -163,15 +163,15 @@ YOGI_API int YOGI_BranchAwaitEvent(void* branch, int events, void* uuid,
         [=](auto& res, auto event, auto& evres, auto& tmp_uuid,
             auto& tmp_json) {
           if (res != api::kSuccess) {
-            fn(res.error_code(), event, evres.error_code(), userarg);
+            fn(res.GetValue(), event, evres.GetValue(), userarg);
             return;
           }
 
           CopyUuidToUserBuffer(tmp_uuid, uuid);
           if (CopyStringToUserBuffer(tmp_json, json, jsonsize)) {
-            fn(res.error_code(), event, evres.error_code(), userarg);
+            fn(res.GetValue(), event, evres.GetValue(), userarg);
           } else {
-            fn(YOGI_ERR_BUFFER_TOO_SMALL, event, evres.error_code(), userarg);
+            fn(YOGI_ERR_BUFFER_TOO_SMALL, event, evres.GetValue(), userarg);
           }
         });
   }
@@ -197,6 +197,9 @@ YOGI_API int YOGI_BranchSendBroadcast(void* branch, int enc, const void* data,
 
   try {
     auto brn = api::ObjectRegister::Get<objects::Branch>(branch);
+    brn->SendBroadcast(
+        static_cast<api::Encoding>(enc),
+        boost::asio::buffer(data, static_cast<std::size_t>(datasize)));
   }
   CATCH_AND_RETURN;
 }
@@ -211,6 +214,12 @@ YOGI_API int YOGI_BranchReceiveBroadcast(
 
   try {
     auto brn = api::ObjectRegister::Get<objects::Branch>(branch);
+    brn->ReceiveBroadcast(
+        static_cast<api::Encoding>(enc),
+        boost::asio::buffer(data, static_cast<std::size_t>(datasize)),
+        [=](auto& res, auto size) {
+          fn(res.GetValue(), static_cast<int>(size), userarg);
+        });
   }
   CATCH_AND_RETURN;
 }
@@ -220,7 +229,7 @@ YOGI_API int YOGI_BranchCancelReceiveBroadcast(void* branch) {
 
   try {
     auto brn = api::ObjectRegister::Get<objects::Branch>(branch);
-    // brn->CancelReceiveBroadcast();
+    brn->CancelReceiveBroadcast();
   }
   CATCH_AND_RETURN;
 }

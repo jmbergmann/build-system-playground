@@ -16,7 +16,7 @@
  */
 
 #include "constants.h"
-#include "error.h"
+#include "errors.h"
 
 namespace api {
 

@@ -67,7 +67,7 @@ YOGI_API int YOGI_SignalSetAwaitSignal(void* sigset,
   try {
     auto set = api::ObjectRegister::Get<objects::SignalSet>(sigset);
     set->Await([=](auto& res, auto signal, void* sigarg) {
-      fn(res.error_code(), signal, sigarg, userarg);
+      fn(res.GetValue(), signal, sigarg, userarg);
     });
   }
   CATCH_AND_RETURN;

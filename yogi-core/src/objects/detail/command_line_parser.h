@@ -18,7 +18,7 @@
 #pragma once
 
 #include "../../config.h"
-#include "../../api/error.h"
+#include "../../api/errors.h"
 #include "../../api/enums.h"
 
 #include <nlohmann/json.hpp>
