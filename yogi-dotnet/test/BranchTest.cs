@@ -83,6 +83,8 @@ namespace test
             Assert.True(info.StartTime < Yogi.CurrentTime);
             Assert.Equal(Yogi.Duration.Infinity, info.Timeout);
             Assert.False(info.GhostMode);
+            Assert.True(info.TxQueueSize > 1000);
+            Assert.True(info.RxQueueSize > 1000);
 
             Assert.Equal(info.Uuid, branch.Uuid);
             Assert.Equal(info.Name, branch.Name);
@@ -99,6 +101,8 @@ namespace test
             Assert.Equal(info.StartTime, branch.StartTime);
             Assert.Equal(info.Timeout, branch.Timeout);
             Assert.Equal(info.GhostMode, branch.GhostMode);
+            Assert.Equal(info.TxQueueSize, branch.TxQueueSize);
+            Assert.Equal(info.RxQueueSize, branch.RxQueueSize);
         }
 
         [Fact]

@@ -27,7 +27,8 @@ Branch::Branch(ContextPtr context, std::string name, std::string description,
                std::string net_name, std::string password, std::string path,
                const boost::asio::ip::udp::endpoint& adv_ep,
                std::chrono::nanoseconds adv_interval,
-               std::chrono::nanoseconds timeout, bool ghost_mode)
+               std::chrono::nanoseconds timeout, bool ghost_mode,
+               std::size_t tx_queue_size, std::size_t rx_queue_size)
     : context_(context),
       connection_manager_(std::make_shared<detail::ConnectionManager>(
           context, password, adv_ep,
@@ -39,7 +40,9 @@ Branch::Branch(ContextPtr context, std::string name, std::string description,
           name, description, net_name, path,
           connection_manager_->GetTcpServerEndpoint(), timeout, adv_interval,
           ghost_mode)),
-      broadcast_manager_(std::make_shared<detail::BroadcastManager>(context)) {
+      broadcast_manager_(std::make_shared<detail::BroadcastManager>(context)),
+      tx_queue_size_(tx_queue_size),
+      rx_queue_size_(rx_queue_size) {
   if (name.empty() || net_name.empty() || path.empty() || path.front() != '/' ||
       adv_interval < 1ms || timeout < 1ms) {
     throw api::Error(YOGI_ERR_INVALID_PARAM);
@@ -53,6 +56,8 @@ std::string Branch::MakeInfoString() const {
   auto& ep = connection_manager_->GetAdvertisingEndpoint();
   json["advertising_address"] = utils::MakeIpAddressString(ep);
   json["advertising_port"] = ep.port();
+  json["tx_queue_size"] = tx_queue_size_;
+  json["rx_queue_size"] = rx_queue_size_;
   return json.dump();
 }
 

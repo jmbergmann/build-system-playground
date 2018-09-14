@@ -73,20 +73,44 @@ YOGI_API int YOGI_BranchCreate(void** branch, void* context, const char* props,
     auto password = properties.value("network_password", std::string{});
     auto path = properties.value("path", "/"s + name);
 
-    if (adv_addr.empty()) return YOGI_ERR_INVALID_PARAM;
+    if (adv_addr.empty()) {
+      throw api::DescriptiveError(YOGI_ERR_INVALID_PARAM)
+          << "Property \"advertising_port\" must not be empty.";
+    }
+
     boost::system::error_code ec;
     auto adv_ep = boost::asio::ip::udp::endpoint(
         boost::asio::ip::make_address(adv_addr, ec),
         static_cast<unsigned short>(adv_port));
-    if (ec) return YOGI_ERR_INVALID_PARAM;
+    if (ec) {
+      throw api::DescriptiveError(YOGI_ERR_INVALID_PARAM)
+          << "Could not parse address in property \"advertising_port\".";
+    };
 
     auto timeout =
         ExtractDuration(properties, "timeout", api::kDefaultConnectionTimeout);
     auto ghost = properties.value("ghost_mode", false);
 
-    auto brn =
-        objects::Branch::Create(ctx, name, description, network, password, path,
-                                adv_ep, adv_int, timeout, ghost);
+    auto tx_queue_size =
+        properties.value("tx_queue_size", api::kDefaultTxQueueSize);
+    if (tx_queue_size < api::kMinTxQueueSize ||
+        tx_queue_size > api::kMaxTxQueueSize) {
+      throw api::DescriptiveError(YOGI_ERR_INVALID_PARAM)
+          << "Property \"tx_queue_size\" is out of range.";
+    }
+
+    auto rx_queue_size =
+        properties.value("rx_queue_size", api::kDefaultRxQueueSize);
+    if (rx_queue_size < api::kMinRxQueueSize ||
+        rx_queue_size > api::kMaxRxQueueSize) {
+      throw api::DescriptiveError(YOGI_ERR_INVALID_PARAM)
+          << "Property \"rx_queue_size\" is out of range.";
+    }
+
+    auto brn = objects::Branch::Create(
+        ctx, name, description, network, password, path, adv_ep, adv_int,
+        timeout, ghost, static_cast<std::size_t>(tx_queue_size),
+        static_cast<std::size_t>(rx_queue_size));
     brn->Start();
 
     *branch = api::ObjectRegister::Register(brn);

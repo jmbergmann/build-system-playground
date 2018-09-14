@@ -17,6 +17,7 @@
 
 #include "../common.h"
 #include "../../src/utils/system.h"
+#include "../../src/api/constants.h"
 
 #include <nlohmann/json.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -36,7 +37,7 @@ class BranchTest : public Test {
 TEST_F(BranchTest, CreateWithDefaults) {
   void* branch;
   int res = YOGI_BranchCreate(&branch, context_, nullptr, nullptr, nullptr, 0);
-  EXPECT_EQ(YOGI_OK, res);
+  EXPECT_EQ(res, YOGI_OK);
 }
 
 TEST_F(BranchTest, CreateWithJsonPointer) {
@@ -54,10 +55,55 @@ TEST_F(BranchTest, CreateWithJsonPointer) {
 
   res = YOGI_BranchCreate(&branch, context_, props.dump().c_str(), "/arr/1",
                           err, sizeof(err));
-  EXPECT_EQ(YOGI_OK, res);
+  EXPECT_EQ(res, YOGI_OK);
   EXPECT_STREQ(err, "");
   auto info = GetBranchInfo(branch);
   EXPECT_EQ(info.value("name", "NOT FOUND"), "Samosa");
+}
+
+TEST_F(BranchTest, DefaultQueueSizes) {
+  void* branch;
+  int res = YOGI_BranchCreate(&branch, context_, nullptr, nullptr, nullptr, 0);
+  ASSERT_EQ(res, YOGI_OK);
+  auto info = GetBranchInfo(branch);
+  EXPECT_EQ(info.value("tx_queue_size", -1), api::kDefaultTxQueueSize);
+  EXPECT_EQ(info.value("rx_queue_size", -1), api::kDefaultRxQueueSize);
+}
+
+TEST_F(BranchTest, CustomQueueSizes) {
+  nlohmann::json props;
+  props["tx_queue_size"] = api::kMaxTxQueueSize;
+  props["rx_queue_size"] = api::kMaxRxQueueSize;
+
+  void* branch;
+  int res = YOGI_BranchCreate(&branch, context_, props.dump().c_str(), nullptr,
+                              nullptr, 0);
+  ASSERT_EQ(res, YOGI_OK);
+  auto info = GetBranchInfo(branch);
+  EXPECT_EQ(info.value("tx_queue_size", -1), api::kMaxTxQueueSize);
+  EXPECT_EQ(info.value("rx_queue_size", -1), api::kMaxRxQueueSize);
+}
+
+TEST_F(BranchTest, InvalidQueueSizes) {
+  std::vector<std::pair<const char*, int>> entries = {
+      {"tx_queue_size", api::kMinTxQueueSize - 1},
+      {"tx_queue_size", api::kMaxTxQueueSize + 1},
+      {"rx_queue_size", api::kMinTxQueueSize - 1},
+      {"rx_queue_size", api::kMaxTxQueueSize + 1},
+  };
+
+  for (auto entry : entries) {
+    nlohmann::json props;
+    props[entry.first] = entry.second;
+
+    char err[100];
+
+    void* branch;
+    int res = YOGI_BranchCreate(&branch, context_, props.dump().c_str(),
+                                nullptr, err, sizeof(err));
+    EXPECT_EQ(res, YOGI_ERR_INVALID_PARAM);
+    EXPECT_NE(std::string(err).find(entry.first), std::string::npos);
+  }
 }
 
 TEST_F(BranchTest, GetInfoBufferTooSmall) {
@@ -101,4 +147,6 @@ TEST_F(BranchTest, GetInfoJson) {
   EXPECT_EQ(json.value("advertising_interval", -1.0f),
             static_cast<float>(kBranchProps["advertising_interval"]));
   EXPECT_EQ(json.value("ghost_mode", true), false);
+  EXPECT_EQ(json.value("tx_queue_size", -1), api::kDefaultTxQueueSize);
+  EXPECT_EQ(json.value("rx_queue_size", -1), api::kDefaultRxQueueSize);
 }

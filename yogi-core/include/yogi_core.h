@@ -1610,7 +1610,9 @@ YOGI_API int YOGI_TimerCancel(void* timer);
  *     "advertising_port":     13531,
  *     "advertising_interval": 1.0,
  *     "timeout":              3.0,
- *     "ghost_mode":           false
+ *     "ghost_mode":           false,
+ *     "tx_queue_size":        1000000,
+ *     "rx_queue_size":        100000
  *   }
  * \endcode
  *
@@ -1631,6 +1633,8 @@ YOGI_API int YOGI_TimerCancel(void* timer);
  *  - __advertising_interval__: Time between advertising messages. Must be at
  *    least 1 ms.
  *  - __ghost_mode__: Set to true to activate ghost mode (default: false).
+ *  - __tx_queue_size__: Size of the send queues for remote branches.
+ *  - __rx_queue_size__: Size of the receive queues for remote branches.
  *
  * Advertising and establishing connections can be limited to certain network
  * interfaces via the _interface_ property. The default is to use all

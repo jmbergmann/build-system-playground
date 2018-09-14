@@ -243,6 +243,16 @@ class LocalBranchInfo : public BranchInfo {
   /// \returns The advertising port.
   int GetAdvertisingPort() const { return ToJson()["advertising_port"]; }
 
+  /// Size of the send queues for remote branches.
+  ///
+  /// \returns The size of the send queues.
+  int GetTxQueueSize() const { return ToJson()["tx_queue_size"]; }
+
+  /// Size of the receive queues for remote branches.
+  ///
+  /// \returns The size of the receive queues.
+  int GetRxQueueSize() const { return ToJson()["rx_queue_size"]; }
+
  protected:
   LocalBranchInfo(const Uuid& uuid, std::string&& json_str)
       : BranchInfo(uuid, std::move(json_str)) {}
@@ -470,7 +480,9 @@ class Branch : public ObjectT<Branch> {
   ///     "advertising_port":     13531,
   ///     "advertising_interval": 1.0,
   ///     "timeout":              3.0,
-  ///     "ghost_mode":           false
+  ///     "ghost_mode":           false,
+  ///     "tx_queue_size":        1000000,
+  ///     "rx_queue_size":        100000
   ///   }
   /// \endcode
   ///
@@ -491,6 +503,8 @@ class Branch : public ObjectT<Branch> {
   ///  - __advertising_interval__: Time between advertising messages. Must be at
   ///    least 1 ms.
   ///  - __ghost_mode__: Set to true to activate ghost mode (default: false).
+  ///  - __tx_queue_size__: Size of the send queues for remote branches.
+  ///  - __rx_queue_size__: Size of the receive queues for remote branches.
   ///
   /// Advertising and establishing connections can be limited to certain network
   /// interfaces via the _interface_ property. The default is to use all
@@ -600,6 +614,16 @@ class Branch : public ObjectT<Branch> {
   ///
   /// \returns The advertising port.
   int GetAdvertisingPort() const { return info_.GetAdvertisingPort(); }
+
+  /// Size of the send queues for remote branches.
+  ///
+  /// \returns The size of the send queues.
+  int GetTxQueueSize() const { return info_.GetTxQueueSize(); }
+
+  /// Size of the receive queues for remote branches.
+  ///
+  /// \returns The size of the receive queues.
+  int GetRxQueueSize() const { return info_.GetRxQueueSize(); }
 
   /// Retrieves information about all connected remote branches.
   ///

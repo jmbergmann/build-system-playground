@@ -70,6 +70,8 @@ class TestBranches(TestCase):
         self.assertLessEqual(info.start_time, yogi.get_current_time())
         self.assertEqual(info.timeout, float("inf"))
         self.assertEqual(info.ghost_mode, False)
+        self.assertGreater(info.tx_queue_size, 1000)
+        self.assertGreater(info.rx_queue_size, 1000)
 
         for key in info._info:
             self.assertEqual(getattr(branch, key), info._info[key])

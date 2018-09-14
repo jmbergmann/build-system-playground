@@ -37,7 +37,8 @@ class Branch : public api::ExposedObjectT<Branch, api::ObjectType::kBranch> {
          std::string net_name, std::string password, std::string path,
          const boost::asio::ip::udp::endpoint& adv_ep,
          std::chrono::nanoseconds adv_interval,
-         std::chrono::nanoseconds timeout, bool ghost_mode);
+         std::chrono::nanoseconds timeout, bool ghost_mode,
+         std::size_t tx_queue_size, std::size_t rx_queue_size);
 
   void Start();
 
@@ -76,6 +77,8 @@ class Branch : public api::ExposedObjectT<Branch, api::ObjectType::kBranch> {
   const detail::ConnectionManagerPtr connection_manager_;
   const detail::BranchInfoPtr info_;
   const detail::BroadcastManagerPtr broadcast_manager_;
+  const std::size_t tx_queue_size_;
+  const std::size_t rx_queue_size_;
 };
 
 typedef std::shared_ptr<Branch> BranchPtr;

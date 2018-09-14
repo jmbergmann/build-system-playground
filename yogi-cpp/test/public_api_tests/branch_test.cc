@@ -81,6 +81,8 @@ TEST_F(BranchTest, Info) {
   EXPECT_LT(info.GetStartTime(), yogi::GetCurrentTime());
   EXPECT_EQ(info.GetTimeout(), yogi::Duration::kInfinity);
   EXPECT_FALSE(info.GetGhostMode());
+  EXPECT_GT(info.GetTxQueueSize(), 1000);
+  EXPECT_GT(info.GetRxQueueSize(), 1000);
 
   EXPECT_EQ(branch->GetUuid(), info.GetUuid());
   EXPECT_EQ(branch->GetName(), info.GetName());
@@ -97,6 +99,8 @@ TEST_F(BranchTest, Info) {
   EXPECT_EQ(branch->GetStartTime(), info.GetStartTime());
   EXPECT_EQ(branch->GetTimeout(), info.GetTimeout());
   EXPECT_EQ(branch->GetGhostMode(), info.GetGhostMode());
+  EXPECT_EQ(branch->GetTxQueueSize(), info.GetTxQueueSize());
+  EXPECT_EQ(branch->GetRxQueueSize(), info.GetRxQueueSize());
 }
 
 TEST_F(BranchTest, GetConnectedBranches) {

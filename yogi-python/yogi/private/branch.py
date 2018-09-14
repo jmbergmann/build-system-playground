@@ -136,6 +136,16 @@ class BranchInfo:
         """True if the branch is in ghost mode."""
         return self._info["ghost_mode"]
 
+    @property
+    def tx_queue_size(self) -> int:
+        """Size of the send queue for remote branches."""
+        return self._info["tx_queue_size"]
+
+    @property
+    def rx_queue_size(self) -> int:
+        """Size of the receive queue for remote branches."""
+        return self._info["rx_queue_size"]
+
 
 class RemoteBranchInfo(BranchInfo):
     """Information about a remote branch."""
@@ -271,7 +281,9 @@ class Branch(Object):
               "advertising_port":     13531,
               "advertising_interval": 1.0,
               "timeout":              3.0,
-              "ghost_mode":           false
+              "ghost_mode":           false,
+              "tx_queue_size":        1000000,
+              "rx_queue_size":        100000
             }
         All of the properties are optional and if unspecified (or set to
         null), their respective default values will be used. The properties
@@ -289,6 +301,8 @@ class Branch(Object):
          - advertising_interval: Time between advertising messages. Must be at
            least 1 ms.
          - ghost_mode: Set to true to activate ghost mode (default: false).
+         - tx_queue_size: Size of the send queues for remote branches.
+         - rx_queue_size: Size of the receive queues for remote branches.
 
         Advertising and establishing connections can be limited to certain
         network interfaces via the _interface_ property. The default is to use
@@ -412,6 +426,16 @@ class Branch(Object):
     def ghost_mode(self) -> bool:
         """True if the branch is in ghost mode."""
         return self._info.ghost_mode
+
+    @property
+    def tx_queue_size(self) -> int:
+        """Size of the send queue for remote branches."""
+        return self._info.tx_queue_size
+
+    @property
+    def rx_queue_size(self) -> int:
+        """Size of the receive queue for remote branches."""
+        return self._info.rx_queue_size
 
     def get_connected_branches(self) -> Dict[str, RemoteBranchInfo]:
         """Retrieves information about all connected remote branches.

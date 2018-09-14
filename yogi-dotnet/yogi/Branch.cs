@@ -219,6 +219,8 @@ public static partial class Yogi
         {
             AdvertisingAddress = IPAddress.Parse((string)Data["advertising_address"]);
             AdvertisingPort = (int)Data["advertising_port"];
+            TxQueueSize = (int)Data["tx_queue_size"];
+            RxQueueSize = (int)Data["rx_queue_size"];
         }
 
         /// <summary>Advertising IP address.</summary>
@@ -226,6 +228,12 @@ public static partial class Yogi
 
         /// <summary>Advertising port.</summary>
         public int AdvertisingPort { get; }
+
+        /// <summary>Size of the send queue for remote branches.</summary>
+        public int TxQueueSize { get; }
+
+        /// <summary>Size of the receive queue for remote branches.</summary>
+        public int RxQueueSize { get; }
     }
 
     /// <summary>
@@ -467,7 +475,9 @@ public static partial class Yogi
         ///      "advertising_port":     13531,
         ///      "advertising_interval": 1.0,
         ///      "timeout":              3.0,
-        ///      "ghost_mode":           false
+        ///      "ghost_mode":           false,
+        ///      "tx_queue_size":        1000000,
+        ///      "rx_queue_size":        100000
         ///    }
         ///
         /// All of the properties are optional and if unspecified (or set to null),
@@ -486,6 +496,8 @@ public static partial class Yogi
         ///  - advertising_interval: Time between advertising messages. Must be at
         ///    least 1 ms.
         ///  - ghost_mode: Set to true to activate ghost mode (default: false).
+        ///  - tx_queue_size: Size of the send queues for remote branches.
+        ///  - rx_queue_size: Size of the receive queues for remote branches.
         ///
         /// Advertising and establishing connections can be limited to certain network
         /// interfaces via the _interface_ property. The default is to use all
@@ -553,6 +565,12 @@ public static partial class Yogi
 
         /// <summary>Advertising port.</summary>
         public int AdvertisingPort { get { return Info.AdvertisingPort; } }
+
+        /// <summary>Size of the send queue for remote branches.</summary>
+        public int TxQueueSize { get { return Info.TxQueueSize; } }
+
+        /// <summary>Size of the receive queue for remote branches.</summary>
+        public int RxQueueSize { get { return Info.RxQueueSize; } }
 
         /// <summary>
         /// Retrieves information about all connected remote branches.
