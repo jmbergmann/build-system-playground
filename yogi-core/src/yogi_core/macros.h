@@ -54,15 +54,29 @@
 #define CATCH_AND_RETURN_INTERNAL_ERRORS
 #endif
 
-#define CATCH_AND_RETURN            \
-  catch (const api::Error& err) {   \
-    return err.GetValue();          \
-  }                                 \
-  catch (const std::bad_alloc&) {   \
-    return YOGI_ERR_BAD_ALLOC;      \
-  }                                 \
-  catch (const std::regex_error&) { \
-    return YOGI_ERR_INVALID_REGEX;  \
-  }                                 \
-  CATCH_AND_RETURN_INTERNAL_ERRORS  \
+#define CATCH_AND_RETURN_ERRORS_ONLY \
+  catch (const api::Error& e) {      \
+    return e.GetErrorCode();         \
+  }                                  \
+  catch (const std::bad_alloc&) {    \
+    return YOGI_ERR_BAD_ALLOC;       \
+  }                                  \
+  catch (const std::regex_error&) {  \
+    return YOGI_ERR_INVALID_REGEX;   \
+  }                                  \
+  CATCH_AND_RETURN_INTERNAL_ERRORS
+
+#define CATCH_AND_RETURN       \
+  CATCH_AND_RETURN_ERRORS_ONLY \
+  return YOGI_OK;
+
+#define CATCH_DESCRIPTIVE_AND_RETURN(err, errsize)        \
+  catch (const api::DescriptiveError& e) {                \
+    CopyStringToUserBuffer(e.GetDetails(), err, errsize); \
+    return e.GetErrorCode();                              \
+  }                                                       \
+  CATCH_AND_RETURN_ERRORS_ONLY                            \
+  if (err != nullptr && errsize > 0) {                    \
+    *err = '\0';                                          \
+  }                                                       \
   return YOGI_OK;

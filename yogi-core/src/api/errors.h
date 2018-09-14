@@ -56,10 +56,33 @@ class Error : public Result, public std::exception {
     YOGI_ASSERT(error_code < 0);
   }
 
-  int GetErrorCode() { return GetValue(); }
+  int GetErrorCode() const { return GetValue(); }
 
   virtual const char* what() const noexcept;
 };
+
+class DescriptiveError : public Error {
+ public:
+  explicit DescriptiveError(int error_code) : Error(error_code) {}
+
+  DescriptiveError(const DescriptiveError& err)
+      : Error(err.GetValue()), oss_(err.oss_.str()) {}
+
+  DescriptiveError(DescriptiveError&& err)
+      : Error(err.GetValue()), oss_(std::move(err.oss_)) {}
+
+  template <typename T>
+  DescriptiveError& operator<<(T&& val) {
+    oss_ << std::forward<T>(val);
+    return *this;
+  }
+
+  std::string GetDetails() const { return oss_.str(); }
+
+ private:
+  std::ostringstream oss_;
+};
+
 }  // namespace api
 
-std::ostream& operator<< (std::ostream& os, const api::Result& res);
+std::ostream& operator<<(std::ostream& os, const api::Result& res);

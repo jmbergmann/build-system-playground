@@ -35,7 +35,6 @@ class CommandLineParser {
                     api::CommandLineOptions options);
 
   void Parse();
-  const std::string& GetLastErrorString() const { return err_description_; }
   const nlohmann::json& GetFilesConfiguration() const { return files_json_; }
   const nlohmann::json& GetDirectConfiguration() const { return direct_json_; }
 
@@ -69,7 +68,6 @@ class CommandLineParser {
   const int argc_;
   const char* const* const argv_;
   const api::CommandLineOptions options_;
-  std::string err_description_;
 
   boost::program_options::options_description visible_options_;
   boost::program_options::options_description hidden_options_;

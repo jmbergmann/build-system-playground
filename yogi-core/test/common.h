@@ -43,6 +43,16 @@ using namespace std::chrono_literals;
     FAIL() << "Wrong exception type thrown"; \
   }
 
+#define EXPECT_THROW_DESCRIPTIVE_ERROR(x, ec)  \
+  try {                                        \
+    x;                                         \
+  } catch (const api::DescriptiveError& err) { \
+    EXPECT_EQ(err.GetValue(), ec);             \
+    EXPECT_FALSE(err.GetDetails().empty());    \
+  } catch (...) {                              \
+    FAIL() << "Wrong exception type thrown";   \
+  }
+
 static const nlohmann::json kBranchProps = nlohmann::json::parse(R"raw(
   {
     "advertising_port": 44442,

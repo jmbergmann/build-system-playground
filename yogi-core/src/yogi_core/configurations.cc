@@ -49,19 +49,10 @@ YOGI_API int YOGI_ConfigurationUpdateFromCommandLine(void* config, int argc,
 
   try {
     auto cfg = api::ObjectRegister::Get<objects::Configuration>(config);
-
-    std::string err_desc;
-    try {
-      cfg->UpdateFromCommandLine(
-          argc, argv, ConvertFlags(options, Options::kNoOptions), &err_desc);
-    } catch (...) {
-      CopyStringToUserBuffer(err_desc, err, errsize);
-      throw;
-    }
-
-    CopyStringToUserBuffer(err_desc, err, errsize);
+    cfg->UpdateFromCommandLine(argc, argv,
+                               ConvertFlags(options, Options::kNoOptions));
   }
-  CATCH_AND_RETURN;
+  CATCH_DESCRIPTIVE_AND_RETURN(err, errsize);
 }
 
 YOGI_API int YOGI_ConfigurationUpdateFromJson(void* config, const char* json,
@@ -72,18 +63,9 @@ YOGI_API int YOGI_ConfigurationUpdateFromJson(void* config, const char* json,
 
   try {
     auto cfg = api::ObjectRegister::Get<objects::Configuration>(config);
-
-    std::string err_desc;
-    try {
-      cfg->UpdateFromString(json, &err_desc);
-    } catch (...) {
-      CopyStringToUserBuffer(err_desc, err, errsize);
-      throw;
-    }
-
-    CopyStringToUserBuffer(err_desc, err, errsize);
+    cfg->UpdateFromString(json);
   }
-  CATCH_AND_RETURN;
+  CATCH_DESCRIPTIVE_AND_RETURN(err, errsize);
 }
 
 YOGI_API int YOGI_ConfigurationUpdateFromFile(void* config,
@@ -95,18 +77,9 @@ YOGI_API int YOGI_ConfigurationUpdateFromFile(void* config,
 
   try {
     auto cfg = api::ObjectRegister::Get<objects::Configuration>(config);
-
-    std::string err_desc;
-    try {
-      cfg->UpdateFromFile(filename, &err_desc);
-    } catch (...) {
-      CopyStringToUserBuffer(err_desc, err, errsize);
-      throw;
-    }
-
-    CopyStringToUserBuffer(err_desc, err, errsize);
+    cfg->UpdateFromFile(filename);
   }
-  CATCH_AND_RETURN;
+  CATCH_DESCRIPTIVE_AND_RETURN(err, errsize);
 }
 
 YOGI_API int YOGI_ConfigurationDump(void* config, char* json, int jsonsize,

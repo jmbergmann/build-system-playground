@@ -17,6 +17,7 @@
 
 #include "command_line_parser.h"
 #include "../../api/errors.h"
+
 #include "../../objects/logger.h"
 #include "../../utils/glob.h"
 
@@ -27,7 +28,6 @@
 #include <algorithm>
 
 namespace po = boost::program_options;
-using namespace std::string_literals;
 
 namespace objects {
 namespace detail {
@@ -87,7 +87,7 @@ void CommandLineParser::AddLoggingOptions() {
     )(
       "log-console", po::value<std::string>()->notifier([&](auto& val) {
         this->LogConsoleNotifier(val);
-      })->implicit_value("STDERR"s),
+      })->implicit_value("STDERR"),
       "Log to either STDOUT, STDERR or NONE (implicit value is STDERR)"
     )(
       "log-color", po::value<bool>()->notifier([&](auto& val) {
@@ -265,8 +265,7 @@ void CommandLineParser::PopulateVariablesMap() {
                   .run(),
               vm_);
   } catch (const po::error& e) {
-    err_description_ = e.what();
-    throw api::Error(YOGI_ERR_PARSING_CMDLINE_FAILED);
+    throw api::DescriptiveError(YOGI_ERR_PARSING_CMDLINE_FAILED) << e.what();
   }
 }
 
@@ -290,8 +289,7 @@ void CommandLineParser::HandleHelpOptions() {
     ss << std::endl;
     ss << visible_options_ << std::endl;
 
-    err_description_ = ss.str();
-    throw api::Error(YOGI_ERR_HELP_REQUESTED);
+    throw api::DescriptiveError(YOGI_ERR_HELP_REQUESTED) << ss.str();
   }
 
   if (vm_.count("help-logging")) {
@@ -326,8 +324,7 @@ void CommandLineParser::HandleHelpOptions() {
     ss << "  $$ - A $ sign" << std::endl;
     // clang-format on
 
-    err_description_ = ss.str();
-    throw api::Error(YOGI_ERR_HELP_REQUESTED);
+    throw api::DescriptiveError(YOGI_ERR_HELP_REQUESTED) << ss.str();
   }
 }
 
@@ -335,8 +332,7 @@ void CommandLineParser::ExtractOptions() {
   try {
     po::notify(vm_);
   } catch (const po::error& e) {
-    err_description_ = e.what();
-    throw api::Error(YOGI_ERR_PARSING_CMDLINE_FAILED);
+    throw api::DescriptiveError(YOGI_ERR_PARSING_CMDLINE_FAILED) << e.what();
   }
 }
 
@@ -350,8 +346,7 @@ void CommandLineParser::ApplyOverrides() {
       }
     }
   } catch (const nlohmann::json::exception& e) {
-    err_description_ = e.what();
-    throw api::Error(YOGI_ERR_PARSING_CMDLINE_FAILED);
+    throw api::DescriptiveError(YOGI_ERR_PARSING_CMDLINE_FAILED) << e.what();
   }
 }
 
@@ -359,16 +354,16 @@ void CommandLineParser::LoadConfigFiles() {
   for (auto& file : config_files_) {
     std::ifstream f(file);
     if (!f.is_open()) {
-      err_description_ = "Could not open "s + file;
-      throw api::Error(YOGI_ERR_PARSING_FILE_FAILED);
+      throw api::DescriptiveError(YOGI_ERR_PARSING_FILE_FAILED)
+          << "Could not open " << file;
     }
 
     nlohmann::json json;
     try {
       f >> json;
     } catch (const std::exception& e) {
-      err_description_ = "Could not parse "s + file + ": " + e.what();
-      throw api::Error(YOGI_ERR_PARSING_FILE_FAILED);
+      throw api::DescriptiveError(YOGI_ERR_PARSING_FILE_FAILED)
+          << "Could not parse " << file << ": " << e.what();
     }
 
     files_json_.merge_patch(json);
@@ -386,10 +381,9 @@ void CommandLineParser::LogFileNotifier(const std::string& val) {
 void CommandLineParser::LogConsoleNotifier(const std::string& val) {
   auto s = boost::to_upper_copy(val);
   if (s != "STDERR" && s != "STDOUT" && s != "NONE") {
-    err_description_ = "Invalid value \""s + val +
-                       "\"for --log-console."
-                       " Allowed values are STDOUT, STDERR and NONE.";
-    throw api::Error(YOGI_ERR_PARSING_CMDLINE_FAILED);
+    throw api::DescriptiveError(YOGI_ERR_PARSING_CMDLINE_FAILED)
+        << "Invalid value \"" << val
+        << "\"for --log-console. Allowed values are STDOUT, STDERR and NONE.";
   }
 
   if (s == "NONE") {
@@ -404,8 +398,8 @@ void CommandLineParser::LogVerbosityNotifier(
   for (auto& str : val) {
     auto sep_pos = str.find('=');
     if (sep_pos == std::string::npos) {
-      err_description_ = "Invalid log verbosity string format \""s + str + "\"";
-      throw api::Error(YOGI_ERR_PARSING_CMDLINE_FAILED);
+      throw api::DescriptiveError(YOGI_ERR_PARSING_CMDLINE_FAILED)
+          << "Invalid log verbosity string format \"" << str << "\"";
     }
 
     auto comp = str.substr(0, sep_pos);
@@ -414,8 +408,7 @@ void CommandLineParser::LogVerbosityNotifier(
     try {
       Logger::StringToVerbosity(verb);
     } catch (const std::exception& e) {
-      err_description_ = e.what();
-      throw api::Error(YOGI_ERR_PARSING_CMDLINE_FAILED);
+      throw api::DescriptiveError(YOGI_ERR_PARSING_CMDLINE_FAILED) << e.what();
     }
 
     direct_json_["logging"]["verbosity"][comp] = verb;
@@ -426,13 +419,12 @@ void CommandLineParser::FileNotifier(const std::vector<std::string>& val) {
   try {
     config_files_ = utils::Glob(val);
   } catch (const std::exception& e) {
-    err_description_ = e.what();
-    throw api::Error(YOGI_ERR_PARSING_CMDLINE_FAILED);
+    throw api::DescriptiveError(YOGI_ERR_PARSING_CMDLINE_FAILED) << e.what();
   }
 
   if (options_ & api::kFileRequiredOption && config_files_.empty()) {
-    err_description_ = "No configuration files specified.";
-    throw api::Error(YOGI_ERR_PARSING_CMDLINE_FAILED);
+    throw api::DescriptiveError(YOGI_ERR_PARSING_CMDLINE_FAILED)
+        << "No configuration files specified.";
   }
 }
 
@@ -446,16 +438,16 @@ void CommandLineParser::OverrideNotifier(const std::vector<std::string>& val) {
       try {
         ovr.value = nlohmann::json::parse(str);
       } catch (const std::exception& e) {
-        err_description_ = "Parsing \""s + str + "\" failed: " + e.what();
-        throw api::Error(YOGI_ERR_PARSING_CMDLINE_FAILED);
+        throw api::DescriptiveError(YOGI_ERR_PARSING_CMDLINE_FAILED)
+            << "Parsing \"" << str << "\" failed: " << e.what();
       }
     } else {
       ovr.json_pointer_syntax = true;
 
       auto sep_pos = str.find('=');
       if (sep_pos == std::string::npos) {
-        err_description_ = "Invalid override format \""s + str + "\"";
-        throw api::Error(YOGI_ERR_PARSING_CMDLINE_FAILED);
+        throw api::DescriptiveError(YOGI_ERR_PARSING_CMDLINE_FAILED)
+            << "Invalid override format \"" << str << "\"";
       }
 
       ovr.path = nlohmann::json::json_pointer(str.substr(0, sep_pos));
@@ -475,8 +467,8 @@ void CommandLineParser::VariableNotifier(const std::vector<std::string>& val) {
   for (auto& str : val) {
     auto sep_pos = str.find('=');
     if (sep_pos == std::string::npos) {
-      err_description_ = "Invalid veriable format \""s + str + "\"";
-      throw api::Error(YOGI_ERR_PARSING_CMDLINE_FAILED);
+      throw api::DescriptiveError(YOGI_ERR_PARSING_CMDLINE_FAILED)
+          << "Invalid veriable format \"" << str << "\"";
     }
 
     auto name = str.substr(0, sep_pos);

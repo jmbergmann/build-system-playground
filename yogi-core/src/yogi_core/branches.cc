@@ -32,16 +32,14 @@ YOGI_API int YOGI_BranchCreate(void** branch, void* context, const char* props,
 
   try {
     auto ctx = api::ObjectRegister::Get<objects::Context>(context);
-    std::string err_desc;
 
     auto properties = nlohmann::json::object();
     if (props) {
       try {
         properties = nlohmann::json::parse(props);
       } catch (const nlohmann::json::exception& e) {
-        err_desc = "Could not parse JSON string: "s + e.what();
-        CopyStringToUserBuffer(err_desc, err, errsize);
-        throw api::Error(YOGI_ERR_PARSING_JSON_FAILED);
+        throw api::DescriptiveError(YOGI_ERR_PARSING_JSON_FAILED)
+            << "Could not parse JSON string: " << e.what();
       }
 
       if (section) {
@@ -50,22 +48,18 @@ YOGI_API int YOGI_BranchCreate(void** branch, void* context, const char* props,
         try {
           jp = nlohmann::json::json_pointer(section);
         } catch (const nlohmann::json::exception& e) {
-          err_desc = "Could not parse JSON pointer: "s + e.what();
-          CopyStringToUserBuffer(err_desc, err, errsize);
-          throw api::Error(YOGI_ERR_INVALID_PARAM);
+          throw api::DescriptiveError(YOGI_ERR_INVALID_PARAM)
+              << "Could not parse JSON pointer: " << e.what();
         }
 
         properties = properties[jp];
         if (!properties.is_object()) {
-          err_desc = "Could not find section \""s + section +
-                     "\" in branch properties.";
-          CopyStringToUserBuffer(err_desc, err, errsize);
-          throw api::Error(YOGI_ERR_PARSING_JSON_FAILED);
+          throw api::DescriptiveError(YOGI_ERR_PARSING_JSON_FAILED)
+              << "Could not find section \"" << section
+              << "\" in branch properties.";
         }
       }
     }
-
-    CopyStringToUserBuffer(err_desc, err, errsize);
 
     auto name = properties.value("name", std::to_string(utils::GetProcessId()) +
                                              '@' + utils::GetHostname());
@@ -97,7 +91,7 @@ YOGI_API int YOGI_BranchCreate(void** branch, void* context, const char* props,
 
     *branch = api::ObjectRegister::Register(brn);
   }
-  CATCH_AND_RETURN;
+  CATCH_DESCRIPTIVE_AND_RETURN(err, errsize);
 }
 
 YOGI_API int YOGI_BranchGetInfo(void* branch, void* uuid, char* json,
@@ -158,22 +152,22 @@ YOGI_API int YOGI_BranchAwaitEvent(void* branch, int events, void* uuid,
   try {
     auto brn = api::ObjectRegister::Get<objects::Branch>(branch);
 
-    brn->AwaitEvent(
-        ConvertFlags(events, api::BranchEvents::kNoEvent),
-        [=](auto& res, auto event, auto& evres, auto& tmp_uuid,
-            auto& tmp_json) {
-          if (res != api::kSuccess) {
-            fn(res.GetValue(), event, evres.GetValue(), userarg);
-            return;
-          }
+    brn->AwaitEvent(ConvertFlags(events, api::BranchEvents::kNoEvent),
+                    [=](auto& res, auto event, auto& evres, auto& tmp_uuid,
+                        auto& tmp_json) {
+                      if (res != api::kSuccess) {
+                        fn(res.GetValue(), event, evres.GetValue(), userarg);
+                        return;
+                      }
 
-          CopyUuidToUserBuffer(tmp_uuid, uuid);
-          if (CopyStringToUserBuffer(tmp_json, json, jsonsize)) {
-            fn(res.GetValue(), event, evres.GetValue(), userarg);
-          } else {
-            fn(YOGI_ERR_BUFFER_TOO_SMALL, event, evres.GetValue(), userarg);
-          }
-        });
+                      CopyUuidToUserBuffer(tmp_uuid, uuid);
+                      if (CopyStringToUserBuffer(tmp_json, json, jsonsize)) {
+                        fn(res.GetValue(), event, evres.GetValue(), userarg);
+                      } else {
+                        fn(YOGI_ERR_BUFFER_TOO_SMALL, event, evres.GetValue(),
+                           userarg);
+                      }
+                    });
   }
   CATCH_AND_RETURN;
 }

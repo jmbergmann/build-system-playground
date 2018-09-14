@@ -36,36 +36,29 @@ class Configuration
   Configuration(api::ConfigurationFlags flags);
 
   void UpdateFromCommandLine(int argc, const char* const* argv,
-                             api::CommandLineOptions options,
-                             std::string* err_desc);
-  void UpdateFromString(const std::string& json_str, std::string* err_desc);
-  void UpdateFromFile(const std::string& filename, std::string* err_desc);
+                             api::CommandLineOptions options);
+  void UpdateFromString(const std::string& json_str);
+  void UpdateFromFile(const std::string& filename);
   std::string Dump(bool resolve_variables, int indentation_width) const;
   void WriteToFile(const std::string& filename, bool resolve_variables,
                    int indentation_width) const;
 
  private:
   static void CheckCircularVariableDependency(const std::string& var_ref,
-                                              const nlohmann::json& var_val,
-                                              std::string* err_desc);
-  static void ResolveVariablesSections(nlohmann::json* vars,
-                                       std::string* err_desc);
+                                              const nlohmann::json& var_val);
+  static void ResolveVariablesSections(nlohmann::json* vars);
   static void ResolveSingleVariable(nlohmann::json* elem,
                                     const std::string& var_ref,
                                     const nlohmann::json& var_val);
-  static nlohmann::json ResolveVariables(const nlohmann::json& unresolved_json,
-                                         std::string* err_desc);
+  static nlohmann::json ResolveVariables(const nlohmann::json& unresolved_json);
   template <typename Fn>
   static void WalkAllElements(nlohmann::json* json, Fn fn);
 
-  static void CheckVariablesOnlyUsedInValues(nlohmann::json* json,
-                                             std::string* err_desc);
-  static void CheckAllVariablesAreResolved(nlohmann::json* json,
-                                           std::string* err_desc);
+  static void CheckVariablesOnlyUsedInValues(nlohmann::json* json);
+  static void CheckAllVariablesAreResolved(nlohmann::json* json);
 
   void VerifyAndMerge(const nlohmann::json& json_to_merge,
-                      const nlohmann::json& immutable_json,
-                      std::string* err_desc);
+                      const nlohmann::json& immutable_json);
 
   static const LoggerPtr logger_;
 

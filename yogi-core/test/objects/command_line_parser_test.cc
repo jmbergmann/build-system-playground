@@ -27,7 +27,7 @@ class CommandLineParserTest : public Test {
                                       api::CommandLineOptions options,
                                       const char* section_name) {
     CommandLineParser parser(cmdline.argc, cmdline.argv, options);
-    EXPECT_NO_THROW(parser.Parse()) << parser.GetLastErrorString();
+    EXPECT_NO_THROW(parser.Parse());
 
     auto section = parser.GetDirectConfiguration()[section_name];
     EXPECT_FALSE(section.empty());
@@ -37,8 +37,8 @@ class CommandLineParserTest : public Test {
 
   void CheckParsingFailsWithNoOptions(const CommandLine& cmdline) {
     CommandLineParser parser(cmdline.argc, cmdline.argv, api::kNoOptions);
-    EXPECT_THROW_ERROR(parser.Parse(), YOGI_ERR_PARSING_CMDLINE_FAILED);
-    EXPECT_FALSE(parser.GetLastErrorString().empty());
+    EXPECT_THROW_DESCRIPTIVE_ERROR(parser.Parse(),
+                                   YOGI_ERR_PARSING_CMDLINE_FAILED);
   }
 
   template <typename T>
@@ -83,8 +83,7 @@ TEST_F(CommandLineParserTest, HelpOption) {
 
   CommandLineParser parser(cmdline.argc, cmdline.argv, api::kNoOptions);
 
-  EXPECT_THROW_ERROR(parser.Parse(), YOGI_ERR_HELP_REQUESTED);
-  EXPECT_FALSE(parser.GetLastErrorString().empty());
+  EXPECT_THROW_DESCRIPTIVE_ERROR(parser.Parse(), YOGI_ERR_HELP_REQUESTED);
 }
 
 TEST_F(CommandLineParserTest, HelpLoggingOption) {
@@ -96,8 +95,7 @@ TEST_F(CommandLineParserTest, HelpLoggingOption) {
 
   CommandLineParser parser(cmdline.argc, cmdline.argv, api::kLoggingOptions);
 
-  EXPECT_THROW_ERROR(parser.Parse(), YOGI_ERR_HELP_REQUESTED);
-  EXPECT_FALSE(parser.GetLastErrorString().empty());
+  EXPECT_THROW_DESCRIPTIVE_ERROR(parser.Parse(), YOGI_ERR_HELP_REQUESTED);
 
   CheckParsingFailsWithNoOptions(cmdline);
 }
@@ -204,7 +202,7 @@ TEST_F(CommandLineParserTest, FileOption) {
   // clang-format on
 
   CommandLineParser parser(cmdline.argc, cmdline.argv, api::kFileOption);
-  EXPECT_NO_THROW(parser.Parse()) << parser.GetLastErrorString();
+  EXPECT_NO_THROW(parser.Parse());
 
   auto section = parser.GetFilesConfiguration()["person"];
   EXPECT_FALSE(section.empty());
@@ -229,8 +227,7 @@ TEST_F(CommandLineParserTest, FileOptionCorruptFile) {
   // clang-format on
 
   CommandLineParser parser(cmdline.argc, cmdline.argv, api::kFileOption);
-  EXPECT_THROW_ERROR(parser.Parse(), YOGI_ERR_PARSING_FILE_FAILED);
-  EXPECT_FALSE(parser.GetLastErrorString().empty());
+  EXPECT_THROW_DESCRIPTIVE_ERROR(parser.Parse(), YOGI_ERR_PARSING_FILE_FAILED);
 }
 
 TEST_F(CommandLineParserTest, OverrideOption) {

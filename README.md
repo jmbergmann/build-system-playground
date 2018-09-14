@@ -18,8 +18,6 @@ TODO:
 * Checkout asio timer problem (see code below)
 * Check path validity when creating branches and terminals
 * Whether or not a branch is actively receiving broadcasts must be conveyed when connecting to other branches in one of the initial messages to avoid missing broadcasts
-* yogi-core: api::Error should really be api::Result
-* Can we avoid passing around the err for descriptive errors and use exceptions instead?
 
 #include <boost/asio.hpp>
 #include <chrono>

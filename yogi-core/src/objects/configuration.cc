@@ -32,56 +32,47 @@ Configuration::Configuration(api::ConfigurationFlags flags)
       immutable_json_({}) {}
 
 void Configuration::UpdateFromCommandLine(int argc, const char* const* argv,
-                                          api::CommandLineOptions options,
-                                          std::string* err_desc) {
+                                          api::CommandLineOptions options) {
   detail::CommandLineParser parser(argc, argv, options);
-
-  try {
-    parser.Parse();
-  } catch (const api::Error&) {
-    *err_desc = parser.GetLastErrorString();
-    throw;
-  }
+  parser.Parse();
 
   VerifyAndMerge(parser.GetFilesConfiguration(),
-                 parser.GetDirectConfiguration(), err_desc);
+                 parser.GetDirectConfiguration());
 
   if (!mutable_cmdline_) {
     immutable_json_ = parser.GetDirectConfiguration();
   }
 }
 
-void Configuration::UpdateFromString(const std::string& json_str,
-                                     std::string* err_desc) {
+void Configuration::UpdateFromString(const std::string& json_str) {
   nlohmann::json json;
 
   try {
     json = nlohmann::json::parse(json_str);
   } catch (const nlohmann::json::exception& e) {
-    *err_desc = "Could not parse JSON string: "s + e.what();
-    throw api::Error(YOGI_ERR_PARSING_JSON_FAILED);
+    throw api::DescriptiveError(YOGI_ERR_PARSING_JSON_FAILED)
+        << "Could not parse JSON string: " << e.what();
   }
 
-  VerifyAndMerge(json, immutable_json_, err_desc);
+  VerifyAndMerge(json, immutable_json_);
 }
 
-void Configuration::UpdateFromFile(const std::string& filename,
-                                   std::string* err_desc) {
+void Configuration::UpdateFromFile(const std::string& filename) {
   std::ifstream f(filename);
   if (!f.is_open()) {
-    *err_desc = "Could not open "s + filename;
-    throw api::Error(YOGI_ERR_PARSING_FILE_FAILED);
+    throw api::DescriptiveError(YOGI_ERR_PARSING_FILE_FAILED)
+        << "Could not open " << filename;
   }
 
   nlohmann::json json;
   try {
     f >> json;
   } catch (const std::exception& e) {
-    *err_desc = "Could not parse "s + filename + ": " + e.what();
-    throw api::Error(YOGI_ERR_PARSING_FILE_FAILED);
+    throw api::DescriptiveError(YOGI_ERR_PARSING_FILE_FAILED)
+        << "Could not parse " << filename << ": " << e.what();
   }
 
-  VerifyAndMerge(json, immutable_json_, err_desc);
+  VerifyAndMerge(json, immutable_json_);
 }
 
 std::string Configuration::Dump(bool resolve_variables,
@@ -91,7 +82,7 @@ std::string Configuration::Dump(bool resolve_variables,
       throw api::Error(YOGI_ERR_NO_VARIABLE_SUPPORT);
     }
 
-    return ResolveVariables(json_, nullptr).dump(indentation_width);
+    return ResolveVariables(json_).dump(indentation_width);
   } else {
     return json_.dump(indentation_width);
   }
@@ -111,7 +102,7 @@ void Configuration::WriteToFile(const std::string& filename,
 
   try {
     if (resolve_variables) {
-      f << ResolveVariables(json_, nullptr).dump(indentation_width);
+      f << ResolveVariables(json_).dump(indentation_width);
     } else {
       f << json_.dump(indentation_width);
     }
@@ -127,24 +118,22 @@ void Configuration::WriteToFile(const std::string& filename,
 }
 
 void Configuration::CheckCircularVariableDependency(
-    const std::string& var_ref, const nlohmann::json& var_val,
-    std::string* err_desc) {
+    const std::string& var_ref, const nlohmann::json& var_val) {
   if (var_val.is_string()) {
     auto str = var_val.get<std::string>();
     if (str.find(var_ref) != std::string::npos) {
-      *err_desc = "Circular dependency in variable \""s +
-                  var_ref.substr(2, var_ref.size() - 3) + '"';
-      throw api::Error(YOGI_ERR_UNDEFINED_VARIABLES);
+      throw api::DescriptiveError(YOGI_ERR_UNDEFINED_VARIABLES)
+          << "Circular dependency in variable \""
+          << var_ref.substr(2, var_ref.size() - 3) << '"';
     }
   }
 }
 
-void Configuration::ResolveVariablesSections(nlohmann::json* vars,
-                                             std::string* err_desc) {
+void Configuration::ResolveVariablesSections(nlohmann::json* vars) {
   for (auto it = vars->begin(); it != vars->end(); ++it) {
     auto var_ref = "${"s + it.key() + '}';
     auto var_val = it.value();
-    CheckCircularVariableDependency(var_ref, var_val, err_desc);
+    CheckCircularVariableDependency(var_ref, var_val);
 
     for (auto& elem : *vars) {
       ResolveSingleVariable(&elem, var_ref, var_val);
@@ -171,7 +160,7 @@ void Configuration::ResolveSingleVariable(nlohmann::json* elem,
 }
 
 nlohmann::json Configuration::ResolveVariables(
-    const nlohmann::json& unresolved_json, std::string* err_desc) {
+    const nlohmann::json& unresolved_json) {
   auto json = unresolved_json;
   if (!json.count("variables")) {
     return json;
@@ -179,7 +168,7 @@ nlohmann::json Configuration::ResolveVariables(
 
   auto& vars = json["variables"];
 
-  ResolveVariablesSections(&vars, err_desc);
+  ResolveVariablesSections(&vars);
 
   WalkAllElements(&json, [&](const auto&, auto* elem) {
     for (auto it = vars.cbegin(); it != vars.cend(); ++it) {
@@ -202,46 +191,42 @@ void Configuration::WalkAllElements(nlohmann::json* json, Fn fn) {
   }
 }
 
-void Configuration::CheckVariablesOnlyUsedInValues(nlohmann::json* json,
-                                                   std::string* err_desc) {
+void Configuration::CheckVariablesOnlyUsedInValues(nlohmann::json* json) {
   WalkAllElements(json, [=](const auto& key, auto) {
     if (key.find("${") != std::string::npos) {
-      *err_desc = "Found syntax for variable in key: "s + key;
-      throw api::Error(YOGI_ERR_VARIABLE_USED_IN_KEY);
+      throw api::DescriptiveError(YOGI_ERR_VARIABLE_USED_IN_KEY)
+          << "Found syntax for variable in key: " << key;
     }
   });
 }
 
-void Configuration::CheckAllVariablesAreResolved(nlohmann::json* json,
-                                                 std::string* err_desc) {
+void Configuration::CheckAllVariablesAreResolved(nlohmann::json* json) {
   WalkAllElements(json, [=](const auto&, const auto* elem) {
     if (!elem->is_string()) return;
     auto val = elem->template get<std::string>();
     auto pos = val.find("${");
     if (pos != std::string::npos) {
-      *err_desc = "Variable \""s +
-                  val.substr(pos + 2, val.find('}', pos + 2) - pos - 2) +
-                  "\" could not be resolved";
-      throw api::Error(YOGI_ERR_UNDEFINED_VARIABLES);
+      throw api::DescriptiveError(YOGI_ERR_UNDEFINED_VARIABLES)
+          << "Variable \""
+          << val.substr(pos + 2, val.find('}', pos + 2) - pos - 2)
+          << "\" could not be resolved";
     }
   });
 }
 
 void Configuration::VerifyAndMerge(const nlohmann::json& json_to_merge,
-                                   const nlohmann::json& immutable_json,
-                                   std::string* err_desc) {
+                                   const nlohmann::json& immutable_json) {
   auto new_json = json_;
   new_json.merge_patch(json_to_merge);
   new_json.merge_patch(immutable_json);
 
   if (variables_supported_) {
-    CheckVariablesOnlyUsedInValues(&new_json, err_desc);
-    auto resolved_json = ResolveVariables(new_json, err_desc);
-    CheckAllVariablesAreResolved(&resolved_json, err_desc);
+    CheckVariablesOnlyUsedInValues(&new_json);
+    auto resolved_json = ResolveVariables(new_json);
+    CheckAllVariablesAreResolved(&resolved_json);
   }
 
   json_ = new_json;
-  err_desc->clear();
 }
 
 const LoggerPtr Configuration::logger_ =
