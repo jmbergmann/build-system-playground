@@ -113,8 +113,8 @@ const char* Result::GetDescription() const noexcept {
     case YOGI_ERR_DUPLICATE_BRANCH_PATH:
       return "A branch with the same path is already active";
 
-    case YOGI_ERR_MESSAGE_TOO_LARGE:
-      return "Message is too large";
+    case YOGI_ERR_PAYLOAD_TOO_LARGE:
+      return "Message payload is too large";
 
     case YOGI_ERR_PARSING_CMDLINE_FAILED:
       return "Parsing the command line failed";

@@ -131,8 +131,8 @@ enum class ErrorCode {
   /// A branch with the same path is already active
   kDuplicateBranchPath = -28,
 
-  /// Message is too large
-  kMessageTooLarge = -29,
+  /// Message payload is too large
+  kPayloadTooLarge = -29,
 
   /// Parsing the command line failed
   kParsingCmdlineFailed = -30,
@@ -204,7 +204,7 @@ inline std::string ToString<ErrorCode>(const ErrorCode& ec) {
     _YOGI_TO_STRING_ENUM_CASE(ErrorCode, kNetNameMismatch)
     _YOGI_TO_STRING_ENUM_CASE(ErrorCode, kDuplicateBranchName)
     _YOGI_TO_STRING_ENUM_CASE(ErrorCode, kDuplicateBranchPath)
-    _YOGI_TO_STRING_ENUM_CASE(ErrorCode, kMessageTooLarge)
+    _YOGI_TO_STRING_ENUM_CASE(ErrorCode, kPayloadTooLarge)
     _YOGI_TO_STRING_ENUM_CASE(ErrorCode, kParsingCmdlineFailed)
     _YOGI_TO_STRING_ENUM_CASE(ErrorCode, kParsingJsonFailed)
     _YOGI_TO_STRING_ENUM_CASE(ErrorCode, kParsingFileFailed)

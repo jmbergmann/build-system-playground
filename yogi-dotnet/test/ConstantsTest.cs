@@ -99,10 +99,10 @@ namespace test
         }
 
         [Fact]
-        public void MaxMessageSize()
+        public void MaxMessagePayloadSize()
         {
-            Assert.IsType<int>(Yogi.Constants.MaxMessageSize);
-            Assert.True(Yogi.Constants.MaxMessageSize >= 1000);
+            Assert.IsType<int>(Yogi.Constants.MaxMessagePayloadSize);
+            Assert.True(Yogi.Constants.MaxMessagePayloadSize >= 1000);
         }
 
         [Fact]
@@ -144,7 +144,7 @@ namespace test
         public void MinTxQueueSize()
         {
             Assert.IsType<int>(Yogi.Constants.MinTxQueueSize);
-            Assert.True(Yogi.Constants.MinTxQueueSize >= Yogi.Constants.MaxMessageSize);
+            Assert.True(Yogi.Constants.MinTxQueueSize >= Yogi.Constants.MaxMessagePayloadSize);
         }
 
         [Fact]
@@ -165,7 +165,7 @@ namespace test
         public void MinRxQueueSize()
         {
             Assert.IsType<int>(Yogi.Constants.MinRxQueueSize);
-            Assert.True(Yogi.Constants.MinRxQueueSize >= Yogi.Constants.MaxMessageSize);
+            Assert.True(Yogi.Constants.MinRxQueueSize >= Yogi.Constants.MaxMessagePayloadSize);
         }
 
         [Fact]

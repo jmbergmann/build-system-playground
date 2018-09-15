@@ -79,8 +79,8 @@
 //! Default textual format for log entries (const char*)
 #define YOGI_CONST_DEFAULT_LOG_FORMAT 11
 
-//! Maximum size of a message (int)
-#define YOGI_CONST_MAX_MESSAGE_SIZE 12
+//! Maximum size of the payload in a message (int)
+#define YOGI_CONST_MAX_MESSAGE_PAYLOAD_SIZE 12
 
 //! Default textual format for timestamps (const char*)
 #define YOGI_CONST_DEFAULT_TIME_FORMAT 13
@@ -211,8 +211,8 @@
 //! A branch with the same path is already active
 #define YOGI_ERR_DUPLICATE_BRANCH_PATH -28
 
-//! Message is too large
-#define YOGI_ERR_MESSAGE_TOO_LARGE -29
+//! Message payload is too large
+#define YOGI_ERR_PAYLOAD_TOO_LARGE -29
 
 //! Parsing the command line failed
 #define YOGI_ERR_PARSING_CMDLINE_FAILED -30

@@ -68,8 +68,8 @@ void GetConstant(void* dest, int constant) {
       *static_cast<const char**>(dest) = kDefaultLogFormat;
       break;
 
-    case YOGI_CONST_MAX_MESSAGE_SIZE:
-      *static_cast<int*>(dest) = kMaxMessageSize;
+    case YOGI_CONST_MAX_MESSAGE_PAYLOAD_SIZE:
+      *static_cast<int*>(dest) = kMaxMessagePayloadSize;
       break;
 
     case YOGI_CONST_DEFAULT_TIME_FORMAT:

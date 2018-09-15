@@ -51,7 +51,7 @@ TEST(ErrorsTest, ErrorCodeEnum) {
   CHECK_ENUM_ELEMENT(ErrorCode, kNetNameMismatch,       YOGI_ERR_NET_NAME_MISMATCH);
   CHECK_ENUM_ELEMENT(ErrorCode, kDuplicateBranchName,   YOGI_ERR_DUPLICATE_BRANCH_NAME);
   CHECK_ENUM_ELEMENT(ErrorCode, kDuplicateBranchPath,   YOGI_ERR_DUPLICATE_BRANCH_PATH);
-  CHECK_ENUM_ELEMENT(ErrorCode, kMessageTooLarge,       YOGI_ERR_MESSAGE_TOO_LARGE);
+  CHECK_ENUM_ELEMENT(ErrorCode, kPayloadTooLarge,       YOGI_ERR_PAYLOAD_TOO_LARGE);
   CHECK_ENUM_ELEMENT(ErrorCode, kParsingCmdlineFailed,  YOGI_ERR_PARSING_CMDLINE_FAILED);
   CHECK_ENUM_ELEMENT(ErrorCode, kParsingJsonFailed,     YOGI_ERR_PARSING_JSON_FAILED);
   CHECK_ENUM_ELEMENT(ErrorCode, kParsingFileFailed,     YOGI_ERR_PARSING_FILE_FAILED);

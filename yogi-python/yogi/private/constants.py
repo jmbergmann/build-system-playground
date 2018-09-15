@@ -89,8 +89,8 @@ class MetaConstants(type):
         return get_constant(11, c_char_p)
 
     @property
-    def MAX_MESSAGE_SIZE(self) -> int:
-        """Maximum size of a message between branches."""
+    def MAX_MESSAGE_PAYLOAD_SIZE(self) -> int:
+        """Maximum size of the payload of a message between branches."""
         return get_constant(12, c_int)
 
     @property

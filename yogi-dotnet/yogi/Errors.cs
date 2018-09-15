@@ -38,47 +38,130 @@ public static partial class Yogi
     /// </summary>
     public enum ErrorCode
     {
+        /// <summary>Operation completed successfully.</summary>
         Ok = 0,
+
+        /// <summary>Unknown internal error occured.</summary>
         Unknown = -1,
+
+        /// <summary>The object is still being used by another object.</summary>
         ObjectStillUsed = -2,
+
+        /// <summary>Insufficient memory to complete the operation.</summary>
         BadAlloc = -3,
+
+        /// <summary>Invalid parameter.</summary>
         InvalidParam = -4,
+
+        /// <summary>Invalid Handle.</summary>
         InvalidHandle = -5,
+
+        /// <summary>Object is of the wrong type.</summary>
         WrongObjectType = -6,
+
+        /// <summary>The operation has been canceled.</summary>
         Canceled = -7,
+
+        /// <summary>Operation failed because the object is busy.</summary>
         Busy = -8,
+
+        /// <summary>The operation timed out.</summary>
         Timeout = -9,
+
+        /// <summary>The timer has not been started or already expired.</summary>
         TimerExpired = -10,
+
+        /// <summary>The supplied buffer is too small.</summary>
         BufferTooSmall = -11,
+
+        /// <summary>Could not open a socket.</summary>
         OpenSocketFailed = -12,
+
+        /// <summary>Could not bind a socket.</summary>
         BindSocketFailed = -13,
+
+        /// <summary>Could not listen on socket.</summary>
         ListenSocketFailed = -14,
+
+        /// <summary>Could not set a socket option.</summary>
         SetSocketOptionFailed = -15,
+
+        /// <summary>Invalid regular expression.</summary>
         InvalidRegex = -16,
+
+        /// <summary>Could not open file.</summary>
         OpenFileFailed = -17,
+
+        /// <summary>Could not read from or write to socket.</summary>
         RwSocketFailed = -18,
+
+        /// <summary>Could not connect a socket.</summary>
         ConnectSocketFailed = -19,
+
+        /// <summary>The magic prefix sent when establishing a connection is wrong.</summary>
         InvalidMagicPrefix = -20,
+
+        /// <summary>The local and remote branches use incompatible Yogi versions.</summary>
         IncompatibleVersion = -21,
+
+        /// <summary>Could not deserialize a message.</summary>
         DeserializeMsgFailed = -22,
+
+        /// <summary>Could not accept a socket.</summary>
         AcceptSocketFailed = -23,
+
+        /// <summary>Attempting to connect branch to itself.</summary>
         LoopbackConnection = -24,
+
+        /// <summary>The passwords of the local and remote branch don't match.</summary>
         PasswordMismatch = -25,
+
+        /// <summary>The net names of the local and remote branch don't match.</summary>
         NetNameMismatch = -26,
+
+        /// <summary>A branch with the same name is already active.</summary>
         DuplicateBranchName = -27,
+
+        /// <summary>A branch with the same path is already active.</summary>
         DuplicateBranchPath = -28,
-        MessageTooLarge = -29,
+
+        /// <summary>Message payload is too large.</summary>
+        PayloadTooLarge = -29,
+
+        /// <summary>Parsing the command line failed.</summary>
         ParsingCmdlineFailed = -30,
+
+        /// <summary>Parsing a JSON string failed.</summary>
         ParsingJsonFailed = -31,
+
+        /// <summary>Parsing a configuration file failed.</summary>
         ParsingFileFailed = -32,
+
+        /// <summary>The configuration is not valid.</summary>
         ConfigNotValid = -33,
+
+        /// <summary>Help/usage text requested.</summary>
         HelpRequested = -34,
+
+        /// <summary>Could not write to file.</summary>
         WriteToFileFailed = -35,
+
+        /// <summary>One or more configuration variables are undefined or could not be resolved.</summary>
         UndefinedVariables = -36,
+
+        /// <summary>Support for configuration variables has been disabled.</summary>
         NoVariableSupport = -37,
+
+        /// <summary>A configuration variable has been used in a key.</summary>
         VariableUsedInKey = -38,
+
+        /// <summary>Invalid time format.</summary>
         InvalidTimeFormat = -39,
+
+        /// <summary>Could not parse time string.</summary>
         ParsingTimeFailed = -40,
+
+        /// <summary>A send queue for a remote branch is full.</summary>
         TxQueueFull = -41,
     }
 

@@ -108,8 +108,8 @@ void BranchConnection::OnInfoHeaderReceived(
     return;
   }
 
-  if (body_size > api::kMaxMessageSize) {
-    handler(api::Error(YOGI_ERR_MESSAGE_TOO_LARGE));
+  if (body_size > api::kMaxMessagePayloadSize) {
+    handler(api::Error(YOGI_ERR_PAYLOAD_TOO_LARGE));
     return;
   }
 

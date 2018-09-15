@@ -34,18 +34,18 @@ SCC long long kDefaultConnectionTimeout      = 3'000'000'000;
 SCC int       kDefaultLoggerVerbosity        = YOGI_VB_INFO;
 SCC char*     kDefaultLogTimeFormat          = "%F %T.%3";
 SCC char*     kDefaultLogFormat              = "$t [T$T] $<$s $c: $m$>";
-SCC int       kMaxMessageSize                = 100'000;
+SCC int       kMaxMessagePayloadSize         = 32'768;
 SCC char*     kDefaultTimeFormat             = "%FT%T.%3Z";
 SCC char*     kDefaultInfiniteDurationString = "%-inf";
 SCC char*     kDefaultDurationFormat         = "%-%dd %T.%3%6%9";
 SCC char*     kDefaultInvalidHandleString    = "INVALID HANDLE";
 SCC char*     kDefaultObjectFormat           = "$T [$x]";
-SCC int       kMinTxQueueSize                = kMaxMessageSize;
+SCC int       kMinTxQueueSize                = 35'000;
 SCC int       kMaxTxQueueSize                = 10'000'000;
-SCC int       kDefaultTxQueueSize            = 1'000'000;
-SCC int       kMinRxQueueSize                = kMaxMessageSize;
+SCC int       kDefaultTxQueueSize            = kMinTxQueueSize;
+SCC int       kMinRxQueueSize                = 35'000;
 SCC int       kMaxRxQueueSize                = 10'000'000;
-SCC int       kDefaultRxQueueSize            = 1'000'000;
+SCC int       kDefaultRxQueueSize            = kMinRxQueueSize;
 #undef SCC
 // clang-format on
 

@@ -13,12 +13,14 @@
 # You should have received a copy of the GNU General Public License
 # along with this library. If not, see <http://www.gnu.org/licenses/>.
 
+import sys
 import os.path
 import re
 import unittest
 
 from typing import Union
 
+sys.stderr = sys.stdout
 
 yogi_core_h = None  # type: str
 

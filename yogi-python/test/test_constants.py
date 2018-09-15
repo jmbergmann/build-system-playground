@@ -78,8 +78,8 @@ class TestConstants(TestCase):
         self.assertIsInstance(c, str)
         self.assertGreater(len(c), 5)
 
-    def test_max_message_size(self):
-        c = yogi.Constants.MAX_MESSAGE_SIZE
+    def test_max_message_payload_size(self):
+        c = yogi.Constants.MAX_MESSAGE_PAYLOAD_SIZE
         self.assertIsInstance(c, int)
         self.assertGreaterEqual(c, 1000)
 
@@ -111,7 +111,7 @@ class TestConstants(TestCase):
     def test_min_tx_queue_size(self):
         c = yogi.Constants.MIN_TX_QUEUE_SIZE
         self.assertIsInstance(c, int)
-        self.assertGreaterEqual(c, yogi.Constants.MAX_MESSAGE_SIZE)
+        self.assertGreaterEqual(c, yogi.Constants.MAX_MESSAGE_PAYLOAD_SIZE)
 
     def test_max_tx_queue_size(self):
         c = yogi.Constants.MAX_TX_QUEUE_SIZE
@@ -126,7 +126,7 @@ class TestConstants(TestCase):
     def test_min_rx_queue_size(self):
         c = yogi.Constants.MIN_RX_QUEUE_SIZE
         self.assertIsInstance(c, int)
-        self.assertGreaterEqual(c, yogi.Constants.MAX_MESSAGE_SIZE)
+        self.assertGreaterEqual(c, yogi.Constants.MAX_MESSAGE_PAYLOAD_SIZE)
 
     def test_max_rx_queue_size(self):
         c = yogi.Constants.MAX_RX_QUEUE_SIZE

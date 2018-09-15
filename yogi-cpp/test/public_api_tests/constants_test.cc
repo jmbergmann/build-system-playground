@@ -65,8 +65,8 @@ TEST(ConstantsTest, kDefaultLogFormat) {
   EXPECT_FALSE(yogi::constants::kDefaultLogFormat.empty());
 }
 
-TEST(ConstantsTest, kMaxMessageSize) {
-  EXPECT_GE(yogi::constants::kMaxMessageSize, 1000);
+TEST(ConstantsTest, kMaxMessagePayloadSize) {
+  EXPECT_GE(yogi::constants::kMaxMessagePayloadSize, 1000);
 }
 
 TEST(ConstantsTest, kDefaultTimeFormat) {
@@ -94,7 +94,7 @@ TEST(ConstantsTest, kDefaultObjectFormat) {
 }
 
 TEST(ConstantsTest, kMinTxQueueSize) {
-  EXPECT_GE(yogi::constants::kMinTxQueueSize, yogi::constants::kMaxMessageSize);
+  EXPECT_GE(yogi::constants::kMinTxQueueSize, yogi::constants::kMaxMessagePayloadSize);
 }
 
 TEST(ConstantsTest, kMaxTxQueueSize) {
@@ -107,7 +107,7 @@ TEST(ConstantsTest, kDefaultTxQueueSize) {
 }
 
 TEST(ConstantsTest, kMinRxQueueSize) {
-  EXPECT_GE(yogi::constants::kMinRxQueueSize, yogi::constants::kMaxMessageSize);
+  EXPECT_GE(yogi::constants::kMinRxQueueSize, yogi::constants::kMaxMessagePayloadSize);
 }
 
 TEST(ConstantsTest, kMaxRxQueueSize) {

@@ -83,8 +83,8 @@ public static partial class Yogi
         /// <summary>Default format of a log entry.</summary>
         public static readonly string DefaultLogFormat;
 
-        /// <summary>Maximum size of a message between two branches.</summary>
-        public static readonly int MaxMessageSize;
+        /// <summary>Maximum size of the payload of a message between two branches.</summary>
+        public static readonly int MaxMessagePayloadSize;
 
         /// <summary>Default textual format for timestamps.</summary>
         public static readonly string DefaultTimeFormat;
@@ -151,7 +151,7 @@ public static partial class Yogi
             CheckErrorCode(Api.YOGI_GetStringConstant(ref str, 11));
             DefaultLogFormat = Marshal.PtrToStringAnsi(str);
 
-            CheckErrorCode(Api.YOGI_GetIntConstant(ref MaxMessageSize, 12));
+            CheckErrorCode(Api.YOGI_GetIntConstant(ref MaxMessagePayloadSize, 12));
 
             CheckErrorCode(Api.YOGI_GetStringConstant(ref str, 13));
             DefaultTimeFormat = Marshal.PtrToStringAnsi(str);

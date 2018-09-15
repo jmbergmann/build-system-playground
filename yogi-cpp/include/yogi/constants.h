@@ -83,8 +83,8 @@ struct constants {
   /// Default format of a log entry.
   static const std::string kDefaultLogFormat;
 
-  /// Maximum size of a message between two branches.
-  static const int kMaxMessageSize;
+  /// Maximum size of the payload of a message between two branches.
+  static const int kMaxMessagePayloadSize;
 
   /// Default textual format for timestamps.
   static const std::string kDefaultTimeFormat;
@@ -153,7 +153,7 @@ _YOGI_WEAK_SYMBOL const std::string constants::kDefaultLogTimeFormat =
 _YOGI_WEAK_SYMBOL const std::string constants::kDefaultLogFormat =
     internal::GetConstant<char*>(11);
 
-_YOGI_WEAK_SYMBOL const int constants::kMaxMessageSize =
+_YOGI_WEAK_SYMBOL const int constants::kMaxMessagePayloadSize =
     internal::GetConstant<int>(12);
 
 _YOGI_WEAK_SYMBOL const std::string constants::kDefaultTimeFormat =
