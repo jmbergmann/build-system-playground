@@ -23,102 +23,102 @@ class RingBufferTest : public Test {
  protected:
   LockFreeRingBuffer uut{10};
 
-  Byte get_first_read_array_element(std::size_t idx) const {
+  Byte GetFirstReadArrayElement(std::size_t idx) const {
     ByteVector data(idx + 1);
-    boost::asio::buffer_copy(boost::asio::buffer(data), uut.first_read_array());
+    boost::asio::buffer_copy(boost::asio::buffer(data), uut.FirstReadArray());
     return data.back();
   }
 
-  void set_first_write_array_element(std::size_t idx, Byte byte) {
-    boost::asio::buffer_copy(uut.first_write_array() + idx,
+  void SetFirstWriteArrayElement(std::size_t idx, Byte byte) {
+    boost::asio::buffer_copy(uut.FirstWriteArray() + idx,
                              boost::asio::buffer(&byte, 1));
   }
 
-  std::size_t first_read_array_size() const {
-    return boost::asio::buffer_size(uut.first_read_array());
+  std::size_t FirstReadArraySize() const {
+    return boost::asio::buffer_size(uut.FirstReadArray());
   }
 
-  std::size_t first_write_array_size() {
-    return boost::asio::buffer_size(uut.first_write_array());
+  std::size_t FirstWriteArraySize() {
+    return boost::asio::buffer_size(uut.FirstWriteArray());
   }
 };
 
 TEST_F(RingBufferTest, FirstReadArray) {
-  ByteVector data(uut.capacity(), 0);
+  ByteVector data(uut.Capacity(), 0);
   data[0] = 1;
   data[1] = 2;
   data[2] = 3;
   data.back() = 4;
 
-  auto n = uut.write(data.data(), data.size());
+  auto n = uut.Write(data.data(), data.size());
   EXPECT_EQ(n, data.size());
-  EXPECT_EQ(uut.capacity(), first_read_array_size());
-  EXPECT_EQ(1, get_first_read_array_element(0));
-  EXPECT_EQ(4, get_first_read_array_element(uut.capacity() - 1));
+  EXPECT_EQ(uut.Capacity(), FirstReadArraySize());
+  EXPECT_EQ(1, GetFirstReadArrayElement(0));
+  EXPECT_EQ(4, GetFirstReadArrayElement(uut.Capacity() - 1));
 
-  uut.commit_first_read_array(2);
-  EXPECT_EQ(uut.capacity() - 2, first_read_array_size());
-  EXPECT_EQ(3, get_first_read_array_element(0));
-  EXPECT_EQ(4, get_first_read_array_element(uut.capacity() - 3));
+  uut.CommitFirstReadArray(2);
+  EXPECT_EQ(uut.Capacity() - 2, FirstReadArraySize());
+  EXPECT_EQ(3, GetFirstReadArrayElement(0));
+  EXPECT_EQ(4, GetFirstReadArrayElement(uut.Capacity() - 3));
 
-  uut.write(data.data(), 2);
-  EXPECT_EQ(uut.capacity() - 1, first_read_array_size());
-  EXPECT_EQ(3, get_first_read_array_element(0));
-  EXPECT_EQ(4, get_first_read_array_element(uut.capacity() - 3));
-  EXPECT_EQ(1, get_first_read_array_element(uut.capacity() - 2));
+  uut.Write(data.data(), 2);
+  EXPECT_EQ(uut.Capacity() - 1, FirstReadArraySize());
+  EXPECT_EQ(3, GetFirstReadArrayElement(0));
+  EXPECT_EQ(4, GetFirstReadArrayElement(uut.Capacity() - 3));
+  EXPECT_EQ(1, GetFirstReadArrayElement(uut.Capacity() - 2));
 
-  uut.commit_first_read_array(uut.capacity() - 1);
-  EXPECT_EQ(1, first_read_array_size());
-  EXPECT_EQ(2, get_first_read_array_element(0));
+  uut.CommitFirstReadArray(uut.Capacity() - 1);
+  EXPECT_EQ(1, FirstReadArraySize());
+  EXPECT_EQ(2, GetFirstReadArrayElement(0));
 }
 
 TEST_F(RingBufferTest, FirstWriteArray) {
-  EXPECT_EQ(uut.capacity(), first_write_array_size());
-  set_first_write_array_element(0, 1);
-  set_first_write_array_element(1, 2);
-  uut.commit_first_write_array(2);
+  EXPECT_EQ(uut.Capacity(), FirstWriteArraySize());
+  SetFirstWriteArrayElement(0, 1);
+  SetFirstWriteArrayElement(1, 2);
+  uut.CommitFirstWriteArray(2);
 
   Byte data[2];
-  EXPECT_EQ(2, uut.read(data, 2));
+  EXPECT_EQ(2, uut.Read(data, 2));
   EXPECT_EQ(1, data[0]);
   EXPECT_EQ(2, data[1]);
 
-  EXPECT_EQ(uut.capacity() - 1, first_write_array_size());
-  uut.commit_first_write_array(first_write_array_size());
-  EXPECT_EQ(1, first_write_array_size());
-  uut.commit_first_write_array(1);
-  EXPECT_EQ(0, first_write_array_size());
+  EXPECT_EQ(uut.Capacity() - 1, FirstWriteArraySize());
+  uut.CommitFirstWriteArray(FirstWriteArraySize());
+  EXPECT_EQ(1, FirstWriteArraySize());
+  uut.CommitFirstWriteArray(1);
+  EXPECT_EQ(0, FirstWriteArraySize());
 }
 
 TEST_F(RingBufferTest, Empty) {
-  EXPECT_TRUE(uut.empty());
+  EXPECT_TRUE(uut.Empty());
   ByteVector buffer{'x'};
-  uut.write(buffer.data(), buffer.size());
-  EXPECT_FALSE(uut.empty());
+  uut.Write(buffer.data(), buffer.size());
+  EXPECT_FALSE(uut.Empty());
   Byte byte;
-  uut.read(&byte, 1);
-  EXPECT_TRUE(uut.empty());
+  uut.Read(&byte, 1);
+  EXPECT_TRUE(uut.Empty());
 }
 
 TEST_F(RingBufferTest, Full) {
-  EXPECT_FALSE(uut.full());
-  ByteVector buffer(uut.capacity() - 1, 'x');
-  uut.write(buffer.data(), buffer.size());
-  EXPECT_FALSE(uut.full());
-  uut.write(buffer.data(), 1);
+  EXPECT_FALSE(uut.Full());
+  ByteVector buffer(uut.Capacity() - 1, 'x');
+  uut.Write(buffer.data(), buffer.size());
+  EXPECT_FALSE(uut.Full());
+  uut.Write(buffer.data(), 1);
   Byte byte;
-  uut.read(&byte, 1);
-  EXPECT_FALSE(uut.full());
+  uut.Read(&byte, 1);
+  EXPECT_FALSE(uut.Full());
 }
 
 TEST_F(RingBufferTest, FrontAndPop) {
   ByteVector buffer{'a', 'b', 'c'};
-  uut.write(buffer.data(), buffer.size());
-  EXPECT_EQ('a', uut.front());
-  uut.pop();
-  EXPECT_EQ('b', uut.front());
-  uut.pop();
-  EXPECT_EQ('c', uut.front());
-  uut.pop();
-  EXPECT_TRUE(uut.empty());
+  uut.Write(buffer.data(), buffer.size());
+  EXPECT_EQ('a', uut.Front());
+  uut.Pop();
+  EXPECT_EQ('b', uut.Front());
+  uut.Pop();
+  EXPECT_EQ('c', uut.Front());
+  uut.Pop();
+  EXPECT_TRUE(uut.Empty());
 }

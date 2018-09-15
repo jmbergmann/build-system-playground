@@ -31,7 +31,7 @@ cotire (yogi-hub)
 
 # Tests
 find_package (GTest REQUIRED)
-include_directories (${GTEST_INCLUDE_DIRS})
+include_directories (SYSTEM ${GTEST_INCLUDE_DIRS})
 add_definitions (-D_SILENCE_TR1_NAMESPACE_DEPRECATION_WARNING)
 
 add_executable (yogi-hub-test

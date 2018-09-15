@@ -33,27 +33,28 @@ class LockFreeRingBuffer {
  public:
   explicit LockFreeRingBuffer(std::size_t capacity);
 
-  std::size_t capacity() const { return capacity_; };
-  bool empty();
-  bool full();
-  char front() const;
-  void pop();
-  std::size_t read(Byte* buffer, std::size_t max_size);
-  void commit_first_read_array(std::size_t n);
-  boost::asio::const_buffers_1 first_read_array() const;
-  std::size_t write(const Byte* data, std::size_t size);
-  void commit_first_write_array(std::size_t n);
-  boost::asio::mutable_buffers_1 first_write_array();
+  std::size_t Capacity() const { return capacity_; };
+  bool Empty();
+  bool Full();
+  Byte Front() const;
+  void Pop();
+  std::size_t Read(Byte* buffer, std::size_t max_size);
+  void CommitFirstReadArray(std::size_t n);
+  boost::asio::const_buffers_1 FirstReadArray() const;
+  std::size_t Write(const Byte* data, std::size_t size);
+  void CommitFirstWriteArray(std::size_t n);
+  boost::asio::mutable_buffers_1 FirstWriteArray();
 
  private:
-  std::size_t read_available(std::size_t write_idx, std::size_t read_idx) const;
-  std::size_t write_available(std::size_t write_idx,
-                              std::size_t read_idx) const;
-  std::size_t next_index(std::size_t idx) const;
+  std::size_t AvailableForRead(std::size_t write_idx,
+                               std::size_t read_idx) const;
+  std::size_t AvailableForWrite(std::size_t write_idx,
+                                std::size_t read_idx) const;
+  std::size_t NextIndex(std::size_t idx) const;
 
   static constexpr int kCacheLineSize = 64;
   std::atomic<std::size_t> write_idx_;
-  char padding_[kCacheLineSize - sizeof(std::size_t)];
+  Byte padding_[kCacheLineSize - sizeof(std::size_t)];
   std::atomic<std::size_t> read_idx_;
   const std::size_t capacity_;
   ByteVector data_;

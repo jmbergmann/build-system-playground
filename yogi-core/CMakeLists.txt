@@ -72,7 +72,7 @@ add_library (yogi-core-static STATIC
   src/utils/timestamp.cc
 )
 
-target_include_directories (yogi-core-static
+target_include_directories (yogi-core-static SYSTEM
   PUBLIC ${Boost_INCLUDE_DIR}
 )
 
@@ -139,7 +139,7 @@ export (TARGETS yogi-core-header
 
 # Tests
 find_package (GTest REQUIRED)
-include_directories (${GTEST_INCLUDE_DIRS})
+include_directories (SYSTEM ${GTEST_INCLUDE_DIRS})
 add_definitions (-D_SILENCE_TR1_NAMESPACE_DEPRECATION_WARNING)
 
 add_executable (yogi-core-test

@@ -26,38 +26,38 @@ LockFreeRingBuffer::LockFreeRingBuffer(std::size_t capacity)
   data_.resize(capacity + 1);
 }
 
-bool LockFreeRingBuffer::empty() {
+bool LockFreeRingBuffer::Empty() {
   auto wi = write_idx_.load(std::memory_order_relaxed);
   auto ri = read_idx_.load(std::memory_order_relaxed);
   return wi == ri;
 }
 
-bool LockFreeRingBuffer::full() {
+bool LockFreeRingBuffer::Full() {
   auto wi = write_idx_.load(std::memory_order_relaxed);
   auto ri = read_idx_.load(std::memory_order_acquire);
-  return write_available(wi, ri) == 0;
+  return AvailableForWrite(wi, ri) == 0;
 }
 
-char LockFreeRingBuffer::front() const {
+Byte LockFreeRingBuffer::Front() const {
   auto ri = read_idx_.load(std::memory_order_relaxed);
   return data_[ri];
 }
 
-void LockFreeRingBuffer::pop() {
+void LockFreeRingBuffer::Pop() {
   write_idx_.load(std::memory_order_acquire);  // TODO: Do we need this?
   auto ri = read_idx_.load(std::memory_order_relaxed);
 
-  YOGI_ASSERT(!empty());
+  YOGI_ASSERT(!Empty());
 
-  auto next = next_index(ri);
+  auto next = NextIndex(ri);
   read_idx_.store(next, std::memory_order_release);
 }
 
-std::size_t LockFreeRingBuffer::read(Byte* buffer, std::size_t max_size) {
+std::size_t LockFreeRingBuffer::Read(Byte* buffer, std::size_t max_size) {
   auto wi = write_idx_.load(std::memory_order_acquire);
   auto ri = read_idx_.load(std::memory_order_relaxed);
 
-  auto avail = read_available(wi, ri);
+  auto avail = AvailableForRead(wi, ri);
   if (avail == 0) {
     return 0;
   }
@@ -69,12 +69,15 @@ std::size_t LockFreeRingBuffer::read(Byte* buffer, std::size_t max_size) {
     auto count_0 = data_.size() - ri;
     auto count_1 = max_size - count_0;
 
-    std::copy(data_.begin() + ri, data_.begin() + data_.size(), buffer);
-    std::copy(data_.begin(), data_.begin() + count_1, buffer + count_0);
+    std::copy(data_.begin() + static_cast<long>(ri),
+              data_.begin() + static_cast<long>(data_.size()), buffer);
+    std::copy(data_.begin(), data_.begin() + static_cast<long>(count_1),
+              buffer + count_0);
 
     new_ri -= data_.size();
   } else {
-    std::copy(data_.begin() + ri, data_.begin() + ri + max_size, buffer);
+    std::copy(data_.begin() + static_cast<long>(ri),
+              data_.begin() + static_cast<long>(ri + max_size), buffer);
 
     if (new_ri == data_.size()) {
       new_ri = 0;
@@ -85,8 +88,8 @@ std::size_t LockFreeRingBuffer::read(Byte* buffer, std::size_t max_size) {
   return max_size;
 }
 
-void LockFreeRingBuffer::commit_first_read_array(std::size_t n) {
-  YOGI_ASSERT(n <= boost::asio::buffer_size(first_read_array()));
+void LockFreeRingBuffer::CommitFirstReadArray(std::size_t n) {
+  YOGI_ASSERT(n <= boost::asio::buffer_size(FirstReadArray()));
 
   write_idx_.load(std::memory_order_acquire);  // TODO: Do we need this?
   auto ri = read_idx_.load(std::memory_order_relaxed);
@@ -99,7 +102,7 @@ void LockFreeRingBuffer::commit_first_read_array(std::size_t n) {
   read_idx_.store(ri, std::memory_order_release);
 }
 
-boost::asio::const_buffers_1 LockFreeRingBuffer::first_read_array() const {
+boost::asio::const_buffers_1 LockFreeRingBuffer::FirstReadArray() const {
   auto wi = write_idx_.load(std::memory_order_relaxed);
   auto ri = read_idx_.load(std::memory_order_relaxed);
 
@@ -110,11 +113,11 @@ boost::asio::const_buffers_1 LockFreeRingBuffer::first_read_array() const {
   }
 }
 
-std::size_t LockFreeRingBuffer::write(const Byte* data, std::size_t size) {
+std::size_t LockFreeRingBuffer::Write(const Byte* data, std::size_t size) {
   auto wi = write_idx_.load(std::memory_order_relaxed);
   auto ri = read_idx_.load(std::memory_order_acquire);
 
-  auto avail = write_available(wi, ri);
+  auto avail = AvailableForWrite(wi, ri);
   if (avail == 0) {
     return 0;
   }
@@ -129,12 +132,13 @@ std::size_t LockFreeRingBuffer::write(const Byte* data, std::size_t size) {
     auto count_0 = data_.size() - wi;
     auto midpoint = data + count_0;
 
-    std::uninitialized_copy(data, midpoint, data_.begin() + wi);
+    std::uninitialized_copy(data, midpoint,
+                            data_.begin() + static_cast<long>(wi));
     std::uninitialized_copy(midpoint, last, data_.begin());
 
     new_wi -= data_.size();
   } else {
-    std::uninitialized_copy(data, last, data_.begin() + wi);
+    std::uninitialized_copy(data, last, data_.begin() + static_cast<long>(wi));
 
     if (new_wi == data_.size()) {
       new_wi = 0;
@@ -145,8 +149,8 @@ std::size_t LockFreeRingBuffer::write(const Byte* data, std::size_t size) {
   return input_cnt;
 }
 
-void LockFreeRingBuffer::commit_first_write_array(std::size_t n) {
-  YOGI_ASSERT(n <= boost::asio::buffer_size(first_write_array()));
+void LockFreeRingBuffer::CommitFirstWriteArray(std::size_t n) {
+  YOGI_ASSERT(n <= boost::asio::buffer_size(FirstWriteArray()));
 
   auto wi = write_idx_.load(std::memory_order_relaxed);
   read_idx_.load(std::memory_order_acquire);  // TODO: do we need this?
@@ -159,7 +163,7 @@ void LockFreeRingBuffer::commit_first_write_array(std::size_t n) {
   write_idx_.store(wi, std::memory_order_release);
 }
 
-boost::asio::mutable_buffers_1 LockFreeRingBuffer::first_write_array() {
+boost::asio::mutable_buffers_1 LockFreeRingBuffer::FirstWriteArray() {
   auto wi = write_idx_.load(std::memory_order_relaxed);
   auto ri = read_idx_.load(std::memory_order_relaxed);
 
@@ -171,8 +175,8 @@ boost::asio::mutable_buffers_1 LockFreeRingBuffer::first_write_array() {
                              data_.size() - wi - (ri == 0 ? 1 : 0));
 }
 
-std::size_t LockFreeRingBuffer::read_available(std::size_t write_idx,
-                                               std::size_t read_idx) const {
+std::size_t LockFreeRingBuffer::AvailableForRead(std::size_t write_idx,
+                                                 std::size_t read_idx) const {
   if (write_idx >= read_idx) {
     return write_idx - read_idx;
   }
@@ -180,8 +184,8 @@ std::size_t LockFreeRingBuffer::read_available(std::size_t write_idx,
   return write_idx + data_.size() - read_idx;
 }
 
-std::size_t LockFreeRingBuffer::write_available(std::size_t write_idx,
-                                                std::size_t read_idx) const {
+std::size_t LockFreeRingBuffer::AvailableForWrite(std::size_t write_idx,
+                                                  std::size_t read_idx) const {
   auto n = read_idx - write_idx - 1;
   if (write_idx >= read_idx) {
     n += data_.size();
@@ -190,7 +194,7 @@ std::size_t LockFreeRingBuffer::write_available(std::size_t write_idx,
   return n;
 }
 
-std::size_t LockFreeRingBuffer::next_index(std::size_t idx) const {
+std::size_t LockFreeRingBuffer::NextIndex(std::size_t idx) const {
   idx += 1;
   if (idx >= data_.size()) {
     idx -= data_.size();
