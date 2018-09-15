@@ -66,6 +66,7 @@ add_library (yogi-core-static STATIC
   src/utils/crypto.cc
   src/utils/glob.cc
   src/utils/ip.cc
+  src/utils/ringbuffer.cc
   src/utils/socket.cc
   src/utils/system.cc
   src/utils/timestamp.cc
@@ -156,6 +157,7 @@ add_executable (yogi-core-test
   test/objects/signal_set_test.cc
   test/objects/timer_test.cc
   test/utils/glob_test.cc
+  test/utils/ringbuffer_test.cc
   test/utils/serialize_test.cc
   test/common.cc
   test/time_test.cc
