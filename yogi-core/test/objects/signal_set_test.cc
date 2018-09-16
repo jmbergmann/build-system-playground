@@ -17,7 +17,7 @@
 
 #include "../common.h"
 
-class SignalSetTest : public Test {
+class SignalSetTest : public TestFixture {
  protected:
   virtual void SetUp() override { context_ = CreateContext(); }
 

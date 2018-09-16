@@ -34,7 +34,7 @@ class MyObject
 
 int MyObject::dtor_calls_ = 0;
 
-class ObjectTest : public Test {
+class ObjectTest : public TestFixture {
  protected:
   virtual void TearDown() override {
     api::ObjectRegister::DestroyAll();

@@ -20,7 +20,7 @@
 #include <atomic>
 #include <thread>
 
-class ContextTest : public Test {
+class ContextTest : public TestFixture {
  protected:
   virtual void SetUp() override {
     context_ = CreateContext();

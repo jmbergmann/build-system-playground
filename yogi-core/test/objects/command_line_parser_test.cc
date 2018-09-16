@@ -21,7 +21,7 @@
 using objects::detail::CommandLineParser;
 namespace fs = boost::filesystem;
 
-class CommandLineParserTest : public Test {
+class CommandLineParserTest : public TestFixture {
  protected:
   nlohmann::json CheckParsingSucceeds(const CommandLine& cmdline,
                                       api::CommandLineOptions options,

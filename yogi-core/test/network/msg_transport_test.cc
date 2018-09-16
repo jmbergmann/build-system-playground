@@ -18,7 +18,7 @@
 #include "../common.h"
 #include "../../src/network/msg_transport.h"
 
-class MessageTransportTest : public Test {
+class MessageTransportTest : public TestFixture {
  protected:
 };
 

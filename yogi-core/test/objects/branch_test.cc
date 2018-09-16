@@ -23,7 +23,7 @@
 #include <boost/uuid/uuid_io.hpp>
 #include <regex>
 
-class BranchTest : public Test {
+class BranchTest : public TestFixture {
  protected:
   virtual void SetUp() override {
     context_ = CreateContext();

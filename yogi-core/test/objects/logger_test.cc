@@ -24,7 +24,7 @@
 #include <time.h>
 #include <regex>
 
-class LoggerTest : public Test {
+class LoggerTest : public TestFixture {
  protected:
   struct Entry {
     int severity;

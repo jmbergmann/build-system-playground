@@ -20,7 +20,7 @@
 
 #include <boost/asio.hpp>
 
-class ConnectionManagerTest : public Test {
+class ConnectionManagerTest : public TestFixture {
  protected:
   virtual void SetUp() override {
     context_ = CreateContext();

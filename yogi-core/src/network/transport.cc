@@ -29,7 +29,8 @@ Transport::Transport(objects::ContextPtr context,
       rx_timer_(context->IoContext()),
       timed_out_(false) {}
 
-Transport::~Transport() {}
+Transport::~Transport() {
+}
 
 void Transport::SendSome(boost::asio::const_buffer data, SendHandler handler) {
   YOGI_ASSERT(data.size() > 0);
@@ -39,7 +40,10 @@ void Transport::SendSome(boost::asio::const_buffer data, SendHandler handler) {
 
   WriteSome(data, [=](auto& res, auto bytes_written) {
     auto self = weak_self.lock();
-    if (!self) return;
+    if (!self) {
+      handler(api::Error(YOGI_ERR_CANCELED), bytes_written);
+      return;
+    }
 
     self->tx_timer_.cancel();
 
@@ -68,7 +72,10 @@ void Transport::ReceiveSome(boost::asio::mutable_buffer data,
 
   ReadSome(data, [=](auto& res, auto bytes_read) {
     auto self = weak_self.lock();
-    if (!self) return;
+    if (!self) {
+      handler(api::Error(YOGI_ERR_CANCELED), bytes_read);
+      return;
+    }
 
     self->rx_timer_.cancel();
 
@@ -104,6 +111,11 @@ void Transport::SendAllImpl(boost::asio::const_buffer data,
   } else {
     handler(res, total_bytes_written);
   }
+}
+
+void Transport::Close() {
+  Shutdown();
+  YOGI_DEBUG_ONLY(close_called_ = true;)
 }
 
 void Transport::ReceiveAllImpl(boost::asio::mutable_buffer data,

@@ -19,6 +19,7 @@
 #include "../../src/network/transport.h"
 
 #include <gmock/gmock.h>
+using namespace ::testing;
 using namespace std::chrono_literals;
 
 MATCHER_P(BufferEq, other, std::string(negation ? "isn't" : "is")) {
@@ -35,18 +36,16 @@ class MockTransport : public network::Transport {
                void(boost::asio::const_buffer data, SendHandler handler));
   MOCK_METHOD2(ReadSome,
                void(boost::asio::mutable_buffer data, ReceiveHandler handler));
-  MOCK_METHOD0(Close, void());
+  MOCK_METHOD0(Shutdown, void());
 };
 
-class TransportTest : public Test {
+class TransportTest : public TestFixture {
  protected:
   objects::ContextPtr context_ = objects::Context::Create();
   std::shared_ptr<MockTransport> transport_ =
       std::make_shared<MockTransport>(context_, 10s);
   std::vector<char> data_ = {1, 2, 3, 4, 5, 6};
 };
-
-using namespace ::testing;
 
 TEST_F(TransportTest, GetContext) {
   EXPECT_EQ(transport_->GetContext(), context_);
@@ -58,7 +57,7 @@ TEST_F(TransportTest, GetPeerDescription) {
 
 TEST_F(TransportTest, SendSomeSuccess) {
   // clang-format off
-  EXPECT_CALL(*transport_, Close())
+  EXPECT_CALL(*transport_, Shutdown())
     .Times(0);
   // clang-format on
 
@@ -79,7 +78,7 @@ TEST_F(TransportTest, SendSomeSuccess) {
 
 TEST_F(TransportTest, SendSomeFailure) {
   // clang-format off
-  EXPECT_CALL(*transport_, Close());
+  EXPECT_CALL(*transport_, Shutdown());
 
   EXPECT_CALL(*transport_, WriteSome(_, _))
     .WillOnce(InvokeArgument<1>(api::Error(YOGI_ERR_RW_SOCKET_FAILED), 2));
@@ -105,7 +104,7 @@ TEST_F(TransportTest, SendSomeTimeout) {
   EXPECT_CALL(*transport_, WriteSome(_, _))
     .WillOnce(SaveArg<1>(&handler));
 
-  EXPECT_CALL(*transport_, Close())
+  EXPECT_CALL(*transport_, Shutdown())
     .WillOnce(Invoke([&] { handler(api::Error(YOGI_ERR_CANCELED), 2); }));
   // clang-format on
 
@@ -128,7 +127,7 @@ TEST_F(TransportTest, SendSomeTimeout) {
 
 TEST_F(TransportTest, SendAllSuccess) {
   // clang-format off
-  EXPECT_CALL(*transport_, Close())
+  EXPECT_CALL(*transport_, Shutdown())
     .Times(0);
 
   InSequence dummy;
@@ -156,7 +155,7 @@ TEST_F(TransportTest, SendAllSuccess) {
 
 TEST_F(TransportTest, SendAllFailure) {
   // clang-format off
-  EXPECT_CALL(*transport_, Close());
+  EXPECT_CALL(*transport_, Shutdown());
 
   InSequence dummy;
   EXPECT_CALL(*transport_, WriteSome(BufferEq(boost::asio::buffer(data_)), _))
@@ -187,7 +186,7 @@ TEST_F(TransportTest, SendAllTimeout) {
     .WillOnce(InvokeArgument<1>(api::kSuccess, 1))
     .WillOnce(SaveArg<1>(&handler));
 
-  EXPECT_CALL(*transport_, Close())
+  EXPECT_CALL(*transport_, Shutdown())
     .WillOnce(Invoke([&] { handler(api::Error(YOGI_ERR_CANCELED), 2); }));
   // clang-format on
 
@@ -210,7 +209,7 @@ TEST_F(TransportTest, SendAllTimeout) {
 
 TEST_F(TransportTest, ReceiveSomeSuccess) {
   // clang-format off
-  EXPECT_CALL(*transport_, Close())
+  EXPECT_CALL(*transport_, Shutdown())
     .Times(0);
 
   EXPECT_CALL(*transport_, ReadSome(BufferEq(boost::asio::buffer(data_)), _))
@@ -231,7 +230,7 @@ TEST_F(TransportTest, ReceiveSomeSuccess) {
 
 TEST_F(TransportTest, ReceiveSomeFailure) {
   // clang-format off
-  EXPECT_CALL(*transport_, Close());
+  EXPECT_CALL(*transport_, Shutdown());
 
   EXPECT_CALL(*transport_, ReadSome(_, _))
     .WillOnce(InvokeArgument<1>(api::Error(YOGI_ERR_RW_SOCKET_FAILED), 2));
@@ -257,7 +256,7 @@ TEST_F(TransportTest, ReceiveSomeTimeout) {
   EXPECT_CALL(*transport_, ReadSome(_, _))
     .WillOnce(SaveArg<1>(&handler));
 
-  EXPECT_CALL(*transport_, Close())
+  EXPECT_CALL(*transport_, Shutdown())
     .WillOnce(Invoke([&] { handler(api::Error(YOGI_ERR_CANCELED), 2); }));
   // clang-format on
 
@@ -280,7 +279,7 @@ TEST_F(TransportTest, ReceiveSomeTimeout) {
 
 TEST_F(TransportTest, ReceiveAllSuccess) {
   // clang-format off
-  EXPECT_CALL(*transport_, Close())
+  EXPECT_CALL(*transport_, Shutdown())
     .Times(0);
 
   InSequence dummy;
@@ -308,7 +307,7 @@ TEST_F(TransportTest, ReceiveAllSuccess) {
 
 TEST_F(TransportTest, ReceiveAllFailure) {
   // clang-format off
-  EXPECT_CALL(*transport_, Close());
+  EXPECT_CALL(*transport_, Shutdown());
 
   InSequence dummy;
   EXPECT_CALL(*transport_, ReadSome(BufferEq(boost::asio::buffer(data_)), _))
@@ -339,7 +338,7 @@ TEST_F(TransportTest, ReceiveAllTimeout) {
     .WillOnce(InvokeArgument<1>(api::kSuccess, 1))
     .WillOnce(SaveArg<1>(&handler));
 
-  EXPECT_CALL(*transport_, Close())
+  EXPECT_CALL(*transport_, Shutdown())
     .WillOnce(Invoke([&] { handler(api::Error(YOGI_ERR_CANCELED), 2); }));
   // clang-format on
 
@@ -358,4 +357,44 @@ TEST_F(TransportTest, ReceiveAllTimeout) {
   }
 
   EXPECT_GT(std::chrono::steady_clock::now(), start_time + 1ms);
+}
+
+TEST_F(TransportTest, CallingSendHandlerOnDestruction) {
+  // clang-format off
+  network::Transport::SendHandler handler;
+  EXPECT_CALL(*transport_, WriteSome(_, _))
+    .WillOnce(SaveArg<1>(&handler));
+  // clang-format on
+
+  bool called = false;
+  transport_->SendSome(boost::asio::buffer(data_), [&](auto& res, auto) {
+    EXPECT_EQ(res, api::Error(YOGI_ERR_CANCELED));
+    called = true;
+  });
+
+  transport_.reset();
+  EXPECT_FALSE(called);
+
+  handler(api::Error(YOGI_ERR_CANCELED), 0);
+  EXPECT_TRUE(called);
+}
+
+TEST_F(TransportTest, CallingReceiveHandlerOnDestruction) {
+  // clang-format off
+  network::Transport::ReceiveHandler handler;
+  EXPECT_CALL(*transport_, ReadSome(_, _))
+    .WillOnce(SaveArg<1>(&handler));
+  // clang-format on
+
+  bool called = false;
+  transport_->ReceiveSome(boost::asio::buffer(data_), [&](auto& res, auto) {
+    EXPECT_EQ(res, api::Error(YOGI_ERR_CANCELED));
+    called = true;
+  });
+
+  transport_.reset();
+  EXPECT_FALSE(called);
+
+  handler(api::Error(YOGI_ERR_CANCELED), 0);
+  EXPECT_TRUE(called);
 }

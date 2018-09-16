@@ -35,10 +35,10 @@
 
 // Debug & development
 #ifdef _MSC_VER
-# define YOGI_DEBUG_BRAKE __debugbreak();
+# define YOGI_DEBUG_BREAK __debugbreak();
 #else
 # include <assert.h>
-# define YOGI_DEBUG_BRAKE assert(false);
+# define YOGI_DEBUG_BREAK assert(false);
 #endif
 
 #ifndef NDEBUG
@@ -55,11 +55,13 @@
     if (!(x)) {                                                                \
       std::cerr << "ASSERTION \"" #x "\" in " << __FILE__ << ":" << __LINE__   \
                 << " FAILED." << std::endl;                                    \
-      YOGI_DEBUG_BRAKE;                                                        \
+      YOGI_DEBUG_BREAK;                                                        \
     }                                                                          \
   }
+# define YOGI_DEBUG_ONLY(...) __VA_ARGS__
 #else
 # define YOGI_ASSERT(x)
+# define YOGI_DEBUG_ONLY(...)
 #endif
 
 #define YOGI_NEVER_REACHED YOGI_ASSERT(!"NEVER REACHED")

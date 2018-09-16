@@ -75,10 +75,10 @@ static const auto kTcpProtocol =
         ? boost::asio::ip::tcp::v4()
         : boost::asio::ip::tcp::v6();
 
-class Test : public ::testing::Test {
+class TestFixture : public ::testing::Test {
  public:
-  Test();
-  virtual ~Test();
+  TestFixture();
+  virtual ~TestFixture();
 };
 
 class BranchEventRecorder final {

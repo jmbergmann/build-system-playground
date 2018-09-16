@@ -51,13 +51,14 @@ class Transport : public std::enable_shared_from_this<Transport> {
   void SendAll(boost::asio::const_buffer data, SendHandler handler);
   void ReceiveSome(boost::asio::mutable_buffer data, ReceiveHandler handler);
   void ReceiveAll(boost::asio::mutable_buffer data, ReceiveHandler handler);
+  void Close();
 
  protected:
   virtual void WriteSome(boost::asio::const_buffer data,
                          SendHandler handler) = 0;
   virtual void ReadSome(boost::asio::mutable_buffer data,
                         ReceiveHandler handler) = 0;
-  virtual void Close() = 0;
+  virtual void Shutdown() = 0;
 
  private:
   TransportWeakPtr MakeWeakPtr() { return shared_from_this(); }
@@ -77,6 +78,7 @@ class Transport : public std::enable_shared_from_this<Transport> {
   boost::asio::steady_timer tx_timer_;
   boost::asio::steady_timer rx_timer_;
   bool timed_out_;
+  YOGI_DEBUG_ONLY(bool close_called_ = false;)
 };
 
 }  // namespace network

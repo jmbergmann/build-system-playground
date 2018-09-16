@@ -19,7 +19,7 @@
 
 namespace fs = boost::filesystem;
 
-class ConfigurationTest : public Test {
+class ConfigurationTest : public TestFixture {
  protected:
   virtual void SetUp() override { cfg_ = MakeConfiguration(YOGI_CFG_NONE); }
 

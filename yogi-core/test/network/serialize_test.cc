@@ -20,7 +20,7 @@
 
 #include <boost/uuid/uuid_generators.hpp>
 
-class SerializeTest : public Test {
+class SerializeTest : public TestFixture {
  protected:
   template <typename T>
   void Check(T val) {

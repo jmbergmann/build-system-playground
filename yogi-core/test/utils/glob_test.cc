@@ -24,7 +24,7 @@
 
 namespace fs = boost::filesystem;
 
-struct GlobTest : public Test {
+struct GlobTest : public TestFixture {
  protected:
   virtual void SetUp() override {
     fs::create_directory("test");

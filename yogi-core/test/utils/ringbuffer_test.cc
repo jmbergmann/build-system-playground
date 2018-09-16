@@ -19,7 +19,7 @@
 #include "../../src/utils/ringbuffer.h"
 using namespace utils;
 
-class RingBufferTest : public Test {
+class RingBufferTest : public TestFixture {
  protected:
   LockFreeRingBuffer uut{10};
 

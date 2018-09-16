@@ -21,7 +21,7 @@
 #include <sstream>
 #include <string.h>
 
-class LicensesTest : public Test {
+class LicensesTest : public TestFixture {
  protected:
   std::vector<std::string> GetIndividual3rdPartyLicenses() {
     std::string all = YOGI_Get3rdPartyLicenses();

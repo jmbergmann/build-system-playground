@@ -25,9 +25,9 @@ using namespace std::string_literals;
 
 namespace fs = boost::filesystem;
 
-Test::Test() { SetupLogging(YOGI_VB_TRACE); }
+TestFixture::TestFixture() { SetupLogging(YOGI_VB_TRACE); }
 
-Test::~Test() {
+TestFixture::~TestFixture() {
   EXPECT_EQ(YOGI_DestroyAll(), YOGI_OK);
 
   YOGI_ConfigureConsoleLogging(YOGI_VB_NONE, 0, 0, nullptr, nullptr);

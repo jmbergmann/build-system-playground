@@ -17,7 +17,7 @@
 
 #include "../common.h"
 
-class TimerTest : public Test {
+class TimerTest : public TestFixture {
  protected:
   virtual void SetUp() override {
     context_ = CreateContext();
