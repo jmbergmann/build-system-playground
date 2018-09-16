@@ -47,6 +47,7 @@ add_library (yogi-core-static STATIC
   src/network/ip.cc
   src/network/msg_transport.cc
   src/network/socket.cc
+  src/network/tcp_transport.cc
   src/network/transport.cc
   src/objects/detail/branch/advertising_receiver.cc
   src/objects/detail/branch/advertising_sender.cc
@@ -150,6 +151,7 @@ add_executable (yogi-core-test
   test/licenses/licenses_test.cc
   test/network/msg_transport_test.cc
   test/network/serialize_test.cc
+  test/network/tcp_transport_test.cc
   test/network/transport_test.cc
   test/objects/branch_test.cc
   test/objects/command_line_parser_test.cc

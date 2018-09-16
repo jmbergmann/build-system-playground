@@ -70,10 +70,16 @@ static const auto kUdpProtocol =
     boost::asio::ip::make_address(kAdvAddress).is_v4()
         ? boost::asio::ip::udp::v4()
         : boost::asio::ip::udp::v6();
+
 static const auto kTcpProtocol =
     boost::asio::ip::make_address(kAdvAddress).is_v4()
         ? boost::asio::ip::tcp::v4()
         : boost::asio::ip::tcp::v6();
+
+static const auto kLoopbackAddress =
+    kTcpProtocol == boost::asio::ip::tcp::v4()
+        ? boost::asio::ip::make_address("127.0.0.1")
+        : boost::asio::ip::make_address("::1");
 
 class TestFixture : public ::testing::Test {
  public:

@@ -123,6 +123,7 @@ TEST_F(TransportTest, SendSomeTimeout) {
   }
 
   EXPECT_GT(std::chrono::steady_clock::now(), start_time + 1ms);
+  EXPECT_LT(std::chrono::steady_clock::now(), start_time + 1ms + kTimingMargin);
 }
 
 TEST_F(TransportTest, SendAllSuccess) {
@@ -205,6 +206,7 @@ TEST_F(TransportTest, SendAllTimeout) {
   }
 
   EXPECT_GT(std::chrono::steady_clock::now(), start_time + 1ms);
+  EXPECT_LT(std::chrono::steady_clock::now(), start_time + 1ms + kTimingMargin);
 }
 
 TEST_F(TransportTest, ReceiveSomeSuccess) {
@@ -275,6 +277,7 @@ TEST_F(TransportTest, ReceiveSomeTimeout) {
   }
 
   EXPECT_GT(std::chrono::steady_clock::now(), start_time + 1ms);
+  EXPECT_LT(std::chrono::steady_clock::now(), start_time + 1ms + kTimingMargin);
 }
 
 TEST_F(TransportTest, ReceiveAllSuccess) {
@@ -357,6 +360,7 @@ TEST_F(TransportTest, ReceiveAllTimeout) {
   }
 
   EXPECT_GT(std::chrono::steady_clock::now(), start_time + 1ms);
+  EXPECT_LT(std::chrono::steady_clock::now(), start_time + 1ms + kTimingMargin);
 }
 
 TEST_F(TransportTest, CallingSendHandlerOnDestruction) {
