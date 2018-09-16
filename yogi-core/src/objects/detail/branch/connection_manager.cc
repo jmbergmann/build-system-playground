@@ -17,7 +17,7 @@
 
 #include "connection_manager.h"
 #include "../../../utils/crypto.h"
-#include "../../../utils/ip.h"
+#include "../../../network/ip.h"
 
 #include <boost/uuid/uuid_io.hpp>
 
@@ -115,7 +115,7 @@ void ConnectionManager::SetupAcceptor(const boost::asio::ip::tcp& protocol) {
 
 void ConnectionManager::StartAccept() {
   auto socket = MakeSocketAndKeepItAlive();
-  auto weak_socket = utils::TimedTcpSocketWeakPtr(socket);
+  auto weak_socket = network::TimedTcpSocketWeakPtr(socket);
 
   auto weak_self = std::weak_ptr<ConnectionManager>{shared_from_this()};
   socket->Accept(&acceptor_, [weak_self, weak_socket](auto& res) {
@@ -128,7 +128,7 @@ void ConnectionManager::StartAccept() {
 }
 
 void ConnectionManager::OnAcceptFinished(const api::Result& res,
-                                         utils::TimedTcpSocketPtr socket) {
+                                         network::TimedTcpSocketPtr socket) {
   if (res.IsError()) {
     YOGI_LOG_ERROR(logger_,
                    info_ << " Accepting incoming TCP connection failed: " << res
@@ -137,7 +137,7 @@ void ConnectionManager::OnAcceptFinished(const api::Result& res,
   }
 
   YOGI_LOG_DEBUG(logger_, info_ << " Accepted incoming TCP connection from "
-                                << utils::MakeIpAddressString(
+                                << network::MakeIpAddressString(
                                        socket->GetRemoteEndpoint()));
 
   StartExchangeBranchInfo(socket, {});
@@ -153,11 +153,11 @@ void ConnectionManager::OnAdvertisementReceived(
   if (pending_connects_.count(adv_uuid)) return;
 
   YOGI_LOG_DEBUG(logger_, info_ << " Attempting to connect to [" << adv_uuid
-                                << "] on " << utils::MakeIpAddressString(ep)
+                                << "] on " << network::MakeIpAddressString(ep)
                                 << ":" << ep.port());
 
   auto socket = MakeSocketAndKeepItAlive();
-  auto weak_socket = utils::TimedTcpSocketWeakPtr(socket);
+  auto weak_socket = network::TimedTcpSocketWeakPtr(socket);
   socket->Connect(ep, [this, adv_uuid, weak_socket](auto& res) {
     auto socket = this->StopKeepingSocketAlive(weak_socket);
     this->OnConnectFinished(res, adv_uuid, socket);
@@ -166,14 +166,14 @@ void ConnectionManager::OnAdvertisementReceived(
   EmitBranchEvent(api::kBranchDiscoveredEvent, api::kSuccess, adv_uuid, [&] {
     return nlohmann::json{
         {"uuid", boost::uuids::to_string(adv_uuid)},
-        {"tcp_server_address", utils::MakeIpAddressString(ep)},
+        {"tcp_server_address", network::MakeIpAddressString(ep)},
         {"tcp_server_port", ep.port()}};
   });
 }
 
 void ConnectionManager::OnConnectFinished(const api::Result& res,
                                           const boost::uuids::uuid& adv_uuid,
-                                          utils::TimedTcpSocketPtr socket) {
+                                          network::TimedTcpSocketPtr socket) {
   if (res.IsError()) {
     EmitBranchEvent(api::kBranchQueriedEvent, res, adv_uuid);
     pending_connects_.erase(adv_uuid);
@@ -187,7 +187,7 @@ void ConnectionManager::OnConnectFinished(const api::Result& res,
 }
 
 void ConnectionManager::StartExchangeBranchInfo(
-    utils::TimedTcpSocketPtr socket, const boost::uuids::uuid& adv_uuid) {
+    network::TimedTcpSocketPtr socket, const boost::uuids::uuid& adv_uuid) {
   auto conn = MakeConnectionAndKeepItAlive(socket);
   auto weak_conn = BranchConnectionWeakPtr(conn);
   conn->ExchangeBranchInfo([this, weak_conn, adv_uuid](auto& res) {
@@ -262,13 +262,13 @@ bool ConnectionManager::CheckExchangeBranchInfoError(
     YOGI_LOG_ERROR(
         logger_,
         info_ << " Exchanging branch info with TCP server connection from "
-              << utils::MakeIpAddressString(conn->GetRemoteEndpoint())
+              << network::MakeIpAddressString(conn->GetRemoteEndpoint())
               << " failed: " << res);
   } else {
     YOGI_LOG_ERROR(
         logger_,
         info_ << " Exchanging branch info with TCP client connection to "
-              << utils::MakeIpAddressString(conn->GetRemoteEndpoint()) << ":"
+              << network::MakeIpAddressString(conn->GetRemoteEndpoint()) << ":"
               << conn->GetRemoteEndpoint().port() << " failed: " << res);
   }
 
@@ -418,15 +418,15 @@ void ConnectionManager::OnSessionTerminated(const api::Error& err,
   connection_changed_handler_(err, conn);
 }
 
-utils::TimedTcpSocketPtr ConnectionManager::MakeSocketAndKeepItAlive() {
+network::TimedTcpSocketPtr ConnectionManager::MakeSocketAndKeepItAlive() {
   auto socket =
-      std::make_shared<utils::TimedTcpSocket>(context_, info_->GetTimeout());
+      std::make_shared<network::TimedTcpSocket>(context_, info_->GetTimeout());
   sockets_kept_alive_.insert(socket);
   return socket;
 }
 
-utils::TimedTcpSocketPtr ConnectionManager::StopKeepingSocketAlive(
-    const utils::TimedTcpSocketWeakPtr& weak_socket) {
+network::TimedTcpSocketPtr ConnectionManager::StopKeepingSocketAlive(
+    const network::TimedTcpSocketWeakPtr& weak_socket) {
   auto socket = weak_socket.lock();
   YOGI_ASSERT(socket);
   sockets_kept_alive_.erase(socket);
@@ -434,7 +434,7 @@ utils::TimedTcpSocketPtr ConnectionManager::StopKeepingSocketAlive(
 }
 
 BranchConnectionPtr ConnectionManager::MakeConnectionAndKeepItAlive(
-    utils::TimedTcpSocketPtr socket) {
+    network::TimedTcpSocketPtr socket) {
   auto conn = std::make_shared<BranchConnection>(socket, info_);
   connections_kept_alive_.insert(conn);
   return conn;

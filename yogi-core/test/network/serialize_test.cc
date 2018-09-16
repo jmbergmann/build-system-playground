@@ -16,7 +16,7 @@
  */
 
 #include "../common.h"
-#include "../../src/utils/serialize.h"
+#include "../../src/network/serialize.h"
 
 #include <boost/uuid/uuid_generators.hpp>
 
@@ -25,15 +25,15 @@ class SerializeTest : public Test {
   template <typename T>
   void Check(T val) {
     utils::ByteVector buffer;
-    utils::Serialize(&buffer, val);
+    network::Serialize(&buffer, val);
 
     T des_val;
     auto it = buffer.cbegin();
-    EXPECT_TRUE(utils::Deserialize(&des_val, buffer, &it));
+    EXPECT_TRUE(network::Deserialize(&des_val, buffer, &it));
     EXPECT_EQ(des_val, val);
     EXPECT_EQ(it, buffer.end());
 
-    EXPECT_FALSE(utils::Deserialize(&des_val, buffer, &it));
+    EXPECT_FALSE(network::Deserialize(&des_val, buffer, &it));
   }
 };
 

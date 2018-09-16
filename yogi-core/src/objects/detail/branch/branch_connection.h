@@ -18,7 +18,7 @@
 #pragma once
 
 #include "../../../config.h"
-#include "../../../utils/socket.h"
+#include "../../../network/socket.h"
 #include "../../context.h"
 #include "../../logger.h"
 #include "branch_info.h"
@@ -36,7 +36,7 @@ class BranchConnection final
  public:
   typedef std::function<void(const api::Result&)> CompletionHandler;
 
-  BranchConnection(utils::TimedTcpSocketPtr socket, BranchInfoPtr local_info);
+  BranchConnection(network::TimedTcpSocketPtr socket, BranchInfoPtr local_info);
 
   BranchInfoPtr GetRemoteBranchInfo() const { return remote_info_; }
   std::string MakeInfoString() const;
@@ -93,7 +93,7 @@ class BranchConnection final
 
   static const LoggerPtr logger_;
 
-  const utils::TimedTcpSocketPtr socket_;
+  const network::TimedTcpSocketPtr socket_;
   const objects::ContextPtr context_;
   const BranchInfoPtr local_info_;
   const utils::Timestamp connected_since_;

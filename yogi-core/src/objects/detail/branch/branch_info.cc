@@ -17,8 +17,8 @@
 
 #include "branch_info.h"
 #include "../../../api/constants.h"
-#include "../../../utils/ip.h"
-#include "../../../utils/serialize.h"
+#include "../../../network/ip.h"
+#include "../../../network/serialize.h"
 #include "../../../utils/system.h"
 
 #include <boost/uuid/uuid_io.hpp>
@@ -31,7 +31,7 @@ namespace {
 template <typename Field>
 void DeserializeField(Field* field, const utils::ByteVector& msg,
                       utils::ByteVector::const_iterator* it) {
-  if (!utils::Deserialize<Field>(field, msg, it)) {
+  if (!network::Deserialize<Field>(field, msg, it)) {
     throw api::Error(YOGI_ERR_DESERIALIZE_MSG_FAILED);
   }
 }
@@ -104,8 +104,8 @@ api::Result BranchInfo::DeserializeAdvertisingMessage(
   }
 
   auto it = adv_msg.cbegin() + 7;
-  utils::Deserialize(uuid, adv_msg, &it);
-  utils::Deserialize(tcp_port, adv_msg, &it);
+  network::Deserialize(uuid, adv_msg, &it);
+  network::Deserialize(tcp_port, adv_msg, &it);
 
   return api::kSuccess;
 }
@@ -120,7 +120,7 @@ api::Result BranchInfo::DeserializeInfoMessageBodySize(
   }
 
   auto it = info_msg_hdr.cbegin() + kAdvertisingMessageSize;
-  utils::Deserialize(body_size, info_msg_hdr, &it);
+  network::Deserialize(body_size, info_msg_hdr, &it);
 
   return api::kSuccess;
 }
@@ -143,8 +143,8 @@ void BranchInfo::PopulateMessages() {
   utils::ByteVector buffer{'Y', 'O', 'G', 'I', 0};
   buffer.push_back(api::kVersionMajor);
   buffer.push_back(api::kVersionMinor);
-  utils::Serialize(&buffer, uuid_);
-  utils::Serialize(&buffer, tcp_ep_.port());
+  network::Serialize(&buffer, uuid_);
+  network::Serialize(&buffer, tcp_ep_.port());
 
   YOGI_ASSERT(buffer.size() == kAdvertisingMessageSize);
   adv_msg_ = utils::MakeSharedByteVector(buffer);
@@ -152,18 +152,18 @@ void BranchInfo::PopulateMessages() {
   info_msg_ = utils::MakeSharedByteVector(buffer);
 
   buffer.clear();
-  utils::Serialize(&buffer, name_);
-  utils::Serialize(&buffer, description_);
-  utils::Serialize(&buffer, net_name_);
-  utils::Serialize(&buffer, path_);
-  utils::Serialize(&buffer, hostname_);
-  utils::Serialize(&buffer, pid_);
-  utils::Serialize(&buffer, start_time_);
-  utils::Serialize(&buffer, timeout_);
-  utils::Serialize(&buffer, adv_interval_);
-  utils::Serialize(&buffer, ghost_mode_);
+  network::Serialize(&buffer, name_);
+  network::Serialize(&buffer, description_);
+  network::Serialize(&buffer, net_name_);
+  network::Serialize(&buffer, path_);
+  network::Serialize(&buffer, hostname_);
+  network::Serialize(&buffer, pid_);
+  network::Serialize(&buffer, start_time_);
+  network::Serialize(&buffer, timeout_);
+  network::Serialize(&buffer, adv_interval_);
+  network::Serialize(&buffer, ghost_mode_);
 
-  utils::Serialize(&*info_msg_, buffer.size());
+  network::Serialize(&*info_msg_, buffer.size());
   YOGI_ASSERT(info_msg_->size() == kInfoMessageHeaderSize);
   info_msg_->insert(info_msg_->end(), buffer.begin(), buffer.end());
 }
@@ -187,7 +187,7 @@ void BranchInfo::PopulateJson() {
       {"path", path_},
       {"hostname", hostname_},
       {"pid", pid_},
-      {"tcp_server_address", utils::MakeIpAddressString(tcp_ep_)},
+      {"tcp_server_address", network::MakeIpAddressString(tcp_ep_)},
       {"tcp_server_port", tcp_ep_.port()},
       {"start_time", start_time_.ToJavaScriptString()},
       {"timeout", timeout},

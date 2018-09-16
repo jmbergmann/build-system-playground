@@ -17,7 +17,7 @@
 
 #include "ip.h"
 
-namespace utils {
+namespace network {
 
 std::string MakeIpAddressString(const boost::asio::ip::address& addr) {
   auto s = addr.to_string();
@@ -38,4 +38,4 @@ std::string MakeIpAddressString(const boost::asio::ip::udp::endpoint& ep) {
   return MakeIpAddressString(ep.address());
 }
 
-}  // namespace utils
+}  // namespace network

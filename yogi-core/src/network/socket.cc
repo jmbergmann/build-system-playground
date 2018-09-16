@@ -18,13 +18,13 @@
 #include "socket.h"
 #include "ip.h"
 
-namespace utils {
+namespace network {
 
 TimedTcpSocket::TimedTcpSocket(objects::ContextPtr context,
                                std::chrono::nanoseconds timeout)
     : context_(context),
       timeout_(timeout),
-      rcv_buffer_(MakeSharedByteVector()),
+      rcv_buffer_(utils::MakeSharedByteVector()),
       socket_(context->IoContext()),
       accepted_(false),
       timer_(context->IoContext()),
@@ -84,7 +84,8 @@ void TimedTcpSocket::Connect(const boost::asio::ip::tcp::endpoint& ep,
   StartTimeout(weak_self);
 }
 
-void TimedTcpSocket::Send(SharedByteVector data, CompletionHandler handler) {
+void TimedTcpSocket::Send(utils::SharedByteVector data,
+                          CompletionHandler handler) {
   auto weak_self = std::weak_ptr<TimedTcpSocket>{shared_from_this()};
   boost::asio::async_write(
       socket_, boost::asio::buffer(*data),
@@ -163,11 +164,11 @@ void TimedTcpSocket::OnTimeout() {
 const objects::LoggerPtr TimedTcpSocket::logger_ =
     objects::Logger::CreateStaticInternalLogger("Utils.Socket");
 
-}  // namespace utils
+}  // namespace network
 
 std::ostream& operator<<(std::ostream& os,
-                         const utils::TimedTcpSocket& socket) {
+                         const network::TimedTcpSocket& socket) {
   auto& ep = socket.GetRemoteEndpoint();
-  os << utils::MakeIpAddressString(ep) << ":" << ep.port();
+  os << network::MakeIpAddressString(ep) << ":" << ep.port();
   return os;
 }

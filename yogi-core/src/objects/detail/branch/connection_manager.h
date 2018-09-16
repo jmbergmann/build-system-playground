@@ -79,19 +79,19 @@ class ConnectionManager final
                              boost::hash<boost::uuids::uuid>>
       ConnectionsMap;
   typedef ConnectionsMap::value_type ConnectionsMapEntry;
-  typedef std::set<utils::TimedTcpSocketPtr> SocketSet;
+  typedef std::set<network::TimedTcpSocketPtr> SocketSet;
   typedef std::set<BranchConnectionPtr> ConnectionSet;
 
   void SetupAcceptor(const boost::asio::ip::tcp& protocol);
   void StartAccept();
   void OnAcceptFinished(const api::Result& res,
-                        utils::TimedTcpSocketPtr socket);
+                        network::TimedTcpSocketPtr socket);
   void OnAdvertisementReceived(const boost::uuids::uuid& adv_uuid,
                                const boost::asio::ip::tcp::endpoint& ep);
   void OnConnectFinished(const api::Result& res,
                          const boost::uuids::uuid& adv_uuid,
-                         utils::TimedTcpSocketPtr socket);
-  void StartExchangeBranchInfo(utils::TimedTcpSocketPtr socket,
+                         network::TimedTcpSocketPtr socket);
+  void StartExchangeBranchInfo(network::TimedTcpSocketPtr socket,
                                const boost::uuids::uuid& adv_uuid);
   void OnExchangeBranchInfoFinished(const api::Result& res,
                                     BranchConnectionPtr conn,
@@ -111,11 +111,11 @@ class ConnectionManager final
   void OnAuthenticateFinished(const api::Result& res, BranchConnectionPtr conn);
   void StartSession(BranchConnectionPtr conn);
   void OnSessionTerminated(const api::Error& err, BranchConnectionPtr conn);
-  utils::TimedTcpSocketPtr MakeSocketAndKeepItAlive();
-  utils::TimedTcpSocketPtr StopKeepingSocketAlive(
-      const utils::TimedTcpSocketWeakPtr& weak_socket);
+  network::TimedTcpSocketPtr MakeSocketAndKeepItAlive();
+  network::TimedTcpSocketPtr StopKeepingSocketAlive(
+      const network::TimedTcpSocketWeakPtr& weak_socket);
   BranchConnectionPtr MakeConnectionAndKeepItAlive(
-      utils::TimedTcpSocketPtr socket);
+      network::TimedTcpSocketPtr socket);
   BranchConnectionPtr StopKeepingConnectionAlive(
       const BranchConnectionWeakPtr& weak_conn);
 

@@ -18,7 +18,7 @@
 #include "branch_connection.h"
 #include "../../../api/constants.h"
 #include "../../../utils/crypto.h"
-#include "../../../utils/serialize.h"
+#include "../../../network/serialize.h"
 
 namespace objects {
 namespace detail {
@@ -26,7 +26,7 @@ namespace detail {
 const LoggerPtr BranchConnection::logger_ =
     Logger::CreateStaticInternalLogger("Branch Connection");
 
-BranchConnection::BranchConnection(utils::TimedTcpSocketPtr socket,
+BranchConnection::BranchConnection(network::TimedTcpSocketPtr socket,
                                    BranchInfoPtr local_info)
     : socket_(socket),
       context_(socket->GetContext()),

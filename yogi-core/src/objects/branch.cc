@@ -16,7 +16,7 @@
  */
 
 #include "branch.h"
-#include "../utils/ip.h"
+#include "../network/ip.h"
 
 #include <chrono>
 using namespace std::chrono_literals;
@@ -54,7 +54,7 @@ void Branch::Start() { connection_manager_->Start(info_); }
 std::string Branch::MakeInfoString() const {
   auto json = info_->ToJson();
   auto& ep = connection_manager_->GetAdvertisingEndpoint();
-  json["advertising_address"] = utils::MakeIpAddressString(ep);
+  json["advertising_address"] = network::MakeIpAddressString(ep);
   json["advertising_port"] = ep.port();
   json["tx_queue_size"] = tx_queue_size_;
   json["rx_queue_size"] = rx_queue_size_;

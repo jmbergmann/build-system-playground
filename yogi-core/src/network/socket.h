@@ -21,7 +21,7 @@
 #include "../objects/context.h"
 #include "../objects/logger.h"
 #include "../api/errors.h"
-#include "types.h"
+#include "../utils/types.h"
 
 #include <boost/asio.hpp>
 #include <memory>
@@ -30,12 +30,12 @@
 #include <vector>
 #include <functional>
 
-namespace utils {
+namespace network {
 
 class TimedTcpSocket : public std::enable_shared_from_this<TimedTcpSocket> {
  public:
   typedef std::function<void(const api::Result&)> CompletionHandler;
-  typedef std::function<void(const api::Result&, const ByteVector&)>
+  typedef std::function<void(const api::Result&, const utils::ByteVector&)>
       ReceiveHandler;
 
   TimedTcpSocket(objects::ContextPtr context, std::chrono::nanoseconds timeout);
@@ -54,7 +54,7 @@ class TimedTcpSocket : public std::enable_shared_from_this<TimedTcpSocket> {
               CompletionHandler handler);
   void Connect(const boost::asio::ip::tcp::endpoint& ep,
                CompletionHandler handler);
-  void Send(SharedByteVector data, CompletionHandler handler);
+  void Send(utils::SharedByteVector data, CompletionHandler handler);
   void ReceiveExactly(std::size_t num_bytes, ReceiveHandler handler);
 
  private:
@@ -66,7 +66,7 @@ class TimedTcpSocket : public std::enable_shared_from_this<TimedTcpSocket> {
 
   const objects::ContextPtr context_;
   const std::chrono::nanoseconds timeout_;
-  const SharedByteVector rcv_buffer_;
+  const utils::SharedByteVector rcv_buffer_;
   boost::asio::ip::tcp::socket socket_;
   boost::asio::ip::tcp::endpoint remote_ep_;
   bool accepted_;
@@ -77,6 +77,7 @@ class TimedTcpSocket : public std::enable_shared_from_this<TimedTcpSocket> {
 typedef std::shared_ptr<TimedTcpSocket> TimedTcpSocketPtr;
 typedef std::weak_ptr<TimedTcpSocket> TimedTcpSocketWeakPtr;
 
-}  // namespace utils
+}  // namespace network
 
-std::ostream& operator<<(std::ostream& os, const utils::TimedTcpSocket& socket);
+std::ostream& operator<<(std::ostream& os,
+                         const network::TimedTcpSocket& socket);
