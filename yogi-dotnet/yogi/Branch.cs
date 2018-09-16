@@ -435,6 +435,8 @@ public static partial class Yogi
         ///  - advertising_interval: Time between advertising messages. Must be at
         ///    least 1 ms.
         ///  - ghost_mode: Set to true to activate ghost mode (default: false).
+        ///  - tx_queue_size: Size of the send queues for remote branches.
+        ///  - rx_queue_size: Size of the receive queues for remote branches.
         ///
         /// Advertising and establishing connections can be limited to certain network
         /// interfaces via the _interface_ property. The default is to use all
@@ -448,6 +450,12 @@ public static partial class Yogi
         /// for obtaining information about active branches without actually becoming
         /// part of the Yogi network.
         ///
+        /// Attention:
+        ///   The tx_queue_size and rx_queue_size properties affect every branch
+        ///   connection and can therefore consume a large amount of memory. For
+        ///   example, in a network of 10 branches where these properties are set to 1 MB,
+        ///   the resulting memory used for the queues would be 10 x 2 x 1 MB = 20 MB
+        ///   for each of the 10 branches. This value grows with the number of branches squared.
         /// </summary>
         /// <param name="context">The context to use.</param>
         /// <param name="props">Branch properties as serialized JSON.</param>

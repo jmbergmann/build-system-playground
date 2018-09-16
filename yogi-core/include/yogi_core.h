@@ -1652,6 +1652,14 @@ YOGI_API int YOGI_TimerCancel(void* timer);
  *   Even if the communication between branches is not encrypted, the
  *   authentication process via passwords is always done in a secure manner.
  *
+ * \attention
+ *   The _tx_queue_size_ and _rx_queue_size_ properties affect every branch
+ *   connection and can therefore consume a large amount of memory. For example,
+ *   in a network of 10 branches where these properties are set to 1 MB, the
+ *   resulting memory used for the queues would be 10 x 2 x 1 MB = 20 MB for
+ *   each of the 10 branches. This value grows with the number of branches
+ *   squared.
+ *
  * \param[out] branch   Pointer to the branch handle
  * \param[in]  context  The context to use
  * \param[in]  props    Branch properties as JSON (set to NULL to use defaults)
