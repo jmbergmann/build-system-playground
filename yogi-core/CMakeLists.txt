@@ -45,7 +45,9 @@ add_library (yogi-core-static STATIC
   src/licenses/3rd_party_licenses.cc
   src/licenses/yogi_license.cc
   src/network/ip.cc
+  src/network/msg_transport.cc
   src/network/socket.cc
+  src/network/transport.cc
   src/objects/detail/branch/advertising_receiver.cc
   src/objects/detail/branch/advertising_sender.cc
   src/objects/detail/branch/branch_connection.cc
@@ -138,16 +140,17 @@ export (TARGETS yogi-core-header
 )
 
 # Tests
-find_package (GTest REQUIRED)
-include_directories (SYSTEM ${GTEST_INCLUDE_DIRS})
-add_definitions (-D_SILENCE_TR1_NAMESPACE_DEPRECATION_WARNING)
+find_package (GMock REQUIRED)
+include_directories (SYSTEM ${GMOCK_INCLUDE_DIRS})
 
 add_executable (yogi-core-test
   test/api/constants_test.cc
   test/api/errors_test.cc
   test/api/object_test.cc
   test/licenses/licenses_test.cc
+  test/network/msg_transport_test.cc
   test/network/serialize_test.cc
+  test/network/transport_test.cc
   test/objects/branch_test.cc
   test/objects/command_line_parser_test.cc
   test/objects/configuration_test.cc
@@ -167,7 +170,7 @@ add_executable (yogi-core-test
 target_link_libraries (yogi-core-test
   yogi-core-static
   yogi-core
-  ${GTEST_BOTH_LIBRARIES}
+  ${GMOCK_BOTH_LIBRARIES}
   Threads::Threads
 )
 

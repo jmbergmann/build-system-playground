@@ -40,7 +40,7 @@ TimedTcpSocket::~TimedTcpSocket() {
 void TimedTcpSocket::Accept(boost::asio::ip::tcp::acceptor* acceptor,
                             CompletionHandler handler) {
   remote_ep_ = {};
-  auto weak_self = std::weak_ptr<TimedTcpSocket>{shared_from_this()};
+  auto weak_self = MakeWeakPtr();
   acceptor->async_accept(
       socket_, [weak_self, handler = std::move(handler)](auto& ec) {
         auto self = weak_self.lock();
@@ -63,7 +63,7 @@ void TimedTcpSocket::Accept(boost::asio::ip::tcp::acceptor* acceptor,
 void TimedTcpSocket::Connect(const boost::asio::ip::tcp::endpoint& ep,
                              CompletionHandler handler) {
   remote_ep_ = ep;
-  auto weak_self = std::weak_ptr<TimedTcpSocket>{shared_from_this()};
+  auto weak_self = MakeWeakPtr();
   socket_.async_connect(
       ep, [weak_self, handler = std::move(handler)](auto& ec) {
         auto self = weak_self.lock();
@@ -86,7 +86,7 @@ void TimedTcpSocket::Connect(const boost::asio::ip::tcp::endpoint& ep,
 
 void TimedTcpSocket::Send(utils::SharedByteVector data,
                           CompletionHandler handler) {
-  auto weak_self = std::weak_ptr<TimedTcpSocket>{shared_from_this()};
+  auto weak_self = MakeWeakPtr();
   boost::asio::async_write(
       socket_, boost::asio::buffer(*data),
       [weak_self, data, handler = std::move(handler)](auto& ec, auto) {
@@ -107,7 +107,7 @@ void TimedTcpSocket::ReceiveExactly(std::size_t num_bytes,
                                     ReceiveHandler handler) {
   auto buffer = rcv_buffer_;
   buffer->resize(num_bytes);
-  auto weak_self = std::weak_ptr<TimedTcpSocket>{shared_from_this()};
+  auto weak_self = MakeWeakPtr();
   boost::asio::async_read(
       socket_, boost::asio::buffer(*buffer),
       [weak_self, buffer, handler = std::move(handler)](auto& ec,
