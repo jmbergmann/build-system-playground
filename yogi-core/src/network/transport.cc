@@ -29,10 +29,10 @@ Transport::Transport(objects::ContextPtr context,
       rx_timer_(context->IoContext()),
       timed_out_(false) {}
 
-Transport::~Transport() {
-}
+Transport::~Transport() {}
 
-void Transport::SendSome(boost::asio::const_buffer data, SendHandler handler) {
+void Transport::SendSome(boost::asio::const_buffer data,
+                         CompletionHandler handler) {
   YOGI_ASSERT(data.size() > 0);
 
   auto weak_self = MakeWeakPtr();
@@ -59,12 +59,13 @@ void Transport::SendSome(boost::asio::const_buffer data, SendHandler handler) {
   });
 }
 
-void Transport::SendAll(boost::asio::const_buffer data, SendHandler handler) {
+void Transport::SendAll(boost::asio::const_buffer data,
+                        CompletionHandler handler) {
   SendAllImpl(data, api::kSuccess, 0, 0, handler);
 }
 
 void Transport::ReceiveSome(boost::asio::mutable_buffer data,
-                            ReceiveHandler handler) {
+                            CompletionHandler handler) {
   YOGI_ASSERT(data.size() > 0);
 
   auto weak_self = MakeWeakPtr();
@@ -92,14 +93,14 @@ void Transport::ReceiveSome(boost::asio::mutable_buffer data,
 }
 
 void Transport::ReceiveAll(boost::asio::mutable_buffer data,
-                           ReceiveHandler handler) {
+                           CompletionHandler handler) {
   ReceiveAllImpl(data, api::kSuccess, 0, 0, handler);
 }
 
 void Transport::SendAllImpl(boost::asio::const_buffer data,
                             const api::Result& res, std::size_t bytes_written,
                             std::size_t total_bytes_written,
-                            SendHandler handler) {
+                            CompletionHandler handler) {
   YOGI_ASSERT(data.size() > 0);
 
   total_bytes_written += bytes_written;
@@ -121,7 +122,7 @@ void Transport::Close() {
 void Transport::ReceiveAllImpl(boost::asio::mutable_buffer data,
                                const api::Result& res, std::size_t bytes_read,
                                std::size_t total_bytes_read,
-                               SendHandler handler) {
+                               CompletionHandler handler) {
   YOGI_ASSERT(data.size() > 0);
 
   total_bytes_read += bytes_read;

@@ -33,9 +33,9 @@ class MockTransport : public network::Transport {
       : network::Transport(context, timeout, "Broccoli") {}
 
   MOCK_METHOD2(WriteSome,
-               void(boost::asio::const_buffer data, SendHandler handler));
-  MOCK_METHOD2(ReadSome,
-               void(boost::asio::mutable_buffer data, ReceiveHandler handler));
+               void(boost::asio::const_buffer data, CompletionHandler handler));
+  MOCK_METHOD2(ReadSome, void(boost::asio::mutable_buffer data,
+                              CompletionHandler handler));
   MOCK_METHOD0(Shutdown, void());
 };
 
@@ -100,7 +100,7 @@ TEST_F(TransportTest, SendSomeTimeout) {
   // clang-format off
   transport_ = std::make_shared<MockTransport>(context_, 1ms);
 
-  network::Transport::SendHandler handler;
+  network::Transport::CompletionHandler handler;
   EXPECT_CALL(*transport_, WriteSome(_, _))
     .WillOnce(SaveArg<1>(&handler));
 
@@ -181,7 +181,7 @@ TEST_F(TransportTest, SendAllTimeout) {
   // clang-format off
   transport_ = std::make_shared<MockTransport>(context_, 1ms);
 
-  network::Transport::SendHandler handler;
+  network::Transport::CompletionHandler handler;
   EXPECT_CALL(*transport_, WriteSome(_, _))
     .WillOnce(InvokeArgument<1>(api::kSuccess, 1))
     .WillOnce(SaveArg<1>(&handler));
@@ -252,7 +252,7 @@ TEST_F(TransportTest, ReceiveSomeTimeout) {
   // clang-format off
   transport_ = std::make_shared<MockTransport>(context_, 1ms);
 
-  network::Transport::ReceiveHandler handler;
+  network::Transport::CompletionHandler handler;
   EXPECT_CALL(*transport_, ReadSome(_, _))
     .WillOnce(SaveArg<1>(&handler));
 
@@ -333,7 +333,7 @@ TEST_F(TransportTest, ReceiveAllTimeout) {
   // clang-format off
   transport_ = std::make_shared<MockTransport>(context_, 1ms);
 
-  network::Transport::ReceiveHandler handler;
+  network::Transport::CompletionHandler handler;
   EXPECT_CALL(*transport_, ReadSome(_, _))
     .WillOnce(InvokeArgument<1>(api::kSuccess, 1))
     .WillOnce(SaveArg<1>(&handler));
@@ -361,7 +361,7 @@ TEST_F(TransportTest, ReceiveAllTimeout) {
 
 TEST_F(TransportTest, CallingSendHandlerOnDestruction) {
   // clang-format off
-  network::Transport::SendHandler handler;
+  network::Transport::CompletionHandler handler;
   EXPECT_CALL(*transport_, WriteSome(_, _))
     .WillOnce(SaveArg<1>(&handler));
   // clang-format on
@@ -381,7 +381,7 @@ TEST_F(TransportTest, CallingSendHandlerOnDestruction) {
 
 TEST_F(TransportTest, CallingReceiveHandlerOnDestruction) {
   // clang-format off
-  network::Transport::ReceiveHandler handler;
+  network::Transport::CompletionHandler handler;
   EXPECT_CALL(*transport_, ReadSome(_, _))
     .WillOnce(SaveArg<1>(&handler));
   // clang-format on
