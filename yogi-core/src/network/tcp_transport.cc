@@ -120,10 +120,11 @@ void TcpTransport::CloseSocket(boost::asio::ip::tcp::socket* s) {
 
 TcpTransport::TcpTransport(objects::ContextPtr context,
                            boost::asio::ip::tcp::socket&& socket,
-                           std::chrono::nanoseconds timeout, bool accepted)
+                           std::chrono::nanoseconds timeout,
+                           bool created_via_accept)
     : Transport(context, timeout, MakePeerDescription(socket)),
       socket_(std::move(socket)),
-      accepted_(accepted) {}
+      created_via_accept_(created_via_accept) {}
 
 void TcpTransport::SetNoDelayOption() {
   boost::system::error_code ec;

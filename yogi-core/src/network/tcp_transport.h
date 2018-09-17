@@ -40,7 +40,7 @@ class TcpTransport : public Transport {
                       const boost::asio::ip::tcp::endpoint& ep,
                       std::chrono::nanoseconds timeout, CreateHandler handler);
 
-  bool HasBeenAccepted() const { return accepted_; }
+  bool CreatedViaAccept() const { return created_via_accept_; }
 
  protected:
   virtual void WriteSome(boost::asio::const_buffer data,
@@ -56,12 +56,12 @@ class TcpTransport : public Transport {
 
   TcpTransport(objects::ContextPtr context,
                boost::asio::ip::tcp::socket&& socket,
-               std::chrono::nanoseconds timeout, bool accepted);
+               std::chrono::nanoseconds timeout, bool created_via_accept);
   void SetNoDelayOption();
 
   static const objects::LoggerPtr logger_;
   boost::asio::ip::tcp::socket socket_;
-  const bool accepted_;
+  const bool created_via_accept_;
 };
 
 }  // namespace network

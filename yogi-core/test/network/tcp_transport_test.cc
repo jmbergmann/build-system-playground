@@ -66,7 +66,7 @@ TEST_F(TcpTransportTest, Accept) {
                                 [&](auto& res, auto transport) {
                                   EXPECT_EQ(res, api::kSuccess);
                                   ASSERT_TRUE(!!transport);
-                                  EXPECT_TRUE(transport->HasBeenAccepted());
+                                  EXPECT_TRUE(transport->CreatedViaAccept());
                                   called = true;
                                 });
 
@@ -80,7 +80,7 @@ TEST_F(TcpTransportTest, Accept) {
 
 TEST_F(TcpTransportTest, Connect) {
   auto transport = Connect();
-  EXPECT_FALSE(transport->HasBeenAccepted());
+  EXPECT_FALSE(transport->CreatedViaAccept());
 }
 
 TEST_F(TcpTransportTest, ConnectTimeout) {
