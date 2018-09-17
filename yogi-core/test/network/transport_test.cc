@@ -32,10 +32,10 @@ class MockTransport : public network::Transport {
   MockTransport(objects::ContextPtr context, std::chrono::nanoseconds timeout)
       : network::Transport(context, timeout, "Broccoli") {}
 
-  MOCK_METHOD2(WriteSome,
-               void(boost::asio::const_buffer data, CompletionHandler handler));
+  MOCK_METHOD2(WriteSome, void(boost::asio::const_buffer data,
+                               TransferSomeHandler handler));
   MOCK_METHOD2(ReadSome, void(boost::asio::mutable_buffer data,
-                              CompletionHandler handler));
+                              TransferSomeHandler handler));
   MOCK_METHOD0(Shutdown, void());
 };
 
@@ -100,7 +100,7 @@ TEST_F(TransportTest, SendSomeTimeout) {
   // clang-format off
   transport_ = std::make_shared<MockTransport>(context_, 1ms);
 
-  network::Transport::CompletionHandler handler;
+  network::Transport::TransferSomeHandler handler;
   EXPECT_CALL(*transport_, WriteSome(_, _))
     .WillOnce(SaveArg<1>(&handler));
 
@@ -143,12 +143,10 @@ TEST_F(TransportTest, SendAllSuccess) {
   // clang-format on
 
   bool called = false;
-  transport_->SendAll(boost::asio::buffer(data_),
-                      [&](auto& res, auto bytes_sent) {
-                        EXPECT_EQ(res, api::kSuccess);
-                        EXPECT_EQ(bytes_sent, 6);
-                        called = true;
-                      });
+  transport_->SendAll(boost::asio::buffer(data_), [&](auto& res) {
+    EXPECT_EQ(res, api::kSuccess);
+    called = true;
+  });
 
   context_->Run(1ms);
   EXPECT_TRUE(called);
@@ -167,12 +165,10 @@ TEST_F(TransportTest, SendAllFailure) {
   // clang-format on
 
   bool called = false;
-  transport_->SendAll(boost::asio::buffer(data_),
-                      [&](auto& res, auto bytes_sent) {
-                        EXPECT_EQ(res, api::Error(YOGI_ERR_RW_SOCKET_FAILED));
-                        EXPECT_EQ(bytes_sent, 3);
-                        called = true;
-                      });
+  transport_->SendAll(boost::asio::buffer(data_), [&](auto& res) {
+    EXPECT_EQ(res, api::Error(YOGI_ERR_RW_SOCKET_FAILED));
+    called = true;
+  });
 
   context_->Run(1ms);
   EXPECT_TRUE(called);
@@ -182,7 +178,7 @@ TEST_F(TransportTest, SendAllTimeout) {
   // clang-format off
   transport_ = std::make_shared<MockTransport>(context_, 1ms);
 
-  network::Transport::CompletionHandler handler;
+  network::Transport::TransferSomeHandler handler;
   EXPECT_CALL(*transport_, WriteSome(_, _))
     .WillOnce(InvokeArgument<1>(api::kSuccess, 1))
     .WillOnce(SaveArg<1>(&handler));
@@ -194,12 +190,10 @@ TEST_F(TransportTest, SendAllTimeout) {
   auto start_time = std::chrono::steady_clock::now();
 
   bool called = false;
-  transport_->SendAll(boost::asio::buffer(data_),
-                      [&](auto& res, auto bytes_sent) {
-                        EXPECT_EQ(res, api::Error(YOGI_ERR_TIMEOUT));
-                        EXPECT_EQ(bytes_sent, 3);
-                        called = true;
-                      });
+  transport_->SendAll(boost::asio::buffer(data_), [&](auto& res) {
+    EXPECT_EQ(res, api::Error(YOGI_ERR_TIMEOUT));
+    called = true;
+  });
 
   while (!called) {
     context_->RunOne(100us);
@@ -254,7 +248,7 @@ TEST_F(TransportTest, ReceiveSomeTimeout) {
   // clang-format off
   transport_ = std::make_shared<MockTransport>(context_, 1ms);
 
-  network::Transport::CompletionHandler handler;
+  network::Transport::TransferSomeHandler handler;
   EXPECT_CALL(*transport_, ReadSome(_, _))
     .WillOnce(SaveArg<1>(&handler));
 
@@ -297,12 +291,10 @@ TEST_F(TransportTest, ReceiveAllSuccess) {
   // clang-format on
 
   bool called = false;
-  transport_->ReceiveAll(boost::asio::buffer(data_),
-                         [&](auto& res, auto bytes_sent) {
-                           EXPECT_EQ(res, api::kSuccess);
-                           EXPECT_EQ(bytes_sent, 6);
-                           called = true;
-                         });
+  transport_->ReceiveAll(boost::asio::buffer(data_), [&](auto& res) {
+    EXPECT_EQ(res, api::kSuccess);
+    called = true;
+  });
 
   context_->Run(1ms);
   EXPECT_TRUE(called);
@@ -321,12 +313,10 @@ TEST_F(TransportTest, ReceiveAllFailure) {
   // clang-format on
 
   bool called = false;
-  transport_->ReceiveAll(
-      boost::asio::buffer(data_), [&](auto& res, auto bytes_sent) {
-        EXPECT_EQ(res, api::Error(YOGI_ERR_RW_SOCKET_FAILED));
-        EXPECT_EQ(bytes_sent, 3);
-        called = true;
-      });
+  transport_->ReceiveAll(boost::asio::buffer(data_), [&](auto& res) {
+    EXPECT_EQ(res, api::Error(YOGI_ERR_RW_SOCKET_FAILED));
+    called = true;
+  });
 
   context_->Run(1ms);
   EXPECT_TRUE(called);
@@ -336,7 +326,7 @@ TEST_F(TransportTest, ReceiveAllTimeout) {
   // clang-format off
   transport_ = std::make_shared<MockTransport>(context_, 1ms);
 
-  network::Transport::CompletionHandler handler;
+  network::Transport::TransferSomeHandler handler;
   EXPECT_CALL(*transport_, ReadSome(_, _))
     .WillOnce(InvokeArgument<1>(api::kSuccess, 1))
     .WillOnce(SaveArg<1>(&handler));
@@ -348,12 +338,10 @@ TEST_F(TransportTest, ReceiveAllTimeout) {
   auto start_time = std::chrono::steady_clock::now();
 
   bool called = false;
-  transport_->ReceiveAll(boost::asio::buffer(data_),
-                         [&](auto& res, auto bytes_sent) {
-                           EXPECT_EQ(res, api::Error(YOGI_ERR_TIMEOUT));
-                           EXPECT_EQ(bytes_sent, 3);
-                           called = true;
-                         });
+  transport_->ReceiveAll(boost::asio::buffer(data_), [&](auto& res) {
+    EXPECT_EQ(res, api::Error(YOGI_ERR_TIMEOUT));
+    called = true;
+  });
 
   while (!called) {
     context_->RunOne(100us);
@@ -365,7 +353,7 @@ TEST_F(TransportTest, ReceiveAllTimeout) {
 
 TEST_F(TransportTest, CallingSendHandlerOnDestruction) {
   // clang-format off
-  network::Transport::CompletionHandler handler;
+  network::Transport::TransferSomeHandler handler;
   EXPECT_CALL(*transport_, WriteSome(_, _))
     .WillOnce(SaveArg<1>(&handler));
   // clang-format on
@@ -385,7 +373,7 @@ TEST_F(TransportTest, CallingSendHandlerOnDestruction) {
 
 TEST_F(TransportTest, CallingReceiveHandlerOnDestruction) {
   // clang-format off
-  network::Transport::CompletionHandler handler;
+  network::Transport::TransferSomeHandler handler;
   EXPECT_CALL(*transport_, ReadSome(_, _))
     .WillOnce(SaveArg<1>(&handler));
   // clang-format on

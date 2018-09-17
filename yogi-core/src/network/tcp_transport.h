@@ -45,9 +45,9 @@ class TcpTransport : public Transport {
 
  protected:
   virtual void WriteSome(boost::asio::const_buffer data,
-                         CompletionHandler handler) override;
+                         TransferSomeHandler handler) override;
   virtual void ReadSome(boost::asio::mutable_buffer data,
-                        CompletionHandler handler) override;
+                        TransferSomeHandler handler) override;
   virtual void Shutdown() override;
 
  private:

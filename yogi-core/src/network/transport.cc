@@ -32,7 +32,7 @@ Transport::Transport(objects::ContextPtr context,
 Transport::~Transport() {}
 
 void Transport::SendSome(boost::asio::const_buffer data,
-                         CompletionHandler handler) {
+                         TransferSomeHandler handler) {
   YOGI_ASSERT(data.size() > 0);
 
   auto weak_self = MakeWeakPtr();
@@ -60,12 +60,12 @@ void Transport::SendSome(boost::asio::const_buffer data,
 }
 
 void Transport::SendAll(boost::asio::const_buffer data,
-                        CompletionHandler handler) {
-  SendAllImpl(data, api::kSuccess, 0, 0, handler);
+                        TransferAllHandler handler) {
+  SendAllImpl(data, api::kSuccess, 0, handler);
 }
 
 void Transport::ReceiveSome(boost::asio::mutable_buffer data,
-                            CompletionHandler handler) {
+                            TransferSomeHandler handler) {
   YOGI_ASSERT(data.size() > 0);
 
   auto weak_self = MakeWeakPtr();
@@ -93,24 +93,22 @@ void Transport::ReceiveSome(boost::asio::mutable_buffer data,
 }
 
 void Transport::ReceiveAll(boost::asio::mutable_buffer data,
-                           CompletionHandler handler) {
-  ReceiveAllImpl(data, api::kSuccess, 0, 0, handler);
+                           TransferAllHandler handler) {
+  ReceiveAllImpl(data, api::kSuccess, 0, handler);
 }
 
 void Transport::SendAllImpl(boost::asio::const_buffer data,
                             const api::Result& res, std::size_t bytes_written,
-                            std::size_t total_bytes_written,
-                            CompletionHandler handler) {
+                            TransferAllHandler handler) {
   YOGI_ASSERT(data.size() > 0);
 
-  total_bytes_written += bytes_written;
   if (res.IsSuccess() && bytes_written < data.size()) {
     data += bytes_written;
     this->SendSome(data, [=](auto& res, auto bytes_written) {
-      this->SendAllImpl(data, res, bytes_written, total_bytes_written, handler);
+      this->SendAllImpl(data, res, bytes_written, handler);
     });
   } else {
-    handler(res, total_bytes_written);
+    handler(res);
   }
 }
 
@@ -121,18 +119,16 @@ void Transport::Close() {
 
 void Transport::ReceiveAllImpl(boost::asio::mutable_buffer data,
                                const api::Result& res, std::size_t bytes_read,
-                               std::size_t total_bytes_read,
-                               CompletionHandler handler) {
+                               TransferAllHandler handler) {
   YOGI_ASSERT(data.size() > 0);
 
-  total_bytes_read += bytes_read;
   if (res.IsSuccess() && bytes_read < data.size()) {
     data += bytes_read;
     this->ReceiveSome(data, [=](auto& res, auto bytes_read) {
-      this->ReceiveAllImpl(data, res, bytes_read, total_bytes_read, handler);
+      this->ReceiveAllImpl(data, res, bytes_read, handler);
     });
   } else {
-    handler(res, total_bytes_read);
+    handler(res);
   }
 }
 

@@ -123,12 +123,10 @@ TEST_F(TcpTransportTest, Send) {
                           });
 
   bool sent = false;
-  transport->SendAll(boost::asio::buffer(data_),
-                     [&](auto& res, auto bytes_written) {
-                       EXPECT_EQ(res, api::kSuccess);
-                       EXPECT_EQ(bytes_written, this->data_.size());
-                       sent = true;
-                     });
+  transport->SendAll(boost::asio::buffer(data_), [&](auto& res) {
+    EXPECT_EQ(res, api::kSuccess);
+    sent = true;
+  });
 
   while (!sent || !received) {
     context_->RunOne(100us);
@@ -157,12 +155,10 @@ TEST_F(TcpTransportTest, Receive) {
 
   bool received = false;
   std::vector<char> buffer(data_.size());
-  transport->ReceiveAll(boost::asio::buffer(buffer),
-                        [&](auto& res, auto bytes_read) {
-                          EXPECT_EQ(res, api::kSuccess);
-                          EXPECT_EQ(bytes_read, buffer.size());
-                          received = true;
-                        });
+  transport->ReceiveAll(boost::asio::buffer(buffer), [&](auto& res) {
+    EXPECT_EQ(res, api::kSuccess);
+    received = true;
+  });
 
   bool sent = false;
   boost::asio::async_write(socket_, boost::asio::buffer(data_),

@@ -83,7 +83,7 @@ std::string TcpTransport::GetPeerIpAddress() const {
 }
 
 void TcpTransport::WriteSome(boost::asio::const_buffer data,
-                             CompletionHandler handler) {
+                             TransferSomeHandler handler) {
   socket_.async_write_some(data, [=](auto& ec, auto bytes_written) {
     if (!ec) {
       handler(api::kSuccess, bytes_written);
@@ -96,7 +96,7 @@ void TcpTransport::WriteSome(boost::asio::const_buffer data,
 }
 
 void TcpTransport::ReadSome(boost::asio::mutable_buffer data,
-                            CompletionHandler handler) {
+                            TransferSomeHandler handler) {
   socket_.async_read_some(data, [=](auto& ec, auto bytes_read) {
     if (!ec) {
       handler(api::kSuccess, bytes_read);
