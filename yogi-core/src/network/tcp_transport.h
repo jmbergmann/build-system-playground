@@ -41,6 +41,7 @@ class TcpTransport : public Transport {
                       std::chrono::nanoseconds timeout, CreateHandler handler);
 
   bool CreatedViaAccept() const { return created_via_accept_; }
+  std::string GetPeerIpAddress() const;
 
  protected:
   virtual void WriteSome(boost::asio::const_buffer data,
