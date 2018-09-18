@@ -47,8 +47,7 @@ void BranchConnection::ExchangeBranchInfo(CompletionHandler handler) {
   YOGI_ASSERT(!remote_info_);
 
   auto weak_self = MakeWeakPtr();
-  auto msg = local_info_->MakeInfoMessage();
-  transport_->SendAll(boost::asio::buffer(*msg), [=, _ = msg](auto& res) {
+  transport_->SendAll(local_info_->MakeInfoMessage(), [=](auto& res) {
     auto self = weak_self.lock();
     if (!self) return;
 
@@ -70,7 +69,7 @@ void BranchConnection::Authenticate(utils::SharedByteVector password_hash,
       utils::MakeSharedByteVector(utils::GenerateRandomBytes(8));
 
   auto weak_self = MakeWeakPtr();
-  transport_->SendAll(boost::asio::buffer(*my_challenge), [=](auto& res) {
+  transport_->SendAll(my_challenge, [=](auto& res) {
     auto self = weak_self.lock();
     if (!self) return;
 
@@ -97,7 +96,7 @@ void BranchConnection::RunSession(CompletionHandler handler) {
 void BranchConnection::OnInfoSent(CompletionHandler handler) {
   auto weak_self = MakeWeakPtr();
   auto buffer = utils::MakeSharedByteVector(BranchInfo::kInfoMessageHeaderSize);
-  transport_->ReceiveAll(boost::asio::buffer(*buffer), [=](auto& res) {
+  transport_->ReceiveAll(buffer, [=](auto& res) {
     auto self = weak_self.lock();
     if (!self) return;
 
@@ -153,23 +152,22 @@ void BranchConnection::OnInfoBodyReceived(utils::SharedByteVector info_msg,
   }
 
   auto weak_self = MakeWeakPtr();
-  transport_->SendAll(boost::asio::buffer(*ack_msg_),
-                      [=, _ = ack_msg_](auto& res) {
-                        auto self = weak_self.lock();
-                        if (!self) return;
+  transport_->SendAll(ack_msg_, [=](auto& res) {
+    auto self = weak_self.lock();
+    if (!self) return;
 
-                        if (res.IsError()) {
-                          handler(res);
-                        } else {
-                          self->OnInfoAckSent(handler);
-                        }
-                      });
+    if (res.IsError()) {
+      handler(res);
+    } else {
+      self->OnInfoAckSent(handler);
+    }
+  });
 }
 
 void BranchConnection::OnInfoAckSent(CompletionHandler handler) {
   auto weak_self = MakeWeakPtr();
   auto ack_msg = utils::MakeSharedByteVector(ack_msg_->size());
-  transport_->ReceiveAll(boost::asio::buffer(*ack_msg), [=](auto& res) {
+  transport_->ReceiveAll(ack_msg, [=](auto& res) {
     auto self = weak_self.lock();
     if (!self) return;
 
@@ -189,18 +187,17 @@ void BranchConnection::OnChallengeSent(utils::SharedByteVector my_challenge,
                                        CompletionHandler handler) {
   auto weak_self = MakeWeakPtr();
   auto remote_challenge = utils::MakeSharedByteVector(my_challenge->size());
-  transport_->ReceiveAll(
-      boost::asio::buffer(*remote_challenge), [=](auto& res) {
-        auto self = weak_self.lock();
-        if (!self) return;
+  transport_->ReceiveAll(remote_challenge, [=](auto& res) {
+    auto self = weak_self.lock();
+    if (!self) return;
 
-        if (res.IsError()) {
-          handler(res);
-        } else {
-          this->OnChallengeReceived(remote_challenge, my_challenge,
-                                    password_hash, handler);
-        }
-      });
+    if (res.IsError()) {
+      handler(res);
+    } else {
+      this->OnChallengeReceived(remote_challenge, my_challenge, password_hash,
+                                handler);
+    }
+  });
 }
 
 void BranchConnection::OnChallengeReceived(
@@ -210,17 +207,16 @@ void BranchConnection::OnChallengeReceived(
   auto weak_self = MakeWeakPtr();
   auto my_solution = SolveChallenge(*my_challenge, *password_hash);
   auto remote_solution = SolveChallenge(*remote_challenge, *password_hash);
-  transport_->SendAll(boost::asio::buffer(*remote_solution),
-                      [=, _ = remote_solution](auto& res) {
-                        auto self = weak_self.lock();
-                        if (!self) return;
+  transport_->SendAll(remote_solution, [=](auto& res) {
+    auto self = weak_self.lock();
+    if (!self) return;
 
-                        if (res.IsError()) {
-                          handler(res);
-                        } else {
-                          self->OnSolutionSent(my_solution, handler);
-                        }
-                      });
+    if (res.IsError()) {
+      handler(res);
+    } else {
+      self->OnSolutionSent(my_solution, handler);
+    }
+  });
 }
 
 utils::SharedByteVector BranchConnection::SolveChallenge(
@@ -235,17 +231,16 @@ void BranchConnection::OnSolutionSent(utils::SharedByteVector my_solution,
                                       CompletionHandler handler) {
   auto weak_self = MakeWeakPtr();
   auto received_solution = utils::MakeSharedByteVector(my_solution->size());
-  transport_->ReceiveAll(
-      boost::asio::buffer(*received_solution), [=](auto& res) {
-        auto self = weak_self.lock();
-        if (!self) return;
+  transport_->ReceiveAll(received_solution, [=](auto& res) {
+    auto self = weak_self.lock();
+    if (!self) return;
 
-        if (res.IsError()) {
-          handler(res);
-        } else {
-          self->OnSolutionReceived(received_solution, my_solution, handler);
-        }
-      });
+    if (res.IsError()) {
+      handler(res);
+    } else {
+      self->OnSolutionReceived(received_solution, my_solution, handler);
+    }
+  });
 }
 
 void BranchConnection::OnSolutionReceived(
@@ -253,24 +248,23 @@ void BranchConnection::OnSolutionReceived(
     utils::SharedByteVector my_solution, CompletionHandler handler) {
   auto weak_self = MakeWeakPtr();
   bool solutions_match = *received_solution == *my_solution;
-  transport_->SendAll(boost::asio::buffer(*ack_msg_),
-                      [=, _ = ack_msg_](auto& res) {
-                        auto self = weak_self.lock();
-                        if (!self) return;
+  transport_->SendAll(ack_msg_, [=](auto& res) {
+    auto self = weak_self.lock();
+    if (!self) return;
 
-                        if (res.IsError()) {
-                          handler(res);
-                        } else {
-                          self->OnSolutionAckSent(solutions_match, handler);
-                        }
-                      });
+    if (res.IsError()) {
+      handler(res);
+    } else {
+      self->OnSolutionAckSent(solutions_match, handler);
+    }
+  });
 }
 
 void BranchConnection::OnSolutionAckSent(bool solutions_match,
                                          CompletionHandler handler) {
   auto weak_self = MakeWeakPtr();
   auto ack_msg = utils::MakeSharedByteVector(ack_msg_->size());
-  transport_->ReceiveAll(boost::asio::buffer(*ack_msg), [=](auto& res) {
+  transport_->ReceiveAll(ack_msg, [=](auto& res) {
     auto self = weak_self.lock();
     if (!self) return;
 
@@ -308,17 +302,16 @@ void BranchConnection::RestartHeartbeatTimer() {
 
 void BranchConnection::OnHeartbeatTimerExpired() {
   auto weak_self = MakeWeakPtr();
-  transport_->SendAll(boost::asio::buffer(*heartbeat_msg_),
-                      [=, _ = heartbeat_msg_](auto& res) {
-                        auto self = weak_self.lock();
-                        if (!self) return;
+  transport_->SendAll(heartbeat_msg_, [=](auto& res) {
+    auto self = weak_self.lock();
+    if (!self) return;
 
-                        if (res.IsError()) {
-                          self->OnSessionError(res.ToError());
-                        } else {
-                          self->RestartHeartbeatTimer();
-                        }
-                      });
+    if (res.IsError()) {
+      self->OnSessionError(res.ToError());
+    } else {
+      self->RestartHeartbeatTimer();
+    }
+  });
 }
 
 void BranchConnection::StartReceive() {

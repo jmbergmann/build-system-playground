@@ -82,7 +82,7 @@ TEST_F(TransportTest, SendSomeSuccess) {
                          called = true;
                        });
 
-  context_->Run(1ms);
+  context_->Poll();
   EXPECT_TRUE(called);
 }
 
@@ -102,7 +102,7 @@ TEST_F(TransportTest, SendSomeFailure) {
                          called = true;
                        });
 
-  context_->Run(1ms);
+  context_->Poll();
   EXPECT_TRUE(called);
 }
 
@@ -158,7 +158,7 @@ TEST_F(TransportTest, SendAllSuccess) {
     called = true;
   });
 
-  context_->Run(1ms);
+  context_->Poll();
   EXPECT_TRUE(called);
 }
 
@@ -180,7 +180,7 @@ TEST_F(TransportTest, SendAllFailure) {
     called = true;
   });
 
-  context_->Run(1ms);
+  context_->Poll();
   EXPECT_TRUE(called);
 }
 
@@ -225,7 +225,7 @@ TEST_F(TransportTest, SendAllSharedByteVector) {
     called = true;
   });
 
-  context_->Run(1ms);
+  context_->Poll();
   EXPECT_TRUE(called);
 }
 
@@ -246,7 +246,7 @@ TEST_F(TransportTest, ReceiveSomeSuccess) {
                             called = true;
                           });
 
-  context_->Run(1ms);
+  context_->Poll();
   EXPECT_TRUE(called);
 }
 
@@ -266,7 +266,7 @@ TEST_F(TransportTest, ReceiveSomeFailure) {
         called = true;
       });
 
-  context_->Run(1ms);
+  context_->Poll();
   EXPECT_TRUE(called);
 }
 
@@ -322,7 +322,7 @@ TEST_F(TransportTest, ReceiveAllSuccess) {
     called = true;
   });
 
-  context_->Run(1ms);
+  context_->Poll();
   EXPECT_TRUE(called);
 }
 
@@ -344,7 +344,7 @@ TEST_F(TransportTest, ReceiveAllFailure) {
     called = true;
   });
 
-  context_->Run(1ms);
+  context_->Poll();
   EXPECT_TRUE(called);
 }
 
@@ -389,7 +389,7 @@ TEST_F(TransportTest, ReceiveAllSharedByteVector) {
     called = true;
   });
 
-  context_->Run(1ms);
+  context_->Poll();
   EXPECT_TRUE(called);
 }
 
