@@ -18,6 +18,45 @@
 #include "msg_transport.h"
 
 namespace network {
+namespace internal {
+
+std::size_t SerializeMsgSizeField(std::size_t msg_size,
+                                  std::array<utils::Byte, 5>* buffer) {
+  int length = 1 + (msg_size >= (1 << 7)) + (msg_size >= (1 << 14)) +
+               (msg_size >= (1 << 21)) + (msg_size >= (1 << 28));
+
+  auto it = buffer->begin();
+  for (int i = length; i > 0; --i) {
+    auto byte = static_cast<utils::Byte>((msg_size >> ((i - 1) * 7)) & 0x7F);
+    byte |= (i > 1 ? (1 << 7) : 0);
+    *it++ = byte;
+  }
+
+  return length;
+}
+
+bool DeserializeMsgSizeField(const std::array<utils::Byte, 5>& buffer,
+                             std::size_t size, std::size_t* msg_size) {
+  YOGI_ASSERT(size <= buffer.size());
+
+  std::size_t tmp = 0;
+
+  for (std::size_t i = 0; i < size; ++i) {
+    auto byte = buffer[i];
+
+    tmp |= static_cast<std::size_t>(byte & ~(1 << 7));
+    if (!(byte & (1 << 7))) {
+      *msg_size = tmp;
+      return true;
+    }
+
+    tmp <<= 7;
+  }
+
+  return false;
+}
+
+}  // namespace internal
 
 MessageTransport::MessageTransport(TransportPtr transport,
                                    std::size_t tx_queue_size,
@@ -25,7 +64,8 @@ MessageTransport::MessageTransport(TransportPtr transport,
     : transport_(transport), tx_rb_(tx_queue_size), rx_rb_(rx_queue_size) {}
 
 bool MessageTransport::CanSendImmediately(std::size_t msg_size) const {
-  return true;
+  // return msg_size <= tx_rb_.AvailableForWrite();
+  return false;
 }
 
 void MessageTransport::Send(boost::asio::const_buffer msg) {}

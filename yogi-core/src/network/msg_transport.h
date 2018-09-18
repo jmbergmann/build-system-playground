@@ -24,8 +24,17 @@
 #include <boost/asio/buffer.hpp>
 #include <functional>
 #include <memory>
+#include <array>
 
 namespace network {
+namespace internal {
+
+std::size_t SerializeMsgSizeField(std::size_t msg_size,
+                                  std::array<utils::Byte, 5>* buffer);
+bool DeserializeMsgSizeField(const std::array<utils::Byte, 5>& buffer,
+                             std::size_t size, std::size_t* msg_size);
+
+}  // namespace internal
 
 class MessageTransport;
 typedef std::shared_ptr<MessageTransport> MessageTransportPtr;
