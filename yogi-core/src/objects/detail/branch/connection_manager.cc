@@ -135,9 +135,11 @@ void ConnectionManager::OnAcceptFinished(const api::Result& res,
   }
 
   YOGI_LOG_DEBUG(logger_, info_ << " Accepted incoming TCP connection from "
-                                << transport->GetPeerIpAddress());
+                                << network::MakeIpAddressString(
+                                       transport->GetPeerEndpoint()));
 
-  StartExchangeBranchInfo(transport, {});
+  StartExchangeBranchInfo(transport, transport->GetPeerEndpoint().address(),
+                          {});
   StartAccept();
 }
 
@@ -176,7 +178,7 @@ void ConnectionManager::OnAdvertisementReceived(
 
 void ConnectionManager::OnConnectFinished(const api::Result& res,
                                           const boost::uuids::uuid& adv_uuid,
-                                          network::TransportPtr transport) {
+                                          network::TcpTransportPtr transport) {
   if (res.IsError()) {
     EmitBranchEvent(api::kBranchQueriedEvent, res, adv_uuid);
     pending_connects_.erase(adv_uuid);
@@ -186,12 +188,15 @@ void ConnectionManager::OnConnectFinished(const api::Result& res,
   YOGI_LOG_DEBUG(logger_, info_ << " TCP connection to " << *transport
                                 << " established successfully");
 
-  StartExchangeBranchInfo(transport, adv_uuid);
+  StartExchangeBranchInfo(transport, transport->GetPeerEndpoint().address(),
+                          adv_uuid);
 }
 
 void ConnectionManager::StartExchangeBranchInfo(
-    network::TransportPtr transport, const boost::uuids::uuid& adv_uuid) {
-  auto conn = MakeConnectionAndKeepItAlive(transport);
+    network::TransportPtr transport,
+    const boost::asio::ip::address& peer_address,
+    const boost::uuids::uuid& adv_uuid) {
+  auto conn = MakeConnectionAndKeepItAlive(peer_address, transport);
   auto weak_conn = BranchConnectionWeakPtr(conn);
   conn->ExchangeBranchInfo([this, weak_conn, adv_uuid](auto& res) {
     YOGI_ASSERT(weak_conn.lock());
@@ -422,8 +427,10 @@ void ConnectionManager::OnSessionTerminated(const api::Error& err,
 }
 
 BranchConnectionPtr ConnectionManager::MakeConnectionAndKeepItAlive(
+    const boost::asio::ip::address& peer_address,
     network::TransportPtr transport) {
-  auto conn = std::make_shared<BranchConnection>(transport, info_);
+  auto conn =
+      std::make_shared<BranchConnection>(transport, peer_address, info_);
   connections_kept_alive_.insert(conn);
   return conn;
 }

@@ -88,7 +88,7 @@ class ConnectionManager
   typedef std::set<network::TcpTransport::ConnectGuardPtr> ConnectGuardsSet;
   typedef std::set<BranchConnectionPtr> ConnectionsSet;
 
-  ConnectionManagerWeakPtr MakeWeakPtr() { return { shared_from_this() }; }
+  ConnectionManagerWeakPtr MakeWeakPtr() { return {shared_from_this()}; }
   void SetupAcceptor(const boost::asio::ip::tcp& protocol);
   void StartAccept();
   void OnAcceptFinished(const api::Result& res,
@@ -97,8 +97,9 @@ class ConnectionManager
                                const boost::asio::ip::tcp::endpoint& ep);
   void OnConnectFinished(const api::Result& res,
                          const boost::uuids::uuid& adv_uuid,
-                         network::TransportPtr transport);
+                         network::TcpTransportPtr transport);
   void StartExchangeBranchInfo(network::TransportPtr transport,
+                               const boost::asio::ip::address& peer_address,
                                const boost::uuids::uuid& adv_uuid);
   void OnExchangeBranchInfoFinished(const api::Result& res,
                                     BranchConnectionPtr conn,
@@ -119,6 +120,7 @@ class ConnectionManager
   void StartSession(BranchConnectionPtr conn);
   void OnSessionTerminated(const api::Error& err, BranchConnectionPtr conn);
   BranchConnectionPtr MakeConnectionAndKeepItAlive(
+      const boost::asio::ip::address& peer_address,
       network::TransportPtr transport);
   BranchConnectionPtr StopKeepingConnectionAlive(
       const BranchConnectionWeakPtr& weak_conn);

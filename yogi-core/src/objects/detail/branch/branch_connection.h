@@ -39,7 +39,9 @@ class BranchConnection : public std::enable_shared_from_this<BranchConnection> {
  public:
   typedef std::function<void(const api::Result&)> CompletionHandler;
 
-  BranchConnection(network::TransportPtr transport, BranchInfoPtr local_info);
+  BranchConnection(network::TransportPtr transport,
+                   const boost::asio::ip::address& peer_address,
+                   BranchInfoPtr local_info);
 
   BranchInfoPtr GetRemoteBranchInfo() const { return remote_info_; }
   std::string MakeInfoString() const;
@@ -101,6 +103,7 @@ class BranchConnection : public std::enable_shared_from_this<BranchConnection> {
   const network::TransportPtr transport_;
   const objects::ContextPtr context_;
   const BranchInfoPtr local_info_;
+  const boost::asio::ip::address peer_address_;
   const utils::Timestamp connected_since_;
   const utils::SharedByteVector heartbeat_msg_;
   const utils::SharedByteVector ack_msg_;

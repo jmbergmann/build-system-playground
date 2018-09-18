@@ -105,11 +105,6 @@ TcpTransport::ConnectGuardPtr TcpTransport::Connect(
   return guard;
 }
 
-std::string TcpTransport::GetPeerIpAddress() const {
-  auto& peer = GetPeerDescription();
-  return peer.substr(0, peer.rfind(':'));
-}
-
 void TcpTransport::WriteSome(boost::asio::const_buffer data,
                              TransferSomeHandler handler) {
   socket_.async_write_some(data, [=](auto& ec, auto bytes_written) {

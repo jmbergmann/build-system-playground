@@ -24,10 +24,12 @@ namespace objects {
 namespace detail {
 
 BranchConnection::BranchConnection(network::TransportPtr transport,
+                                   const boost::asio::ip::address& peer_address,
                                    BranchInfoPtr local_info)
     : transport_(transport),
       context_(transport->GetContext()),
       local_info_(local_info),
+      peer_address_(peer_address),
       connected_since_(utils::Timestamp::Now()),
       heartbeat_msg_(utils::MakeSharedByteVector(utils::ByteVector{0})),
       ack_msg_(utils::MakeSharedByteVector(utils::ByteVector{0x55})),
@@ -140,12 +142,7 @@ void BranchConnection::OnInfoHeaderReceived(utils::SharedByteVector buffer,
 void BranchConnection::OnInfoBodyReceived(utils::SharedByteVector info_msg,
                                           CompletionHandler handler) {
   try {
-    YOGI_TRACE;
-    printf("TODO: This is a temporary hack\n");
-    auto addr =
-        boost::asio::ip::make_address(transport_->GetPeerDescription().substr(
-            0, transport_->GetPeerDescription().rfind(':')));
-    remote_info_ = BranchInfo::CreateFromInfoMessage(*info_msg, addr);
+    remote_info_ = BranchInfo::CreateFromInfoMessage(*info_msg, peer_address_);
 
     if (remote_info_->GetUuid() == local_info_->GetUuid()) {
       throw api::Error(YOGI_ERR_LOOPBACK_CONNECTION);
@@ -213,16 +210,17 @@ void BranchConnection::OnChallengeReceived(
   auto weak_self = MakeWeakPtr();
   auto my_solution = SolveChallenge(*my_challenge, *password_hash);
   auto remote_solution = SolveChallenge(*remote_challenge, *password_hash);
-  transport_->SendAll(boost::asio::buffer(*remote_solution), [=, _ = remote_solution](auto& res) {
-    auto self = weak_self.lock();
-    if (!self) return;
+  transport_->SendAll(boost::asio::buffer(*remote_solution),
+                      [=, _ = remote_solution](auto& res) {
+                        auto self = weak_self.lock();
+                        if (!self) return;
 
-    if (res.IsError()) {
-      handler(res);
-    } else {
-      self->OnSolutionSent(my_solution, handler);
-    }
-  });
+                        if (res.IsError()) {
+                          handler(res);
+                        } else {
+                          self->OnSolutionSent(my_solution, handler);
+                        }
+                      });
 }
 
 utils::SharedByteVector BranchConnection::SolveChallenge(

@@ -69,7 +69,9 @@ class TcpTransport : public Transport {
                                  std::chrono::nanoseconds timeout,
                                  ConnectHandler handler);
 
-  std::string GetPeerIpAddress() const;
+  boost::asio::ip::tcp::endpoint GetPeerEndpoint() const {
+    return socket_.remote_endpoint();
+  }
 
  protected:
   virtual void WriteSome(boost::asio::const_buffer data,
