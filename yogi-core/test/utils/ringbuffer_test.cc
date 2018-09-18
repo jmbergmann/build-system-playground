@@ -122,3 +122,37 @@ TEST_F(RingBufferTest, FrontAndPop) {
   uut.Pop();
   EXPECT_TRUE(uut.Empty());
 }
+
+TEST_F(RingBufferTest, AvailableForRead) {
+  EXPECT_EQ(uut.AvailableForRead(), 0);
+
+  Byte byte = 'x';
+  uut.Write(&byte, 1);
+  uut.Write(&byte, 1);
+  EXPECT_EQ(uut.AvailableForRead(), 2);
+  ByteVector buffer(10);
+  uut.Read(buffer.data(), buffer.size());
+  EXPECT_EQ(uut.AvailableForRead(), 0);
+
+  for (std::size_t i = 0; i < uut.Capacity(); ++i) {
+    uut.Write(&byte, 1);
+    EXPECT_EQ(uut.AvailableForRead(), i + 1);
+  }
+}
+
+TEST_F(RingBufferTest, AvailableForWrite) {
+  EXPECT_EQ(uut.AvailableForWrite(), uut.Capacity());
+
+  Byte byte = 'x';
+  uut.Write(&byte, 1);
+  uut.Write(&byte, 1);
+  EXPECT_EQ(uut.AvailableForWrite(), uut.Capacity() - 2);
+  ByteVector buffer(10);
+  uut.Read(buffer.data(), buffer.size());
+  EXPECT_EQ(uut.AvailableForWrite(), uut.Capacity());
+
+  for (std::size_t i = 0; i < uut.Capacity(); ++i) {
+    uut.Write(&byte, 1);
+    EXPECT_EQ(uut.AvailableForWrite(), uut.Capacity() - i - 1);
+  }
+}

@@ -38,9 +38,11 @@ class LockFreeRingBuffer {
   bool Full();
   Byte Front() const;
   void Pop();
+  std::size_t AvailableForRead() const;
   std::size_t Read(Byte* buffer, std::size_t max_size);
   void CommitFirstReadArray(std::size_t n);
   boost::asio::const_buffers_1 FirstReadArray() const;
+  std::size_t AvailableForWrite() const;
   std::size_t Write(const Byte* data, std::size_t size);
   void CommitFirstWriteArray(std::size_t n);
   boost::asio::mutable_buffers_1 FirstWriteArray();

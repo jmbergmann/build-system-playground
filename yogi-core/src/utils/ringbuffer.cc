@@ -53,6 +53,12 @@ void LockFreeRingBuffer::Pop() {
   read_idx_.store(next, std::memory_order_release);
 }
 
+std::size_t LockFreeRingBuffer::AvailableForRead() const {
+  auto wi = write_idx_.load(std::memory_order_acquire);
+  auto ri = read_idx_.load(std::memory_order_relaxed);
+  return AvailableForRead(wi, ri);
+}
+
 std::size_t LockFreeRingBuffer::Read(Byte* buffer, std::size_t max_size) {
   auto wi = write_idx_.load(std::memory_order_acquire);
   auto ri = read_idx_.load(std::memory_order_relaxed);
@@ -111,6 +117,12 @@ boost::asio::const_buffers_1 LockFreeRingBuffer::FirstReadArray() const {
   } else {
     return boost::asio::buffer(data_.data() + ri, wi - ri);
   }
+}
+
+std::size_t LockFreeRingBuffer::AvailableForWrite() const {
+  auto wi = write_idx_.load(std::memory_order_relaxed);
+  auto ri = read_idx_.load(std::memory_order_acquire);
+  return AvailableForWrite(wi, ri);
 }
 
 std::size_t LockFreeRingBuffer::Write(const Byte* data, std::size_t size) {
