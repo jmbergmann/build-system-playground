@@ -18,7 +18,7 @@
 #pragma once
 
 #include "../../../config.h"
-#include "../../../network/socket.h"
+#include "../../../network/transport.h"
 #include "../../context.h"
 #include "../../logger.h"
 #include "branch_info.h"
@@ -31,22 +31,27 @@
 namespace objects {
 namespace detail {
 
-class BranchConnection final
-    : public std::enable_shared_from_this<BranchConnection> {
+class BranchConnection;
+typedef std::shared_ptr<BranchConnection> BranchConnectionPtr;
+typedef std::weak_ptr<BranchConnection> BranchConnectionWeakPtr;
+
+class BranchConnection : public std::enable_shared_from_this<BranchConnection> {
  public:
   typedef std::function<void(const api::Result&)> CompletionHandler;
 
-  BranchConnection(network::TimedTcpSocketPtr socket, BranchInfoPtr local_info);
+  BranchConnection(network::TransportPtr transport, BranchInfoPtr local_info);
 
   BranchInfoPtr GetRemoteBranchInfo() const { return remote_info_; }
   std::string MakeInfoString() const;
-  bool SourceIsTcpServer() const { return socket_->HasBeenAccepted(); }
-
-  const boost::asio::ip::tcp::endpoint& GetRemoteEndpoint() const {
-    return socket_->GetRemoteEndpoint();
-  }
-
   bool SessionStarted() const { return session_started_; }
+
+  bool CreatedFromIncomingConnectionRequest() const {
+    return transport_->CreatedFromIncomingConnectionRequest();
+  };
+
+  const std::string& GetPeerDescription() const {
+    return transport_->GetPeerDescription();
+  }
 
   void ExchangeBranchInfo(CompletionHandler handler);
   void Authenticate(utils::SharedByteVector password_hash,
@@ -54,20 +59,20 @@ class BranchConnection final
   void RunSession(CompletionHandler handler);
 
  private:
+  BranchConnectionWeakPtr MakeWeakPtr() { return {shared_from_this()}; }
   void OnInfoSent(CompletionHandler handler);
-  void OnInfoHeaderReceived(const utils::ByteVector& info_msg_hdr,
+  void OnInfoHeaderReceived(utils::SharedByteVector buffer,
                             CompletionHandler handler);
-  void OnInfoBodyReceived(const utils::ByteVector& info_msg_hdr,
-                          const utils::ByteVector& info_msg_body,
+  void OnInfoBodyReceived(utils::SharedByteVector info_msg,
                           CompletionHandler handler);
   void OnInfoAckSent(CompletionHandler handler);
   void OnInfoAckReceived(const api::Result& res,
-                         const utils::ByteVector& ack_msg,
+                         utils::SharedByteVector ack_msg,
                          CompletionHandler handler);
   void OnChallengeSent(utils::SharedByteVector my_challenge,
                        utils::SharedByteVector password_hash,
                        CompletionHandler handler);
-  void OnChallengeReceived(const utils::ByteVector& remote_challenge,
+  void OnChallengeReceived(utils::SharedByteVector remote_challenge,
                            utils::SharedByteVector my_challenge,
                            utils::SharedByteVector password_hash,
                            CompletionHandler handler);
@@ -76,12 +81,12 @@ class BranchConnection final
       const utils::ByteVector& password_hash) const;
   void OnSolutionSent(utils::SharedByteVector my_solution,
                       CompletionHandler handler);
-  void OnSolutionReceived(const utils::ByteVector& received_solution,
+  void OnSolutionReceived(utils::SharedByteVector received_solution,
                           utils::SharedByteVector my_solution,
                           CompletionHandler handler);
   void OnSolutionAckSent(bool solutions_match, CompletionHandler handler);
   void OnSolutionAckReceived(const api::Result& res, bool solutions_match,
-                             const utils::ByteVector& ack_msg,
+                             utils::SharedByteVector ack_msg,
                              CompletionHandler handler);
   void RestartHeartbeatTimer();
   void OnHeartbeatTimerExpired();
@@ -93,7 +98,7 @@ class BranchConnection final
 
   static const LoggerPtr logger_;
 
-  const network::TimedTcpSocketPtr socket_;
+  const network::TransportPtr transport_;
   const objects::ContextPtr context_;
   const BranchInfoPtr local_info_;
   const utils::Timestamp connected_since_;
@@ -105,9 +110,6 @@ class BranchConnection final
   boost::asio::steady_timer heartbeat_timer_;
   api::Result next_result_;
 };
-
-typedef std::shared_ptr<BranchConnection> BranchConnectionPtr;
-typedef std::weak_ptr<BranchConnection> BranchConnectionWeakPtr;
 
 }  // namespace detail
 }  // namespace objects

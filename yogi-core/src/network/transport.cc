@@ -21,9 +21,11 @@ namespace network {
 
 Transport::Transport(objects::ContextPtr context,
                      std::chrono::nanoseconds timeout,
+                     bool created_from_incoming_conn_req,
                      std::string peer_description)
     : context_(context),
       timeout_(timeout),
+      created_from_incoming_conn_req_(created_from_incoming_conn_req),
       peer_description_(peer_description),
       tx_timer_(context->IoContext()),
       rx_timer_(context->IoContext()),

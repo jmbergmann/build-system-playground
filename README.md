@@ -1,6 +1,9 @@
 # Windows x86, x64 and VS solution
 cmake .. -DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake -DVCPKG_TARGET_TRIPLET=x86-windows-static -DCMAKE_BUILD_TYPE=Debug -G "NMake Makefiles"
 cmake .. -DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake -DVCPKG_TARGET_TRIPLET=x64-windows-static -DCMAKE_BUILD_TYPE=Debug -G "NMake Makefiles"
+cmake .. -DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake -DVCPKG_TARGET_TRIPLET=x86-windows-static -DCMAKE_BUILD_TYPE=Debug
+
+# Linux
 cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_TOOLCHAIN_FILE=~/vcpkg/scripts/buildsystems/vcpkg.cmake
 
 # Run Python tests manually
@@ -19,6 +22,7 @@ TODO:
 * Check path validity when creating branches and terminals
 * Whether or not a branch is actively receiving broadcasts must be conveyed when connecting to other branches in one of the initial messages to avoid missing broadcasts
 * Add connection statistics (msg/sec, bytes/sec, etc.)
+* Remote bytes_written/bytes_read from Transport::SendAll/ReceiveAll?
 
 Outgoing data queue design:
 * Needs size limit, otherwise it could potentially grow to GBs if the user does something dumb

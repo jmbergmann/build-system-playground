@@ -30,17 +30,45 @@ typedef std::weak_ptr<TcpTransport> TcpTransportWeakPtr;
 
 class TcpTransport : public Transport {
  public:
-  typedef std::function<void(const api::Result&, TcpTransportPtr)>
-      CreateHandler;
+  template <typename T>
+  class AsioGuard {
+    friend class TcpTransport;
 
-  static void Accept(objects::ContextPtr context,
-                     boost::asio::ip::tcp::acceptor* acceptor,
-                     std::chrono::nanoseconds timeout, CreateHandler handler);
-  static void Connect(objects::ContextPtr context,
-                      const boost::asio::ip::tcp::endpoint& ep,
-                      std::chrono::nanoseconds timeout, CreateHandler handler);
+   public:
+    AsioGuard(T* obj) : obj_(obj) {}
+    ~AsioGuard() {
+      if (obj_) obj_->cancel();
+    }
 
-  bool CreatedViaAccept() const { return created_via_accept_; }
+   private:
+    void Disable() { obj_ = nullptr; }
+
+    T* obj_;
+  };
+
+  typedef AsioGuard<boost::asio::ip::tcp::acceptor> AcceptGuard;
+  typedef std::shared_ptr<AcceptGuard> AcceptGuardPtr;
+  typedef std::weak_ptr<AcceptGuard> AcceptGuardWeakPtr;
+  typedef AsioGuard<boost::asio::ip::tcp::socket> ConnectGuard;
+  typedef std::shared_ptr<ConnectGuard> ConnectGuardPtr;
+  typedef std::weak_ptr<ConnectGuard> ConnectGuardWeakPtr;
+  typedef std::function<void(const api::Result&, TcpTransportPtr,
+                             AcceptGuardPtr)>
+      AcceptHandler;
+  typedef std::function<void(const api::Result&, TcpTransportPtr,
+                             ConnectGuardPtr)>
+      ConnectHandler;
+
+  static AcceptGuardPtr Accept(objects::ContextPtr context,
+                               boost::asio::ip::tcp::acceptor* acceptor,
+                               std::chrono::nanoseconds timeout,
+                               AcceptHandler handler);
+
+  static ConnectGuardPtr Connect(objects::ContextPtr context,
+                                 const boost::asio::ip::tcp::endpoint& ep,
+                                 std::chrono::nanoseconds timeout,
+                                 ConnectHandler handler);
+
   std::string GetPeerIpAddress() const;
 
  protected:
@@ -62,7 +90,6 @@ class TcpTransport : public Transport {
 
   static const objects::LoggerPtr logger_;
   boost::asio::ip::tcp::socket socket_;
-  const bool created_via_accept_;
 };
 
 }  // namespace network

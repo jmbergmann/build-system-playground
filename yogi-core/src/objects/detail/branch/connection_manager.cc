@@ -114,21 +114,19 @@ void ConnectionManager::SetupAcceptor(const boost::asio::ip::tcp& protocol) {
 }
 
 void ConnectionManager::StartAccept() {
-  auto socket = MakeSocketAndKeepItAlive();
-  auto weak_socket = network::TimedTcpSocketWeakPtr(socket);
+  auto weak_self = MakeWeakPtr();
+  accept_guard_ =
+      network::TcpTransport::Accept(context_, &acceptor_, info_->GetTimeout(),
+                                    [=](auto& res, auto transport, auto) {
+                                      auto self = weak_self.lock();
+                                      if (!self) return;
 
-  auto weak_self = std::weak_ptr<ConnectionManager>{shared_from_this()};
-  socket->Accept(&acceptor_, [weak_self, weak_socket](auto& res) {
-    auto self = weak_self.lock();
-    if (!self) return;
-
-    auto socket = self->StopKeepingSocketAlive(weak_socket);
-    self->OnAcceptFinished(res, socket);
-  });
+                                      self->OnAcceptFinished(res, transport);
+                                    });
 }
 
 void ConnectionManager::OnAcceptFinished(const api::Result& res,
-                                         network::TimedTcpSocketPtr socket) {
+                                         network::TcpTransportPtr transport) {
   if (res.IsError()) {
     YOGI_LOG_ERROR(logger_,
                    info_ << " Accepting incoming TCP connection failed: " << res
@@ -137,10 +135,9 @@ void ConnectionManager::OnAcceptFinished(const api::Result& res,
   }
 
   YOGI_LOG_DEBUG(logger_, info_ << " Accepted incoming TCP connection from "
-                                << network::MakeIpAddressString(
-                                       socket->GetRemoteEndpoint()));
+                                << transport->GetPeerIpAddress());
 
-  StartExchangeBranchInfo(socket, {});
+  StartExchangeBranchInfo(transport, {});
   StartAccept();
 }
 
@@ -156,12 +153,18 @@ void ConnectionManager::OnAdvertisementReceived(
                                 << "] on " << network::MakeIpAddressString(ep)
                                 << ":" << ep.port());
 
-  auto socket = MakeSocketAndKeepItAlive();
-  auto weak_socket = network::TimedTcpSocketWeakPtr(socket);
-  socket->Connect(ep, [this, adv_uuid, weak_socket](auto& res) {
-    auto socket = this->StopKeepingSocketAlive(weak_socket);
-    this->OnConnectFinished(res, adv_uuid, socket);
-  });
+  auto weak_self = MakeWeakPtr();
+  auto guard = network::TcpTransport::Connect(
+      context_, ep, info_->GetTimeout(),
+      [=](auto& res, auto transport, auto guard) {
+        auto self = weak_self.lock();
+        if (!self) return;
+
+        self->connect_guards_.erase(guard);
+        self->OnConnectFinished(res, adv_uuid, transport);
+      });
+
+  connect_guards_.insert(guard);
 
   EmitBranchEvent(api::kBranchDiscoveredEvent, api::kSuccess, adv_uuid, [&] {
     return nlohmann::json{
@@ -173,22 +176,22 @@ void ConnectionManager::OnAdvertisementReceived(
 
 void ConnectionManager::OnConnectFinished(const api::Result& res,
                                           const boost::uuids::uuid& adv_uuid,
-                                          network::TimedTcpSocketPtr socket) {
+                                          network::TransportPtr transport) {
   if (res.IsError()) {
     EmitBranchEvent(api::kBranchQueriedEvent, res, adv_uuid);
     pending_connects_.erase(adv_uuid);
     return;
   }
 
-  YOGI_LOG_DEBUG(logger_, info_ << " TCP connection to " << *socket
+  YOGI_LOG_DEBUG(logger_, info_ << " TCP connection to " << *transport
                                 << " established successfully");
 
-  StartExchangeBranchInfo(socket, adv_uuid);
+  StartExchangeBranchInfo(transport, adv_uuid);
 }
 
 void ConnectionManager::StartExchangeBranchInfo(
-    network::TimedTcpSocketPtr socket, const boost::uuids::uuid& adv_uuid) {
-  auto conn = MakeConnectionAndKeepItAlive(socket);
+    network::TransportPtr transport, const boost::uuids::uuid& adv_uuid) {
+  auto conn = MakeConnectionAndKeepItAlive(transport);
   auto weak_conn = BranchConnectionWeakPtr(conn);
   conn->ExchangeBranchInfo([this, weak_conn, adv_uuid](auto& res) {
     YOGI_ASSERT(weak_conn.lock());
@@ -208,7 +211,8 @@ void ConnectionManager::OnExchangeBranchInfoFinished(
   auto remote_info = conn->GetRemoteBranchInfo();
   auto& remote_uuid = remote_info->GetUuid();
 
-  if (!conn->SourceIsTcpServer() && !VerifyUuidsMatch(remote_uuid, adv_uuid)) {
+  if (!conn->CreatedFromIncomingConnectionRequest() &&
+      !VerifyUuidsMatch(remote_uuid, adv_uuid)) {
     return;
   }
 
@@ -216,11 +220,12 @@ void ConnectionManager::OnExchangeBranchInfoFinished(
     return;
   }
 
-  YOGI_LOG_DEBUG(logger_,
-                 info_ << " Successfully exchanged branch info with "
-                       << remote_info << " (source: TCP "
-                       << (conn->SourceIsTcpServer() ? "server" : "client")
-                       << ")");
+  YOGI_LOG_DEBUG(logger_, info_ << " Successfully exchanged branch info with "
+                                << remote_info << " (source: "
+                                << (conn->CreatedFromIncomingConnectionRequest()
+                                        ? "server"
+                                        : "client")
+                                << ")");
 
   std::lock_guard<std::mutex> lock(connections_mutex_);
   auto con_res = connections_.insert(std::make_pair(remote_uuid, conn));
@@ -258,18 +263,14 @@ bool ConnectionManager::CheckExchangeBranchInfoError(
     return true;
   }
 
-  if (conn->SourceIsTcpServer()) {
+  if (conn->CreatedFromIncomingConnectionRequest()) {
     YOGI_LOG_ERROR(
-        logger_,
-        info_ << " Exchanging branch info with TCP server connection from "
-              << network::MakeIpAddressString(conn->GetRemoteEndpoint())
-              << " failed: " << res);
+        logger_, info_ << " Exchanging branch info with server connection from "
+                       << conn->GetPeerDescription() << " failed: " << res);
   } else {
-    YOGI_LOG_ERROR(
-        logger_,
-        info_ << " Exchanging branch info with TCP client connection to "
-              << network::MakeIpAddressString(conn->GetRemoteEndpoint()) << ":"
-              << conn->GetRemoteEndpoint().port() << " failed: " << res);
+    YOGI_LOG_ERROR(logger_,
+                   info_ << " Exchanging branch info with client connection to "
+                         << conn->GetPeerDescription() << " failed: " << res);
   }
 
   return false;
@@ -310,14 +311,16 @@ bool ConnectionManager::VerifyConnectionHasHigherPriority(
   auto& remote_uuid = conn->GetRemoteBranchInfo()->GetUuid();
   YOGI_ASSERT(connections_[remote_uuid]);
 
-  if ((remote_uuid < info_->GetUuid()) == conn->SourceIsTcpServer()) {
+  if ((remote_uuid < info_->GetUuid()) ==
+      conn->CreatedFromIncomingConnectionRequest()) {
     return true;
   }
 
   YOGI_LOG_DEBUG(
       logger_,
       info_ << " Dropping TCP "
-            << (conn->SourceIsTcpServer() ? "server" : "client")
+            << (conn->CreatedFromIncomingConnectionRequest() ? "server"
+                                                             : "client")
             << " connection to " << conn
             << " since a connection with a higher priority already exists")
 
@@ -418,24 +421,9 @@ void ConnectionManager::OnSessionTerminated(const api::Error& err,
   connection_changed_handler_(err, conn);
 }
 
-network::TimedTcpSocketPtr ConnectionManager::MakeSocketAndKeepItAlive() {
-  auto socket =
-      std::make_shared<network::TimedTcpSocket>(context_, info_->GetTimeout());
-  sockets_kept_alive_.insert(socket);
-  return socket;
-}
-
-network::TimedTcpSocketPtr ConnectionManager::StopKeepingSocketAlive(
-    const network::TimedTcpSocketWeakPtr& weak_socket) {
-  auto socket = weak_socket.lock();
-  YOGI_ASSERT(socket);
-  sockets_kept_alive_.erase(socket);
-  return socket;
-}
-
 BranchConnectionPtr ConnectionManager::MakeConnectionAndKeepItAlive(
-    network::TimedTcpSocketPtr socket) {
-  auto conn = std::make_shared<BranchConnection>(socket, info_);
+    network::TransportPtr transport) {
+  auto conn = std::make_shared<BranchConnection>(transport, info_);
   connections_kept_alive_.insert(conn);
   return conn;
 }

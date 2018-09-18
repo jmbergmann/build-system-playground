@@ -19,6 +19,7 @@
 
 #include "../../../config.h"
 #include "../../../api/enums.h"
+#include "../../../network/tcp_transport.h"
 #include "advertising_receiver.h"
 #include "advertising_sender.h"
 #include "branch_connection.h"
@@ -33,7 +34,11 @@
 namespace objects {
 namespace detail {
 
-class ConnectionManager final
+class ConnectionManager;
+typedef std::shared_ptr<ConnectionManager> ConnectionManagerPtr;
+typedef std::weak_ptr<ConnectionManager> ConnectionManagerWeakPtr;
+
+class ConnectionManager
     : public std::enable_shared_from_this<ConnectionManager> {
  public:
   using ByteVector = utils::ByteVector;
@@ -78,20 +83,22 @@ class ConnectionManager final
   typedef std::unordered_map<boost::uuids::uuid, detail::BranchConnectionPtr,
                              boost::hash<boost::uuids::uuid>>
       ConnectionsMap;
-  typedef ConnectionsMap::value_type ConnectionsMapEntry;
-  typedef std::set<network::TimedTcpSocketPtr> SocketSet;
-  typedef std::set<BranchConnectionPtr> ConnectionSet;
 
+  typedef ConnectionsMap::value_type ConnectionsMapEntry;
+  typedef std::set<network::TcpTransport::ConnectGuardPtr> ConnectGuardsSet;
+  typedef std::set<BranchConnectionPtr> ConnectionsSet;
+
+  ConnectionManagerWeakPtr MakeWeakPtr() { return { shared_from_this() }; }
   void SetupAcceptor(const boost::asio::ip::tcp& protocol);
   void StartAccept();
   void OnAcceptFinished(const api::Result& res,
-                        network::TimedTcpSocketPtr socket);
+                        network::TcpTransportPtr transport);
   void OnAdvertisementReceived(const boost::uuids::uuid& adv_uuid,
                                const boost::asio::ip::tcp::endpoint& ep);
   void OnConnectFinished(const api::Result& res,
                          const boost::uuids::uuid& adv_uuid,
-                         network::TimedTcpSocketPtr socket);
-  void StartExchangeBranchInfo(network::TimedTcpSocketPtr socket,
+                         network::TransportPtr transport);
+  void StartExchangeBranchInfo(network::TransportPtr transport,
                                const boost::uuids::uuid& adv_uuid);
   void OnExchangeBranchInfoFinished(const api::Result& res,
                                     BranchConnectionPtr conn,
@@ -111,11 +118,8 @@ class ConnectionManager final
   void OnAuthenticateFinished(const api::Result& res, BranchConnectionPtr conn);
   void StartSession(BranchConnectionPtr conn);
   void OnSessionTerminated(const api::Error& err, BranchConnectionPtr conn);
-  network::TimedTcpSocketPtr MakeSocketAndKeepItAlive();
-  network::TimedTcpSocketPtr StopKeepingSocketAlive(
-      const network::TimedTcpSocketWeakPtr& weak_socket);
   BranchConnectionPtr MakeConnectionAndKeepItAlive(
-      network::TimedTcpSocketPtr socket);
+      network::TransportPtr transport);
   BranchConnectionPtr StopKeepingConnectionAlive(
       const BranchConnectionWeakPtr& weak_conn);
 
@@ -138,8 +142,9 @@ class ConnectionManager final
   const detail::AdvertisingSenderPtr adv_sender_;
   const detail::AdvertisingReceiverPtr adv_receiver_;
   boost::asio::ip::tcp::acceptor acceptor_;
-  SocketSet sockets_kept_alive_;
-  ConnectionSet connections_kept_alive_;
+  network::TcpTransport::AcceptGuardPtr accept_guard_;
+  ConnectGuardsSet connect_guards_;
+  ConnectionsSet connections_kept_alive_;
   BranchInfoPtr info_;
 
   UuidSet blacklisted_uuids_;
@@ -151,8 +156,6 @@ class ConnectionManager final
   api::BranchEvents observed_events_;
   std::recursive_mutex event_mutex_;
 };
-
-typedef std::shared_ptr<ConnectionManager> ConnectionManagerPtr;
 
 }  // namespace detail
 }  // namespace objects

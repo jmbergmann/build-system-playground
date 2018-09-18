@@ -29,8 +29,10 @@ MATCHER_P(BufferEq, other, std::string(negation ? "isn't" : "is")) {
 
 class MockTransport : public network::Transport {
  public:
-  MockTransport(objects::ContextPtr context, std::chrono::nanoseconds timeout)
-      : network::Transport(context, timeout, "Broccoli") {}
+  MockTransport(objects::ContextPtr context, std::chrono::nanoseconds timeout,
+                bool created_from_incoming_conn_req)
+      : network::Transport(context, timeout, created_from_incoming_conn_req,
+                           "Broccoli") {}
 
   MOCK_METHOD2(WriteSome, void(boost::asio::const_buffer data,
                                TransferSomeHandler handler));
@@ -43,12 +45,20 @@ class TransportTest : public TestFixture {
  protected:
   objects::ContextPtr context_ = objects::Context::Create();
   std::shared_ptr<MockTransport> transport_ =
-      std::make_shared<MockTransport>(context_, 10s);
+      std::make_shared<MockTransport>(context_, 10s, false);
   std::vector<char> data_ = {1, 2, 3, 4, 5, 6};
 };
 
 TEST_F(TransportTest, GetContext) {
   EXPECT_EQ(transport_->GetContext(), context_);
+}
+
+TEST_F(TransportTest, CreatedFromIncomingConnectionRequest) {
+  auto a = std::make_shared<MockTransport>(context_, 1s, true);
+  EXPECT_TRUE(a->CreatedFromIncomingConnectionRequest());
+
+  auto b = std::make_shared<MockTransport>(context_, 1s, false);
+  EXPECT_FALSE(b->CreatedFromIncomingConnectionRequest());
 }
 
 TEST_F(TransportTest, GetPeerDescription) {
@@ -98,7 +108,7 @@ TEST_F(TransportTest, SendSomeFailure) {
 
 TEST_F(TransportTest, SendSomeTimeout) {
   // clang-format off
-  transport_ = std::make_shared<MockTransport>(context_, 1ms);
+  transport_ = std::make_shared<MockTransport>(context_, 1ms, false);
 
   network::Transport::TransferSomeHandler handler;
   EXPECT_CALL(*transport_, WriteSome(_, _))
@@ -176,7 +186,7 @@ TEST_F(TransportTest, SendAllFailure) {
 
 TEST_F(TransportTest, SendAllTimeout) {
   // clang-format off
-  transport_ = std::make_shared<MockTransport>(context_, 1ms);
+  transport_ = std::make_shared<MockTransport>(context_, 1ms, false);
 
   network::Transport::TransferSomeHandler handler;
   EXPECT_CALL(*transport_, WriteSome(_, _))
@@ -246,7 +256,7 @@ TEST_F(TransportTest, ReceiveSomeFailure) {
 
 TEST_F(TransportTest, ReceiveSomeTimeout) {
   // clang-format off
-  transport_ = std::make_shared<MockTransport>(context_, 1ms);
+  transport_ = std::make_shared<MockTransport>(context_, 1ms, false);
 
   network::Transport::TransferSomeHandler handler;
   EXPECT_CALL(*transport_, ReadSome(_, _))
@@ -324,7 +334,7 @@ TEST_F(TransportTest, ReceiveAllFailure) {
 
 TEST_F(TransportTest, ReceiveAllTimeout) {
   // clang-format off
-  transport_ = std::make_shared<MockTransport>(context_, 1ms);
+  transport_ = std::make_shared<MockTransport>(context_, 1ms, false);
 
   network::Transport::TransferSomeHandler handler;
   EXPECT_CALL(*transport_, ReadSome(_, _))
