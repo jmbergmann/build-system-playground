@@ -19,6 +19,7 @@
 
 #include "../config.h"
 #include "../objects/context.h"
+#include "../utils/types.h"
 
 #include <boost/asio.hpp>
 #include <memory>
@@ -53,9 +54,11 @@ class Transport : public std::enable_shared_from_this<Transport> {
 
   void SendSome(boost::asio::const_buffer data, TransferSomeHandler handler);
   void SendAll(boost::asio::const_buffer data, TransferAllHandler handler);
+  void SendAll(utils::SharedByteVector data, TransferAllHandler handler);
   void ReceiveSome(boost::asio::mutable_buffer data,
                    TransferSomeHandler handler);
   void ReceiveAll(boost::asio::mutable_buffer data, TransferAllHandler handler);
+  void ReceiveAll(utils::SharedByteVector data, TransferAllHandler handler);
   void Close();
 
  protected:

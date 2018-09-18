@@ -46,7 +46,7 @@ class TransportTest : public TestFixture {
   objects::ContextPtr context_ = objects::Context::Create();
   std::shared_ptr<MockTransport> transport_ =
       std::make_shared<MockTransport>(context_, 10s, false);
-  std::vector<char> data_ = {1, 2, 3, 4, 5, 6};
+  utils::ByteVector data_ = {1, 2, 3, 4, 5, 6};
 };
 
 TEST_F(TransportTest, GetContext) {
@@ -213,6 +213,22 @@ TEST_F(TransportTest, SendAllTimeout) {
   EXPECT_LT(std::chrono::steady_clock::now(), start_time + 1ms + kTimingMargin);
 }
 
+TEST_F(TransportTest, SendAllSharedByteVector) {
+  // clang-format off
+  EXPECT_CALL(*transport_, WriteSome(_, _))
+    .WillOnce(InvokeArgument<1>(api::kSuccess, data_.size()));
+  // clang-format on
+
+  bool called = false;
+  transport_->SendAll(utils::MakeSharedByteVector(data_), [&](auto& res) {
+    EXPECT_EQ(res, api::kSuccess);
+    called = true;
+  });
+
+  context_->Run(1ms);
+  EXPECT_TRUE(called);
+}
+
 TEST_F(TransportTest, ReceiveSomeSuccess) {
   // clang-format off
   EXPECT_CALL(*transport_, Shutdown())
@@ -359,6 +375,22 @@ TEST_F(TransportTest, ReceiveAllTimeout) {
 
   EXPECT_GT(std::chrono::steady_clock::now(), start_time + 1ms);
   EXPECT_LT(std::chrono::steady_clock::now(), start_time + 1ms + kTimingMargin);
+}
+
+TEST_F(TransportTest, ReceiveAllSharedByteVector) {
+  // clang-format off
+  EXPECT_CALL(*transport_, ReadSome(_, _))
+    .WillOnce(InvokeArgument<1>(api::kSuccess, data_.size()));
+  // clang-format on
+
+  bool called = false;
+  transport_->ReceiveAll(utils::MakeSharedByteVector(data_), [&](auto& res) {
+    EXPECT_EQ(res, api::kSuccess);
+    called = true;
+  });
+
+  context_->Run(1ms);
+  EXPECT_TRUE(called);
 }
 
 TEST_F(TransportTest, CallingSendHandlerOnDestruction) {

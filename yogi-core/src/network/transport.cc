@@ -66,6 +66,12 @@ void Transport::SendAll(boost::asio::const_buffer data,
   SendAllImpl(data, api::kSuccess, 0, handler);
 }
 
+void Transport::SendAll(utils::SharedByteVector data,
+                        TransferAllHandler handler) {
+  SendAll(boost::asio::buffer(*data),
+          [=, _ = data](auto& res) { handler(res); });
+}
+
 void Transport::ReceiveSome(boost::asio::mutable_buffer data,
                             TransferSomeHandler handler) {
   YOGI_ASSERT(data.size() > 0);
@@ -97,6 +103,12 @@ void Transport::ReceiveSome(boost::asio::mutable_buffer data,
 void Transport::ReceiveAll(boost::asio::mutable_buffer data,
                            TransferAllHandler handler) {
   ReceiveAllImpl(data, api::kSuccess, 0, handler);
+}
+
+void Transport::ReceiveAll(utils::SharedByteVector data,
+                           TransferAllHandler handler) {
+  ReceiveAll(boost::asio::buffer(*data),
+             [=, _ = data](auto& res) { handler(res); });
 }
 
 void Transport::SendAllImpl(boost::asio::const_buffer data,
