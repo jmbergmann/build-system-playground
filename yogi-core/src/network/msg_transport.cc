@@ -64,8 +64,10 @@ MessageTransport::MessageTransport(TransportPtr transport,
     : transport_(transport), tx_rb_(tx_queue_size), rx_rb_(rx_queue_size) {}
 
 bool MessageTransport::CanSendImmediately(std::size_t msg_size) const {
-  // return msg_size <= tx_rb_.AvailableForWrite();
-  return false;
+  // Note: We use 5 here as the maximum length of the serialized msg_size value
+  //       instead of actually calculating the length. Nobody gives a shit about
+  //       those few bytes anyway.
+  return msg_size + 5 <= tx_rb_.AvailableForWrite();
 }
 
 void MessageTransport::Send(boost::asio::const_buffer msg) {}
