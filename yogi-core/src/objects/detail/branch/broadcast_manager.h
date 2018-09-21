@@ -29,17 +29,21 @@ namespace detail {
 class BroadcastManager final
     : public std::enable_shared_from_this<BroadcastManager> {
  public:
+  typedef std::function<void(const api::Error& res)> SendBroadcastHandler;
   typedef std::function<void(const api::Error& res, std::size_t size)>
-      ReceiveBroadcastHanlder;
+      ReceiveBroadcastHandler;
 
   BroadcastManager(ContextPtr context);
   virtual ~BroadcastManager();
 
   void SendBroadcast(api::Encoding enc, boost::asio::const_buffer data,
-                     bool block);
+                     bool retry, SendBroadcastHandler handler);
+
+  api::Result SendBroadcast(api::Encoding enc, boost::asio::const_buffer data,
+                            bool retry);
 
   void ReceiveBroadcast(api::Encoding enc, boost::asio::mutable_buffer data,
-                        ReceiveBroadcastHanlder handler);
+                        ReceiveBroadcastHandler handler);
 
   void CancelReceiveBroadcast();
 

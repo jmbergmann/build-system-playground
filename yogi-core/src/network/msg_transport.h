@@ -54,6 +54,8 @@ class MessageTransport : public std::enable_shared_from_this<MessageTransport> {
   void CancelReceive();
 
  private:
+  typedef std::array<utils::Byte, 5> SizeFieldBuffer;
+
   MessageTransportWeakPtr MakeWeakPtr() { return shared_from_this(); }
 
   const TransportPtr transport_;

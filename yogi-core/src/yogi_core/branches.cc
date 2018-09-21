@@ -207,19 +207,28 @@ YOGI_API int YOGI_BranchCancelAwaitEvent(void* branch) {
 }
 
 YOGI_API int YOGI_BranchSendBroadcast(void* branch, int enc, const void* data,
-                                      int datasize, int block) {
+                                      int datasize, int retry,
+                                      void (*fn)(int res, void* userarg),
+                                      void* userarg) {
   CHECK_PARAM(branch != nullptr);
   CHECK_PARAM(enc == api::Encoding::kJson || enc == api::Encoding::kMsgPack);
   CHECK_PARAM(data != nullptr);
   CHECK_PARAM(datasize > 0);
-  CHECK_PARAM(block == YOGI_TRUE || block == YOGI_FALSE);
+  CHECK_PARAM(retry == YOGI_TRUE || retry == YOGI_FALSE);
 
   try {
     auto brn = api::ObjectRegister::Get<objects::Branch>(branch);
-    brn->SendBroadcast(
-        static_cast<api::Encoding>(enc),
-        boost::asio::buffer(data, static_cast<std::size_t>(datasize)),
-        block == YOGI_TRUE);
+    auto encoding = static_cast<api::Encoding>(enc);
+    auto buffer = boost::asio::buffer(data, static_cast<std::size_t>(datasize));
+    bool do_retry = retry == YOGI_TRUE;
+
+    if (fn) {
+      brn->SendBroadcast(encoding, buffer, do_retry, [=](auto& res) {
+        fn(res.GetErrorCode(), userarg);
+      });
+    } else {
+      return brn->SendBroadcast(encoding, buffer, do_retry).GetErrorCode();
+    }
   }
   CATCH_AND_RETURN;
 }

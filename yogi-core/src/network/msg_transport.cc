@@ -70,7 +70,13 @@ bool MessageTransport::CanSendImmediately(std::size_t msg_size) const {
   return msg_size + 5 <= tx_rb_.AvailableForWrite();
 }
 
-void MessageTransport::Send(boost::asio::const_buffer msg) {}
+void MessageTransport::Send(boost::asio::const_buffer msg) {
+  SizeFieldBuffer size_field_buf;
+  auto n = internal::SerializeMsgSizeField(msg.size(), &size_field_buf);
+  while (tx_rb_.AvailableForWrite() < n) {
+    // WaitForMoreSpaceInTxBuffer();
+  }
+}
 
 void MessageTransport::Receive(boost::asio::mutable_buffer msg,
                                ReceiveHandler handler) {}

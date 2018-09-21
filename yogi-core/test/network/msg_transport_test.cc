@@ -18,6 +18,13 @@
 #include "../common.h"
 #include "../../src/network/msg_transport.h"
 
+// class LoopbackTransport : public network::Transport {
+//  public:
+//   LoopbackTransport(objects::ContextPtr context, std::chrono::nanoseconds timeout) {
+
+//   }
+// };
+
 class MessageTransportTest : public TestFixture {
  protected:
 };
@@ -60,4 +67,7 @@ TEST_F(MessageTransportTest, MsgSizeFieldSerialization) {
     EXPECT_TRUE(DeserializeMsgSizeField(buffer, entry.ser_length, &des_value));
     EXPECT_EQ(des_value, entry.value);
   }
+}
+
+TEST_F(MessageTransportTest, CanSendImmediately) {
 }

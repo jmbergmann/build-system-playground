@@ -27,9 +27,9 @@ namespace objects {
 class Branch : public api::ExposedObjectT<Branch, api::ObjectType::kBranch> {
  public:
   using BranchEventHandler = detail::ConnectionManager::BranchEventHandler;
-  using ReceiveBroadcastHanlder =
-      detail::BroadcastManager::ReceiveBroadcastHanlder;
-
+  using SendBroadcastHandler = detail::BroadcastManager::SendBroadcastHandler;
+  using ReceiveBroadcastHandler =
+      detail::BroadcastManager::ReceiveBroadcastHandler;
   using BranchInfoStringsList =
       detail::ConnectionManager::BranchInfoStringsList;
 
@@ -53,12 +53,17 @@ class Branch : public api::ExposedObjectT<Branch, api::ObjectType::kBranch> {
   void CancelAwaitEvent() { connection_manager_->CancelAwaitEvent(); }
 
   void SendBroadcast(api::Encoding enc, boost::asio::const_buffer data,
-                     bool block) {
-    broadcast_manager_->SendBroadcast(enc, data, block);
+                     bool retry, SendBroadcastHandler handler) {
+    broadcast_manager_->SendBroadcast(enc, data, retry, handler);
+  }
+
+  api::Result SendBroadcast(api::Encoding enc, boost::asio::const_buffer data,
+                            bool retry) {
+    return broadcast_manager_->SendBroadcast(enc, data, retry);
   }
 
   void ReceiveBroadcast(api::Encoding enc, boost::asio::mutable_buffer data,
-                        ReceiveBroadcastHanlder handler) {
+                        ReceiveBroadcastHandler handler) {
     broadcast_manager_->ReceiveBroadcast(enc, data, handler);
   }
 

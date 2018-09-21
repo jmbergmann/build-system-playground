@@ -1846,30 +1846,54 @@ YOGI_API int YOGI_BranchCancelAwaitEvent(void* branch);
  * is valid. This implies that validating the data is entirely up to the user
  * code.
  *
- * The \p block parameter determines the behaviour if one or more of the send
- * queues to other branches do not have enough free space to hold the \p data.
- * If set to #YOGI_TRUE, the function will block until enough space is
- * available in all send queues before sending the message; if set to
- * #YOGI_FALSE, the function will not send the message to any branch and return
- * with the #YOGI_ERR_TX_QUEUE_FULL error.
- *
  * \note
  *   The payload in \p data can be given encoded in either JSON or MessagePack
  *   as specified in the \p datafmt parameter. It does not matter which format
  *   is chosen since the receivers can specify their desired format and the
  *   library performs the necessary conversions automatically.
  *
+ * This function can be used in either __blocking mode__ by setting \p fn to
+ * NULL or in __asynchronous__ mode by assigning a handler function to \p fn.
+ * The \p noretry parameter further refines the behaviour as follows:
+ * - In _blocking_ mode, #YOGI_TRUE will cause the function to block until the
+ *   message has been put into the send queue whereas #YOGI_FALSE will cause
+ *   the function to fail immediately with the #YOGI_ERR_TX_QUEUE_FULL error if
+ *   the send queue does not have enough space available.
+ * - In _asynchronous_ mode, #YOGI_TRUE will cause \fn to be called once the
+ *   message has been put into the send queue whereas #YOGI_FALSE will cause
+ *   \p fn to be called with the #YOGI_ERR_TX_QUEUE_FULL error if the send queue
+ *   does not have enough space available.
+ *
+ * \attention
+ *   In _blocking mode_, calling this function from within a handler function
+ *   executed through the branch's _context_  with \p retry set to #YOGI_TRUE
+ *   will cause a dead-lock if the send queue is full!
+ *
+ * In asynchronous mode, the handler function \p fn will be called once the
+ * operation finishes. Its parameters are:
+ *  -# __res__: #YOGI_OK or error code associated with the operation
+ *  -# __userarg__: Value of the user-specified \p userarg parameter
+ *
+ * \note
+ *   The handler \p fn will never be called from within this function; instead
+ *   it will be scheduled for execution through the branch's _context_.
+ *
  * \param[in] branch   The branch handle
  * \param[in] enc      Encoding type used for \p data (see \ref ENC)
  * \param[in] data     Payload encoded according to \p datafmt
  * \param[in] datasize Number of bytes in \p data
- * \param[in] block    Block if send queue is full (#YOGI_TRUE or #YOGI_FALSE)
+ * \param[in] retry    Retry sending the message (#YOGI_TRUE or #YOGI_FALSE)
+ * \param[in] fn       Handler to call once the operation finishes (set to NULL
+ *                     for blocking mode; see description above for details)
+ * \param[in] userarg  User-specified argument to be passed to \p fn
  *
  * \returns [=0] #YOGI_OK if successful
  * \returns [<0] An error code in case of a failure (see \ref EC)
  */
 YOGI_API int YOGI_BranchSendBroadcast(void* branch, int enc, const void* data,
-                                      int datasize, int block);
+                                      int datasize, int retry,
+                                      void (*fn)(int res, void* userarg),
+                                      void* userarg);
 
 /*!
  * Receives a broadcast message from any of the connected branches.

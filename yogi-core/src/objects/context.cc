@@ -23,7 +23,7 @@
 
 namespace objects {
 
-Context::Context() : work_(ioc_), signals_(ioc_), running_(false) {}
+Context::Context() : ioc_(1), work_(ioc_), signals_(ioc_), running_(false) {}
 
 Context::~Context() {
   Stop();
