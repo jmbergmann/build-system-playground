@@ -1878,6 +1878,10 @@ YOGI_API int YOGI_BranchCancelAwaitEvent(void* branch);
  *   The handler \p fn will never be called from within this function; instead
  *   it will be scheduled for execution through the branch's _context_.
  *
+ * If this function is called while a previous send operation is still active
+ * then the previous operation will be canceled with the #YOGI_ERR_CANCELED
+ * error.
+ *
  * \param[in] branch   The branch handle
  * \param[in] enc      Encoding type used for \p data (see \ref ENC)
  * \param[in] data     Payload encoded according to \p datafmt
@@ -1894,6 +1898,19 @@ YOGI_API int YOGI_BranchSendBroadcast(void* branch, int enc, const void* data,
                                       int datasize, int retry,
                                       void (*fn)(int res, void* userarg),
                                       void* userarg);
+
+/*!
+ * Cancels sending a broadcast message.
+ *
+ * Calling this function will cause the handler registered via
+ * YOGI_BranchSendBroadcast() to be called with the #YOGI_ERR_CANCELED error.
+ *
+ * \param[in] branch The branch handle
+ *
+ * \returns [=0] #YOGI_OK if successful
+ * \returns [<0] An error code in case of a failure (see \ref EC)
+ */
+YOGI_API int YOGI_BranchCancelSendBroadcast(void* branch);
 
 /*!
  * Receives a broadcast message from any of the connected branches.
@@ -1921,6 +1938,10 @@ YOGI_API int YOGI_BranchSendBroadcast(void* branch, int enc, const void* data,
  *    trailing zero if \p datafmt is #YOGI_ENC_JSON; and
  *  - with the first \p datasize bytes of the received payload if \p datafmt is
  *    #YOGI_ENC_MSGPACK.
+ *
+ * If this function is called while a previous receive operation is still active
+ * then the previous operation will be canceled with the #YOGI_ERR_CANCELED
+ * error.
  *
  * \attention
  *   Broadcast messages do not get queued, i.e. if a branches is not actively

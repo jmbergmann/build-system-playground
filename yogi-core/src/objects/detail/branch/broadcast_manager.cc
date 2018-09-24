@@ -26,7 +26,9 @@ BroadcastManager::~BroadcastManager() {}
 
 void BroadcastManager::SendBroadcast(api::Encoding enc,
                                      boost::asio::const_buffer data, bool retry,
-                                     SendBroadcastHandler handler) {}
+                                     SendBroadcastHandler handler) {
+
+                                     }
 
 api::Result BroadcastManager::SendBroadcast(api::Encoding enc,
                                             boost::asio::const_buffer data,
