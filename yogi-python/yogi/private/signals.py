@@ -125,8 +125,8 @@ class PyObjectWrapper(py_object):
 yogi.YOGI_SignalSetCreate.restype = api_result_handler
 yogi.YOGI_SignalSetCreate.argtypes = [POINTER(c_void_p), c_void_p, c_int]
 
-yogi.YOGI_SignalSetAwaitSignal.restype = api_result_handler
-yogi.YOGI_SignalSetAwaitSignal.argtypes = [c_void_p, CFUNCTYPE(
+yogi.YOGI_SignalSetAwaitSignalAsync.restype = api_result_handler
+yogi.YOGI_SignalSetAwaitSignalAsync.argtypes = [c_void_p, CFUNCTYPE(
     None, c_int, c_int, PyObjectWrapper, c_void_p), c_void_p]
 
 yogi.YOGI_SignalSetCancelAwaitSignal.restype = api_result_handler
@@ -138,7 +138,7 @@ class SignalSet(Object):
 
     Signal sets are used to receive signals raised via raise_signal(). The
     signals are queued until they can be delivered by means of calls to
-    await_signal().
+    await_signal_async().
     """
 
     def __init__(self, context: Context, signals: Signals):
@@ -152,9 +152,10 @@ class SignalSet(Object):
         yogi.YOGI_SignalSetCreate(byref(handle), context._handle, signals)
         Object.__init__(self, handle, [context])
 
-    def await_signal(self, fn: Union[Callable[[Result, Signals], Any],
+    def await_signal_async(self,
+                           fn: Union[Callable[[Result, Signals], Any],
                                      Callable[[Result, Signals, Any], Any]]
-                     ) -> None:
+                           ) -> None:
         """Waits for a signal to be raised.
 
         The handler fn will be called after one of the signals in the signal
@@ -170,14 +171,14 @@ class SignalSet(Object):
                 sigarg = sigarg_obj.value if sigarg_obj else None
                 fn(res, Signals(signals), sigarg)
 
-        with Handler(yogi.YOGI_SignalSetAwaitSignal.argtypes[1], wrapped_fn
-                     ) as handler:
-            yogi.YOGI_SignalSetAwaitSignal(self._handle, handler, None)
+        with Handler(yogi.YOGI_SignalSetAwaitSignalAsync.argtypes[1],
+                     wrapped_fn) as handler:
+            yogi.YOGI_SignalSetAwaitSignalAsync(self._handle, handler, None)
 
     def cancel_await_signal(self) -> None:
         """Cancels waiting for a signal.
 
-        This causes the handler function registered via await_signal() to be
-        called with a cancellation error.
+        This causes the handler function registered via await_signal_async() to
+        be called with a cancellation error.
         """
         yogi.YOGI_SignalSetCancelAwaitSignal(self._handle)

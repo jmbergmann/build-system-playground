@@ -28,14 +28,14 @@ class Error;
 
 class Result {
  public:
-  explicit Result(int error_code) noexcept : ec_(error_code) {}
+  explicit Result(int error_code) : ec_(error_code) {}
 
   bool operator==(const Result& rhs) const { return ec_ == rhs.ec_; }
   bool operator!=(const Result& rhs) const { return ec_ != rhs.ec_; }
 
-  int GetValue() const noexcept { return ec_; }
-  int GetErrorCode() const noexcept { return ec_ > 0 ? 0 : ec_; }
-  const char* GetDescription() const noexcept;
+  int GetValue() const { return ec_; }
+  int GetErrorCode() const { return ec_ > 0 ? 0 : ec_; }
+  const char* GetDescription() const;
   bool IsSuccess() const { return ec_ >= 0; }
   bool IsError() const { return ec_ < 0; }
   Error ToError() const;
@@ -52,7 +52,7 @@ const auto kSuccess = Result(YOGI_OK);
 
 class Error : public Result, public std::exception {
  public:
-  explicit Error(int error_code) noexcept : Result(error_code) {
+  explicit Error(int error_code) : Result(error_code) {
     YOGI_ASSERT(error_code < 0);
   }
 

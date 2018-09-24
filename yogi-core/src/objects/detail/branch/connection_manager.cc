@@ -80,8 +80,8 @@ ConnectionManager::MakeConnectedBranchesInfoStrings() const {
   return branches;
 }
 
-void ConnectionManager::AwaitEvent(api::BranchEvents events,
-                                   BranchEventHandler handler) {
+void ConnectionManager::AwaitEventAsync(api::BranchEvents events,
+                                        BranchEventHandler handler) {
   std::lock_guard<std::recursive_mutex> lock(event_mutex_);
 
   if (event_handler_) {
@@ -96,7 +96,9 @@ void ConnectionManager::AwaitEvent(api::BranchEvents events,
   event_handler_ = handler;
 }
 
-void ConnectionManager::CancelAwaitEvent() { AwaitEvent(api::kNoEvent, {}); }
+void ConnectionManager::CancelAwaitEvent() {
+  AwaitEventAsync(api::kNoEvent, {});
+}
 
 void ConnectionManager::SetupAcceptor(const boost::asio::ip::tcp& protocol) {
   boost::system::error_code ec;

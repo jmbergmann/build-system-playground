@@ -1483,7 +1483,7 @@ YOGI_API int YOGI_RaiseSignal(int signal, void* sigarg,
  *
  * Signal sets are used to receive signals raised via YOGI_RaiseSignal().
  * The signals are queued until they can be delivered by means of calls to
- * YOGI_SignalSetAwaitSignal().
+ * YOGI_SignalSetAwaitSignalAsync().
  *
  * \param[out] sigset  Pointer to the signal set handle
  * \param[in]  context The context to use
@@ -1516,16 +1516,15 @@ YOGI_API int YOGI_SignalSetCreate(void** sigset, void* context, int signals);
  * \returns [=0] #YOGI_OK if successful
  * \returns [<0] An error code in case of a failure (see \ref EC)
  */
-YOGI_API int YOGI_SignalSetAwaitSignal(void* sigset,
-                                       void (*fn)(int res, int sig,
-                                                  void* sigarg, void* userarg),
-                                       void* userarg);
+YOGI_API int YOGI_SignalSetAwaitSignalAsync(
+    void* sigset, void (*fn)(int res, int sig, void* sigarg, void* userarg),
+    void* userarg);
 
 /*!
  * Cancels waiting for a signal.
  *
- * Causes the handler function registered via YOGI_SignalSetAwaitSignal() to be
- * called with #YOGI_ERR_CANCELED.
+ * Causes the handler function registered via YOGI_SignalSetAwaitSignalAsync()
+ * to be called with #YOGI_ERR_CANCELED.
  *
  * \param[in] sigset The signal set
  *
@@ -1563,16 +1562,17 @@ YOGI_API int YOGI_TimerCreate(void** timer, void* context);
  * \returns [=0] #YOGI_OK if successful
  * \returns [<0] An error code in case of a failure (see \ref EC)
  */
-YOGI_API int YOGI_TimerStart(void* timer, long long duration,
-                             void (*fn)(int res, void* userarg), void* userarg);
+YOGI_API int YOGI_TimerStartAsync(void* timer, long long duration,
+                                  void (*fn)(int res, void* userarg),
+                                  void* userarg);
 
 /*!
  * Cancels the given timer.
  *
  * Canceling a timer will result in the handler function registered via
- * YOGI_TimerStart() to be called with the #YOGI_ERR_CANCELED error as first
- * parameter. Note that if the handler is already scheduled for executing, it
- * will be called with #YOGI_OK instead.
+ * YOGI_TimerStartAsync() to be called with the #YOGI_ERR_CANCELED error as
+ * first parameter. Note that if the handler is already scheduled for executing,
+ * it will be called with #YOGI_OK instead.
  *
  * If the timer has not been started or it already expired, this function will
  * return #YOGI_ERR_TIMER_EXPIRED.
@@ -1820,7 +1820,7 @@ YOGI_API int YOGI_BranchGetConnectedBranches(void* branch, void* uuid,
  * \returns [=0] #YOGI_OK if successful
  * \returns [<0] An error code in case of a failure (see \ref EC)
  */
-YOGI_API int YOGI_BranchAwaitEvent(
+YOGI_API int YOGI_BranchAwaitEventAsync(
     void* branch, int events, void* uuid, char* json, int jsonsize,
     void (*fn)(int res, int event, int evres, void* userarg), void* userarg);
 
@@ -1828,7 +1828,7 @@ YOGI_API int YOGI_BranchAwaitEvent(
  * Cancels waiting for a branch event.
  *
  * Calling this function will cause the handler registered via
- * YOGI_BranchAwaitEvent() to be called with the #YOGI_ERR_CANCELED error.
+ * YOGI_BranchAwaitEventAsync() to be called with the #YOGI_ERR_CANCELED error.
  *
  * \param[in] branch The branch handle
  *
@@ -1852,35 +1852,53 @@ YOGI_API int YOGI_BranchCancelAwaitEvent(void* branch);
  *   is chosen since the receivers can specify their desired format and the
  *   library performs the necessary conversions automatically.
  *
- * This function can be used in either __blocking mode__ by setting \p fn to
- * NULL or in __asynchronous__ mode by assigning a handler function to \p fn.
- * The \p noretry parameter further refines the behaviour as follows:
- * - In _blocking_ mode, #YOGI_TRUE will cause the function to block until the
- *   message has been put into the send queue whereas #YOGI_FALSE will cause
- *   the function to fail immediately with the #YOGI_ERR_TX_QUEUE_FULL error if
- *   the send queue does not have enough space available.
- * - In _asynchronous_ mode, #YOGI_TRUE will cause \fn to be called once the
- *   message has been put into the send queue whereas #YOGI_FALSE will cause
- *   \p fn to be called with the #YOGI_ERR_TX_QUEUE_FULL error if the send queue
- *   does not have enough space available.
+ * Setting the \p block parameter to _false_ will cause the function to return
+ * immediately with a #YOGI_ERR_TX_QUEUE_FULL error if the send buffer is full.
+ * If set to _true_ the function will block until the send buffer has enough
+ * space to store the message.
  *
  * \attention
- *   In _blocking mode_, calling this function from within a handler function
- *   executed through the branch's _context_  with \p retry set to #YOGI_TRUE
- *   will cause a dead-lock if the send queue is full!
+ *   Calling this function from within a handler function executed through the
+ *   branch's _context_  with \p retry set to #YOGI_TRUE will cause a dead-lock
+ *   if the send queue is full!
  *
- * In asynchronous mode, the handler function \p fn will be called once the
- * operation finishes. Its parameters are:
+ * \param[in] branch   The branch handle
+ * \param[in] enc      Encoding type used for \p data (see \ref ENC)
+ * \param[in] data     Payload encoded according to \p datafmt
+ * \param[in] datasize Number of bytes in \p data
+ * \param[in] block    Block until message has been put in the send buffer
+ *                     (#YOGI_TRUE or #YOGI_FALSE)
+ *
+ * \returns [=0] #YOGI_OK if successful
+ * \returns [<0] An error code in case of a failure (see \ref EC)
+ */
+YOGI_API int YOGI_BranchSendBroadcast(void* branch, int enc, const void* data,
+                                      int datasize, int block);
+
+/*!
+ * Sends a broadcast message to all connected branches.
+ *
+ * Broadcast messages contain arbitrary data encoded as JSON or MessagePack. As
+ * opposed to sending messages via terminals, broadcast messages don't have to
+ * comply with a defined schema for the payload; any data that can be encoded
+ * is valid. This implies that validating the data is entirely up to the user
+ * code.
+ *
+ * \note
+ *   The payload in \p data can be given encoded in either JSON or MessagePack
+ *   as specified in the \p datafmt parameter. It does not matter which format
+ *   is chosen since the receivers can specify their desired format and the
+ *   library performs the necessary conversions automatically.
+ *
+ * The handler function \p fn will be called once the operation finishes. Its
+ * parameters are:
  *  -# __res__: #YOGI_OK or error code associated with the operation
  *  -# __userarg__: Value of the user-specified \p userarg parameter
  *
- * \note
- *   The handler \p fn will never be called from within this function; instead
- *   it will be scheduled for execution through the branch's _context_.
- *
- * If this function is called while a previous send operation is still active
- * then the previous operation will be canceled with the #YOGI_ERR_CANCELED
- * error.
+ * Setting the \p retry parameter to _false_ will cause \p fn to be called
+ * immediately with a #YOGI_ERR_TX_QUEUE_FULL error if the send buffer is full.
+ * If set to _true_ the handler will be called once enough space is available
+ * in the send buffer to send the message.
  *
  * \param[in] branch   The branch handle
  * \param[in] enc      Encoding type used for \p data (see \ref ENC)
@@ -1894,16 +1912,18 @@ YOGI_API int YOGI_BranchCancelAwaitEvent(void* branch);
  * \returns [=0] #YOGI_OK if successful
  * \returns [<0] An error code in case of a failure (see \ref EC)
  */
-YOGI_API int YOGI_BranchSendBroadcast(void* branch, int enc, const void* data,
-                                      int datasize, int retry,
-                                      void (*fn)(int res, void* userarg),
-                                      void* userarg);
+YOGI_API int YOGI_BranchSendBroadcastAsync(void* branch, int enc,
+                                           const void* data, int datasize,
+                                           int retry,
+                                           void (*fn)(int res, void* userarg),
+                                           void* userarg);
 
 /*!
- * Cancels sending a broadcast message.
+ * Cancels all operations for sending broadcasts.
  *
- * Calling this function will cause the handler registered via
- * YOGI_BranchSendBroadcast() to be called with the #YOGI_ERR_CANCELED error.
+ * Calling this function will cause the YOGI_BranchSendBroadcast() function to
+ * return the #YOGI_ERR_CANCELED error and the handler registered via
+ * YOGI_BranchSendBroadcastAsync() to be called with the same error.
  *
  * \param[in] branch The branch handle
  *
@@ -1946,7 +1966,7 @@ YOGI_API int YOGI_BranchCancelSendBroadcast(void* branch);
  * \attention
  *   Broadcast messages do not get queued, i.e. if a branches is not actively
  *   receiving broadcast messages then they will be discarded. To ensure that
- *   no messages get missed, call YOGI_BranchReceiveBroadcast() again from
+ *   no messages get missed, call YOGI_BranchReceiveBroadcastAsync() again from
  *   within the handler \p fn.
  *
  * \param[in]  branch   The branch handle
@@ -1959,7 +1979,7 @@ YOGI_API int YOGI_BranchCancelSendBroadcast(void* branch);
  * \returns [=0] #YOGI_OK if successful
  * \returns [<0] An error code in case of a failure (see \ref EC)
  */
-YOGI_API int YOGI_BranchReceiveBroadcast(
+YOGI_API int YOGI_BranchReceiveBroadcastAsync(
     void* branch, int enc, void* data, int datasize,
     void (*fn)(int res, int size, void* userarg), void* userarg);
 
@@ -1967,7 +1987,8 @@ YOGI_API int YOGI_BranchReceiveBroadcast(
  * Cancels receiving a broadcast message.
  *
  * Calling this function will cause the handler registered via
- * YOGI_BranchReceiveBroadcast() to be called with the #YOGI_ERR_CANCELED error.
+ * YOGI_BranchReceiveBroadcastAsync() to be called with the #YOGI_ERR_CANCELED
+ * error.
  *
  * \param[in] branch The branch handle
  *

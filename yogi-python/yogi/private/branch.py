@@ -238,8 +238,8 @@ yogi.YOGI_BranchGetConnectedBranches.argtypes = [
     c_void_p, c_void_p, c_char_p, c_int, CFUNCTYPE(None, c_int, c_void_p),
     c_void_p]
 
-yogi.YOGI_BranchAwaitEvent.restype = api_result_handler
-yogi.YOGI_BranchAwaitEvent.argtypes = [
+yogi.YOGI_BranchAwaitEventAsync.restype = api_result_handler
+yogi.YOGI_BranchAwaitEventAsync.argtypes = [
     c_void_p, c_int, c_void_p, c_char_p, c_int,
     CFUNCTYPE(None, c_int, c_int, c_int, c_void_p), c_void_p]
 
@@ -480,10 +480,10 @@ class Branch(Object):
 
         return branches
 
-    def await_event(self, events: BranchEvents,
-                    fn: Callable[[Result, BranchEvents, Result,
-                                  Optional[BranchEventInfo]], Any],
-                    buffer_size: int = 1024) -> None:
+    def await_event_async(self, events: BranchEvents,
+                          fn: Callable[[Result, BranchEvents, Result,
+                                        Optional[BranchEventInfo]], Any],
+                          buffer_size: int = 1024) -> None:
         """Waits for a branch event to occur.
 
         This function will register the handler fn to be executed once one of
@@ -530,16 +530,16 @@ class Branch(Object):
 
             fn(res, BranchEvents(event), error_code_to_result(evres), info)
 
-        with Handler(yogi.YOGI_BranchAwaitEvent.argtypes[5], wrapped_fn
-                     )as handler:
-            yogi.YOGI_BranchAwaitEvent(self._handle, events, None, s,
-                                       sizeof(s), handler, None)
+        with Handler(yogi.YOGI_BranchAwaitEventAsync.argtypes[5], wrapped_fn
+                     ) as handler:
+            yogi.YOGI_BranchAwaitEventAsync(self._handle, events, None, s,
+                                            sizeof(s), handler, None)
 
     def cancel_await_event(self) -> None:
         """Cancels waiting for a branch event.
 
         Calling this function will cause the handler registerd via
-        await_event() to be called with a cancellation error.
+        await_event_async() to be called with a cancellation error.
         """
         yogi.YOGI_BranchCancelAwaitEvent(self._handle)
 

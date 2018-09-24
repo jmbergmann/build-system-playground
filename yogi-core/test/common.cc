@@ -65,7 +65,7 @@ nlohmann::json BranchEventRecorder::RunContextUntil(int event, void* branch,
 }
 
 void BranchEventRecorder::StartAwaitEvent() {
-  int res = YOGI_BranchAwaitEvent(
+  int res = YOGI_BranchAwaitEventAsync(
       branch_, YOGI_BEV_ALL, &uuid_, json_str_.data(),
       static_cast<int>(json_str_.size()), &BranchEventRecorder::Callback, this);
   EXPECT_EQ(res, YOGI_OK);

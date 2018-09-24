@@ -32,7 +32,7 @@
 namespace yogi {
 
 _YOGI_DEFINE_API_FN(int, YOGI_TimerCreate, (void** timer, void* context))
-_YOGI_DEFINE_API_FN(int, YOGI_TimerStart,
+_YOGI_DEFINE_API_FN(int, YOGI_TimerStartAsync,
                     (void* timer, long long duration,
                      void (*fn)(int res, void* userarg), void* userarg))
 _YOGI_DEFINE_API_FN(int, YOGI_TimerCancel, (void* timer))
@@ -76,7 +76,7 @@ class Timer : public ObjectT<Timer> {
     auto data = std::make_unique<CallbackData>();
     data->fn = fn;
 
-    int res = internal::YOGI_TimerStart(
+    int res = internal::YOGI_TimerStartAsync(
         GetHandle(), internal::ToCoreDuration(duration),
         [](int res, void* userarg) {
           auto data = std::unique_ptr<CallbackData>(

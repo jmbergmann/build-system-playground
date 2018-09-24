@@ -31,8 +31,8 @@ YOGI_API int YOGI_TimerCreate(void** timer, void* context) {
   CATCH_AND_RETURN;
 }
 
-YOGI_API int YOGI_TimerStart(void* timer, long long duration,
-                             void (*fn)(int, void*), void* userarg) {
+YOGI_API int YOGI_TimerStartAsync(void* timer, long long duration,
+                                  void (*fn)(int, void*), void* userarg) {
   CHECK_PARAM(timer != nullptr);
   CHECK_PARAM(duration >= -1);
   CHECK_PARAM(fn != nullptr);
@@ -40,7 +40,7 @@ YOGI_API int YOGI_TimerStart(void* timer, long long duration,
   try {
     auto tmr = api::ObjectRegister::Get<objects::Timer>(timer);
     auto timeout = ConvertDuration(duration);
-    tmr->Start(timeout, [=](auto& res) { fn(res.GetValue(), userarg); });
+    tmr->StartAsync(timeout, [=](auto& res) { fn(res.GetValue(), userarg); });
   }
   CATCH_AND_RETURN;
 }

@@ -43,7 +43,7 @@ class SignalSet
   virtual ~SignalSet();
 
   api::Signals GetSignals() const { return signals_; }
-  void Await(AwaitHandler handler);
+  void AwaitAsync(AwaitHandler handler);
   void CancelAwait();
 
  private:

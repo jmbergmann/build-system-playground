@@ -31,7 +31,7 @@ public static partial class Yogi
             = Library.GetDelegateForFunction<TimerCreateDelegate>(
                 "YOGI_TimerCreate");
 
-        // === YOGI_TimerStart ===
+        // === YOGI_TimerStartAsync ===
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public delegate void TimerStartFnDelegate(int res, IntPtr userarg);
 
@@ -39,9 +39,9 @@ public static partial class Yogi
         public delegate int TimerStartDelegate(SafeObjectHandle timer,
             long duration, TimerStartFnDelegate fn, IntPtr userarg);
 
-        public static TimerStartDelegate YOGI_TimerStart
+        public static TimerStartDelegate YOGI_TimerStartAsync
             = Library.GetDelegateForFunction<TimerStartDelegate>(
-                "YOGI_TimerStart");
+                "YOGI_TimerStartAsync");
 
         // === YOGI_TimerCancel ===
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
@@ -62,7 +62,7 @@ public static partial class Yogi
         /// </summary>
         /// <param name="context">The context to use.</param>
         public Timer(Context context)
-        : base(Create(context), new Object[] {context})
+        : base(Create(context), new Object[] { context })
         {
         }
 
@@ -81,7 +81,7 @@ public static partial class Yogi
         /// </summary>
         /// <param name="duration">Time when the timer expires.</param>
         /// <param name="fn">Handler function to call after the given time passed.</param>
-        public void Start(Duration duration, HandlerFnDelegate fn)
+        public void StartAsync(Duration duration, HandlerFnDelegate fn)
         {
             if (duration < Duration.Zero)
             {
@@ -104,7 +104,7 @@ public static partial class Yogi
             try
             {
                 var wrapperPtr = GCHandle.ToIntPtr(wrapperHandle);
-                int res = Api.YOGI_TimerStart(Handle,
+                int res = Api.YOGI_TimerStartAsync(Handle,
                     duration.IsFinite ? duration.NanosecondsCount : -1, wrapper, wrapperPtr);
                 CheckErrorCode(res);
             }
@@ -119,7 +119,7 @@ public static partial class Yogi
         /// Cancels the timer.
         ///
         /// Canceling the timer will result in the handler function registered via
-        /// Start() to be called with a cancellation error.static Note that if the
+        /// StartAsync() to be called with a cancellation error.static Note that if the
         /// handler is already scheduled for execution, it will be called without an
         /// error.
         /// </summary>

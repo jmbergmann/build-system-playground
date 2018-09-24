@@ -31,7 +31,7 @@ namespace test
             Yogi.Timer timer = new Yogi.Timer(context);
 
             bool called = false;
-            timer.Start(Yogi.Duration.FromMilliseconds(1), (res) => {
+            timer.StartAsync(Yogi.Duration.FromMilliseconds(1), (res) => {
                 Assert.IsType<Yogi.Success>(res);
                 Assert.Equal(Yogi.ErrorCode.Ok, res.ErrorCode);
                 called = true;
@@ -57,7 +57,7 @@ namespace test
             Assert.False(timer.Cancel());
 
             bool called = false;
-            timer.Start(Yogi.Duration.Infinity, (res) => {
+            timer.StartAsync(Yogi.Duration.Infinity, (res) => {
                 Assert.IsType<Yogi.Failure>(res);
                 Assert.Equal(Yogi.ErrorCode.Canceled, res.ErrorCode);
                 called = true;

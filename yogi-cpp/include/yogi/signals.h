@@ -37,7 +37,7 @@ _YOGI_DEFINE_API_FN(int, YOGI_RaiseSignal,
                      void (*fn)(void* sigarg, void* userarg), void* userarg))
 _YOGI_DEFINE_API_FN(int, YOGI_SignalSetCreate,
                     (void** sigset, void* context, int signals))
-_YOGI_DEFINE_API_FN(int, YOGI_SignalSetAwaitSignal,
+_YOGI_DEFINE_API_FN(int, YOGI_SignalSetAwaitSignalAsync,
                     (void* sigset,
                      void (*fn)(int res, int sig, void* sigarg, void* userarg),
                      void* userarg))
@@ -326,7 +326,7 @@ class SignalSet : public ObjectT<SignalSet> {
     auto data = std::make_unique<CallbackData>();
     data->fn = fn;
 
-    int res = internal::YOGI_SignalSetAwaitSignal(
+    int res = internal::YOGI_SignalSetAwaitSignalAsync(
         GetHandle(),
         [](int res, int sig, void*, void* userarg) {
           auto data = std::unique_ptr<CallbackData>(
@@ -363,7 +363,7 @@ class SignalSet : public ObjectT<SignalSet> {
     auto data = std::make_unique<CallbackData>();
     data->fn = fn;
 
-    int res = internal::YOGI_SignalSetAwaitSignal(
+    int res = internal::YOGI_SignalSetAwaitSignalAsync(
         GetHandle(),
         [](int res, int sig, void* sigarg, void* userarg) {
           auto data = std::unique_ptr<CallbackData>(

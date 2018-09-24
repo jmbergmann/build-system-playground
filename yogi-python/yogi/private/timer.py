@@ -27,8 +27,8 @@ from ctypes import c_int, c_longlong, c_void_p, CFUNCTYPE, POINTER, byref
 yogi.YOGI_TimerCreate.restype = api_result_handler
 yogi.YOGI_TimerCreate.argtypes = [POINTER(c_void_p), c_void_p]
 
-yogi.YOGI_TimerStart.restype = api_result_handler
-yogi.YOGI_TimerStart.argtypes = [
+yogi.YOGI_TimerStartAsync.restype = api_result_handler
+yogi.YOGI_TimerStartAsync.argtypes = [
     c_void_p, c_longlong, CFUNCTYPE(None, c_int, c_void_p), c_void_p]
 
 yogi.YOGI_TimerCancel.restype = api_result_handler
@@ -48,7 +48,8 @@ class Timer(Object):
         yogi.YOGI_TimerCreate(byref(handle), context._handle)
         Object.__init__(self, handle, [context])
 
-    def start(self, duration: Duration, fn: Callable[[Result], Any]) -> None:
+    def start_async(self, duration: Duration,
+                    fn: Callable[[Result], Any]) -> None:
         """Starts the timer.
 
         If the timer is already running, the timer will be canceled first, as
@@ -59,20 +60,20 @@ class Timer(Object):
             fn:       Handler function to call after the given time passed.
         """
         dur = duration_to_api_duration(duration)
-        with Handler(yogi.YOGI_TimerStart.argtypes[2], fn) as handler:
-            yogi.YOGI_TimerStart(self._handle, dur, handler, None)
+        with Handler(yogi.YOGI_TimerStartAsync.argtypes[2], fn) as handler:
+            yogi.YOGI_TimerStartAsync(self._handle, dur, handler, None)
 
     def cancel(self) -> bool:
         """Cancels the given timer.
 
         Canceling a timer will result in the handler function registered via
-        start() to be called with a cancellation error. Note that if the
+        start_async() to be called with a cancellation error. Note that if the
         handler is already scheduled for execution, it will be called without
         an error.
 
         Returns:
             True if the timer was canceled successfully and False otherwise
-            (i.e. the timner has not been started or it already expired).
+            (i.e. the timer has not been started or it already expired).
         """
         try:
             yogi.YOGI_TimerCancel(self._handle)

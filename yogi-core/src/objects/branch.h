@@ -46,21 +46,23 @@ class Branch : public api::ExposedObjectT<Branch, api::ObjectType::kBranch> {
   std::string MakeInfoString() const;
   BranchInfoStringsList MakeConnectedBranchesInfoStrings() const;
 
-  void AwaitEvent(api::BranchEvents events, BranchEventHandler handler) {
-    connection_manager_->AwaitEvent(events, handler);
+  void AwaitEventAsync(api::BranchEvents events, BranchEventHandler handler) {
+    connection_manager_->AwaitEventAsync(events, handler);
   }
 
   void CancelAwaitEvent() { connection_manager_->CancelAwaitEvent(); }
 
-  void SendBroadcast(api::Encoding enc, boost::asio::const_buffer data,
-                     bool retry, SendBroadcastHandler handler) {
-    broadcast_manager_->SendBroadcast(enc, data, retry, handler);
+  void SendBroadcastAsync(api::Encoding enc, boost::asio::const_buffer data,
+                          bool retry, SendBroadcastHandler handler) {
+    broadcast_manager_->SendBroadcastAsync(enc, data, retry, handler);
   }
 
   api::Result SendBroadcast(api::Encoding enc, boost::asio::const_buffer data,
                             bool retry) {
     return broadcast_manager_->SendBroadcast(enc, data, retry);
   }
+
+  void CancelSendBroadcast() { broadcast_manager_->CancelSendBroadcast(); }
 
   void ReceiveBroadcast(api::Encoding enc, boost::asio::mutable_buffer data,
                         ReceiveBroadcastHandler handler) {

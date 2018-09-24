@@ -77,7 +77,7 @@ class TestSignals(TestCase):
 
         sigset = yogi.SignalSet(self.context, yogi.Signals.TERM |
                                 yogi.Signals.USR5)
-        sigset.await_signal(fn)
+        sigset.await_signal_async(fn)
         yogi.raise_signal(yogi.Signals.TERM, 123)
         self.context.poll()
 
@@ -89,7 +89,7 @@ class TestSignals(TestCase):
         self.assertEqual(fn_sigarg, 123)
 
         fn_called = False
-        sigset.await_signal(fn)
+        sigset.await_signal_async(fn)
         yogi.raise_signal(yogi.Signals.TERM)
         self.context.poll()
 
@@ -101,7 +101,7 @@ class TestSignals(TestCase):
             fn_called = True
 
         fn_called = False
-        sigset.await_signal(fn2)
+        sigset.await_signal_async(fn2)
         yogi.raise_signal(yogi.Signals.TERM, 123)
         self.context.poll()
 
@@ -121,7 +121,7 @@ class TestSignals(TestCase):
             fn_called = True
 
         sigset = yogi.SignalSet(self.context, yogi.Signals.TERM)
-        sigset.await_signal(fn)
+        sigset.await_signal_async(fn)
         sigset.cancel_await_signal()
         self.context.poll()
 

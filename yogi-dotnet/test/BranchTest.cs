@@ -136,7 +136,7 @@ namespace test
 
             var events = Yogi.BranchEvents.BranchQueried | Yogi.BranchEvents.ConnectionLost;
             bool called = false;
-            branch.AwaitEvent(events, (res, ev, evres, info) => {
+            branch.AwaitEventAsync(events, (res, ev, evres, info) => {
                 Assert.IsType<Yogi.Success>(res);
                 Assert.Equal(Yogi.ErrorCode.Ok, res.ErrorCode);
                 Assert.IsType<Yogi.BranchEvents>(ev);
@@ -170,7 +170,7 @@ namespace test
             var branch = new Yogi.Branch(context, "{\"name\":\"My Branch\"}");
 
             bool called = false;
-            branch.AwaitEvent(Yogi.BranchEvents.All, (res, ev, evres, info) => {
+            branch.AwaitEventAsync(Yogi.BranchEvents.All, (res, ev, evres, info) => {
                 Assert.IsType<Yogi.Failure>(res);
                 Assert.Equal(Yogi.ErrorCode.Canceled, res.ErrorCode);
                 Assert.IsType<Yogi.BranchEvents>(ev);

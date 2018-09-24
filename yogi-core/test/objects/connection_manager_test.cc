@@ -250,15 +250,15 @@ TEST_F(ConnectionManagerTest, BranchEvents) {
 
 TEST_F(ConnectionManagerTest, CancelAwaitBranchEvent) {
   bool called = false;
-  int res =
-      YOGI_BranchAwaitEvent(branch_, 0, nullptr, nullptr, 0,
-                            [](int res, int event, int ev_res, void* userarg) {
-                              EXPECT_EQ(res, YOGI_ERR_CANCELED);
-                              EXPECT_EQ(event, YOGI_BEV_NONE);
-                              EXPECT_EQ(ev_res, YOGI_OK);
-                              *static_cast<bool*>(userarg) = true;
-                            },
-                            &called);
+  int res = YOGI_BranchAwaitEventAsync(
+      branch_, 0, nullptr, nullptr, 0,
+      [](int res, int event, int ev_res, void* userarg) {
+        EXPECT_EQ(res, YOGI_ERR_CANCELED);
+        EXPECT_EQ(event, YOGI_BEV_NONE);
+        EXPECT_EQ(ev_res, YOGI_OK);
+        *static_cast<bool*>(userarg) = true;
+      },
+      &called);
   ASSERT_EQ(res, YOGI_OK);
 
   res = YOGI_BranchCancelAwaitEvent(branch_);
@@ -272,15 +272,15 @@ TEST_F(ConnectionManagerTest, CancelAwaitBranchEvent) {
 
 TEST_F(ConnectionManagerTest, AwaitBranchEventOnDestruction) {
   bool called = false;
-  int res =
-      YOGI_BranchAwaitEvent(branch_, 0, nullptr, nullptr, 0,
-                            [](int res, int event, int ev_res, void* userarg) {
-                              EXPECT_EQ(res, YOGI_ERR_CANCELED);
-                              EXPECT_EQ(event, YOGI_BEV_NONE);
-                              EXPECT_EQ(ev_res, YOGI_OK);
-                              *static_cast<bool*>(userarg) = true;
-                            },
-                            &called);
+  int res = YOGI_BranchAwaitEventAsync(
+      branch_, 0, nullptr, nullptr, 0,
+      [](int res, int event, int ev_res, void* userarg) {
+        EXPECT_EQ(res, YOGI_ERR_CANCELED);
+        EXPECT_EQ(event, YOGI_BEV_NONE);
+        EXPECT_EQ(ev_res, YOGI_OK);
+        *static_cast<bool*>(userarg) = true;
+      },
+      &called);
   ASSERT_EQ(res, YOGI_OK);
 
   YOGI_Destroy(branch_);

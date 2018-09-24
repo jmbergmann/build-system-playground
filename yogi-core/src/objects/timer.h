@@ -34,7 +34,7 @@ class Timer : public api::ExposedObjectT<Timer, api::ObjectType::kTimer> {
 
   Timer(ContextPtr context);
 
-  void Start(std::chrono::nanoseconds timeout, HandlerFn fn);
+  void StartAsync(std::chrono::nanoseconds timeout, HandlerFn fn);
   bool Cancel();
 
  private:

@@ -23,7 +23,7 @@ namespace objects {
 Timer::Timer(ContextPtr context)
     : context_(context), timer_(context->IoContext()) {}
 
-void Timer::Start(std::chrono::nanoseconds timeout, HandlerFn fn) {
+void Timer::StartAsync(std::chrono::nanoseconds timeout, HandlerFn fn) {
   timer_.expires_after(timeout);
   timer_.async_wait([=](const auto& ec) {
     YOGI_ASSERT(!ec || ec == boost::asio::error::operation_aborted);

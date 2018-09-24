@@ -47,7 +47,7 @@ void SignalSet::RaiseSignal(api::Signals signal, void* sigarg,
 SignalSet::SignalSet(ContextPtr context, api::Signals signals)
     : context_(context), signals_(signals) {}
 
-void SignalSet::Await(AwaitHandler handler) {
+void SignalSet::AwaitAsync(AwaitHandler handler) {
   std::lock_guard<std::mutex> lock(mutex_);
 
   if (handler_) {
@@ -78,7 +78,7 @@ SignalSet::~SignalSet() {
   CancelAwait();
 }
 
-void SignalSet::CancelAwait() { Await({}); }
+void SignalSet::CancelAwait() { AwaitAsync({}); }
 
 void SignalSet::OnSignalRaised(const SignalDataPtr& data) {
   YOGI_ASSERT(signals_ & data->signal);

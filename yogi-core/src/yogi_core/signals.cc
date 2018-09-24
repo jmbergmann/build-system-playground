@@ -57,16 +57,15 @@ YOGI_API int YOGI_SignalSetCreate(void** sigset, void* context, int signals) {
   CATCH_AND_RETURN;
 }
 
-YOGI_API int YOGI_SignalSetAwaitSignal(void* sigset,
-                                       void (*fn)(int res, int sig,
-                                                  void* sigarg, void* userarg),
-                                       void* userarg) {
+YOGI_API int YOGI_SignalSetAwaitSignalAsync(
+    void* sigset, void (*fn)(int res, int sig, void* sigarg, void* userarg),
+    void* userarg) {
   CHECK_PARAM(sigset != nullptr);
   CHECK_PARAM(fn != nullptr);
 
   try {
     auto set = api::ObjectRegister::Get<objects::SignalSet>(sigset);
-    set->Await([=](auto& res, auto signal, void* sigarg) {
+    set->AwaitAsync([=](auto& res, auto signal, void* sigarg) {
       fn(res.GetValue(), signal, sigarg, userarg);
     });
   }

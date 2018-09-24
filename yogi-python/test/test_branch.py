@@ -108,8 +108,8 @@ class TestBranches(TestCase):
             fn_info = info
             fn_called = True
 
-        branch.await_event(yogi.BranchEvents.BRANCH_QUERIED |
-                           yogi.BranchEvents.CONNECTION_LOST, fn)
+        branch.await_event_async(yogi.BranchEvents.BRANCH_QUERIED |
+                                 yogi.BranchEvents.CONNECTION_LOST, fn)
 
         while not fn_called:
             self.context.run_one()
@@ -143,7 +143,7 @@ class TestBranches(TestCase):
             fn_info = info
             fn_called = True
 
-        branch.await_event(yogi.BranchEvents.ALL, fn)
+        branch.await_event_async(yogi.BranchEvents.ALL, fn)
         branch.cancel_await_event()
 
         self.context.poll()

@@ -71,7 +71,7 @@ namespace test
             var sigset = new Yogi.SignalSet(context, Yogi.Signals.Term | Yogi.Signals.Usr5);
 
             bool called = false;
-            sigset.AwaitSignal((res, signal) => {
+            sigset.AwaitSignalAsync((res, signal) => {
                 Assert.IsType<Yogi.Success>(res);
                 Assert.Equal(Yogi.ErrorCode.Ok, res.ErrorCode);
                 Assert.Equal(Yogi.Signals.Term, signal);
@@ -85,7 +85,7 @@ namespace test
             Assert.True(called);
 
             called = false;
-            sigset.AwaitSignal<string>((res, signal, sigarg) => {
+            sigset.AwaitSignalAsync<string>((res, signal, sigarg) => {
                 Assert.IsType<Yogi.Success>(res);
                 Assert.Equal(Yogi.ErrorCode.Ok, res.ErrorCode);
                 Assert.Equal(Yogi.Signals.Term, signal);
@@ -97,7 +97,7 @@ namespace test
             Assert.True(called);
 
             called = false;
-            sigset.AwaitSignal<string>((res, signal, sigarg) => {
+            sigset.AwaitSignalAsync<string>((res, signal, sigarg) => {
                 Assert.IsType<Yogi.Success>(res);
                 Assert.Equal(Yogi.ErrorCode.Ok, res.ErrorCode);
                 Assert.Equal(Yogi.Signals.Term, signal);
@@ -115,7 +115,7 @@ namespace test
             var sigset = new Yogi.SignalSet(context, Yogi.Signals.Term);
 
             bool called = false;
-            sigset.AwaitSignal<string>((res, signal, sigarg) => {
+            sigset.AwaitSignalAsync<string>((res, signal, sigarg) => {
                 Assert.IsType<Yogi.Failure>(res);
                 Assert.Equal(Yogi.ErrorCode.Canceled, res.ErrorCode);
                 Assert.IsType<Yogi.Signals>(signal);

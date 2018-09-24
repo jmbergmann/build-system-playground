@@ -24,7 +24,7 @@ Error Result::ToError() const {
   return Error(ec_);
 }
 
-const char* Result::GetDescription() const noexcept {
+const char* Result::GetDescription() const {
   switch (GetErrorCode()) {
     case YOGI_OK:
       return "Success";

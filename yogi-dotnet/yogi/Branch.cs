@@ -61,7 +61,7 @@ public static partial class Yogi
             = Library.GetDelegateForFunction<BranchGetConnectedBranchesDelegate>(
                 "YOGI_BranchGetConnectedBranches");
 
-        // === YOGI_BranchAwaitEvent ===
+        // === YOGI_BranchAwaitEventAsync ===
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public delegate void BranchAwaitEventFnDelegate(int res, BranchEvents ev, int evres,
                                                         IntPtr userarg);
@@ -71,9 +71,9 @@ public static partial class Yogi
             BranchEvents events, IntPtr uuid, IntPtr json, int jsonsize,
             BranchAwaitEventFnDelegate fn, IntPtr userarg);
 
-        public static BranchAwaitEventDelegate YOGI_BranchAwaitEvent
+        public static BranchAwaitEventDelegate YOGI_BranchAwaitEventAsync
             = Library.GetDelegateForFunction<BranchAwaitEventDelegate>(
-                "YOGI_BranchAwaitEvent");
+                "YOGI_BranchAwaitEventAsync");
 
         // === YOGI_BranchCancelAwaitEvent ===
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
@@ -643,7 +643,8 @@ public static partial class Yogi
         /// <param name="fn">Handler function to call.</param>
         /// <param name="bufferSize">Size of the internal buffer for reading the event
         /// information.</param>
-        public void AwaitEvent(BranchEvents events, AwaitEventFnDelegate fn, int bufferSize = 1024)
+        public void AwaitEventAsync(BranchEvents events, AwaitEventFnDelegate fn,
+                                    int bufferSize = 1024)
         {
             var json = Marshal.AllocHGlobal(bufferSize);
 
@@ -690,8 +691,8 @@ public static partial class Yogi
             try
             {
                 var wrapperPtr = GCHandle.ToIntPtr(wrapperHandle);
-                int res = Api.YOGI_BranchAwaitEvent(Handle, events, IntPtr.Zero, json,
-                                                    bufferSize, wrapper, wrapperPtr);
+                int res = Api.YOGI_BranchAwaitEventAsync(Handle, events, IntPtr.Zero, json,
+                                                         bufferSize, wrapper, wrapperPtr);
                 CheckErrorCode(res);
             }
             catch
@@ -705,8 +706,8 @@ public static partial class Yogi
         /// <summary>
         /// Cancels waiting for a branch event.
         ///
-        /// Calling this function will cause the handler registered via AwaitEvent() to be called
-        /// with a cancellation error.
+        /// Calling this function will cause the handler registered via AwaitEventAsync() to be
+        /// called with a cancellation error.
         /// </summary>
         public void CancelAwaitEvent()
         {

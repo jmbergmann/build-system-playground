@@ -48,7 +48,7 @@ _YOGI_DEFINE_API_FN(int, YOGI_BranchGetInfo,
 _YOGI_DEFINE_API_FN(int, YOGI_BranchGetConnectedBranches,
                     (void* branch, void* uuid, char* json, int jsonsize,
                      void (*fn)(int res, void* userarg), void* userarg))
-_YOGI_DEFINE_API_FN(int, YOGI_BranchAwaitEvent,
+_YOGI_DEFINE_API_FN(int, YOGI_BranchAwaitEventAsync,
                     (void* branch, int events, void* uuid, char* json,
                      int jsonsize,
                      void (*fn)(int res, int event, int ev_res, void* userarg),
@@ -696,7 +696,7 @@ class Branch : public ObjectT<Branch> {
     data->fn = fn;
     data->json.resize(static_cast<std::size_t>(buffer_size));
 
-    int res = internal::YOGI_BranchAwaitEvent(
+    int res = internal::YOGI_BranchAwaitEventAsync(
         GetHandle(), static_cast<int>(events), &data->uuid, data->json.data(),
         buffer_size,
         [](int res, int event, int ev_res, void* userarg) {

@@ -43,7 +43,7 @@ public static partial class Yogi
             = Library.GetDelegateForFunction<SignalSetCreateDelegate>(
                 "YOGI_SignalSetCreate");
 
-        // === YOGI_SignalSetAwaitSignal ===
+        // === YOGI_SignalSetAwaitSignalAsync ===
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public delegate void SignalSetAwaitSignalFnDelegate(int res, Signals signal,
             IntPtr sigarg, IntPtr userarg);
@@ -52,9 +52,9 @@ public static partial class Yogi
         public delegate int SignalSetAwaitSignalDelegate(SafeObjectHandle sigset,
             SignalSetAwaitSignalFnDelegate fn, IntPtr userarg);
 
-        public static SignalSetAwaitSignalDelegate YOGI_SignalSetAwaitSignal
+        public static SignalSetAwaitSignalDelegate YOGI_SignalSetAwaitSignalAsync
             = Library.GetDelegateForFunction<SignalSetAwaitSignalDelegate>(
-                "YOGI_SignalSetAwaitSignal");
+                "YOGI_SignalSetAwaitSignalAsync");
 
         // === YOGI_SignalSetCancelAwaitSignal ===
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
@@ -209,7 +209,7 @@ public static partial class Yogi
     /// Manages a set of signals that the user can wait on
     ///
     /// Signal sets are used to receive signals raised via RaiseSignal(). The signals
-    /// are queued until they can be delivered by means of calls to AwaitSignal().
+    /// are queued until they can be delivered by means of calls to AwaitSignalAsync().
     /// </summary>
     public class SignalSet : Object
     {
@@ -224,7 +224,7 @@ public static partial class Yogi
         }
 
         /// <summary>
-        /// Delegate for the AwaitSignal<T>() function.
+        /// Delegate for the AwaitSignalAsync<T>() function.
         /// </summary>
         /// <typeparam name="T">Type of the sigarg parameter passed to RaiseSignal().</typeparam>
         /// <param name="res">Result of the wait operation.</param>
@@ -241,7 +241,7 @@ public static partial class Yogi
         /// </summary>
         /// <typeparam name="T">Type of the sigarg parameter passed to RaiseSignal().</typeparam>
         /// <param name="fn">Handler function to call.</param>
-        public void AwaitSignal<T>(AwaitSignalFnDelegate<T> fn) where T: class
+        public void AwaitSignalAsync<T>(AwaitSignalFnDelegate<T> fn) where T: class
         {
             Api.SignalSetAwaitSignalFnDelegate wrapper = (ec, signal, sigargPtr, userarg) =>
             {
@@ -265,7 +265,7 @@ public static partial class Yogi
             try
             {
                 var wrapperPtr = GCHandle.ToIntPtr(wrapperHandle);
-                int res = Api.YOGI_SignalSetAwaitSignal(Handle, wrapper, wrapperPtr);
+                int res = Api.YOGI_SignalSetAwaitSignalAsync(Handle, wrapper, wrapperPtr);
                 CheckErrorCode(res);
             }
             catch
@@ -276,7 +276,7 @@ public static partial class Yogi
         }
 
         /// <summary>
-        /// Delegate for the AwaitSignal() function.
+        /// Delegate for the AwaitSignalAsync() function.
         /// </summary>
         /// <param name="res">Result of the wait operation.</param>
         /// <param name="signal">The raised signal.</param>
@@ -289,15 +289,15 @@ public static partial class Yogi
         /// is caught.
         /// </summary>
         /// <param name="fn">Handler function to call.</param>
-        public void AwaitSignal(AwaitSignalFnDelegate fn)
+        public void AwaitSignalAsync(AwaitSignalFnDelegate fn)
         {
-            AwaitSignal<object>((res, signal, sigarg) => { fn(res, signal); });
+            AwaitSignalAsync<object>((res, signal, sigarg) => { fn(res, signal); });
         }
 
         /// <summary>
         /// Cancels waiting for a signal.
         ///
-        /// This causes the handler function registered via AwaitSignal() to be
+        /// This causes the handler function registered via AwaitSignalAsync() to be
         /// called with a cancellation error.
         /// </summary>
         public void CancelAwaitSignal()

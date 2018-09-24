@@ -32,14 +32,14 @@ class TimerTest : public TestFixture {
   void* timer_;
 };
 
-TEST_F(TimerTest, Start) {
+TEST_F(TimerTest, StartAsync) {
   int handler_res = 1;
   auto start_time = std::chrono::steady_clock::now();
-  int res = YOGI_TimerStart(timer_, 1000000,  // 1ms timeout
-                            [](int res_, void* handler_res_) {
-                              *static_cast<int*>(handler_res_) = res_;
-                            },
-                            &handler_res);
+  int res = YOGI_TimerStartAsync(timer_, 1000000,  // 1ms timeout
+                                 [](int res_, void* handler_res_) {
+                                   *static_cast<int*>(handler_res_) = res_;
+                                 },
+                                 &handler_res);
   EXPECT_EQ(res, YOGI_OK);
 
   YOGI_ContextRunOne(context_, nullptr, 1000000000);
@@ -52,11 +52,11 @@ TEST_F(TimerTest, Start) {
 
 TEST_F(TimerTest, StartImmediateTimeout) {
   int handler_res = 1;
-  int res = YOGI_TimerStart(timer_, 0,  // Immediate timeout
-                            [](int res_, void* handler_res_) {
-                              *static_cast<int*>(handler_res_) = res_;
-                            },
-                            &handler_res);
+  int res = YOGI_TimerStartAsync(timer_, 0,  // Immediate timeout
+                                 [](int res_, void* handler_res_) {
+                                   *static_cast<int*>(handler_res_) = res_;
+                                 },
+                                 &handler_res);
   EXPECT_EQ(res, YOGI_OK);
 
   int cnt = -1;
@@ -67,18 +67,18 @@ TEST_F(TimerTest, StartImmediateTimeout) {
 
 TEST_F(TimerTest, StartWhileRunning) {
   int handler_res = 1;
-  int res = YOGI_TimerStart(timer_, -1,  // Infinite timeout
-                            [](int res_, void* handler_res_) {
-                              *static_cast<int*>(handler_res_) = res_;
-                            },
-                            &handler_res);
+  int res = YOGI_TimerStartAsync(timer_, -1,  // Infinite timeout
+                                 [](int res_, void* handler_res_) {
+                                   *static_cast<int*>(handler_res_) = res_;
+                                 },
+                                 &handler_res);
   EXPECT_EQ(res, YOGI_OK);
 
-  res = YOGI_TimerStart(timer_, 0,  // Immediate timeout
-                        [](int res_, void* handler_res_) {
-                          *static_cast<int*>(handler_res_) = res_;
-                        },
-                        &handler_res);
+  res = YOGI_TimerStartAsync(timer_, 0,  // Immediate timeout
+                             [](int res_, void* handler_res_) {
+                               *static_cast<int*>(handler_res_) = res_;
+                             },
+                             &handler_res);
   EXPECT_EQ(res, YOGI_OK);
 
   int cnt = -1;
@@ -97,11 +97,11 @@ TEST_F(TimerTest, Cancel) {
   EXPECT_EQ(res, YOGI_ERR_TIMER_EXPIRED);
 
   int handler_res = 1;
-  res = YOGI_TimerStart(timer_, -1,  // Infinite timeout
-                        [](int res_, void* handler_res_) {
-                          *static_cast<int*>(handler_res_) = res_;
-                        },
-                        &handler_res);
+  res = YOGI_TimerStartAsync(timer_, -1,  // Infinite timeout
+                             [](int res_, void* handler_res_) {
+                               *static_cast<int*>(handler_res_) = res_;
+                             },
+                             &handler_res);
 
   res = YOGI_TimerCancel(timer_);
   EXPECT_EQ(res, YOGI_OK);
@@ -113,11 +113,11 @@ TEST_F(TimerTest, Cancel) {
 
 TEST_F(TimerTest, Destruction) {
   int handler_res = 1;
-  int res = YOGI_TimerStart(timer_, -1,  // Infinite timeout
-                            [](int res_, void* handler_res_) {
-                              *static_cast<int*>(handler_res_) = res_;
-                            },
-                            &handler_res);
+  int res = YOGI_TimerStartAsync(timer_, -1,  // Infinite timeout
+                                 [](int res_, void* handler_res_) {
+                                   *static_cast<int*>(handler_res_) = res_;
+                                 },
+                                 &handler_res);
   ASSERT_EQ(YOGI_OK, res);
 
   YOGI_Destroy(timer_);

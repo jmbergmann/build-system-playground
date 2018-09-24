@@ -72,7 +72,7 @@ class ConnectionManager
 
   BranchInfoStringsList MakeConnectedBranchesInfoStrings() const;
 
-  void AwaitEvent(api::BranchEvents events, BranchEventHandler handler);
+  void AwaitEventAsync(api::BranchEvents events, BranchEventHandler handler);
   void CancelAwaitEvent();
 
  private:
