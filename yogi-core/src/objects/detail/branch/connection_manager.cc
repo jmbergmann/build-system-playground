@@ -117,14 +117,14 @@ void ConnectionManager::SetupAcceptor(const boost::asio::ip::tcp& protocol) {
 
 void ConnectionManager::StartAccept() {
   auto weak_self = MakeWeakPtr();
-  accept_guard_ =
-      network::TcpTransport::Accept(context_, &acceptor_, info_->GetTimeout(),
-                                    [=](auto& res, auto transport, auto) {
-                                      auto self = weak_self.lock();
-                                      if (!self) return;
+  accept_guard_ = network::TcpTransport::AcceptAsync(
+      context_, &acceptor_, info_->GetTimeout(),
+      [=](auto& res, auto transport, auto) {
+        auto self = weak_self.lock();
+        if (!self) return;
 
-                                      self->OnAcceptFinished(res, transport);
-                                    });
+        self->OnAcceptFinished(res, transport);
+      });
 }
 
 void ConnectionManager::OnAcceptFinished(const api::Result& res,
@@ -158,7 +158,7 @@ void ConnectionManager::OnAdvertisementReceived(
                                 << ":" << ep.port());
 
   auto weak_self = MakeWeakPtr();
-  auto guard = network::TcpTransport::Connect(
+  auto guard = network::TcpTransport::ConnectAsync(
       context_, ep, info_->GetTimeout(),
       [=](auto& res, auto transport, auto guard) {
         auto self = weak_self.lock();

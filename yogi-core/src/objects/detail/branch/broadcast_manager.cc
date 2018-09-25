@@ -24,16 +24,16 @@ BroadcastManager::BroadcastManager(ContextPtr context) : context_(context) {}
 
 BroadcastManager::~BroadcastManager() {}
 
-void BroadcastManager::SendBroadcastAsync(api::Encoding enc,
-                                          boost::asio::const_buffer data,
-                                          bool retry,
-                                          SendBroadcastHandler handler) {}
-
 api::Result BroadcastManager::SendBroadcast(api::Encoding enc,
                                             boost::asio::const_buffer data,
                                             bool retry) {
   return api::kSuccess;
 }
+
+void BroadcastManager::SendBroadcastAsync(api::Encoding enc,
+                                          boost::asio::const_buffer data,
+                                          bool retry,
+                                          SendBroadcastHandler handler) {}
 
 void BroadcastManager::CancelSendBroadcast() {}
 

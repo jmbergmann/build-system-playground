@@ -20,7 +20,7 @@
 
 namespace network {
 
-TcpTransport::AcceptGuardPtr TcpTransport::Accept(
+TcpTransport::AcceptGuardPtr TcpTransport::AcceptAsync(
     objects::ContextPtr context, boost::asio::ip::tcp::acceptor* acceptor,
     std::chrono::nanoseconds timeout, AcceptHandler handler) {
   auto guard = std::make_shared<AcceptGuard>(acceptor);
@@ -51,7 +51,7 @@ TcpTransport::AcceptGuardPtr TcpTransport::Accept(
   return guard;
 }
 
-TcpTransport::ConnectGuardPtr TcpTransport::Connect(
+TcpTransport::ConnectGuardPtr TcpTransport::ConnectAsync(
     objects::ContextPtr context, const boost::asio::ip::tcp::endpoint& ep,
     std::chrono::nanoseconds timeout, ConnectHandler handler) {
   struct ConnectData {
@@ -105,7 +105,7 @@ TcpTransport::ConnectGuardPtr TcpTransport::Connect(
   return guard;
 }
 
-void TcpTransport::WriteSome(boost::asio::const_buffer data,
+void TcpTransport::WriteSomeAsync(boost::asio::const_buffer data,
                              TransferSomeHandler handler) {
   socket_.async_write_some(data, [=](auto& ec, auto bytes_written) {
     if (!ec) {
@@ -118,7 +118,7 @@ void TcpTransport::WriteSome(boost::asio::const_buffer data,
   });
 }
 
-void TcpTransport::ReadSome(boost::asio::mutable_buffer data,
+void TcpTransport::ReadSomeAsync(boost::asio::mutable_buffer data,
                             TransferSomeHandler handler) {
   socket_.async_read_some(data, [=](auto& ec, auto bytes_read) {
     if (!ec) {

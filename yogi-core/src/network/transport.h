@@ -52,28 +52,32 @@ class Transport : public std::enable_shared_from_this<Transport> {
     return created_from_incoming_conn_req_;
   };
 
-  void SendSome(boost::asio::const_buffer data, TransferSomeHandler handler);
-  void SendAll(boost::asio::const_buffer data, TransferAllHandler handler);
-  void SendAll(utils::SharedByteVector data, TransferAllHandler handler);
-  void ReceiveSome(boost::asio::mutable_buffer data,
-                   TransferSomeHandler handler);
-  void ReceiveAll(boost::asio::mutable_buffer data, TransferAllHandler handler);
-  void ReceiveAll(utils::SharedByteVector data, TransferAllHandler handler);
+  void SendSomeAsync(boost::asio::const_buffer data,
+                     TransferSomeHandler handler);
+  void SendAllAsync(boost::asio::const_buffer data, TransferAllHandler handler);
+  void SendAllAsync(utils::SharedByteVector data, TransferAllHandler handler);
+  void ReceiveSomeAsync(boost::asio::mutable_buffer data,
+                        TransferSomeHandler handler);
+  void ReceiveAllAsync(boost::asio::mutable_buffer data,
+                       TransferAllHandler handler);
+  void ReceiveAllAsync(utils::SharedByteVector data,
+                       TransferAllHandler handler);
   void Close();
 
  protected:
-  virtual void WriteSome(boost::asio::const_buffer data,
-                         TransferSomeHandler handler) = 0;
-  virtual void ReadSome(boost::asio::mutable_buffer data,
-                        TransferSomeHandler handler) = 0;
+  virtual void WriteSomeAsync(boost::asio::const_buffer data,
+                              TransferSomeHandler handler) = 0;
+  virtual void ReadSomeAsync(boost::asio::mutable_buffer data,
+                             TransferSomeHandler handler) = 0;
   virtual void Shutdown() = 0;
 
  private:
   TransportWeakPtr MakeWeakPtr() { return shared_from_this(); }
-  void SendAllImpl(boost::asio::const_buffer data, const api::Result& res,
-                   std::size_t bytes_written, TransferAllHandler handler);
-  void ReceiveAllImpl(boost::asio::mutable_buffer data, const api::Result& res,
-                      std::size_t bytes_read, TransferAllHandler handler);
+  void SendAllAsyncImpl(boost::asio::const_buffer data, const api::Result& res,
+                        std::size_t bytes_written, TransferAllHandler handler);
+  void ReceiveAllAsyncImpl(boost::asio::mutable_buffer data,
+                           const api::Result& res, std::size_t bytes_read,
+                           TransferAllHandler handler);
   void StartTimeout(boost::asio::steady_timer* timer,
                     TransportWeakPtr weak_self);
   void OnTimeout();

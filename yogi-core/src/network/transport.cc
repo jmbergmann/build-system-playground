@@ -33,14 +33,14 @@ Transport::Transport(objects::ContextPtr context,
 
 Transport::~Transport() {}
 
-void Transport::SendSome(boost::asio::const_buffer data,
-                         TransferSomeHandler handler) {
+void Transport::SendSomeAsync(boost::asio::const_buffer data,
+                              TransferSomeHandler handler) {
   YOGI_ASSERT(data.size() > 0);
 
   auto weak_self = MakeWeakPtr();
   StartTimeout(&tx_timer_, weak_self);
 
-  WriteSome(data, [=](auto& res, auto bytes_written) {
+  WriteSomeAsync(data, [=](auto& res, auto bytes_written) {
     auto self = weak_self.lock();
     if (!self) {
       handler(api::Error(YOGI_ERR_CANCELED), bytes_written);
@@ -61,25 +61,25 @@ void Transport::SendSome(boost::asio::const_buffer data,
   });
 }
 
-void Transport::SendAll(boost::asio::const_buffer data,
-                        TransferAllHandler handler) {
-  SendAllImpl(data, api::kSuccess, 0, handler);
+void Transport::SendAllAsync(boost::asio::const_buffer data,
+                             TransferAllHandler handler) {
+  SendAllAsyncImpl(data, api::kSuccess, 0, handler);
 }
 
-void Transport::SendAll(utils::SharedByteVector data,
-                        TransferAllHandler handler) {
-  SendAll(boost::asio::buffer(*data),
-          [=, _ = data](auto& res) { handler(res); });
+void Transport::SendAllAsync(utils::SharedByteVector data,
+                             TransferAllHandler handler) {
+  SendAllAsync(boost::asio::buffer(*data),
+               [=, _ = data](auto& res) { handler(res); });
 }
 
-void Transport::ReceiveSome(boost::asio::mutable_buffer data,
-                            TransferSomeHandler handler) {
+void Transport::ReceiveSomeAsync(boost::asio::mutable_buffer data,
+                                 TransferSomeHandler handler) {
   YOGI_ASSERT(data.size() > 0);
 
   auto weak_self = MakeWeakPtr();
   StartTimeout(&rx_timer_, weak_self);
 
-  ReadSome(data, [=](auto& res, auto bytes_read) {
+  ReadSomeAsync(data, [=](auto& res, auto bytes_read) {
     auto self = weak_self.lock();
     if (!self) {
       handler(api::Error(YOGI_ERR_CANCELED), bytes_read);
@@ -100,26 +100,27 @@ void Transport::ReceiveSome(boost::asio::mutable_buffer data,
   });
 }
 
-void Transport::ReceiveAll(boost::asio::mutable_buffer data,
-                           TransferAllHandler handler) {
-  ReceiveAllImpl(data, api::kSuccess, 0, handler);
+void Transport::ReceiveAllAsync(boost::asio::mutable_buffer data,
+                                TransferAllHandler handler) {
+  ReceiveAllAsyncImpl(data, api::kSuccess, 0, handler);
 }
 
-void Transport::ReceiveAll(utils::SharedByteVector data,
-                           TransferAllHandler handler) {
-  ReceiveAll(boost::asio::buffer(*data),
-             [=, _ = data](auto& res) { handler(res); });
+void Transport::ReceiveAllAsync(utils::SharedByteVector data,
+                                TransferAllHandler handler) {
+  ReceiveAllAsync(boost::asio::buffer(*data),
+                  [=, _ = data](auto& res) { handler(res); });
 }
 
-void Transport::SendAllImpl(boost::asio::const_buffer data,
-                            const api::Result& res, std::size_t bytes_written,
-                            TransferAllHandler handler) {
+void Transport::SendAllAsyncImpl(boost::asio::const_buffer data,
+                                 const api::Result& res,
+                                 std::size_t bytes_written,
+                                 TransferAllHandler handler) {
   YOGI_ASSERT(data.size() > 0);
 
   if (res.IsSuccess() && bytes_written < data.size()) {
     data += bytes_written;
-    this->SendSome(data, [=](auto& res, auto bytes_written) {
-      this->SendAllImpl(data, res, bytes_written, handler);
+    this->SendSomeAsync(data, [=](auto& res, auto bytes_written) {
+      this->SendAllAsyncImpl(data, res, bytes_written, handler);
     });
   } else {
     handler(res);
@@ -131,15 +132,16 @@ void Transport::Close() {
   YOGI_DEBUG_ONLY(close_called_ = true;)
 }
 
-void Transport::ReceiveAllImpl(boost::asio::mutable_buffer data,
-                               const api::Result& res, std::size_t bytes_read,
-                               TransferAllHandler handler) {
+void Transport::ReceiveAllAsyncImpl(boost::asio::mutable_buffer data,
+                                    const api::Result& res,
+                                    std::size_t bytes_read,
+                                    TransferAllHandler handler) {
   YOGI_ASSERT(data.size() > 0);
 
   if (res.IsSuccess() && bytes_read < data.size()) {
     data += bytes_read;
-    this->ReceiveSome(data, [=](auto& res, auto bytes_read) {
-      this->ReceiveAllImpl(data, res, bytes_read, handler);
+    this->ReceiveSomeAsync(data, [=](auto& res, auto bytes_read) {
+      this->ReceiveAllAsyncImpl(data, res, bytes_read, handler);
     });
   } else {
     handler(res);

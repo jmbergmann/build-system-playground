@@ -36,11 +36,11 @@ class BroadcastManager final
   BroadcastManager(ContextPtr context);
   virtual ~BroadcastManager();
 
-  void SendBroadcastAsync(api::Encoding enc, boost::asio::const_buffer data,
-                          bool retry, SendBroadcastHandler handler);
-
   api::Result SendBroadcast(api::Encoding enc, boost::asio::const_buffer data,
                             bool retry);
+
+  void SendBroadcastAsync(api::Encoding enc, boost::asio::const_buffer data,
+                          bool retry, SendBroadcastHandler handler);
 
   void CancelSendBroadcast();
 

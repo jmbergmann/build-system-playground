@@ -65,3 +65,4 @@
 #endif
 
 #define YOGI_NEVER_REACHED YOGI_ASSERT(!"NEVER REACHED")
+#define YOGI_UNUSED(x) ((void)(x))

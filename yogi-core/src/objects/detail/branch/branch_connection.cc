@@ -47,7 +47,7 @@ void BranchConnection::ExchangeBranchInfo(CompletionHandler handler) {
   YOGI_ASSERT(!remote_info_);
 
   auto weak_self = MakeWeakPtr();
-  transport_->SendAll(local_info_->MakeInfoMessage(), [=](auto& res) {
+  transport_->SendAllAsync(local_info_->MakeInfoMessage(), [=](auto& res) {
     auto self = weak_self.lock();
     if (!self) return;
 
@@ -69,7 +69,7 @@ void BranchConnection::Authenticate(utils::SharedByteVector password_hash,
       utils::MakeSharedByteVector(utils::GenerateRandomBytes(8));
 
   auto weak_self = MakeWeakPtr();
-  transport_->SendAll(my_challenge, [=](auto& res) {
+  transport_->SendAllAsync(my_challenge, [=](auto& res) {
     auto self = weak_self.lock();
     if (!self) return;
 
@@ -96,7 +96,7 @@ void BranchConnection::RunSession(CompletionHandler handler) {
 void BranchConnection::OnInfoSent(CompletionHandler handler) {
   auto weak_self = MakeWeakPtr();
   auto buffer = utils::MakeSharedByteVector(BranchInfo::kInfoMessageHeaderSize);
-  transport_->ReceiveAll(buffer, [=](auto& res) {
+  transport_->ReceiveAllAsync(buffer, [=](auto& res) {
     auto self = weak_self.lock();
     if (!self) return;
 
@@ -124,7 +124,7 @@ void BranchConnection::OnInfoHeaderReceived(utils::SharedByteVector buffer,
 
   auto weak_self = MakeWeakPtr();
   buffer->resize(BranchInfo::kInfoMessageHeaderSize + body_size);
-  transport_->ReceiveAll(
+  transport_->ReceiveAllAsync(
       boost::asio::buffer(*buffer) + BranchInfo::kInfoMessageHeaderSize,
       [=](auto& res) {
         auto self = weak_self.lock();
@@ -152,7 +152,7 @@ void BranchConnection::OnInfoBodyReceived(utils::SharedByteVector info_msg,
   }
 
   auto weak_self = MakeWeakPtr();
-  transport_->SendAll(ack_msg_, [=](auto& res) {
+  transport_->SendAllAsync(ack_msg_, [=](auto& res) {
     auto self = weak_self.lock();
     if (!self) return;
 
@@ -167,7 +167,7 @@ void BranchConnection::OnInfoBodyReceived(utils::SharedByteVector info_msg,
 void BranchConnection::OnInfoAckSent(CompletionHandler handler) {
   auto weak_self = MakeWeakPtr();
   auto ack_msg = utils::MakeSharedByteVector(ack_msg_->size());
-  transport_->ReceiveAll(ack_msg, [=](auto& res) {
+  transport_->ReceiveAllAsync(ack_msg, [=](auto& res) {
     auto self = weak_self.lock();
     if (!self) return;
 
@@ -187,7 +187,7 @@ void BranchConnection::OnChallengeSent(utils::SharedByteVector my_challenge,
                                        CompletionHandler handler) {
   auto weak_self = MakeWeakPtr();
   auto remote_challenge = utils::MakeSharedByteVector(my_challenge->size());
-  transport_->ReceiveAll(remote_challenge, [=](auto& res) {
+  transport_->ReceiveAllAsync(remote_challenge, [=](auto& res) {
     auto self = weak_self.lock();
     if (!self) return;
 
@@ -207,7 +207,7 @@ void BranchConnection::OnChallengeReceived(
   auto weak_self = MakeWeakPtr();
   auto my_solution = SolveChallenge(*my_challenge, *password_hash);
   auto remote_solution = SolveChallenge(*remote_challenge, *password_hash);
-  transport_->SendAll(remote_solution, [=](auto& res) {
+  transport_->SendAllAsync(remote_solution, [=](auto& res) {
     auto self = weak_self.lock();
     if (!self) return;
 
@@ -231,7 +231,7 @@ void BranchConnection::OnSolutionSent(utils::SharedByteVector my_solution,
                                       CompletionHandler handler) {
   auto weak_self = MakeWeakPtr();
   auto received_solution = utils::MakeSharedByteVector(my_solution->size());
-  transport_->ReceiveAll(received_solution, [=](auto& res) {
+  transport_->ReceiveAllAsync(received_solution, [=](auto& res) {
     auto self = weak_self.lock();
     if (!self) return;
 
@@ -248,7 +248,7 @@ void BranchConnection::OnSolutionReceived(
     utils::SharedByteVector my_solution, CompletionHandler handler) {
   auto weak_self = MakeWeakPtr();
   bool solutions_match = *received_solution == *my_solution;
-  transport_->SendAll(ack_msg_, [=](auto& res) {
+  transport_->SendAllAsync(ack_msg_, [=](auto& res) {
     auto self = weak_self.lock();
     if (!self) return;
 
@@ -264,7 +264,7 @@ void BranchConnection::OnSolutionAckSent(bool solutions_match,
                                          CompletionHandler handler) {
   auto weak_self = MakeWeakPtr();
   auto ack_msg = utils::MakeSharedByteVector(ack_msg_->size());
-  transport_->ReceiveAll(ack_msg, [=](auto& res) {
+  transport_->ReceiveAllAsync(ack_msg, [=](auto& res) {
     auto self = weak_self.lock();
     if (!self) return;
 
@@ -302,7 +302,7 @@ void BranchConnection::RestartHeartbeatTimer() {
 
 void BranchConnection::OnHeartbeatTimerExpired() {
   auto weak_self = MakeWeakPtr();
-  transport_->SendAll(heartbeat_msg_, [=](auto& res) {
+  transport_->SendAllAsync(heartbeat_msg_, [=](auto& res) {
     auto self = weak_self.lock();
     if (!self) return;
 
@@ -318,7 +318,7 @@ void BranchConnection::StartReceive() {
   // TODO: make this properly without ReceiveExactly and stuff
   auto weak_self = std::weak_ptr<BranchConnection>(shared_from_this());
   auto buffer = utils::MakeSharedByteVector(1);
-  transport_->ReceiveSome(boost::asio::buffer(*buffer),
+  transport_->ReceiveSomeAsync(boost::asio::buffer(*buffer),
                           [=, _ = buffer](auto& res, auto) {
                             auto self = weak_self.lock();
                             if (!self) return;

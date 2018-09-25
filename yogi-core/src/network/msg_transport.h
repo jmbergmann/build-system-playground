@@ -19,12 +19,14 @@
 
 #include "../config.h"
 #include "../utils/ringbuffer.h"
+#include "../objects/logger.h"
 #include "transport.h"
 
 #include <boost/asio/buffer.hpp>
 #include <functional>
 #include <memory>
 #include <array>
+#include <vector>
 
 namespace network {
 namespace internal {
@@ -42,25 +44,42 @@ typedef std::weak_ptr<MessageTransport> MessageTransportWeakPtr;
 
 class MessageTransport : public std::enable_shared_from_this<MessageTransport> {
  public:
+  typedef std::function<void(const api::Result&)> SendHandler;
   typedef std::function<void(const api::Result&, std::size_t msg_size)>
       ReceiveHandler;
 
   MessageTransport(TransportPtr transport, std::size_t tx_queue_size,
                    std::size_t rx_queue_size);
 
-  bool CanSendImmediately(std::size_t msg_size) const;
-  void Send(boost::asio::const_buffer msg);
-  void Receive(boost::asio::mutable_buffer msg, ReceiveHandler handler);
+  bool Send(boost::asio::const_buffer msg);
+  void SendAsync(boost::asio::const_buffer msg, SendHandler handler);
+  void CancelSend();
+  void ReceiveAsync(boost::asio::mutable_buffer msg, ReceiveHandler handler);
   void CancelReceive();
+  void Close() { transport_->Close(); }
 
  private:
   typedef std::array<utils::Byte, 5> SizeFieldBuffer;
 
+  struct PendingSend {
+    boost::asio::const_buffer msg;
+    SendHandler handler;
+  };
+
   MessageTransportWeakPtr MakeWeakPtr() { return shared_from_this(); }
+  bool SendImpl(boost::asio::const_buffer msg);
+  bool CanSend(std::size_t msg_size) const;
+  void SendSomeBytesToTransport();
+  void RetrySendingPendingSends();
+
+  static const objects::LoggerPtr logger_;
 
   const TransportPtr transport_;
   utils::LockFreeRingBuffer tx_rb_;
   utils::LockFreeRingBuffer rx_rb_;
+  std::mutex tx_mutex_;
+  bool send_to_transport_running_;
+  std::vector<PendingSend> pending_sends_;
 };
 
 }  // namespace network

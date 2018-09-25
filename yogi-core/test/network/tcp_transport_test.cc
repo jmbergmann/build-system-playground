@@ -34,11 +34,11 @@ class TcpTransportTest : public TestFixture {
 
   network::TcpTransportPtr Connect() {
     network::TcpTransportPtr transport;
-    auto guard = network::TcpTransport::Connect(context_, acceptor_ep_, 10s,
-                                                [&](auto& res, auto tp, auto) {
-                                                  ASSERT_EQ(res, api::kSuccess);
-                                                  transport = tp;
-                                                });
+    auto guard = network::TcpTransport::ConnectAsync(
+        context_, acceptor_ep_, 10s, [&](auto& res, auto tp, auto) {
+          ASSERT_EQ(res, api::kSuccess);
+          transport = tp;
+        });
 
     bool accepted = false;
     acceptor_.async_accept(socket_, [&](auto& ec) {
@@ -62,7 +62,7 @@ class TcpTransportTest : public TestFixture {
 
 TEST_F(TcpTransportTest, Accept) {
   bool called = false;
-  auto guard = network::TcpTransport::Accept(
+  auto guard = network::TcpTransport::AcceptAsync(
       context_, &acceptor_, 10s, [&](auto& res, auto transport, auto) {
         EXPECT_EQ(res, api::kSuccess);
         ASSERT_TRUE(!!transport);
@@ -80,7 +80,7 @@ TEST_F(TcpTransportTest, Accept) {
 
 TEST_F(TcpTransportTest, CancelAccept) {
   bool called = false;
-  auto guard = network::TcpTransport::Accept(
+  auto guard = network::TcpTransport::AcceptAsync(
       context_, &acceptor_, 10s, [&](auto& res, auto transport, auto guard) {
         EXPECT_EQ(res, api::Error(YOGI_ERR_CANCELED));
         ASSERT_FALSE(!!transport);
@@ -104,7 +104,7 @@ TEST_F(TcpTransportTest, CancelConnect) {
   acceptor_.close();
 
   bool called = false;
-  auto guard = network::TcpTransport::Connect(
+  auto guard = network::TcpTransport::ConnectAsync(
       context_, acceptor_ep_, 10s, [&](auto& res, auto transport, auto guard) {
         EXPECT_EQ(res, api::Error(YOGI_ERR_CANCELED));
         ASSERT_FALSE(!!transport);
@@ -125,7 +125,7 @@ TEST_F(TcpTransportTest, ConnectTimeout) {
   auto start_time = std::chrono::steady_clock::now();
 
   bool called = false;
-  auto guard = network::TcpTransport::Connect(
+  auto guard = network::TcpTransport::ConnectAsync(
       context_, acceptor_ep_, 1ms, [&](auto& res, auto transport, auto) {
         EXPECT_EQ(res, api::Error(YOGI_ERR_TIMEOUT));
         EXPECT_FALSE(!!transport);
@@ -159,7 +159,7 @@ TEST_F(TcpTransportTest, Send) {
                           });
 
   bool sent = false;
-  transport->SendAll(boost::asio::buffer(data_), [&](auto& res) {
+  transport->SendAllAsync(boost::asio::buffer(data_), [&](auto& res) {
     EXPECT_EQ(res, api::kSuccess);
     sent = true;
   });
@@ -176,7 +176,7 @@ TEST_F(TcpTransportTest, SendFailure) {
   transport->Close();
 
   bool called = false;
-  transport->SendSome(boost::asio::buffer(data_), [&](auto& res, auto) {
+  transport->SendSomeAsync(boost::asio::buffer(data_), [&](auto& res, auto) {
     EXPECT_TRUE(res.IsError());
     called = true;
   });
@@ -191,7 +191,7 @@ TEST_F(TcpTransportTest, Receive) {
 
   bool received = false;
   std::vector<char> buffer(data_.size());
-  transport->ReceiveAll(boost::asio::buffer(buffer), [&](auto& res) {
+  transport->ReceiveAllAsync(boost::asio::buffer(buffer), [&](auto& res) {
     EXPECT_EQ(res, api::kSuccess);
     received = true;
   });
@@ -215,7 +215,7 @@ TEST_F(TcpTransportTest, ReceiveFailure) {
   auto transport = Connect();
 
   bool called = false;
-  transport->ReceiveSome(boost::asio::buffer(data_), [&](auto& res, auto) {
+  transport->ReceiveSomeAsync(boost::asio::buffer(data_), [&](auto& res, auto) {
     EXPECT_TRUE(res.IsError());
     called = true;
   });

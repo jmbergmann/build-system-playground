@@ -59,25 +59,25 @@ class TcpTransport : public Transport {
                              ConnectGuardPtr)>
       ConnectHandler;
 
-  static AcceptGuardPtr Accept(objects::ContextPtr context,
-                               boost::asio::ip::tcp::acceptor* acceptor,
-                               std::chrono::nanoseconds timeout,
-                               AcceptHandler handler);
+  static AcceptGuardPtr AcceptAsync(objects::ContextPtr context,
+                                    boost::asio::ip::tcp::acceptor* acceptor,
+                                    std::chrono::nanoseconds timeout,
+                                    AcceptHandler handler);
 
-  static ConnectGuardPtr Connect(objects::ContextPtr context,
-                                 const boost::asio::ip::tcp::endpoint& ep,
-                                 std::chrono::nanoseconds timeout,
-                                 ConnectHandler handler);
+  static ConnectGuardPtr ConnectAsync(objects::ContextPtr context,
+                                      const boost::asio::ip::tcp::endpoint& ep,
+                                      std::chrono::nanoseconds timeout,
+                                      ConnectHandler handler);
 
   boost::asio::ip::tcp::endpoint GetPeerEndpoint() const {
     return socket_.remote_endpoint();
   }
 
  protected:
-  virtual void WriteSome(boost::asio::const_buffer data,
-                         TransferSomeHandler handler) override;
-  virtual void ReadSome(boost::asio::mutable_buffer data,
-                        TransferSomeHandler handler) override;
+  virtual void WriteSomeAsync(boost::asio::const_buffer data,
+                              TransferSomeHandler handler) override;
+  virtual void ReadSomeAsync(boost::asio::mutable_buffer data,
+                             TransferSomeHandler handler) override;
   virtual void Shutdown() override;
 
  private:
