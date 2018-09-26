@@ -319,16 +319,16 @@ void BranchConnection::StartReceive() {
   auto weak_self = std::weak_ptr<BranchConnection>(shared_from_this());
   auto buffer = utils::MakeSharedByteVector(1);
   transport_->ReceiveSomeAsync(boost::asio::buffer(*buffer),
-                          [=, _ = buffer](auto& res, auto) {
-                            auto self = weak_self.lock();
-                            if (!self) return;
+                               [=, _ = buffer](auto& res, auto) {
+                                 auto self = weak_self.lock();
+                                 if (!self) return;
 
-                            if (res.IsError()) {
-                              self->OnSessionError(res.ToError());
-                            } else {
-                              self->StartReceive();
-                            }
-                          });
+                                 if (res.IsError()) {
+                                   self->OnSessionError(res.ToError());
+                                 } else {
+                                   self->StartReceive();
+                                 }
+                               });
 }
 
 void BranchConnection::OnSessionError(const api::Error& err) {

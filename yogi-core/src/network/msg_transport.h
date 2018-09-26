@@ -47,14 +47,31 @@ class MessageTransport : public std::enable_shared_from_this<MessageTransport> {
   typedef std::function<void(const api::Result&)> SendHandler;
   typedef std::function<void(const api::Result&, std::size_t msg_size)>
       ReceiveHandler;
+  typedef ReceiveHandler SizeFieldReceiveHandler;
 
   MessageTransport(TransportPtr transport, std::size_t tx_queue_size,
                    std::size_t rx_queue_size);
 
-  bool Send(boost::asio::const_buffer msg);
+  objects::ContextPtr GetContext() const { return context_; }
+
+  void Start();
+
+  bool TrySend(boost::asio::const_buffer msg);
+  bool TrySend(const utils::ByteVector& msg) {
+    return TrySend(boost::asio::buffer(msg));
+  }
+
   void SendAsync(boost::asio::const_buffer msg, SendHandler handler);
+  void SendAsync(const utils::ByteVector& msg, SendHandler handler) {
+    SendAsync(boost::asio::buffer(msg), handler);
+  }
+
   void CancelSend();
   void ReceiveAsync(boost::asio::mutable_buffer msg, ReceiveHandler handler);
+  void ReceiveAsync(utils::ByteVector* msg, ReceiveHandler handler) {
+    ReceiveAsync(boost::asio::buffer(*msg), handler);
+  }
+
   void CancelReceive();
   void Close() { transport_->Close(); }
 
@@ -67,19 +84,35 @@ class MessageTransport : public std::enable_shared_from_this<MessageTransport> {
   };
 
   MessageTransportWeakPtr MakeWeakPtr() { return shared_from_this(); }
-  bool SendImpl(boost::asio::const_buffer msg);
+  bool TrySendImpl(boost::asio::const_buffer msg);
   bool CanSend(std::size_t msg_size) const;
   void SendSomeBytesToTransport();
   void RetrySendingPendingSends();
+  bool TryGetReceivedSizeField(std::size_t* msg_size);
+  void ResetReceivedSizeField();
+  void ReceiveSomeBytesFromTransport();
+  void TryDeliveringPendingReceive();
+  void HandleSendError(const api::Error& err);
+  void HandleReceiveError(const api::Error& err);
 
   static const objects::LoggerPtr logger_;
 
+  const objects::ContextPtr context_;
   const TransportPtr transport_;
   utils::LockFreeRingBuffer tx_rb_;
   utils::LockFreeRingBuffer rx_rb_;
   std::mutex tx_mutex_;
+  api::Result last_tx_error_;
   bool send_to_transport_running_;
   std::vector<PendingSend> pending_sends_;
+  SizeFieldBuffer size_field_buffer_;
+  std::size_t size_field_buffer_size_;
+  std::size_t size_field_;
+  bool size_field_valid_;
+  boost::asio::mutable_buffer pending_receive_buffer_;
+  ReceiveHandler pending_receive_handler_;
+  bool receive_from_transport_running_;
+  api::Result last_rx_error_;
 };
 
 }  // namespace network

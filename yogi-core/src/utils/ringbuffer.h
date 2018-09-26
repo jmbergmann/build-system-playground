@@ -40,12 +40,27 @@ class LockFreeRingBuffer {
   void Pop();
   std::size_t AvailableForRead() const;
   std::size_t Read(Byte* buffer, std::size_t max_size);
+  std::size_t Discard(std::size_t max_size);
   void CommitFirstReadArray(std::size_t n);
   boost::asio::const_buffers_1 FirstReadArray() const;
   std::size_t AvailableForWrite() const;
   std::size_t Write(const Byte* data, std::size_t size);
   void CommitFirstWriteArray(std::size_t n);
   boost::asio::mutable_buffers_1 FirstWriteArray();
+
+  template <typename Fn>
+  void PopUntil(Fn fn) {
+    auto wi = write_idx_.load(std::memory_order_acquire);
+    auto ri = read_idx_.load(std::memory_order_relaxed);
+
+    while (AvailableForRead(wi, ri) > 0) {
+      auto byte = data_[ri];
+      ri = NextIndex(ri);
+      if (fn(byte)) break;
+    }
+
+    read_idx_.store(ri, std::memory_order_release);
+  }
 
  private:
   std::size_t AvailableForRead(std::size_t write_idx,

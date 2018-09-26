@@ -95,8 +95,7 @@ TEST_F(RingBufferTest, Empty) {
   ByteVector buffer{'x'};
   uut.Write(buffer.data(), buffer.size());
   EXPECT_FALSE(uut.Empty());
-  Byte byte;
-  uut.Read(&byte, 1);
+  uut.Discard(1);
   EXPECT_TRUE(uut.Empty());
 }
 
@@ -106,8 +105,7 @@ TEST_F(RingBufferTest, Full) {
   uut.Write(buffer.data(), buffer.size());
   EXPECT_FALSE(uut.Full());
   uut.Write(buffer.data(), 1);
-  Byte byte;
-  uut.Read(&byte, 1);
+  uut.Discard(1);
   EXPECT_FALSE(uut.Full());
 }
 
@@ -120,6 +118,21 @@ TEST_F(RingBufferTest, FrontAndPop) {
   uut.Pop();
   EXPECT_EQ('c', uut.Front());
   uut.Pop();
+  EXPECT_TRUE(uut.Empty());
+}
+
+TEST_F(RingBufferTest, PopUntil) {
+  ByteVector buffer{'a', 'b', 'c', 'd', 'e'};
+  uut.Write(buffer.data(), buffer.size());
+
+  uut.PopUntil([&](auto byte) {
+    return byte == 'b';
+  });
+  EXPECT_EQ('c', uut.Front());
+
+  uut.PopUntil([&](auto) {
+    return false;
+  });
   EXPECT_TRUE(uut.Empty());
 }
 

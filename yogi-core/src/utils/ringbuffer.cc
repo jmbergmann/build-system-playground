@@ -94,6 +94,30 @@ std::size_t LockFreeRingBuffer::Read(Byte* buffer, std::size_t max_size) {
   return max_size;
 }
 
+std::size_t LockFreeRingBuffer::Discard(std::size_t max_size) {
+  auto wi = write_idx_.load(std::memory_order_acquire);
+  auto ri = read_idx_.load(std::memory_order_relaxed);
+
+  auto avail = AvailableForRead(wi, ri);
+  if (avail == 0) {
+    return 0;
+  }
+
+  max_size = std::min(max_size, avail);
+
+  auto new_ri = ri + max_size;
+  if (new_ri > data_.size()) {
+    new_ri -= data_.size();
+  } else {
+    if (new_ri == data_.size()) {
+      new_ri = 0;
+    }
+  }
+
+  read_idx_.store(new_ri, std::memory_order_release);
+  return max_size;
+}
+
 void LockFreeRingBuffer::CommitFirstReadArray(std::size_t n) {
   YOGI_ASSERT(n <= boost::asio::buffer_size(FirstReadArray()));
 

@@ -34,23 +34,25 @@
 
 using namespace std::chrono_literals;
 
-#define EXPECT_THROW_ERROR(x, ec)            \
+#define EXPECT_THROW_ERROR(statement, ec)    \
   try {                                      \
-    x;                                       \
+    statement;                               \
+    FAIL() << "No exception thrown";         \
   } catch (const api::Error& err) {          \
     EXPECT_EQ(err.GetValue(), ec);           \
   } catch (...) {                            \
     FAIL() << "Wrong exception type thrown"; \
   }
 
-#define EXPECT_THROW_DESCRIPTIVE_ERROR(x, ec)  \
-  try {                                        \
-    x;                                         \
-  } catch (const api::DescriptiveError& err) { \
-    EXPECT_EQ(err.GetValue(), ec);             \
-    EXPECT_FALSE(err.GetDetails().empty());    \
-  } catch (...) {                              \
-    FAIL() << "Wrong exception type thrown";   \
+#define EXPECT_THROW_DESCRIPTIVE_ERROR(statement, ec) \
+  try {                                               \
+    statement;                                        \
+    FAIL() << "No exception thrown";                  \
+  } catch (const api::DescriptiveError& err) {        \
+    EXPECT_EQ(err.GetValue(), ec);                    \
+    EXPECT_FALSE(err.GetDetails().empty());           \
+  } catch (...) {                                     \
+    FAIL() << "Wrong exception type thrown";          \
   }
 
 static const nlohmann::json kBranchProps = nlohmann::json::parse(R"raw(
