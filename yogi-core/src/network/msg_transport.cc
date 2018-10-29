@@ -213,7 +213,8 @@ void MessageTransport::RetrySendingPendingSends() {
 
 bool MessageTransport::TryGetReceivedSizeField(std::size_t* msg_size) {
   if (size_field_valid_) {
-    return size_field_;
+    *msg_size = size_field_;
+    return true;
   }
 
   rx_rb_.PopUntil([&](utils::Byte byte) {

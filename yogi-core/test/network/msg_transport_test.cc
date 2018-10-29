@@ -19,6 +19,8 @@
 #include "../../src/network/msg_transport.h"
 
 #include <random>
+#include <atomic>
+#include <algorithm>
 
 class FakeTransport : public network::Transport {
  public:
@@ -244,8 +246,8 @@ TEST_F(MessageTransportTest, ReceiveAsync) {
 
 TEST_F(MessageTransportTest, ReceiveAsyncTransportFailure) {
   transport_->rx_data = utils::ByteVector{5, 1, 2, 3, 4, 5, 4, 1, 2, 3, 4};
-  uut_->Start();
   transport_->Close();
+  uut_->Start();
 
   utils::ByteVector data(5);
   bool called = false;
@@ -280,4 +282,107 @@ TEST_F(MessageTransportTest, Close) {
   EXPECT_TRUE(transport_->dead);
 }
 
-TEST_F(MessageTransportTest, DISABLED_Stress) {}
+TEST_F(MessageTransportTest, Stress) {
+  // Bigger queue size so that the message size field can go beyond one byte
+  const std::size_t kQueueSize = 300;
+  uut_ = std::make_shared<network::MessageTransport>(transport_, kQueueSize,
+                                                     kQueueSize);
+  uut_->Start();
+
+  // Generate payload data
+  utils::ByteVector payload(kQueueSize);
+  for (size_t i = 0; i < payload.size(); ++i) {
+    payload[i] = static_cast<utils::Byte>(i);
+  }
+
+  // Create randomly sized messages
+  const std::size_t kInputSize = 10'000;
+
+  static std::default_random_engine gen;
+  std::uniform_int_distribution<std::size_t> dist(1, kQueueSize - 5);
+
+  std::vector<std::size_t> msg_sizes;
+  while (transport_->tx_data.size() < kInputSize) {
+    auto n = dist(gen);
+    msg_sizes.push_back(n);
+    EXPECT_TRUE(uut_->TrySend(boost::asio::buffer(payload.data(), n)));
+    context_->Poll();
+  }
+
+  auto messages = transport_->tx_data;
+
+  // Re-create the transport and load the messages
+  transport_ = std::make_shared<FakeTransport>(context_);
+  uut_ = std::make_shared<network::MessageTransport>(transport_, kQueueSize,
+                                                     kQueueSize);
+  transport_->rx_data = messages;
+  uut_->Start();
+  context_->Poll();
+
+  // Start send and receive threads
+  std::mutex mutex;
+  std::thread tx_thread;
+  std::thread rx_thread;
+
+  std::vector<utils::ByteVector> sent_msgs;
+  std::vector<utils::ByteVector> received_msgs;
+  std::atomic<bool> send_done = false;
+
+  // Start threads simultaneously
+  {
+    std::lock_guard<std::mutex> lock(mutex);
+
+    tx_thread = std::thread([&] {
+      { std::lock_guard<std::mutex> lock(mutex); }
+
+      while (sent_msgs.size() < msg_sizes.size()) {
+        bool called = false;
+        auto n = msg_sizes[sent_msgs.size()];
+        uut_->SendAsync(boost::asio::buffer(payload.data(), n), [&](auto& res) {
+          EXPECT_EQ(res, api::kSuccess);
+          sent_msgs.push_back(
+              utils::ByteVector(payload.begin(), payload.begin() + n));
+          called = true;
+        });
+
+        while (!called) {
+          std::this_thread::yield();
+        }
+      }
+
+      send_done = true;
+    });
+
+    rx_thread = std::thread([&] {
+      { std::lock_guard<std::mutex> lock(mutex); }
+
+      utils::ByteVector msg(kQueueSize);
+
+      while (received_msgs.size() < msg_sizes.size()) {
+        std::generate(msg.begin(), msg.end(),
+                      [] { return static_cast<utils::Byte>(0); });
+        bool called = false;
+        uut_->ReceiveAsync(&msg, [&](auto& res, auto msg_size) {
+          EXPECT_EQ(res, api::kSuccess);
+          received_msgs.push_back(
+              utils::ByteVector(msg.begin(), msg.begin() + msg_size));
+          called = true;
+        });
+
+        while (!called) {
+          context_->Poll();
+        }
+      }
+
+      while (!send_done) {
+        context_->Poll();
+      }
+    });
+  }
+
+  // Wait for threads to finish
+  tx_thread.join();
+  rx_thread.join();
+
+  EXPECT_EQ(received_msgs, sent_msgs);
+}
