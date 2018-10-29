@@ -86,3 +86,5 @@ class DescriptiveError : public Error {
 }  // namespace api
 
 std::ostream& operator<<(std::ostream& os, const api::Result& res);
+std::ostream& operator<<(std::ostream& os, const api::Error& err);
+std::ostream& operator<<(std::ostream& os, const api::DescriptiveError& err);

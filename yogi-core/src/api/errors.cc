@@ -157,13 +157,19 @@ const char* Result::GetDescription() const {
   return "Invalid error code";
 }
 
-const char* Error::what() const noexcept {
-  return GetDescription();
-}
+const char* Error::what() const noexcept { return GetDescription(); }
 
 }  // namespace api
 
 std::ostream& operator<<(std::ostream& os, const api::Result& res) {
   os << res.GetDescription();
   return os;
+}
+
+std::ostream& operator<<(std::ostream& os, const api::Error& err) {
+  return os << static_cast<const api::Result&>(err);
+}
+
+std::ostream& operator<<(std::ostream& os, const api::DescriptiveError& err) {
+  return os << static_cast<const api::Result&>(err);
 }
