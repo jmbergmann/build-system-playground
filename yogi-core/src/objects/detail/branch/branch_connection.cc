@@ -312,7 +312,6 @@ void BranchConnection::OnHeartbeatTimerExpired() {
 }
 
 void BranchConnection::StartReceive() {
-  // TODO: make this properly without ReceiveExactly and stuff
   auto weak_self = std::weak_ptr<BranchConnection>(shared_from_this());
   auto msg = received_msg_;
   msg->resize(api::kMinRxQueueSize);
