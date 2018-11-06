@@ -83,7 +83,7 @@ class Branch : public api::ExposedObjectT<Branch, api::ObjectType::kBranch> {
 
   const ContextPtr context_;
   const detail::ConnectionManagerPtr connection_manager_;
-  const detail::BranchInfoPtr info_;
+  const detail::LocalBranchInfoPtr info_;
   const detail::BroadcastManagerPtr broadcast_manager_;
   const std::size_t tx_queue_size_;
   const std::size_t rx_queue_size_;

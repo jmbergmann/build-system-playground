@@ -34,7 +34,7 @@ class AdvertisingSender
  public:
   AdvertisingSender(ContextPtr context,
                     const boost::asio::ip::udp::endpoint& adv_ep);
-  void Start(BranchInfoPtr info);
+  void Start(LocalBranchInfoPtr info);
 
   const boost::asio::ip::udp::endpoint& GetEndpoint() const {
     return adv_ep_;
@@ -49,7 +49,7 @@ class AdvertisingSender
 
   const ContextPtr context_;
   const boost::asio::ip::udp::endpoint adv_ep_;
-  BranchInfoPtr info_;
+  LocalBranchInfoPtr info_;
   boost::asio::ip::udp::socket socket_;
   boost::asio::steady_timer timer_;
 };

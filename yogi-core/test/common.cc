@@ -92,7 +92,7 @@ FakeBranch::FakeBranch()
   acceptor_.set_option(boost::asio::ip::tcp::acceptor::reuse_address(true));
   acceptor_.bind(boost::asio::ip::tcp::endpoint(kTcpProtocol, 0));
   acceptor_.listen();
-  info_ = objects::detail::BranchInfo::CreateLocal(
+  info_ = std::make_shared<objects::detail::LocalBranchInfo>(
       "Fake Branch", "", utils::GetHostname(), "/Fake Branch",
       acceptor_.local_endpoint(), 1s, 1s, false);
 
@@ -160,8 +160,8 @@ void FakeBranch::Authenticate(
       utils::ByteVector(objects::detail::BranchInfo::kInfoMessageHeaderSize);
   boost::asio::read(tcp_socket_, boost::asio::buffer(buffer));
   std::size_t body_size;
-  objects::detail::BranchInfo::DeserializeInfoMessageBodySize(&body_size,
-                                                              buffer);
+  objects::detail::RemoteBranchInfo::DeserializeInfoMessageBodySize(&body_size,
+                                                                    buffer);
   buffer.resize(body_size);
   boost::asio::read(tcp_socket_, boost::asio::buffer(buffer));
 

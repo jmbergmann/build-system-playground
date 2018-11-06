@@ -131,7 +131,7 @@ class FakeBranch final {
   void Authenticate(std::function<void(utils::ByteVector*)> info_changer);
   void ExchangeAck();
 
-  objects::detail::BranchInfoPtr info_;
+  objects::detail::LocalBranchInfoPtr info_;
   boost::asio::io_context ioc_;
   boost::asio::ip::udp::endpoint udp_ep_;
   boost::asio::ip::udp::socket udp_socket_;

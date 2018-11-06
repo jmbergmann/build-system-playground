@@ -18,7 +18,7 @@
 #pragma once
 
 #include "../../../config.h"
-#include "../../../network/transport.h"
+#include "../../../network/msg_transport.h"
 #include "../../context.h"
 #include "../../logger.h"
 #include "branch_info.h"
@@ -41,7 +41,7 @@ class BranchConnection : public std::enable_shared_from_this<BranchConnection> {
 
   BranchConnection(network::TransportPtr transport,
                    const boost::asio::ip::address& peer_address,
-                   BranchInfoPtr local_info);
+                   LocalBranchInfoPtr local_info);
 
   BranchInfoPtr GetRemoteBranchInfo() const { return remote_info_; }
   std::string MakeInfoString() const;
@@ -102,12 +102,13 @@ class BranchConnection : public std::enable_shared_from_this<BranchConnection> {
 
   const network::TransportPtr transport_;
   const objects::ContextPtr context_;
-  const BranchInfoPtr local_info_;
+  const LocalBranchInfoPtr local_info_;
   const boost::asio::ip::address peer_address_;
   const utils::Timestamp connected_since_;
   const utils::SharedByteVector heartbeat_msg_;
   const utils::SharedByteVector ack_msg_;
-  BranchInfoPtr remote_info_;
+  RemoteBranchInfoPtr remote_info_;
+  network::MessageTransportPtr msg_transport_;
   std::atomic<bool> session_started_;
   CompletionHandler session_completion_handler_;
   boost::asio::steady_timer heartbeat_timer_;

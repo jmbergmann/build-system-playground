@@ -36,7 +36,7 @@ Branch::Branch(ContextPtr context, std::string name, std::string description,
           [&](auto& msg, auto size, auto& conn) {
             this->OnMessageReceived(msg, size, conn);
           })),
-      info_(detail::BranchInfo::CreateLocal(
+      info_(std::make_shared<detail::LocalBranchInfo>(
           name, description, net_name, path,
           connection_manager_->GetTcpServerEndpoint(), timeout, adv_interval,
           ghost_mode)),

@@ -60,7 +60,7 @@ class ConnectionManager
                     MessageHandler message_handler);
   virtual ~ConnectionManager();
 
-  void Start(BranchInfoPtr info);
+  void Start(LocalBranchInfoPtr info);
 
   const boost::asio::ip::udp::endpoint& GetAdvertisingEndpoint() const {
     return adv_sender_->GetEndpoint();
@@ -147,7 +147,7 @@ class ConnectionManager
   network::TcpTransport::AcceptGuardPtr accept_guard_;
   ConnectGuardsSet connect_guards_;
   ConnectionsSet connections_kept_alive_;
-  BranchInfoPtr info_;
+  LocalBranchInfoPtr info_;
 
   UuidSet blacklisted_uuids_;
   UuidSet pending_connects_;

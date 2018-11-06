@@ -42,7 +42,7 @@ class AdvertisingReceiver
                       const boost::asio::ip::udp::endpoint& adv_ep,
                       ObserverFn observer_fn);
 
-  void Start(BranchInfoPtr info);
+  void Start(LocalBranchInfoPtr info);
 
  private:
   void SetupSocket();
@@ -56,7 +56,7 @@ class AdvertisingReceiver
   const boost::asio::ip::udp::endpoint adv_ep_;
   const ObserverFn observer_fn_;
   const utils::SharedByteVector buffer_;
-  BranchInfoPtr info_;
+  LocalBranchInfoPtr info_;
   boost::asio::ip::udp::socket socket_;
   boost::asio::ip::udp::endpoint sender_ep_;
 };

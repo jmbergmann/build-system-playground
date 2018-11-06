@@ -29,7 +29,7 @@ AdvertisingSender::AdvertisingSender(
   SetupSocket();
 }
 
-void AdvertisingSender::Start(BranchInfoPtr info) {
+void AdvertisingSender::Start(LocalBranchInfoPtr info) {
   YOGI_ASSERT(!info_);
 
   info_ = info;

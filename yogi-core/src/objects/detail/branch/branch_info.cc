@@ -38,136 +38,6 @@ void DeserializeField(Field* field, const utils::ByteVector& msg,
 
 }  // anonymous namespace
 
-BranchInfoPtr BranchInfo::CreateLocal(
-    std::string name, std::string description, std::string net_name,
-    std::string path, const boost::asio::ip::tcp::endpoint& tcp_ep,
-    const std::chrono::nanoseconds& timeout,
-    const std::chrono::nanoseconds& adv_interval, bool ghost_mode) {
-  auto info = std::make_shared<BranchInfo>();
-  info->uuid_ = boost::uuids::random_generator()();
-  info->name_ = name;
-  info->description_ = description;
-  info->net_name_ = net_name;
-  info->path_ = path;
-  info->hostname_ = utils::GetHostname();
-  info->pid_ = utils::GetProcessId();
-  info->tcp_ep_ = tcp_ep;
-  info->start_time_ = utils::Timestamp::Now();
-  info->timeout_ = timeout;
-  info->adv_interval_ = adv_interval;
-  info->ghost_mode_ = ghost_mode;
-
-  info->PopulateMessages();
-  info->PopulateJson();
-
-  return info;
-}
-
-BranchInfoPtr BranchInfo::CreateFromInfoMessage(
-    const utils::ByteVector& info_msg, const boost::asio::ip::address& addr) {
-  auto info = std::make_shared<BranchInfo>();
-
-  unsigned short port;
-  auto res = DeserializeAdvertisingMessage(&info->uuid_, &port, info_msg);
-  if (res.IsError()) {
-    throw res.ToError();
-  }
-
-  info->tcp_ep_.port(port);
-  info->tcp_ep_.address(addr);
-
-  auto it = info_msg.cbegin() + kInfoMessageHeaderSize;
-  DeserializeField(&info->name_, info_msg, &it);
-  DeserializeField(&info->description_, info_msg, &it);
-  DeserializeField(&info->net_name_, info_msg, &it);
-  DeserializeField(&info->path_, info_msg, &it);
-  DeserializeField(&info->hostname_, info_msg, &it);
-  DeserializeField(&info->pid_, info_msg, &it);
-  DeserializeField(&info->start_time_, info_msg, &it);
-  DeserializeField(&info->timeout_, info_msg, &it);
-  DeserializeField(&info->adv_interval_, info_msg, &it);
-  DeserializeField(&info->ghost_mode_, info_msg, &it);
-
-  info->PopulateJson();
-
-  return info;
-}
-
-api::Result BranchInfo::DeserializeAdvertisingMessage(
-    boost::uuids::uuid* uuid, unsigned short* tcp_port,
-    const utils::ByteVector& adv_msg) {
-  YOGI_ASSERT(adv_msg.size() >= kAdvertisingMessageSize);
-
-  auto res = CheckMagicPrefixAndVersion(adv_msg);
-  if (res.IsError()) {
-    return res;
-  }
-
-  auto it = adv_msg.cbegin() + 7;
-  network::Deserialize(uuid, adv_msg, &it);
-  network::Deserialize(tcp_port, adv_msg, &it);
-
-  return api::kSuccess;
-}
-
-api::Result BranchInfo::DeserializeInfoMessageBodySize(
-    std::size_t* body_size, const utils::ByteVector& info_msg_hdr) {
-  YOGI_ASSERT(info_msg_hdr.size() >= kInfoMessageHeaderSize);
-
-  auto res = CheckMagicPrefixAndVersion(info_msg_hdr);
-  if (res.IsError()) {
-    return res;
-  }
-
-  auto it = info_msg_hdr.cbegin() + kAdvertisingMessageSize;
-  network::Deserialize(body_size, info_msg_hdr, &it);
-
-  return api::kSuccess;
-}
-
-api::Result BranchInfo::CheckMagicPrefixAndVersion(
-    const utils::ByteVector& adv_msg) {
-  YOGI_ASSERT(adv_msg.size() >= kAdvertisingMessageSize);
-  if (std::memcmp(adv_msg.data(), "YOGI", 5)) {
-    return api::Error(YOGI_ERR_INVALID_MAGIC_PREFIX);
-  }
-
-  if (adv_msg[5] != api::kVersionMajor || adv_msg[6] != api::kVersionMinor) {
-    return api::Error(YOGI_ERR_INCOMPATIBLE_VERSION);
-  }
-
-  return api::kSuccess;
-}
-
-void BranchInfo::PopulateMessages() {
-  utils::ByteVector buffer{'Y', 'O', 'G', 'I', 0};
-  buffer.push_back(api::kVersionMajor);
-  buffer.push_back(api::kVersionMinor);
-  network::Serialize(&buffer, uuid_);
-  network::Serialize(&buffer, tcp_ep_.port());
-
-  YOGI_ASSERT(buffer.size() == kAdvertisingMessageSize);
-  adv_msg_ = utils::MakeSharedByteVector(buffer);
-
-  info_msg_ = utils::MakeSharedByteVector(buffer);
-
-  buffer.clear();
-  network::Serialize(&buffer, name_);
-  network::Serialize(&buffer, description_);
-  network::Serialize(&buffer, net_name_);
-  network::Serialize(&buffer, path_);
-  network::Serialize(&buffer, hostname_);
-  network::Serialize(&buffer, pid_);
-  network::Serialize(&buffer, start_time_);
-  network::Serialize(&buffer, timeout_);
-  network::Serialize(&buffer, adv_interval_);
-  network::Serialize(&buffer, ghost_mode_);
-
-  network::Serialize(&*info_msg_, buffer.size());
-  YOGI_ASSERT(info_msg_->size() == kInfoMessageHeaderSize);
-  info_msg_->insert(info_msg_->end(), buffer.begin(), buffer.end());
-}
-
 void BranchInfo::PopulateJson() {
   float timeout = -1;
   if (timeout_ != timeout_.max()) {
@@ -196,6 +66,129 @@ void BranchInfo::PopulateJson() {
   };
 }
 
+LocalBranchInfo::LocalBranchInfo(
+    std::string name, std::string description, std::string net_name,
+    std::string path, const boost::asio::ip::tcp::endpoint& tcp_ep,
+    const std::chrono::nanoseconds& timeout,
+    const std::chrono::nanoseconds& adv_interval, bool ghost_mode) {
+  uuid_ = boost::uuids::random_generator()();
+  name_ = name;
+  description_ = description;
+  net_name_ = net_name;
+  path_ = path;
+  hostname_ = utils::GetHostname();
+  pid_ = utils::GetProcessId();
+  tcp_ep_ = tcp_ep;
+  start_time_ = utils::Timestamp::Now();
+  timeout_ = timeout;
+  adv_interval_ = adv_interval;
+  ghost_mode_ = ghost_mode;
+
+  PopulateMessages();
+  PopulateJson();
+}
+
+void LocalBranchInfo::PopulateMessages() {
+  utils::ByteVector buffer{'Y', 'O', 'G', 'I', 0};
+  buffer.push_back(api::kVersionMajor);
+  buffer.push_back(api::kVersionMinor);
+  network::Serialize(&buffer, uuid_);
+  network::Serialize(&buffer, tcp_ep_.port());
+
+  YOGI_ASSERT(buffer.size() == kAdvertisingMessageSize);
+  adv_msg_ = utils::MakeSharedByteVector(buffer);
+
+  info_msg_ = utils::MakeSharedByteVector(buffer);
+
+  buffer.clear();
+  network::Serialize(&buffer, name_);
+  network::Serialize(&buffer, description_);
+  network::Serialize(&buffer, net_name_);
+  network::Serialize(&buffer, path_);
+  network::Serialize(&buffer, hostname_);
+  network::Serialize(&buffer, pid_);
+  network::Serialize(&buffer, start_time_);
+  network::Serialize(&buffer, timeout_);
+  network::Serialize(&buffer, adv_interval_);
+  network::Serialize(&buffer, ghost_mode_);
+
+  network::Serialize(&*info_msg_, buffer.size());
+  YOGI_ASSERT(info_msg_->size() == kInfoMessageHeaderSize);
+  info_msg_->insert(info_msg_->end(), buffer.begin(), buffer.end());
+}
+
+RemoteBranchInfo::RemoteBranchInfo(
+    const utils::ByteVector& info_msg, const boost::asio::ip::address& addr) {
+  unsigned short port;
+  auto res = DeserializeAdvertisingMessage(&uuid_, &port, info_msg);
+  if (res.IsError()) {
+    throw res.ToError();
+  }
+
+  tcp_ep_.port(port);
+  tcp_ep_.address(addr);
+
+  auto it = info_msg.cbegin() + kInfoMessageHeaderSize;
+  DeserializeField(&name_, info_msg, &it);
+  DeserializeField(&description_, info_msg, &it);
+  DeserializeField(&net_name_, info_msg, &it);
+  DeserializeField(&path_, info_msg, &it);
+  DeserializeField(&hostname_, info_msg, &it);
+  DeserializeField(&pid_, info_msg, &it);
+  DeserializeField(&start_time_, info_msg, &it);
+  DeserializeField(&timeout_, info_msg, &it);
+  DeserializeField(&adv_interval_, info_msg, &it);
+  DeserializeField(&ghost_mode_, info_msg, &it);
+
+  PopulateJson();
+}
+
+api::Result RemoteBranchInfo::DeserializeAdvertisingMessage(
+    boost::uuids::uuid* uuid, unsigned short* tcp_port,
+    const utils::ByteVector& adv_msg) {
+  YOGI_ASSERT(adv_msg.size() >= kAdvertisingMessageSize);
+
+  auto res = CheckMagicPrefixAndVersion(adv_msg);
+  if (res.IsError()) {
+    return res;
+  }
+
+  auto it = adv_msg.cbegin() + 7;
+  network::Deserialize(uuid, adv_msg, &it);
+  network::Deserialize(tcp_port, adv_msg, &it);
+
+  return api::kSuccess;
+}
+
+api::Result RemoteBranchInfo::DeserializeInfoMessageBodySize(
+    std::size_t* body_size, const utils::ByteVector& info_msg_hdr) {
+  YOGI_ASSERT(info_msg_hdr.size() >= kInfoMessageHeaderSize);
+
+  auto res = CheckMagicPrefixAndVersion(info_msg_hdr);
+  if (res.IsError()) {
+    return res;
+  }
+
+  auto it = info_msg_hdr.cbegin() + kAdvertisingMessageSize;
+  network::Deserialize(body_size, info_msg_hdr, &it);
+
+  return api::kSuccess;
+}
+
+api::Result RemoteBranchInfo::CheckMagicPrefixAndVersion(
+    const utils::ByteVector& adv_msg) {
+  YOGI_ASSERT(adv_msg.size() >= kAdvertisingMessageSize);
+  if (std::memcmp(adv_msg.data(), "YOGI", 5)) {
+    return api::Error(YOGI_ERR_INVALID_MAGIC_PREFIX);
+  }
+
+  if (adv_msg[5] != api::kVersionMajor || adv_msg[6] != api::kVersionMinor) {
+    return api::Error(YOGI_ERR_INCOMPATIBLE_VERSION);
+  }
+
+  return api::kSuccess;
+}
+
 }  // namespace detail
 }  // namespace objects
 
@@ -208,4 +201,14 @@ std::ostream& operator<<(std::ostream& os,
   }
 
   return os;
+}
+
+std::ostream& operator<<(std::ostream& os,
+                         const objects::detail::LocalBranchInfoPtr& info) {
+  return os << std::static_pointer_cast<objects::detail::BranchInfo>(info);
+}
+
+std::ostream& operator<<(std::ostream& os,
+                         const objects::detail::RemoteBranchInfoPtr& info) {
+  return os << std::static_pointer_cast<objects::detail::BranchInfo>(info);
 }

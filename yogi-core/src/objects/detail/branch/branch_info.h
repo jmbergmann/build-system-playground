@@ -39,25 +39,9 @@ class BranchInfo {
     kInfoMessageHeaderSize = kAdvertisingMessageSize + 4,
   };
 
-  static std::shared_ptr<BranchInfo> CreateLocal(
-      std::string name, std::string description, std::string net_name,
-      std::string path, const boost::asio::ip::tcp::endpoint& tcp_ep,
-      const std::chrono::nanoseconds& timeout,
-      const std::chrono::nanoseconds& adv_interval,
-      bool ghost_mode);
-
-  static std::shared_ptr<BranchInfo> CreateFromInfoMessage(
-      const utils::ByteVector& info_msg, const boost::asio::ip::address& addr);
-
-  static api::Result DeserializeAdvertisingMessage(
-      boost::uuids::uuid* uuid, unsigned short* tcp_port,
-      const utils::ByteVector& adv_msg);
-
-  static api::Result DeserializeInfoMessageBodySize(
-      std::size_t* body_size, const utils::ByteVector& info_msg_hdr);
+  virtual ~BranchInfo() = 0 {}
 
   const boost::uuids::uuid& GetUuid() const { return uuid_; }
-
   const std::string& GetName() const { return name_; }
   const std::string& GetDescription() const { return description_; }
   const std::string& GetNetworkName() const { return net_name_; }
@@ -77,27 +61,11 @@ class BranchInfo {
     return adv_interval_;
   }
 
-  bool GetGhostMode() const {
-    return ghost_mode_;
-  }
-
-  utils::SharedByteVector MakeAdvertisingMessage() const {
-    YOGI_ASSERT(adv_msg_);
-    return adv_msg_;
-  }
-
-  utils::SharedByteVector MakeInfoMessage() const {
-    YOGI_ASSERT(info_msg_);
-    return info_msg_;
-  };
+  bool GetGhostMode() const { return ghost_mode_; }
 
   const nlohmann::json& ToJson() const { return json_; }
 
- private:
-  static api::Result CheckMagicPrefixAndVersion(
-      const utils::ByteVector& adv_msg);
-
-  void PopulateMessages();
+ protected:
   void PopulateJson();
 
   boost::uuids::uuid uuid_;
@@ -112,13 +80,59 @@ class BranchInfo {
   std::chrono::nanoseconds timeout_;
   std::chrono::nanoseconds adv_interval_;
   bool ghost_mode_;
-
-  utils::SharedByteVector adv_msg_;
-  utils::SharedByteVector info_msg_;
   nlohmann::json json_;
 };
 
 typedef std::shared_ptr<BranchInfo> BranchInfoPtr;
+
+class LocalBranchInfo;
+typedef std::shared_ptr<LocalBranchInfo> LocalBranchInfoPtr;
+
+class LocalBranchInfo : public BranchInfo {
+ public:
+  LocalBranchInfo(std::string name, std::string description,
+                  std::string net_name, std::string path,
+                  const boost::asio::ip::tcp::endpoint& tcp_ep,
+                  const std::chrono::nanoseconds& timeout,
+                  const std::chrono::nanoseconds& adv_interval,
+                  bool ghost_mode);
+
+  utils::SharedByteVector MakeAdvertisingMessage() const {
+    YOGI_ASSERT(adv_msg_);
+    return adv_msg_;
+  }
+
+  utils::SharedByteVector MakeInfoMessage() const {
+    YOGI_ASSERT(info_msg_);
+    return info_msg_;
+  };
+
+ private:
+  void PopulateMessages();
+
+  utils::SharedByteVector adv_msg_;
+  utils::SharedByteVector info_msg_;
+};
+
+class RemoteBranchInfo;
+typedef std::shared_ptr<RemoteBranchInfo> RemoteBranchInfoPtr;
+
+class RemoteBranchInfo : public BranchInfo {
+ public:
+  RemoteBranchInfo(const utils::ByteVector& info_msg,
+                   const boost::asio::ip::address& addr);
+
+  static api::Result DeserializeAdvertisingMessage(
+      boost::uuids::uuid* uuid, unsigned short* tcp_port,
+      const utils::ByteVector& adv_msg);
+
+  static api::Result DeserializeInfoMessageBodySize(
+      std::size_t* body_size, const utils::ByteVector& info_msg_hdr);
+
+ private:
+  static api::Result CheckMagicPrefixAndVersion(
+      const utils::ByteVector& adv_msg);
+};
 
 }  // namespace detail
 }  // namespace objects
@@ -126,3 +140,7 @@ typedef std::shared_ptr<BranchInfo> BranchInfoPtr;
 // format like this: [6ba7b810-9dad-11d1-80b4-00c04fd430c8]
 std::ostream& operator<<(std::ostream& os,
                          const objects::detail::BranchInfoPtr& info);
+std::ostream& operator<<(std::ostream& os,
+                         const objects::detail::LocalBranchInfoPtr& info);
+std::ostream& operator<<(std::ostream& os,
+                         const objects::detail::RemoteBranchInfoPtr& info);

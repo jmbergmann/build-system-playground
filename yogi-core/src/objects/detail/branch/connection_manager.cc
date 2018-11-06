@@ -52,7 +52,7 @@ ConnectionManager::ConnectionManager(
 
 ConnectionManager::~ConnectionManager() { CancelAwaitEvent(); }
 
-void ConnectionManager::Start(BranchInfoPtr info) {
+void ConnectionManager::Start(LocalBranchInfoPtr info) {
   info_ = info;
   StartAccept();
   adv_sender_->Start(info);

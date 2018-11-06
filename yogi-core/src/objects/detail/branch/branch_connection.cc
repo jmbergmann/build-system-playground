@@ -25,7 +25,7 @@ namespace detail {
 
 BranchConnection::BranchConnection(network::TransportPtr transport,
                                    const boost::asio::ip::address& peer_address,
-                                   BranchInfoPtr local_info)
+                                   LocalBranchInfoPtr local_info)
     : transport_(transport),
       context_(transport->GetContext()),
       local_info_(local_info),
@@ -111,7 +111,8 @@ void BranchConnection::OnInfoSent(CompletionHandler handler) {
 void BranchConnection::OnInfoHeaderReceived(utils::SharedByteVector buffer,
                                             CompletionHandler handler) {
   std::size_t body_size;
-  auto res = BranchInfo::DeserializeInfoMessageBodySize(&body_size, *buffer);
+  auto res =
+      RemoteBranchInfo::DeserializeInfoMessageBodySize(&body_size, *buffer);
   if (res.IsError()) {
     handler(res);
     return;
@@ -141,7 +142,7 @@ void BranchConnection::OnInfoHeaderReceived(utils::SharedByteVector buffer,
 void BranchConnection::OnInfoBodyReceived(utils::SharedByteVector info_msg,
                                           CompletionHandler handler) {
   try {
-    remote_info_ = BranchInfo::CreateFromInfoMessage(*info_msg, peer_address_);
+    remote_info_ = std::make_shared<RemoteBranchInfo>(*info_msg, peer_address_);
 
     if (remote_info_->GetUuid() == local_info_->GetUuid()) {
       throw api::Error(YOGI_ERR_LOOPBACK_CONNECTION);

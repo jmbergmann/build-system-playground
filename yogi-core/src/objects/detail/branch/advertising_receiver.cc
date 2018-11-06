@@ -35,7 +35,7 @@ AdvertisingReceiver::AdvertisingReceiver(
   SetupSocket();
 }
 
-void AdvertisingReceiver::Start(BranchInfoPtr info) {
+void AdvertisingReceiver::Start(LocalBranchInfoPtr info) {
   YOGI_ASSERT(!info_);
 
   info_ = info;
@@ -91,8 +91,8 @@ void AdvertisingReceiver::OnReceivedAdvertisementFinished(
 
   boost::uuids::uuid uuid;
   unsigned short tcp_port;
-  auto res =
-      BranchInfo::DeserializeAdvertisingMessage(&uuid, &tcp_port, *buffer_);
+  auto res = RemoteBranchInfo::DeserializeAdvertisingMessage(&uuid, &tcp_port,
+                                                             *buffer_);
   if (res.IsError()) {
     YOGI_LOG_WARNING(logger_,
                      info_ << " Invalid advertising message received from "
