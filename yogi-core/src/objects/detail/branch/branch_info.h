@@ -50,7 +50,7 @@ class BranchInfo {
 
   int GetPid() const { return pid_; }
 
-  const boost::asio::ip::tcp::endpoint& GetTcpEndpoint() const {
+  const boost::asio::ip::tcp::endpoint& GetTcpServerEndpoint() const {
     return tcp_ep_;
   }
 
@@ -92,10 +92,18 @@ class LocalBranchInfo : public BranchInfo {
  public:
   LocalBranchInfo(std::string name, std::string description,
                   std::string net_name, std::string path,
+                  const boost::asio::ip::udp::endpoint& adv_ep,
                   const boost::asio::ip::tcp::endpoint& tcp_ep,
                   const std::chrono::nanoseconds& timeout,
-                  const std::chrono::nanoseconds& adv_interval,
-                  bool ghost_mode);
+                  const std::chrono::nanoseconds& adv_interval, bool ghost_mode,
+                  std::size_t tx_queue_size, std::size_t rx_queue_size);
+
+  const boost::asio::ip::udp::endpoint& GetAdvertisingEndpoint() const {
+    return adv_ep_;
+  }
+
+  std::size_t GetTxQueueSize() const { return tx_queue_size_; }
+  std::size_t GetRxQueueSize() const { return rx_queue_size_; }
 
   utils::SharedByteVector MakeAdvertisingMessage() const {
     YOGI_ASSERT(adv_msg_);
@@ -110,6 +118,9 @@ class LocalBranchInfo : public BranchInfo {
  private:
   void PopulateMessages();
 
+  boost::asio::ip::udp::endpoint adv_ep_;
+  std::size_t tx_queue_size_;
+  std::size_t rx_queue_size_;
   utils::SharedByteVector adv_msg_;
   utils::SharedByteVector info_msg_;
 };

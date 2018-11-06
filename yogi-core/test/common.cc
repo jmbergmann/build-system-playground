@@ -18,6 +18,7 @@
 #include "common.h"
 #include "../src/utils/crypto.h"
 #include "../src/utils/system.h"
+#include "../src/api/constants.h"
 
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/asio.hpp>
@@ -92,9 +93,11 @@ FakeBranch::FakeBranch()
   acceptor_.set_option(boost::asio::ip::tcp::acceptor::reuse_address(true));
   acceptor_.bind(boost::asio::ip::tcp::endpoint(kTcpProtocol, 0));
   acceptor_.listen();
+
   info_ = std::make_shared<objects::detail::LocalBranchInfo>(
-      "Fake Branch", "", utils::GetHostname(), "/Fake Branch",
-      acceptor_.local_endpoint(), 1s, 1s, false);
+      "Fake Branch", "", utils::GetHostname(), "/Fake Branch", udp_ep_,
+      acceptor_.local_endpoint(), 1s, 1s, false, api::kMinTxQueueSize,
+      api::kMinRxQueueSize);
 
   udp_socket_.set_option(boost::asio::ip::udp::socket::reuse_address(true));
   udp_socket_.bind(boost::asio::ip::udp::endpoint(kUdpProtocol, 0));

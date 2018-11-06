@@ -60,7 +60,7 @@ void ConnectionManager::Start(LocalBranchInfoPtr info) {
 
   YOGI_LOG_DEBUG(logger_,
                  info_ << " Started ConnectionManager with TCP server port "
-                       << info_->GetTcpEndpoint().port()
+                       << info_->GetTcpServerEndpoint().port()
                        << (info_->GetGhostMode() ? " in ghost mode" : ""));
 }
 

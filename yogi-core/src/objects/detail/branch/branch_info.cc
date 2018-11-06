@@ -66,11 +66,14 @@ void BranchInfo::PopulateJson() {
   };
 }
 
-LocalBranchInfo::LocalBranchInfo(
-    std::string name, std::string description, std::string net_name,
-    std::string path, const boost::asio::ip::tcp::endpoint& tcp_ep,
-    const std::chrono::nanoseconds& timeout,
-    const std::chrono::nanoseconds& adv_interval, bool ghost_mode) {
+LocalBranchInfo::LocalBranchInfo(std::string name, std::string description,
+                                 std::string net_name, std::string path,
+                                 const boost::asio::ip::udp::endpoint& adv_ep,
+                                 const boost::asio::ip::tcp::endpoint& tcp_ep,
+                                 const std::chrono::nanoseconds& timeout,
+                                 const std::chrono::nanoseconds& adv_interval,
+                                 bool ghost_mode, std::size_t tx_queue_size,
+                                 std::size_t rx_queue_size) {
   uuid_ = boost::uuids::random_generator()();
   name_ = name;
   description_ = description;
@@ -83,9 +86,17 @@ LocalBranchInfo::LocalBranchInfo(
   timeout_ = timeout;
   adv_interval_ = adv_interval;
   ghost_mode_ = ghost_mode;
+  adv_ep_ = adv_ep;
+  tx_queue_size_ = tx_queue_size;
+  rx_queue_size_ = rx_queue_size;
 
   PopulateMessages();
   PopulateJson();
+
+  json_["advertising_address"] = network::MakeIpAddressString(adv_ep_);
+  json_["advertising_port"] = adv_ep_.port();
+  json_["tx_queue_size"] = tx_queue_size_;
+  json_["rx_queue_size"] = rx_queue_size_;
 }
 
 void LocalBranchInfo::PopulateMessages() {
@@ -117,8 +128,8 @@ void LocalBranchInfo::PopulateMessages() {
   info_msg_->insert(info_msg_->end(), buffer.begin(), buffer.end());
 }
 
-RemoteBranchInfo::RemoteBranchInfo(
-    const utils::ByteVector& info_msg, const boost::asio::ip::address& addr) {
+RemoteBranchInfo::RemoteBranchInfo(const utils::ByteVector& info_msg,
+                                   const boost::asio::ip::address& addr) {
   unsigned short port;
   auto res = DeserializeAdvertisingMessage(&uuid_, &port, info_msg);
   if (res.IsError()) {

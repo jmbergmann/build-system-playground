@@ -38,11 +38,10 @@ Branch::Branch(ContextPtr context, std::string name, std::string description,
           })),
       info_(std::make_shared<detail::LocalBranchInfo>(
           name, description, net_name, path,
+          connection_manager_->GetAdvertisingEndpoint(),
           connection_manager_->GetTcpServerEndpoint(), timeout, adv_interval,
-          ghost_mode)),
-      broadcast_manager_(std::make_shared<detail::BroadcastManager>(context)),
-      tx_queue_size_(tx_queue_size),
-      rx_queue_size_(rx_queue_size) {
+          ghost_mode, tx_queue_size, rx_queue_size)),
+      broadcast_manager_(std::make_shared<detail::BroadcastManager>(context)) {
   if (name.empty() || net_name.empty() || path.empty() || path.front() != '/' ||
       adv_interval < 1ms || timeout < 1ms) {
     throw api::Error(YOGI_ERR_INVALID_PARAM);
@@ -52,13 +51,7 @@ Branch::Branch(ContextPtr context, std::string name, std::string description,
 void Branch::Start() { connection_manager_->Start(info_); }
 
 std::string Branch::MakeInfoString() const {
-  auto json = info_->ToJson();
-  auto& ep = connection_manager_->GetAdvertisingEndpoint();
-  json["advertising_address"] = network::MakeIpAddressString(ep);
-  json["advertising_port"] = ep.port();
-  json["tx_queue_size"] = tx_queue_size_;
-  json["rx_queue_size"] = rx_queue_size_;
-  return json.dump();
+  return info_->ToJson().dump();
 }
 
 Branch::BranchInfoStringsList Branch::MakeConnectedBranchesInfoStrings() const {
