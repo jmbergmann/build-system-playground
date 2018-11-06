@@ -105,9 +105,10 @@ class BranchConnection : public std::enable_shared_from_this<BranchConnection> {
   const LocalBranchInfoPtr local_info_;
   const boost::asio::ip::address peer_address_;
   const utils::Timestamp connected_since_;
-  const utils::SharedByteVector heartbeat_msg_;
+  const utils::ByteVector heartbeat_msg_;
   const utils::SharedByteVector ack_msg_;
   RemoteBranchInfoPtr remote_info_;
+  utils::SharedByteVector received_msg_;
   network::MessageTransportPtr msg_transport_;
   std::atomic<bool> session_started_;
   CompletionHandler session_completion_handler_;

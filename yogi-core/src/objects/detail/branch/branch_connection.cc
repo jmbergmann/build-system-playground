@@ -31,7 +31,7 @@ BranchConnection::BranchConnection(network::TransportPtr transport,
       local_info_(local_info),
       peer_address_(peer_address),
       connected_since_(utils::Timestamp::Now()),
-      heartbeat_msg_(utils::MakeSharedByteVector(utils::ByteVector{0})),
+      heartbeat_msg_{0},
       ack_msg_(utils::MakeSharedByteVector(utils::ByteVector{0x55})),
       session_started_(false),
       heartbeat_timer_(context_->IoContext()),
@@ -86,6 +86,11 @@ void BranchConnection::RunSession(CompletionHandler handler) {
   YOGI_ASSERT(!session_started_);
 
   if (!CheckNextResult(handler)) return;
+
+  received_msg_ = utils::MakeSharedByteVector();
+  msg_transport_ = std::make_shared<network::MessageTransport>(
+      transport_, local_info_->GetTxQueueSize(), local_info_->GetRxQueueSize());
+  msg_transport_->Start();
 
   RestartHeartbeatTimer();
   StartReceive();
@@ -302,34 +307,26 @@ void BranchConnection::RestartHeartbeatTimer() {
 }
 
 void BranchConnection::OnHeartbeatTimerExpired() {
-  auto weak_self = MakeWeakPtr();
-  transport_->SendAllAsync(heartbeat_msg_, [=](auto& res) {
+  msg_transport_->TrySend(heartbeat_msg_);
+  RestartHeartbeatTimer();
+}
+
+void BranchConnection::StartReceive() {
+  // TODO: make this properly without ReceiveExactly and stuff
+  auto weak_self = std::weak_ptr<BranchConnection>(shared_from_this());
+  auto msg = received_msg_;
+  msg->resize(api::kMinRxQueueSize);
+  msg_transport_->ReceiveAsync(&*msg, [=](auto& res, auto msg_size) {
     auto self = weak_self.lock();
     if (!self) return;
 
     if (res.IsError()) {
       self->OnSessionError(res.ToError());
     } else {
-      self->RestartHeartbeatTimer();
+      msg->resize(msg_size);
+      self->StartReceive();
     }
   });
-}
-
-void BranchConnection::StartReceive() {
-  // TODO: make this properly without ReceiveExactly and stuff
-  auto weak_self = std::weak_ptr<BranchConnection>(shared_from_this());
-  auto buffer = utils::MakeSharedByteVector(1);
-  transport_->ReceiveSomeAsync(boost::asio::buffer(*buffer),
-                               [=, _ = buffer](auto& res, auto) {
-                                 auto self = weak_self.lock();
-                                 if (!self) return;
-
-                                 if (res.IsError()) {
-                                   self->OnSessionError(res.ToError());
-                                 } else {
-                                   self->StartReceive();
-                                 }
-                               });
 }
 
 void BranchConnection::OnSessionError(const api::Error& err) {

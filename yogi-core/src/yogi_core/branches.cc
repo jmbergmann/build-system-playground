@@ -222,7 +222,7 @@ YOGI_API int YOGI_BranchSendBroadcast(void* branch, int enc, const void* data,
     return brn->SendBroadcast(encoding, buffer, block == YOGI_TRUE)
         .GetErrorCode();
   }
-  CATCH_AND_RETURN;
+  CATCH_AND_RETURN_ERRORS_ONLY;
 }
 
 YOGI_API int YOGI_BranchSendBroadcastAsync(void* branch, int enc,
