@@ -170,6 +170,9 @@ enum class ErrorCode {
 
   /// A send queue to a remote branch is full
   kTxQueueFull = -41,
+
+  /// Invalid operation ID
+  kInvalidOperationId = -42,
 };
 
 template <>

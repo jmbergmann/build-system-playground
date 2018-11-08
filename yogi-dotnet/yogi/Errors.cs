@@ -163,6 +163,9 @@ public static partial class Yogi
 
         /// <summary>A send queue for a remote branch is full.</summary>
         TxQueueFull = -41,
+
+        /// <summary>Invalid operation ID.</summary>
+        InvalidOperationId = -42,
     }
 
     /// <summary>

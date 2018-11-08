@@ -30,12 +30,13 @@ api::Result BroadcastManager::SendBroadcast(api::Encoding enc,
   return api::kSuccess;
 }
 
-void BroadcastManager::SendBroadcastAsync(api::Encoding enc,
-                                          boost::asio::const_buffer data,
-                                          bool retry,
-                                          SendBroadcastHandler handler) {}
+BroadcastManager::SendBroadcastOperationId BroadcastManager::SendBroadcastAsync(
+    api::Encoding enc, boost::asio::const_buffer data, bool retry,
+    SendBroadcastHandler handler) {
+  return 0;
+}
 
-void BroadcastManager::CancelSendBroadcast() {}
+void BroadcastManager::CancelSendBroadcast(SendBroadcastOperationId oid) {}
 
 void BroadcastManager::ReceiveBroadcast(api::Encoding enc,
                                         boost::asio::mutable_buffer data,

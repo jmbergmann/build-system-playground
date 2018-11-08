@@ -32,6 +32,8 @@ class Branch : public api::ExposedObjectT<Branch, api::ObjectType::kBranch> {
       detail::BroadcastManager::ReceiveBroadcastHandler;
   using BranchInfoStringsList =
       detail::ConnectionManager::BranchInfoStringsList;
+  using SendBroadcastOperationId =
+      detail::BroadcastManager::SendBroadcastOperationId;
 
   Branch(ContextPtr context, std::string name, std::string description,
          std::string net_name, std::string password, std::string path,
@@ -52,9 +54,11 @@ class Branch : public api::ExposedObjectT<Branch, api::ObjectType::kBranch> {
 
   void CancelAwaitEvent() { connection_manager_->CancelAwaitEvent(); }
 
-  void SendBroadcastAsync(api::Encoding enc, boost::asio::const_buffer data,
-                          bool retry, SendBroadcastHandler handler) {
-    broadcast_manager_->SendBroadcastAsync(enc, data, retry, handler);
+  SendBroadcastOperationId SendBroadcastAsync(api::Encoding enc,
+                                              boost::asio::const_buffer data,
+                                              bool retry,
+                                              SendBroadcastHandler handler) {
+    return broadcast_manager_->SendBroadcastAsync(enc, data, retry, handler);
   }
 
   api::Result SendBroadcast(api::Encoding enc, boost::asio::const_buffer data,
@@ -62,7 +66,9 @@ class Branch : public api::ExposedObjectT<Branch, api::ObjectType::kBranch> {
     return broadcast_manager_->SendBroadcast(enc, data, retry);
   }
 
-  void CancelSendBroadcast() { broadcast_manager_->CancelSendBroadcast(); }
+  void CancelSendBroadcast(SendBroadcastOperationId oid) {
+    broadcast_manager_->CancelSendBroadcast(oid);
+  }
 
   void ReceiveBroadcast(api::Encoding enc, boost::asio::mutable_buffer data,
                         ReceiveBroadcastHandler handler) {

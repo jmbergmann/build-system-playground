@@ -64,6 +64,7 @@ class ErrorCode(IntEnum):
     INVALID_TIME_FORMAT = -39
     PARSING_TIME_FAILED = -40
     TX_QUEUE_FULL = -41
+    INVALID_OPERATION_ID = -42
 
 
 yogi.YOGI_GetErrorString.restype = c_char_p

@@ -44,7 +44,8 @@ typedef std::weak_ptr<MessageTransport> MessageTransportWeakPtr;
 
 class MessageTransport : public std::enable_shared_from_this<MessageTransport> {
  public:
-  typedef std::function<void(const api::Result&)> SendHandler;
+  typedef int SendOperationId;
+  typedef std::function<void(const api::Result&, SendOperationId)> SendHandler;
   typedef std::function<void(const api::Result&, std::size_t msg_size)>
       ReceiveHandler;
   typedef ReceiveHandler SizeFieldReceiveHandler;
@@ -61,12 +62,12 @@ class MessageTransport : public std::enable_shared_from_this<MessageTransport> {
     return TrySend(boost::asio::buffer(msg));
   }
 
-  void SendAsync(boost::asio::const_buffer msg, SendHandler handler);
-  void SendAsync(const utils::ByteVector& msg, SendHandler handler) {
-    SendAsync(boost::asio::buffer(msg), handler);
+  SendOperationId SendAsync(boost::asio::const_buffer msg, SendHandler handler);
+  SendOperationId SendAsync(const utils::ByteVector& msg, SendHandler handler) {
+    return SendAsync(boost::asio::buffer(msg), handler);
   }
 
-  void CancelSend();
+  bool CancelSend(SendOperationId oid);
   void ReceiveAsync(boost::asio::mutable_buffer msg, ReceiveHandler handler);
   void ReceiveAsync(utils::ByteVector* msg, ReceiveHandler handler) {
     ReceiveAsync(boost::asio::buffer(*msg), handler);
@@ -79,6 +80,7 @@ class MessageTransport : public std::enable_shared_from_this<MessageTransport> {
   typedef std::array<utils::Byte, 5> SizeFieldBuffer;
 
   struct PendingSend {
+    SendOperationId oid;
     boost::asio::const_buffer msg;
     SendHandler handler;
   };
@@ -94,6 +96,7 @@ class MessageTransport : public std::enable_shared_from_this<MessageTransport> {
   void TryDeliveringPendingReceive();
   void HandleSendError(const api::Error& err);
   void HandleReceiveError(const api::Error& err);
+  SendOperationId GetNextSendOperationId();
 
   static const objects::LoggerPtr logger_;
 
@@ -104,6 +107,7 @@ class MessageTransport : public std::enable_shared_from_this<MessageTransport> {
   std::mutex tx_mutex_;
   api::Result last_tx_error_;
   bool send_to_transport_running_;
+  SendOperationId last_send_oid_;
   std::vector<PendingSend> pending_sends_;
   SizeFieldBuffer size_field_buffer_;
   std::size_t size_field_buffer_size_;

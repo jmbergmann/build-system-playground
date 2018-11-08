@@ -152,6 +152,9 @@ const char* Result::GetDescription() const {
 
     case YOGI_ERR_TX_QUEUE_FULL:
       return "A send queue for a remote branch is full";
+
+    case YOGI_ERR_INVALID_OPERATION_ID:
+      return "Invalid operation ID";
   }
 
   return "Invalid error code";

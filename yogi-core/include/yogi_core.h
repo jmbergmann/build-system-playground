@@ -250,6 +250,9 @@
 //! A send queue for a remote branch is full
 #define YOGI_ERR_TX_QUEUE_FULL -41
 
+//! Invalid operation ID
+#define YOGI_ERR_INVALID_OPERATION_ID -42
+
 //! @}
 //!
 //! @defgroup VB Log verbosity/severity
@@ -1893,12 +1896,17 @@ YOGI_API int YOGI_BranchSendBroadcast(void* branch, int enc, const void* data,
  * The handler function \p fn will be called once the operation finishes. Its
  * parameters are:
  *  -# __res__: #YOGI_OK or error code associated with the operation
+ *  -# __oid__: Operation ID as returned by this library function
  *  -# __userarg__: Value of the user-specified \p userarg parameter
  *
  * Setting the \p retry parameter to _false_ will cause \p fn to be called
  * immediately with a #YOGI_ERR_TX_QUEUE_FULL error if the send buffer is full.
  * If set to _true_ the handler will be called once enough space is available
  * in the send buffer to send the message.
+ *
+ * The function returns an ID which uniquely identifies this send operation
+ * until \p fn has been called. It can be used in a subsequent
+ * YOGI_BranchCancelSendBroadcast() call to abort the operation.
  *
  * \param[in] branch   The branch handle
  * \param[in] enc      Encoding type used for \p data (see \ref ENC)
@@ -1909,28 +1917,33 @@ YOGI_API int YOGI_BranchSendBroadcast(void* branch, int enc, const void* data,
  *                     for blocking mode; see description above for details)
  * \param[in] userarg  User-specified argument to be passed to \p fn
  *
- * \returns [=0] #YOGI_OK if successful
+ * \returns [>0] Operation ID if successful
  * \returns [<0] An error code in case of a failure (see \ref EC)
  */
-YOGI_API int YOGI_BranchSendBroadcastAsync(void* branch, int enc,
-                                           const void* data, int datasize,
-                                           int retry,
-                                           void (*fn)(int res, void* userarg),
-                                           void* userarg);
+YOGI_API int YOGI_BranchSendBroadcastAsync(
+    void* branch, int enc, const void* data, int datasize, int retry,
+    void (*fn)(int res, int oid, void* userarg), void* userarg);
 
 /*!
- * Cancels all operations for sending broadcasts.
+ * Cancels a send broadcast operation.
  *
- * Calling this function will cause the YOGI_BranchSendBroadcast() function to
- * return the #YOGI_ERR_CANCELED error and the handler registered via
- * YOGI_BranchSendBroadcastAsync() to be called with the same error.
+ * Calling this function will cause the send operation with the specified
+ * operation ID \p oid to be canceled, resulting in the handler function
+ * registered via the YOGI_BranchSendBroadcastAsync() call that returned the
+ * same \p oid to be called with the #YOGI_ERR_CANCELED error.
+ *
+ * \note
+ *   If the send operation has already been carried out but the handler function
+ *   has not been called yet, the handler function will be called with #YOGI_OK
+ *   and the #YOGI_ERR_INVALID_OPERATION_ID will be returned.
  *
  * \param[in] branch The branch handle
+ * \param[in] oid    Operation ID of the send operation to cancel
  *
  * \returns [=0] #YOGI_OK if successful
  * \returns [<0] An error code in case of a failure (see \ref EC)
  */
-YOGI_API int YOGI_BranchCancelSendBroadcast(void* branch);
+YOGI_API int YOGI_BranchCancelSendBroadcast(void* branch, int oid);
 
 /*!
  * Receives a broadcast message from any of the connected branches.
