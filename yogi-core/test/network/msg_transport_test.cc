@@ -213,6 +213,10 @@ TEST_F(MessageTransportTest, CancelSend) {
   utils::ByteVector data{1, 2, 3, 4, 5, 6};
   EXPECT_TRUE(uut_->TrySend(data));
 
+  uut_->SendAsync(data, [&](auto& res, auto) {
+    EXPECT_NE(res, api::Error(YOGI_ERR_CANCELED));
+  });
+
   bool called = false;
   network::MessageTransport::SendOperationId oid_1;
   oid_1 = uut_->SendAsync(data, [&](auto& res, auto oid) {
@@ -222,6 +226,10 @@ TEST_F(MessageTransportTest, CancelSend) {
   });
   EXPECT_GT(oid_1, 0);
   EXPECT_TRUE(uut_->CancelSend(oid_1));
+
+  uut_->SendAsync(data, [&](auto& res, auto) {
+    EXPECT_NE(res, api::Error(YOGI_ERR_CANCELED));
+  });
 
   context_->Poll();
   EXPECT_TRUE(called);
