@@ -17,7 +17,7 @@
 
 #include "../common.h"
 
-static constexpr int kLastError = YOGI_ERR_INVALID_OPERATION_ID;
+static constexpr int kLastError = YOGI_ERR_OPERATION_NOT_RUNNING;
 
 TEST(ErrorsTest, GetErrorString) {
   EXPECT_STRNE(YOGI_GetErrorString(-2), YOGI_GetErrorString(-1));

@@ -17,6 +17,8 @@
 
 #include "broadcast_manager.h"
 
+#include <algorithm>
+
 namespace objects {
 namespace detail {
 
@@ -36,13 +38,22 @@ BroadcastManager::SendBroadcastOperationId BroadcastManager::SendBroadcastAsync(
   return 0;
 }
 
-void BroadcastManager::CancelSendBroadcast(SendBroadcastOperationId oid) {}
+bool BroadcastManager::CancelSendBroadcast(SendBroadcastOperationId oid) {
+  std::lock_guard<std::mutex> lock(mutex_);
+  auto it = std::find(oids_.begin(), oids_.end(), oid);
+  if (it == oids_.end()) return false;
+  oids_.erase(it);
+
+  // TODO: cancel async msg in all MesssageTransport instances
+
+  return true;
+}
 
 void BroadcastManager::ReceiveBroadcast(api::Encoding enc,
                                         boost::asio::mutable_buffer data,
                                         ReceiveBroadcastHandler handler) {}
 
-void BroadcastManager::CancelReceiveBroadcast() {}
+bool BroadcastManager::CancelReceiveBroadcast() { return false; }
 
 const LoggerPtr BroadcastManager::logger_ =
     Logger::CreateStaticInternalLogger("Branch.BroadcastManager");

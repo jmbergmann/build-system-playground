@@ -166,6 +166,9 @@ public static partial class Yogi
 
         /// <summary>Invalid operation ID.</summary>
         InvalidOperationId = -42,
+
+        /// <summary>Operation is not running.</summary>
+        OperationNotRunning = -43,
     }
 
     /// <summary>

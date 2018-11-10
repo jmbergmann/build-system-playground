@@ -253,6 +253,9 @@
 //! Invalid operation ID
 #define YOGI_ERR_INVALID_OPERATION_ID -42
 
+//! Operation is not running
+#define YOGI_ERR_OPERATION_NOT_RUNNING -43
+
 //! @}
 //!
 //! @defgroup VB Log verbosity/severity
@@ -2002,6 +2005,10 @@ YOGI_API int YOGI_BranchReceiveBroadcastAsync(
  * Calling this function will cause the handler registered via
  * YOGI_BranchReceiveBroadcastAsync() to be called with the #YOGI_ERR_CANCELED
  * error.
+ *
+ * \note
+ *   If the receive handler has already been scheduled for execution, this
+ *   function will fail with the #YOGI_ERR_OPERATION_NOT_RUNNING error.
  *
  * \param[in] branch The branch handle
  *

@@ -155,6 +155,9 @@ const char* Result::GetDescription() const {
 
     case YOGI_ERR_INVALID_OPERATION_ID:
       return "Invalid operation ID";
+
+    case YOGI_ERR_OPERATION_NOT_RUNNING:
+      return "Operation is not running";
   }
 
   return "Invalid error code";

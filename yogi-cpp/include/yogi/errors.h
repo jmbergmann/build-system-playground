@@ -173,6 +173,9 @@ enum class ErrorCode {
 
   /// Invalid operation ID
   kInvalidOperationId = -42,
+
+  /// Operation is not running
+  kOperationNotRunning = -43,
 };
 
 template <>
@@ -220,6 +223,8 @@ inline std::string ToString<ErrorCode>(const ErrorCode& ec) {
     _YOGI_TO_STRING_ENUM_CASE(ErrorCode, kInvalidTimeFormat)
     _YOGI_TO_STRING_ENUM_CASE(ErrorCode, kParsingTimeFailed)
     _YOGI_TO_STRING_ENUM_CASE(ErrorCode, kTxQueueFull)
+    _YOGI_TO_STRING_ENUM_CASE(ErrorCode, kInvalidOperationId)
+    _YOGI_TO_STRING_ENUM_CASE(ErrorCode, kOperationNotRunning)
   }
 
   bool should_never_get_here = false;

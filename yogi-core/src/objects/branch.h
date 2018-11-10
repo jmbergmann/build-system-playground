@@ -66,8 +66,8 @@ class Branch : public api::ExposedObjectT<Branch, api::ObjectType::kBranch> {
     return broadcast_manager_->SendBroadcast(enc, data, retry);
   }
 
-  void CancelSendBroadcast(SendBroadcastOperationId oid) {
-    broadcast_manager_->CancelSendBroadcast(oid);
+  bool CancelSendBroadcast(SendBroadcastOperationId oid) {
+    return broadcast_manager_->CancelSendBroadcast(oid);
   }
 
   void ReceiveBroadcast(api::Encoding enc, boost::asio::mutable_buffer data,
@@ -75,8 +75,8 @@ class Branch : public api::ExposedObjectT<Branch, api::ObjectType::kBranch> {
     broadcast_manager_->ReceiveBroadcast(enc, data, handler);
   }
 
-  void CancelReceiveBroadcast() {
-    broadcast_manager_->CancelReceiveBroadcast();
+  bool CancelReceiveBroadcast() {
+    return broadcast_manager_->CancelReceiveBroadcast();
   }
 
  private:

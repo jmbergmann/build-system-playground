@@ -253,7 +253,9 @@ YOGI_API int YOGI_BranchCancelSendBroadcast(void* branch, int oid) {
 
   try {
     auto brn = api::ObjectRegister::Get<objects::Branch>(branch);
-    brn->CancelSendBroadcast(oid);
+    if (!brn->CancelSendBroadcast(oid)) {
+      return YOGI_ERR_INVALID_OPERATION_ID;
+    }
   }
   CATCH_AND_RETURN;
 }
@@ -283,7 +285,9 @@ YOGI_API int YOGI_BranchCancelReceiveBroadcast(void* branch) {
 
   try {
     auto brn = api::ObjectRegister::Get<objects::Branch>(branch);
-    brn->CancelReceiveBroadcast();
+    if (!brn->CancelReceiveBroadcast()) {
+      return YOGI_ERR_OPERATION_NOT_RUNNING;
+    }
   }
   CATCH_AND_RETURN;
 }

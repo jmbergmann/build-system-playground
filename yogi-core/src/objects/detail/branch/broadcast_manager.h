@@ -22,6 +22,8 @@
 #include "../../logger.h"
 
 #include <boost/asio/buffer.hpp>
+#include <vector>
+#include <mutex>
 
 namespace objects {
 namespace detail {
@@ -47,17 +49,19 @@ class BroadcastManager final
                                               bool retry,
                                               SendBroadcastHandler handler);
 
-  void CancelSendBroadcast(SendBroadcastOperationId oid);
+  bool CancelSendBroadcast(SendBroadcastOperationId oid);
 
   void ReceiveBroadcast(api::Encoding enc, boost::asio::mutable_buffer data,
                         ReceiveBroadcastHandler handler);
 
-  void CancelReceiveBroadcast();
+  bool CancelReceiveBroadcast();
 
  private:
   static const LoggerPtr logger_;
 
   const ContextPtr context_;
+  std::mutex mutex_;
+  std::vector<SendBroadcastOperationId> oids_;
 };
 
 typedef std::shared_ptr<BroadcastManager> BroadcastManagerPtr;

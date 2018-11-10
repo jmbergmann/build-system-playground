@@ -65,6 +65,7 @@ TEST(ErrorsTest, ErrorCodeEnum) {
   CHECK_ENUM_ELEMENT(ErrorCode, kParsingTimeFailed,     YOGI_ERR_PARSING_TIME_FAILED);
   CHECK_ENUM_ELEMENT(ErrorCode, kTxQueueFull,           YOGI_ERR_TX_QUEUE_FULL);
   CHECK_ENUM_ELEMENT(ErrorCode, kInvalidOperationId,    YOGI_ERR_INVALID_OPERATION_ID);
+  CHECK_ENUM_ELEMENT(ErrorCode, kOperationNotRunning,   YOGI_ERR_OPERATION_NOT_RUNNING);
   // clang-format on
 }
 
