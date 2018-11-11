@@ -38,6 +38,9 @@ typedef std::weak_ptr<BranchConnection> BranchConnectionWeakPtr;
 class BranchConnection : public std::enable_shared_from_this<BranchConnection> {
  public:
   typedef std::function<void(const api::Result&)> CompletionHandler;
+  using OperationTag = network::MessageTransport::OperationTag;
+  using SendHandler = network::MessageTransport::SendHandler;
+  using ReceiveHandler = network::MessageTransport::ReceiveHandler;
 
   BranchConnection(network::TransportPtr transport,
                    const boost::asio::ip::address& peer_address,
@@ -45,7 +48,7 @@ class BranchConnection : public std::enable_shared_from_this<BranchConnection> {
 
   BranchInfoPtr GetRemoteBranchInfo() const { return remote_info_; }
   std::string MakeInfoString() const;
-  bool SessionStarted() const { return session_started_; }
+  bool SessionRunning() const { return session_running_; }
 
   bool CreatedFromIncomingConnectionRequest() const {
     return transport_->CreatedFromIncomingConnectionRequest();
@@ -59,6 +62,44 @@ class BranchConnection : public std::enable_shared_from_this<BranchConnection> {
   void Authenticate(utils::SharedByteVector password_hash,
                     CompletionHandler handler);
   void RunSession(CompletionHandler handler);
+
+  bool TrySend(boost::asio::const_buffer msg) {
+    return msg_transport_->TrySend(msg);
+  }
+
+  bool TrySend(const utils::ByteVector& msg) {
+    return TrySend(boost::asio::buffer(msg));
+  }
+
+  void SendAsync(boost::asio::const_buffer msg, OperationTag tag,
+                 SendHandler handler) {
+    msg_transport_->SendAsync(msg, tag, handler);
+  }
+
+  void SendAsync(boost::asio::const_buffer msg, SendHandler handler) {
+    SendAsync(msg, 0, handler);
+  }
+
+  void SendAsync(const utils::ByteVector& msg, OperationTag tag,
+                 SendHandler handler) {
+    SendAsync(boost::asio::buffer(msg), tag, handler);
+  }
+
+  void SendAsync(const utils::ByteVector& msg, SendHandler handler) {
+    SendAsync(msg, 0, handler);
+  }
+
+  bool CancelSend(OperationTag tag) { return msg_transport_->CancelSend(tag); }
+
+  void ReceiveAsync(boost::asio::mutable_buffer msg, ReceiveHandler handler) {
+    msg_transport_->ReceiveAsync(msg, handler);
+  }
+
+  void ReceiveAsync(utils::ByteVector* msg, ReceiveHandler handler) {
+    ReceiveAsync(boost::asio::buffer(*msg), handler);
+  }
+
+  void CancelReceive();
 
  private:
   BranchConnectionWeakPtr MakeWeakPtr() { return {shared_from_this()}; }
@@ -110,7 +151,7 @@ class BranchConnection : public std::enable_shared_from_this<BranchConnection> {
   RemoteBranchInfoPtr remote_info_;
   utils::SharedByteVector received_msg_;
   network::MessageTransportPtr msg_transport_;
-  std::atomic<bool> session_started_;
+  std::atomic<bool> session_running_;
   CompletionHandler session_completion_handler_;
   boost::asio::steady_timer heartbeat_timer_;
   api::Result next_result_;

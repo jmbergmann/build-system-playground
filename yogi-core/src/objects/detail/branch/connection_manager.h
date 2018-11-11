@@ -30,6 +30,7 @@
 #include <unordered_set>
 #include <unordered_map>
 #include <mutex>
+#include <atomic>
 
 namespace objects {
 namespace detail {
@@ -53,6 +54,7 @@ class ConnectionManager
       MessageHandler;
   typedef std::vector<std::pair<boost::uuids::uuid, std::string>>
       BranchInfoStringsList;
+  using OperationTag = network::MessageTransport::OperationTag;
 
   ConnectionManager(ContextPtr context, const std::string& password,
                     const boost::asio::ip::udp::endpoint& adv_ep,
@@ -74,6 +76,19 @@ class ConnectionManager
 
   void AwaitEventAsync(api::BranchEvents events, BranchEventHandler handler);
   void CancelAwaitEvent();
+
+  template <typename Fn>
+  void ForeachRunningSession(Fn fn) {
+    std::lock_guard<std::mutex> lock(connections_mutex_);
+    for (auto& entry : connections_) {
+      auto& conn = entry.second;
+      if (conn->SessionRunning()) {
+        fn(conn);
+      }
+    }
+  }
+
+  OperationTag MakeOperationTag();
 
  private:
   typedef std::unordered_set<boost::uuids::uuid,
@@ -153,6 +168,8 @@ class ConnectionManager
   UuidSet pending_connects_;
   ConnectionsMap connections_;
   mutable std::mutex connections_mutex_;
+
+  std::atomic<OperationTag> last_op_tag_;
 
   BranchEventHandler event_handler_;
   api::BranchEvents observed_events_;

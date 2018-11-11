@@ -41,7 +41,8 @@ Branch::Branch(ContextPtr context, std::string name, std::string description,
           connection_manager_->GetAdvertisingEndpoint(),
           connection_manager_->GetTcpServerEndpoint(), timeout, adv_interval,
           ghost_mode, tx_queue_size, rx_queue_size)),
-      broadcast_manager_(std::make_shared<detail::BroadcastManager>(context)) {
+      broadcast_manager_(std::make_shared<detail::BroadcastManager>(
+          context, *connection_manager_)) {
   if (name.empty() || net_name.empty() || path.empty() || path.front() != '/' ||
       adv_interval < 1ms || timeout < 1ms) {
     throw api::Error(YOGI_ERR_INVALID_PARAM);
@@ -50,9 +51,7 @@ Branch::Branch(ContextPtr context, std::string name, std::string description,
 
 void Branch::Start() { connection_manager_->Start(info_); }
 
-std::string Branch::MakeInfoString() const {
-  return info_->ToJson().dump();
-}
+std::string Branch::MakeInfoString() const { return info_->ToJson().dump(); }
 
 Branch::BranchInfoStringsList Branch::MakeConnectedBranchesInfoStrings() const {
   return connection_manager_->MakeConnectedBranchesInfoStrings();

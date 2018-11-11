@@ -41,6 +41,7 @@ ConnectionManager::ConnectionManager(
             this->OnAdvertisementReceived(uuid, ep);
           })),
       acceptor_(context->IoContext()),
+      last_op_tag_(0),
       observed_events_(api::kNoEvent) {
   if (adv_ep.port() == 0) {
     throw api::Error(YOGI_ERR_INVALID_PARAM);
@@ -71,7 +72,7 @@ ConnectionManager::MakeConnectedBranchesInfoStrings() const {
   std::lock_guard<std::mutex> lock(connections_mutex_);
   for (auto& entry : connections_) {
     YOGI_ASSERT(entry.second);
-    if (entry.second->SessionStarted()) {
+    if (entry.second->SessionRunning()) {
       branches.push_back(
           std::make_pair(entry.first, entry.second->MakeInfoString()));
     }
@@ -98,6 +99,17 @@ void ConnectionManager::AwaitEventAsync(api::BranchEvents events,
 
 void ConnectionManager::CancelAwaitEvent() {
   AwaitEventAsync(api::kNoEvent, {});
+}
+
+ConnectionManager::OperationTag ConnectionManager::MakeOperationTag()
+{
+  OperationTag tag;
+  do {
+    tag = ++last_op_tag_;
+  }
+  while (tag == 0);
+
+  return tag;
 }
 
 void ConnectionManager::SetupAcceptor(const boost::asio::ip::tcp& protocol) {

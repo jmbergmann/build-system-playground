@@ -58,31 +58,13 @@ class MessageTransport : public std::enable_shared_from_this<MessageTransport> {
   void Start();
 
   bool TrySend(boost::asio::const_buffer msg);
-  bool TrySend(const utils::ByteVector& msg) {
-    return TrySend(boost::asio::buffer(msg));
-  }
-
   void SendAsync(boost::asio::const_buffer msg, OperationTag tag,
                  SendHandler handler);
-
   void SendAsync(boost::asio::const_buffer msg, SendHandler handler) {
     SendAsync(msg, 0, handler);
   }
-
-  void SendAsync(const utils::ByteVector& msg, OperationTag tag,
-                 SendHandler handler) {
-    SendAsync(boost::asio::buffer(msg), tag, handler);
-  }
-
-  void SendAsync(const utils::ByteVector& msg, SendHandler handler) {
-    SendAsync(msg, 0, handler);
-  }
-
   bool CancelSend(OperationTag tag);
   void ReceiveAsync(boost::asio::mutable_buffer msg, ReceiveHandler handler);
-  void ReceiveAsync(utils::ByteVector* msg, ReceiveHandler handler) {
-    ReceiveAsync(boost::asio::buffer(*msg), handler);
-  }
 
   void CancelReceive();
   void Close() { transport_->Close(); }

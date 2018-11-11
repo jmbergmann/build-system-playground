@@ -22,7 +22,9 @@
 namespace objects {
 namespace detail {
 
-BroadcastManager::BroadcastManager(ContextPtr context) : context_(context) {}
+BroadcastManager::BroadcastManager(ContextPtr context,
+                                   ConnectionManager& conn_manager)
+    : context_(context), conn_manager_(conn_manager) {}
 
 BroadcastManager::~BroadcastManager() {}
 
@@ -44,7 +46,9 @@ bool BroadcastManager::CancelSendBroadcast(SendBroadcastOperationId oid) {
   if (it == oids_.end()) return false;
   oids_.erase(it);
 
-  // TODO: cancel async msg in all MesssageTransport instances
+  conn_manager_.ForeachRunningSession([&](auto& conn) {
+    conn->CancelSend(oid);
+  });
 
   return true;
 }

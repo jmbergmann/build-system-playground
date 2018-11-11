@@ -32,7 +32,7 @@ BranchConnection::BranchConnection(network::TransportPtr transport,
       peer_address_(peer_address),
       connected_since_(utils::Timestamp::Now()),
       ack_msg_(utils::MakeSharedByteVector(utils::ByteVector{0x55})),
-      session_started_(false),
+      session_running_(false),
       heartbeat_timer_(context_->IoContext()),
       next_result_(api::kSuccess) {}
 
@@ -82,7 +82,7 @@ void BranchConnection::Authenticate(utils::SharedByteVector password_hash,
 
 void BranchConnection::RunSession(CompletionHandler handler) {
   YOGI_ASSERT(remote_info_);
-  YOGI_ASSERT(!session_started_);
+  YOGI_ASSERT(!SessionRunning());
 
   if (!CheckNextResult(handler)) return;
 
@@ -93,7 +93,7 @@ void BranchConnection::RunSession(CompletionHandler handler) {
 
   RestartHeartbeatTimer();
   StartReceive();
-  session_started_ = true;
+  session_running_ = true;
   session_completion_handler_ = handler;
 }
 
@@ -306,7 +306,7 @@ void BranchConnection::RestartHeartbeatTimer() {
 }
 
 void BranchConnection::OnHeartbeatTimerExpired() {
-  msg_transport_->TrySend(heartbeat_msg_);
+  TrySend(heartbeat_msg_);
   RestartHeartbeatTimer();
 }
 
@@ -314,7 +314,7 @@ void BranchConnection::StartReceive() {
   auto weak_self = std::weak_ptr<BranchConnection>(shared_from_this());
   auto msg = received_msg_;
   msg->resize(api::kMinRxQueueSize);
-  msg_transport_->ReceiveAsync(&*msg, [=](auto& res, auto msg_size) {
+  ReceiveAsync(&*msg, [=](auto& res, auto msg_size) {
     auto self = weak_self.lock();
     if (!self) return;
 

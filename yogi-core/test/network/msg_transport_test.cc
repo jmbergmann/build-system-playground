@@ -131,10 +131,10 @@ TEST_F(MessageTransportTest, TrySend) {
   uut_->Start();
 
   utils::ByteVector data{1, 2, 3, 4, 5};
-  EXPECT_TRUE(uut_->TrySend(data));
-  EXPECT_FALSE(uut_->TrySend(data));
+  EXPECT_TRUE(uut_->TrySend(boost::asio::buffer(data)));
+  EXPECT_FALSE(uut_->TrySend(boost::asio::buffer(data)));
   context_->Poll();
-  EXPECT_TRUE(uut_->TrySend(data));
+  EXPECT_TRUE(uut_->TrySend(boost::asio::buffer(data)));
   context_->Poll();
 
   EXPECT_EQ(transport_->tx_data,
@@ -146,10 +146,11 @@ TEST_F(MessageTransportTest, TrySendTransportFailure) {
 
   transport_->Close();
   utils::ByteVector data{1, 2, 3, 4, 5};
-  uut_->TrySend(data);
+  uut_->TrySend(boost::asio::buffer(data));
   context_->Poll();
 
-  EXPECT_THROW_ERROR(uut_->TrySend(data), YOGI_ERR_RW_SOCKET_FAILED);
+  EXPECT_THROW_ERROR(uut_->TrySend(boost::asio::buffer(data)),
+                     YOGI_ERR_RW_SOCKET_FAILED);
 }
 
 TEST_F(MessageTransportTest, SendAsync) {
@@ -158,7 +159,7 @@ TEST_F(MessageTransportTest, SendAsync) {
 
   utils::ByteVector data{1, 2, 3, 4, 5, 6};
   bool called = false;
-  uut_->SendAsync(data, [&](auto& res) {
+  uut_->SendAsync(boost::asio::buffer(data), [&](auto& res) {
     EXPECT_EQ(res, api::kSuccess);
     called = true;
   });
@@ -167,7 +168,7 @@ TEST_F(MessageTransportTest, SendAsync) {
   EXPECT_TRUE(called);
 
   called = false;
-  uut_->SendAsync(data, [&](auto& res) {
+  uut_->SendAsync(boost::asio::buffer(data), [&](auto& res) {
     EXPECT_EQ(res, api::kSuccess);
     called = true;
   });
@@ -186,10 +187,10 @@ TEST_F(MessageTransportTest, AsyncSendTransportFailure) {
 
   transport_->Close();
   utils::ByteVector data{1, 2, 3, 4, 5, 6};
-  uut_->TrySend(data);
+  uut_->TrySend(boost::asio::buffer(data));
 
   bool called = false;
-  uut_->SendAsync(data, [&](auto& res) {
+  uut_->SendAsync(boost::asio::buffer(data), [&](auto& res) {
     EXPECT_EQ(res, api::Error(YOGI_ERR_RW_SOCKET_FAILED));
     called = true;
   });
@@ -201,11 +202,11 @@ TEST_F(MessageTransportTest, CancelSend) {
   uut_->Start();
 
   utils::ByteVector data{1, 2, 3, 4, 5, 6};
-  EXPECT_TRUE(uut_->TrySend(data));
+  EXPECT_TRUE(uut_->TrySend(boost::asio::buffer(data)));
 
   bool called = false;
   network::MessageTransport::OperationTag tag = 123;
-  uut_->SendAsync(data, tag, [&](auto& res) {
+  uut_->SendAsync(boost::asio::buffer(data), tag, [&](auto& res) {
     EXPECT_EQ(res, api::Error(YOGI_ERR_CANCELED));
     called = true;
   });
@@ -223,7 +224,7 @@ TEST_F(MessageTransportTest, ReceiveAsync) {
 
   utils::ByteVector data(5);
   bool called = false;
-  uut_->ReceiveAsync(&data, [&](auto& res, auto size) {
+  uut_->ReceiveAsync(boost::asio::buffer(data), [&](auto& res, auto size) {
     EXPECT_EQ(res, api::kSuccess);
     EXPECT_EQ(size, 5);
     called = true;
@@ -235,7 +236,7 @@ TEST_F(MessageTransportTest, ReceiveAsync) {
 
   data = utils::ByteVector(4);
   called = false;
-  uut_->ReceiveAsync(&data, [&](auto& res, auto size) {
+  uut_->ReceiveAsync(boost::asio::buffer(data), [&](auto& res, auto size) {
     EXPECT_EQ(res, api::kSuccess);
     EXPECT_EQ(size, 4);
     called = true;
@@ -253,7 +254,7 @@ TEST_F(MessageTransportTest, ReceiveAsyncTransportFailure) {
 
   utils::ByteVector data(5);
   bool called = false;
-  uut_->ReceiveAsync(&data, [&](auto& res, auto) {
+  uut_->ReceiveAsync(boost::asio::buffer(data), [&](auto& res, auto) {
     EXPECT_EQ(res, api::Error(YOGI_ERR_RW_SOCKET_FAILED));
     called = true;
   });
@@ -267,7 +268,7 @@ TEST_F(MessageTransportTest, CancelReceive) {
 
   utils::ByteVector data(10);
   bool called = false;
-  uut_->ReceiveAsync(&data, [&](auto& res, auto) {
+  uut_->ReceiveAsync(boost::asio::buffer(data), [&](auto& res, auto) {
     EXPECT_EQ(res, api::Error(YOGI_ERR_CANCELED));
     called = true;
   });
@@ -364,12 +365,13 @@ TEST_F(MessageTransportTest, Stress) {
         std::generate(msg.begin(), msg.end(),
                       [] { return static_cast<utils::Byte>(0); });
         bool called = false;
-        uut_->ReceiveAsync(&msg, [&](auto& res, auto msg_size) {
-          EXPECT_EQ(res, api::kSuccess);
-          received_msgs.push_back(
-              utils::ByteVector(msg.begin(), msg.begin() + msg_size));
-          called = true;
-        });
+        uut_->ReceiveAsync(
+            boost::asio::buffer(msg), [&](auto& res, auto msg_size) {
+              EXPECT_EQ(res, api::kSuccess);
+              received_msgs.push_back(
+                  utils::ByteVector(msg.begin(), msg.begin() + msg_size));
+              called = true;
+            });
 
         while (!called) {
           context_->Poll();

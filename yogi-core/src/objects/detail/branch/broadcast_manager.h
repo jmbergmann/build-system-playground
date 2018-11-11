@@ -20,6 +20,7 @@
 #include "../../../config.h"
 #include "../../context.h"
 #include "../../logger.h"
+#include "connection_manager.h"
 
 #include <boost/asio/buffer.hpp>
 #include <vector>
@@ -31,14 +32,14 @@ namespace detail {
 class BroadcastManager final
     : public std::enable_shared_from_this<BroadcastManager> {
  public:
-  typedef int SendBroadcastOperationId;
+  typedef network::MessageTransport::OperationTag SendBroadcastOperationId;
   typedef std::function<void(const api::Error& res,
                              SendBroadcastOperationId oid)>
       SendBroadcastHandler;
   typedef std::function<void(const api::Error& res, std::size_t size)>
       ReceiveBroadcastHandler;
 
-  BroadcastManager(ContextPtr context);
+  BroadcastManager(ContextPtr context, ConnectionManager& conn_manager);
   virtual ~BroadcastManager();
 
   api::Result SendBroadcast(api::Encoding enc, boost::asio::const_buffer data,
@@ -60,6 +61,7 @@ class BroadcastManager final
   static const LoggerPtr logger_;
 
   const ContextPtr context_;
+  ConnectionManager& conn_manager_;
   std::mutex mutex_;
   std::vector<SendBroadcastOperationId> oids_;
 };
