@@ -158,22 +158,17 @@ TEST_F(MessageTransportTest, SendAsync) {
 
   utils::ByteVector data{1, 2, 3, 4, 5, 6};
   bool called = false;
-  network::MessageTransport::SendOperationId oid_1;
-  oid_1 = uut_->SendAsync(data, [&](auto& res, auto oid) {
+  uut_->SendAsync(data, [&](auto& res) {
     EXPECT_EQ(res, api::kSuccess);
-    EXPECT_EQ(oid, oid_1);
     called = true;
   });
   context_->PollOne();
   context_->PollOne();
   EXPECT_TRUE(called);
-  EXPECT_GT(oid_1, 0);
 
   called = false;
-  network::MessageTransport::SendOperationId oid_2;
-  oid_2 = uut_->SendAsync(data, [&](auto& res, auto oid) {
+  uut_->SendAsync(data, [&](auto& res) {
     EXPECT_EQ(res, api::kSuccess);
-    EXPECT_EQ(oid, oid_2);
     called = true;
   });
   context_->PollOne();
@@ -181,8 +176,6 @@ TEST_F(MessageTransportTest, SendAsync) {
   EXPECT_FALSE(called);
   context_->Poll();
   EXPECT_TRUE(called);
-  EXPECT_GT(oid_1, 0);
-  EXPECT_NE(oid_1, oid_2);
 
   EXPECT_EQ(transport_->tx_data,
             (utils::ByteVector{6, 1, 2, 3, 4, 5, 6, 6, 1, 2, 3, 4, 5, 6}));
@@ -196,15 +189,12 @@ TEST_F(MessageTransportTest, AsyncSendTransportFailure) {
   uut_->TrySend(data);
 
   bool called = false;
-  network::MessageTransport::SendOperationId oid_1;
-  oid_1 = uut_->SendAsync(data, [&](auto& res, auto oid) {
+  uut_->SendAsync(data, [&](auto& res) {
     EXPECT_EQ(res, api::Error(YOGI_ERR_RW_SOCKET_FAILED));
-    EXPECT_EQ(oid, oid_1);
     called = true;
   });
   context_->Poll();
   EXPECT_TRUE(called);
-  EXPECT_GT(oid_1, 0);
 }
 
 TEST_F(MessageTransportTest, CancelSend) {
@@ -213,28 +203,17 @@ TEST_F(MessageTransportTest, CancelSend) {
   utils::ByteVector data{1, 2, 3, 4, 5, 6};
   EXPECT_TRUE(uut_->TrySend(data));
 
-  uut_->SendAsync(data, [&](auto& res, auto) {
-    EXPECT_NE(res, api::Error(YOGI_ERR_CANCELED));
-  });
-
   bool called = false;
-  network::MessageTransport::SendOperationId oid_1;
-  oid_1 = uut_->SendAsync(data, [&](auto& res, auto oid) {
+  network::MessageTransport::OperationTag tag = 123;
+  uut_->SendAsync(data, tag, [&](auto& res) {
     EXPECT_EQ(res, api::Error(YOGI_ERR_CANCELED));
-    EXPECT_EQ(oid, oid_1);
     called = true;
   });
-  EXPECT_GT(oid_1, 0);
-  EXPECT_TRUE(uut_->CancelSend(oid_1));
-
-  uut_->SendAsync(data, [&](auto& res, auto) {
-    EXPECT_NE(res, api::Error(YOGI_ERR_CANCELED));
-  });
+  EXPECT_TRUE(uut_->CancelSend(tag));
+  EXPECT_FALSE(uut_->CancelSend(tag));
 
   context_->Poll();
   EXPECT_TRUE(called);
-
-  EXPECT_FALSE(uut_->CancelSend(12345));
 }
 
 TEST_F(MessageTransportTest, ReceiveAsync) {
@@ -361,13 +340,12 @@ TEST_F(MessageTransportTest, Stress) {
       while (sent_msgs.size() < msg_sizes.size()) {
         bool called = false;
         auto n = msg_sizes[sent_msgs.size()];
-        uut_->SendAsync(
-            boost::asio::buffer(payload.data(), n), [&](auto& res, auto) {
-              EXPECT_EQ(res, api::kSuccess);
-              sent_msgs.push_back(
-                  utils::ByteVector(payload.begin(), payload.begin() + n));
-              called = true;
-            });
+        uut_->SendAsync(boost::asio::buffer(payload.data(), n), [&](auto& res) {
+          EXPECT_EQ(res, api::kSuccess);
+          sent_msgs.push_back(
+              utils::ByteVector(payload.begin(), payload.begin() + n));
+          called = true;
+        });
 
         while (!called) {
           std::this_thread::yield();

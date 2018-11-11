@@ -72,7 +72,6 @@ MessageTransport::MessageTransport(TransportPtr transport,
       last_tx_error_(api::kSuccess),
       last_rx_error_(api::kSuccess),
       send_to_transport_running_(false),
-      last_send_oid_(0),
       receive_from_transport_running_(false) {
   ResetReceivedSizeField();
 }
@@ -88,32 +87,32 @@ bool MessageTransport::TrySend(boost::asio::const_buffer msg) {
   return TrySendImpl(msg);
 }
 
-MessageTransport::SendOperationId MessageTransport::SendAsync(
-    boost::asio::const_buffer msg, SendHandler handler) {
+void MessageTransport::SendAsync(boost::asio::const_buffer msg,
+                                 OperationTag tag, SendHandler handler) {
   std::lock_guard<std::mutex> lock(tx_mutex_);
-  auto oid = GetNextSendOperationId();
+  CheckOperationTagIsNotUsed(tag);
 
   if (last_tx_error_.IsError()) {
-    transport_->GetContext()->Post([=] { handler(last_tx_error_, oid); });
-    return oid;
+    transport_->GetContext()->Post([=] { handler(last_tx_error_); });
+    return;
   }
 
   if (TrySendImpl(msg)) {
-    transport_->GetContext()->Post([=] { handler(api::kSuccess, oid); });
+    transport_->GetContext()->Post([=] { handler(api::kSuccess); });
   } else {
-    PendingSend ps = {oid, msg, handler};
+    PendingSend ps = {tag, msg, handler};
     pending_sends_.push_back(ps);
 
     YOGI_ASSERT(send_to_transport_running_);
   }
-
-  return oid;
 }
 
-bool MessageTransport::CancelSend(SendOperationId oid) {
+bool MessageTransport::CancelSend(OperationTag tag) {
+  YOGI_ASSERT(tag != 0);
+
   std::lock_guard<std::mutex> lock(tx_mutex_);
   auto it = std::find_if(pending_sends_.begin(), pending_sends_.end(),
-                         [&](auto& ps) { return ps.oid == oid; });
+                         [&](auto& ps) { return ps.tag == tag; });
 
   if (it == pending_sends_.end()) return false;
 
@@ -121,7 +120,7 @@ bool MessageTransport::CancelSend(SendOperationId oid) {
   pending_sends_.erase(it);
 
   transport_->GetContext()->Post(
-      [=] { handler(api::Error(YOGI_ERR_CANCELED), oid); });
+      [=] { handler(api::Error(YOGI_ERR_CANCELED)); });
 
   return true;
 }
@@ -214,8 +213,7 @@ void MessageTransport::RetrySendingPendingSends() {
   auto it = pending_sends_.begin();
   while (it != pending_sends_.end() && TrySendImpl(it->msg)) {
     auto handler = std::move(it->handler);
-    auto oid = it->oid;
-    transport_->GetContext()->Post([=] { handler(api::kSuccess, oid); });
+    transport_->GetContext()->Post([=] { handler(api::kSuccess); });
     ++it;
   }
 
@@ -317,7 +315,7 @@ void MessageTransport::HandleSendError(const api::Error& err) {
   last_tx_error_ = err;
 
   for (auto& ps : pending_sends_) {
-    ps.handler(err, ps.oid);
+    ps.handler(err);
   }
 
   pending_sends_.clear();
@@ -337,10 +335,11 @@ void MessageTransport::HandleReceiveError(const api::Error& err) {
   }
 }
 
-MessageTransport::SendOperationId MessageTransport::GetNextSendOperationId() {
-  ++last_send_oid_;
-  if (last_send_oid_ <= 0) last_send_oid_ = 1;
-  return last_send_oid_;
+void MessageTransport::CheckOperationTagIsNotUsed(OperationTag tag) {
+  auto& v = pending_sends_;
+  YOGI_ASSERT((std::find_if(v.begin(), v.end(), [&](auto& ps) {
+                return ps.tag == tag;
+              })) == v.end());
 }
 
 const objects::LoggerPtr MessageTransport::logger_ =
