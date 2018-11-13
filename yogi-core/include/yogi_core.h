@@ -1858,15 +1858,17 @@ YOGI_API int YOGI_BranchCancelAwaitEvent(void* branch);
  *   is chosen since the receivers can specify their desired format and the
  *   library performs the necessary conversions automatically.
  *
- * Setting the \p block parameter to _false_ will cause the function to return
- * immediately with a #YOGI_ERR_TX_QUEUE_FULL error if the send buffer is full.
- * If set to _true_ the function will block until the send buffer has enough
- * space to store the message.
+ * Setting the \p block parameter to #YOGI_FALSE will cause the function to skip
+ * sending the message to branches that have a full send queue. If at least one
+ * branch was skipped, the function will return the #YOGI_ERR_TX_QUEUE_FULL
+ * error. If the parameter is set to #YOGI_TRUE instead, the function will block
+ * until the message has been put into the send queues of all connected
+ * branches.
  *
  * \attention
  *   Calling this function from within a handler function executed through the
- *   branch's _context_  with \p retry set to #YOGI_TRUE will cause a dead-lock
- *   if the send queue is full!
+ *   branch's _context_  with \p block set to #YOGI_TRUE will cause a dead-lock
+ *   if any send queue is full!
  *
  * \param[in] branch   The branch handle
  * \param[in] enc      Encoding type used for \p data (see \ref ENC)
@@ -1902,10 +1904,12 @@ YOGI_API int YOGI_BranchSendBroadcast(void* branch, int enc, const void* data,
  *  -# __oid__: Operation ID as returned by this library function
  *  -# __userarg__: Value of the user-specified \p userarg parameter
  *
- * Setting the \p retry parameter to _false_ will cause \p fn to be called
- * immediately with a #YOGI_ERR_TX_QUEUE_FULL error if the send buffer is full.
- * If set to _true_ the handler will be called once enough space is available
- * in the send buffer to send the message.
+ * Setting the \p retry parameter to #YOGI_FALSE will cause the function to skip
+ * sending the message to branches that have a full send queue. If at least one
+ * branch was skipped, the handler \p fn will be called with the
+ * #YOGI_ERR_TX_QUEUE_FULL error. If the parameter is set to #YOGI_TRUE instead,
+ * \p fn will be called once the message has been put into the send queues of
+ * all connected branches.
  *
  * The function returns an ID which uniquely identifies this send operation
  * until \p fn has been called. It can be used in a subsequent
@@ -1937,8 +1941,8 @@ YOGI_API int YOGI_BranchSendBroadcastAsync(
  *
  * \note
  *   If the send operation has already been carried out but the handler function
- *   has not been called yet, the handler function will be called with #YOGI_OK
- *   and the #YOGI_ERR_INVALID_OPERATION_ID will be returned.
+ *   has not been called yet, then cancelling the operation will fail and the
+ *   #YOGI_ERR_INVALID_OPERATION_ID will be returned.
  *
  * \param[in] branch The branch handle
  * \param[in] oid    Operation ID of the send operation to cancel
