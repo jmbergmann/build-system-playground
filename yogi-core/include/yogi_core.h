@@ -1915,6 +1915,10 @@ YOGI_API int YOGI_BranchSendBroadcast(void* branch, int enc, const void* data,
  * until \p fn has been called. It can be used in a subsequent
  * YOGI_BranchCancelSendBroadcast() call to abort the operation.
  *
+ * \note
+ *   The memory pointed to via \p data will be copied if necessary, i.e. \p data
+ *   only needs to remain valid until the function returns.
+ *
  * \param[in] branch   The branch handle
  * \param[in] enc      Encoding type used for \p data (see \ref ENC)
  * \param[in] data     Payload encoded according to \p datafmt
