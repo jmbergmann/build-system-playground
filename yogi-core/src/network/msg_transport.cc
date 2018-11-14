@@ -90,7 +90,10 @@ bool MessageTransport::TrySend(boost::asio::const_buffer msg) {
 void MessageTransport::SendAsync(boost::asio::const_buffer msg,
                                  OperationTag tag, SendHandler handler) {
   std::lock_guard<std::mutex> lock(tx_mutex_);
-  CheckOperationTagIsNotUsed(tag);
+
+  if (tag != 0) {
+    CheckOperationTagIsNotUsed(tag);
+  }
 
   if (last_tx_error_.IsError()) {
     transport_->GetContext()->Post([=] { handler(last_tx_error_); });
@@ -336,6 +339,8 @@ void MessageTransport::HandleReceiveError(const api::Error& err) {
 }
 
 void MessageTransport::CheckOperationTagIsNotUsed(OperationTag tag) {
+  YOGI_ASSERT(tag != 0);
+
   auto& v = pending_sends_;
   YOGI_ASSERT((std::find_if(v.begin(), v.end(), [&](auto& ps) {
                 return ps.tag == tag;

@@ -285,6 +285,38 @@ TEST_F(MessageTransportTest, Close) {
   EXPECT_TRUE(transport_->dead);
 }
 
+TEST_F(MessageTransportTest, MessageOrderPreservation) {
+  transport_->tx_send_limit = 0; // Make sure buffer is not emptied
+  uut_->Start();
+
+  utils::ByteVector data1{1, 2, 3, 4};
+  EXPECT_TRUE(uut_->TrySend(boost::asio::buffer(data1)));
+
+  // The data2 and data3 operations are to check that async writes are in order
+  utils::ByteVector data2{5, 6, 7};
+  uut_->SendAsync(boost::asio::buffer(data2),
+                  [&](auto& res) { EXPECT_EQ(res, api::kSuccess); });
+
+  utils::ByteVector data3{8};
+  uut_->SendAsync(boost::asio::buffer(data3),
+                  [&](auto& res) { EXPECT_EQ(res, api::kSuccess); });
+
+  // This is to check that sync writes do not come before delayed async writes
+  utils::ByteVector data4{9};
+  EXPECT_FALSE(uut_->TrySend(boost::asio::buffer(data4)));
+
+  transport_->tx_send_limit = 100; // Allow emptying the buffer
+
+  utils::ByteVector data5{10};
+  uut_->SendAsync(boost::asio::buffer(data5),
+                  [&](auto& res) { EXPECT_EQ(res, api::kSuccess); });
+
+  context_->Poll();
+
+  EXPECT_EQ(transport_->tx_data,
+            (utils::ByteVector{4, 1, 2, 3, 4, 3, 5, 6, 7, 1, 8, 1, 10}));
+}
+
 TEST_F(MessageTransportTest, Stress) {
   // Bigger queue size so that the message size field can go beyond one byte
   const std::size_t kQueueSize = 300;
