@@ -84,7 +84,11 @@ bool MessageTransport::TrySend(boost::asio::const_buffer msg) {
     throw last_tx_error_.ToError();
   }
 
-  return TrySendImpl(msg);
+  if (pending_sends_.empty()) {
+    return TrySendImpl(msg);
+  } else {
+    return false;
+  }
 }
 
 void MessageTransport::SendAsync(boost::asio::const_buffer msg,
@@ -100,7 +104,7 @@ void MessageTransport::SendAsync(boost::asio::const_buffer msg,
     return;
   }
 
-  if (TrySendImpl(msg)) {
+  if (pending_sends_.empty() && TrySendImpl(msg)) {
     transport_->GetContext()->Post([=] { handler(api::kSuccess); });
   } else {
     PendingSend ps = {tag, msg, handler};
@@ -156,9 +160,7 @@ void MessageTransport::CancelReceive() {
 }
 
 bool MessageTransport::TrySendImpl(boost::asio::const_buffer msg) {
-  if (!CanSend(msg.size())) {
-    return false;
-  }
+  if (!CanSend(msg.size())) return false;
 
   SizeFieldBuffer size_field_buf;
   auto n = internal::SerializeMsgSizeField(msg.size(), &size_field_buf);
