@@ -196,7 +196,7 @@ void FakeBranch::Authenticate(
 }
 
 void FakeBranch::ExchangeAck() {
-  auto buffer = utils::ByteVector({network::MessageType::kAcknowledge});
+  auto buffer = utils::ByteVector{network::MessageType::kAcknowledge};
   boost::asio::write(tcp_socket_, boost::asio::buffer(buffer));
   boost::asio::read(tcp_socket_, boost::asio::buffer(buffer));
   EXPECT_EQ(buffer[0], network::MessageType::kAcknowledge);
