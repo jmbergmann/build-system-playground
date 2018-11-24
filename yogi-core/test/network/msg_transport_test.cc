@@ -82,6 +82,58 @@ class MessageTransportTest : public TestFixture {
     uut_ = std::make_shared<network::MessageTransport>(transport_, 8, 8);
   }
 
+  static network::Message MakeMessage(std::size_t msg_size) {
+    if (msg_size == 0) {
+      return network::Message(network::MessageType::kHeartbeat);
+    }
+
+    static std::default_random_engine gen;
+    std::uniform_int_distribution<int> dist(1, 100);
+
+    utils::ByteVector data(msg_size - 1);
+    for (auto& byte : data) {
+      byte = static_cast<utils::Byte>(dist(gen));
+    }
+
+    network::Message msg(network::MessageType::kBroadcast,
+                         boost::asio::buffer(data));
+    msg.GetMessageAsSharedBytes();  // To trigger copying the data vector
+    return msg;
+  }
+
+  template <typename... Parts>
+  static utils::ByteVector MakeTransportBytes(Parts... parts) {
+    utils::ByteVector v;
+    MakeTransportBytesImpl(&v, parts...);
+    return v;
+  }
+
+  template <typename Next, typename... Rest>
+  static void MakeTransportBytesImpl(utils::ByteVector* v, Next next,
+                                     Rest&&... rest) {
+    AppendToByteVector(v, next);
+    MakeTransportBytesImpl(v, rest...);
+  }
+
+  template <typename Last>
+  static void MakeTransportBytesImpl(utils::ByteVector* v, Last last) {
+    AppendToByteVector(v, last);
+  }
+
+  static void AppendToByteVector(utils::ByteVector* v, int byte) {
+    v->push_back(static_cast<utils::Byte>(byte));
+  }
+
+  static void AppendToByteVector(utils::ByteVector* v,
+                                 const utils::ByteVector& bytes) {
+    v->insert(v->end(), bytes.begin(), bytes.end());
+  }
+
+  static void AppendToByteVector(utils::ByteVector* v,
+                                 const network::Message& msg) {
+    AppendToByteVector(v, msg.GetMessageAsBytes());
+  }
+
   objects::ContextPtr context_;
   std::shared_ptr<FakeTransport> transport_;
   network::MessageTransportPtr uut_;
@@ -130,36 +182,33 @@ TEST_F(MessageTransportTest, MsgSizeFieldSerialization) {
 TEST_F(MessageTransportTest, TrySend) {
   uut_->Start();
 
-  utils::ByteVector data{1, 2, 3, 4, 5};
-  EXPECT_TRUE(uut_->TrySend(boost::asio::buffer(data)));
-  EXPECT_FALSE(uut_->TrySend(boost::asio::buffer(data)));
+  auto msg = MakeMessage(5);
+  EXPECT_TRUE(uut_->TrySend(msg));
+  EXPECT_FALSE(uut_->TrySend(msg));
   context_->Poll();
-  EXPECT_TRUE(uut_->TrySend(boost::asio::buffer(data)));
+  EXPECT_TRUE(uut_->TrySend(msg));
   context_->Poll();
 
-  EXPECT_EQ(transport_->tx_data,
-            (utils::ByteVector{5, 1, 2, 3, 4, 5, 5, 1, 2, 3, 4, 5}));
+  EXPECT_EQ(transport_->tx_data, MakeTransportBytes(5, msg, 5, msg));
 }
 
 TEST_F(MessageTransportTest, TrySendTransportFailure) {
   uut_->Start();
 
   transport_->Close();
-  utils::ByteVector data{1, 2, 3, 4, 5};
-  uut_->TrySend(boost::asio::buffer(data));
+  uut_->TrySend(MakeMessage(5));
   context_->Poll();
 
-  EXPECT_THROW_ERROR(uut_->TrySend(boost::asio::buffer(data)),
-                     YOGI_ERR_RW_SOCKET_FAILED);
+  EXPECT_THROW_ERROR(uut_->TrySend(MakeMessage(5)), YOGI_ERR_RW_SOCKET_FAILED);
 }
 
 TEST_F(MessageTransportTest, SendAsync) {
   transport_->tx_send_limit = 1;
   uut_->Start();
 
-  utils::ByteVector data{1, 2, 3, 4, 5, 6};
+  auto msg = MakeMessage(6);
   bool called = false;
-  uut_->SendAsync(boost::asio::buffer(data), [&](auto& res) {
+  uut_->SendAsync(&msg, [&](auto& res) {
     EXPECT_EQ(res, api::kSuccess);
     called = true;
   });
@@ -168,7 +217,7 @@ TEST_F(MessageTransportTest, SendAsync) {
   EXPECT_TRUE(called);
 
   called = false;
-  uut_->SendAsync(boost::asio::buffer(data), [&](auto& res) {
+  uut_->SendAsync(&msg, [&](auto& res) {
     EXPECT_EQ(res, api::kSuccess);
     called = true;
   });
@@ -178,19 +227,18 @@ TEST_F(MessageTransportTest, SendAsync) {
   context_->Poll();
   EXPECT_TRUE(called);
 
-  EXPECT_EQ(transport_->tx_data,
-            (utils::ByteVector{6, 1, 2, 3, 4, 5, 6, 6, 1, 2, 3, 4, 5, 6}));
+  EXPECT_EQ(transport_->tx_data, MakeTransportBytes(6, msg, 6, msg));
 }
 
 TEST_F(MessageTransportTest, AsyncSendTransportFailure) {
   uut_->Start();
-
   transport_->Close();
-  utils::ByteVector data{1, 2, 3, 4, 5, 6};
-  uut_->TrySend(boost::asio::buffer(data));
+
+  auto msg = MakeMessage(6);
+  uut_->TrySend(msg);
 
   bool called = false;
-  uut_->SendAsync(boost::asio::buffer(data), [&](auto& res) {
+  uut_->SendAsync(&msg, [&](auto& res) {
     EXPECT_EQ(res, api::Error(YOGI_ERR_RW_SOCKET_FAILED));
     called = true;
   });
@@ -201,12 +249,12 @@ TEST_F(MessageTransportTest, AsyncSendTransportFailure) {
 TEST_F(MessageTransportTest, CancelSend) {
   uut_->Start();
 
-  utils::ByteVector data{1, 2, 3, 4, 5, 6};
-  EXPECT_TRUE(uut_->TrySend(boost::asio::buffer(data)));
+  auto msg = MakeMessage(6);
+  EXPECT_TRUE(uut_->TrySend(msg));
 
   bool called = false;
   network::MessageTransport::OperationTag tag = 123;
-  uut_->SendAsync(boost::asio::buffer(data), tag, [&](auto& res) {
+  uut_->SendAsync(&msg, tag, [&](auto& res) {
     EXPECT_EQ(res, api::Error(YOGI_ERR_CANCELED));
     called = true;
   });
@@ -286,35 +334,32 @@ TEST_F(MessageTransportTest, Close) {
 }
 
 TEST_F(MessageTransportTest, MessageOrderPreservation) {
-  transport_->tx_send_limit = 0; // Make sure buffer is not emptied
+  transport_->tx_send_limit = 0;  // Make sure buffer is not emptied
   uut_->Start();
 
-  utils::ByteVector data1{1, 2, 3, 4};
-  EXPECT_TRUE(uut_->TrySend(boost::asio::buffer(data1)));
+  auto msg1 = MakeMessage(4);
+  EXPECT_TRUE(uut_->TrySend(msg1));
 
-  // The data2 and data3 operations are to check that async writes are in order
-  utils::ByteVector data2{5, 6, 7};
-  uut_->SendAsync(boost::asio::buffer(data2),
-                  [&](auto& res) { EXPECT_EQ(res, api::kSuccess); });
+  // The msg2 and msg3 operations are to check that async writes are in order
+  auto msg2 = MakeMessage(3);
+  uut_->SendAsync(&msg2, [&](auto& res) { EXPECT_EQ(res, api::kSuccess); });
 
-  utils::ByteVector data3{8};
-  uut_->SendAsync(boost::asio::buffer(data3),
-                  [&](auto& res) { EXPECT_EQ(res, api::kSuccess); });
+  auto msg3 = MakeMessage(1);
+  uut_->SendAsync(&msg3, [&](auto& res) { EXPECT_EQ(res, api::kSuccess); });
 
   // This is to check that sync writes do not come before delayed async writes
-  utils::ByteVector data4{9};
-  EXPECT_FALSE(uut_->TrySend(boost::asio::buffer(data4)));
+  auto msg4 = MakeMessage(1);
+  EXPECT_FALSE(uut_->TrySend(msg4));
 
-  transport_->tx_send_limit = 100; // Allow emptying the buffer
+  transport_->tx_send_limit = 100;  // Allow emptying the buffer
 
-  utils::ByteVector data5{10};
-  uut_->SendAsync(boost::asio::buffer(data5),
-                  [&](auto& res) { EXPECT_EQ(res, api::kSuccess); });
+  auto msg5 = MakeMessage(1);
+  uut_->SendAsync(&msg5, [&](auto& res) { EXPECT_EQ(res, api::kSuccess); });
 
   context_->Poll();
 
   EXPECT_EQ(transport_->tx_data,
-            (utils::ByteVector{4, 1, 2, 3, 4, 3, 5, 6, 7, 1, 8, 1, 10}));
+            MakeTransportBytes(4, msg1, 3, msg2, 1, msg3, 1, msg5));
 }
 
 TEST_F(MessageTransportTest, Stress) {
@@ -324,59 +369,52 @@ TEST_F(MessageTransportTest, Stress) {
                                                      kQueueSize);
   uut_->Start();
 
-  // Generate payload data
-  utils::ByteVector payload(kQueueSize);
-  for (size_t i = 0; i < payload.size(); ++i) {
-    payload[i] = static_cast<utils::Byte>(i);
-  }
-
   // Create randomly sized messages
-  const std::size_t kInputSize = 10'000;
+  const std::size_t kInputSize = 20'000;
 
   static std::default_random_engine gen;
   std::uniform_int_distribution<std::size_t> dist(1, kQueueSize - 5);
 
-  std::vector<std::size_t> msg_sizes;
+  std::vector<network::Message> msgs;
   while (transport_->tx_data.size() < kInputSize) {
-    auto n = dist(gen);
-    msg_sizes.push_back(n);
-    EXPECT_TRUE(uut_->TrySend(boost::asio::buffer(payload.data(), n)));
+    auto msg = MakeMessage(dist(gen));
+    msgs.push_back(msg);
+    EXPECT_TRUE(uut_->TrySend(msg));
     context_->Poll();
   }
 
-  auto messages = transport_->tx_data;
+  auto old_tx_data = transport_->tx_data;
 
   // Re-create the transport and load the messages
   transport_ = std::make_shared<FakeTransport>(context_);
   uut_ = std::make_shared<network::MessageTransport>(transport_, kQueueSize,
                                                      kQueueSize);
-  transport_->rx_data = messages;
+  transport_->rx_data = old_tx_data;
   uut_->Start();
   context_->Poll();
 
-  // Start send and receive threads
+  // Create send and receive threads
   std::mutex mutex;
   std::thread tx_thread;
   std::thread rx_thread;
 
-  std::vector<utils::ByteVector> sent_msgs;
-  std::vector<utils::ByteVector> received_msgs;
+  std::vector<utils::ByteVector> sent_msgs_bytes;
+  std::vector<utils::ByteVector> received_msgs_bytes;
   std::atomic<bool> send_done = false;
 
-  // Start threads simultaneously
+  // Start threads simultaneously'ish (that's what the mutex is for)
   {
     std::lock_guard<std::mutex> lock(mutex);
 
+    // Send thread
     tx_thread = std::thread([&] {
       { std::lock_guard<std::mutex> lock(mutex); }
 
-      while (sent_msgs.size() < msg_sizes.size()) {
+      for (auto& msg : msgs) {
         bool called = false;
-        auto n = msg_sizes[sent_msgs.size()];
-        uut_->SendAsync(boost::asio::buffer(payload.data(), n), [&](auto& res) {
+        uut_->SendAsync(&msg, [&](auto& res) {
           EXPECT_EQ(res, api::kSuccess);
-          sent_msgs.push_back(
-              utils::ByteVector(payload.begin(), payload.begin() + n));
+          sent_msgs_bytes.push_back(msg.GetMessageAsBytes());
           called = true;
         });
 
@@ -388,20 +426,22 @@ TEST_F(MessageTransportTest, Stress) {
       send_done = true;
     });
 
+    // Receive thread
     rx_thread = std::thread([&] {
       { std::lock_guard<std::mutex> lock(mutex); }
 
-      utils::ByteVector msg(kQueueSize);
+      utils::ByteVector msg_bytes(kQueueSize);
 
-      while (received_msgs.size() < msg_sizes.size()) {
-        std::generate(msg.begin(), msg.end(),
+      while (received_msgs_bytes.size() < msgs.size()) {
+        std::generate(msg_bytes.begin(), msg_bytes.end(),
                       [] { return static_cast<utils::Byte>(0); });
+
         bool called = false;
         uut_->ReceiveAsync(
-            boost::asio::buffer(msg), [&](auto& res, auto msg_size) {
+            boost::asio::buffer(msg_bytes), [&](auto& res, auto msg_size) {
               EXPECT_EQ(res, api::kSuccess);
-              received_msgs.push_back(
-                  utils::ByteVector(msg.begin(), msg.begin() + msg_size));
+              received_msgs_bytes.push_back(utils::ByteVector(
+                  msg_bytes.begin(), msg_bytes.begin() + msg_size));
               called = true;
             });
 
@@ -420,5 +460,6 @@ TEST_F(MessageTransportTest, Stress) {
   tx_thread.join();
   rx_thread.join();
 
-  EXPECT_EQ(received_msgs, sent_msgs);
+  EXPECT_EQ(received_msgs_bytes.size(), sent_msgs_bytes.size());
+  EXPECT_EQ(received_msgs_bytes, sent_msgs_bytes);
 }

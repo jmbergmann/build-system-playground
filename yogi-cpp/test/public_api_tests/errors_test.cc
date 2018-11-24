@@ -66,6 +66,7 @@ TEST(ErrorsTest, ErrorCodeEnum) {
   CHECK_ENUM_ELEMENT(ErrorCode, kTxQueueFull,           YOGI_ERR_TX_QUEUE_FULL);
   CHECK_ENUM_ELEMENT(ErrorCode, kInvalidOperationId,    YOGI_ERR_INVALID_OPERATION_ID);
   CHECK_ENUM_ELEMENT(ErrorCode, kOperationNotRunning,   YOGI_ERR_OPERATION_NOT_RUNNING);
+  CHECK_ENUM_ELEMENT(ErrorCode, kInvalidUserMsgPack,    YOGI_ERR_INVALID_USER_MSGPACK);
   // clang-format on
 }
 

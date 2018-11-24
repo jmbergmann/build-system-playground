@@ -256,6 +256,9 @@
 //! Operation is not running
 #define YOGI_ERR_OPERATION_NOT_RUNNING -43
 
+//! User-supplied data is not valid MessagePack
+#define YOGI_ERR_INVALID_USER_MSGPACK -44
+
 //! @}
 //!
 //! @defgroup VB Log verbosity/severity

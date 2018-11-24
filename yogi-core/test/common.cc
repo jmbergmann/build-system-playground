@@ -19,6 +19,7 @@
 #include "../src/utils/crypto.h"
 #include "../src/utils/system.h"
 #include "../src/api/constants.h"
+#include "../src/network/msg_types.h"
 
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/asio.hpp>
@@ -195,10 +196,10 @@ void FakeBranch::Authenticate(
 }
 
 void FakeBranch::ExchangeAck() {
-  auto buffer = utils::ByteVector({0x55});
+  auto buffer = utils::ByteVector({network::MessageType::kAcknowledge});
   boost::asio::write(tcp_socket_, boost::asio::buffer(buffer));
   boost::asio::read(tcp_socket_, boost::asio::buffer(buffer));
-  EXPECT_EQ(buffer[0], 0x55);
+  EXPECT_EQ(buffer[0], network::MessageType::kAcknowledge);
 }
 
 TemporaryWorkdirGuard::TemporaryWorkdirGuard() {

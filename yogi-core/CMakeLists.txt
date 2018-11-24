@@ -45,7 +45,9 @@ add_library (yogi-core-static STATIC
   src/licenses/3rd_party_licenses.cc
   src/licenses/yogi_license.cc
   src/network/ip.cc
+  src/network/message.cc
   src/network/msg_transport.cc
+  src/network/msg_types.cc
   src/network/tcp_transport.cc
   src/network/transport.cc
   src/objects/detail/branch/advertising_receiver.cc
@@ -69,10 +71,10 @@ add_library (yogi-core-static STATIC
   src/utils/console.cc
   src/utils/crypto.cc
   src/utils/glob.cc
-  src/utils/payload.cc
   src/utils/ringbuffer.cc
   src/utils/system.cc
   src/utils/timestamp.cc
+  src/utils/types.cc
 )
 
 target_include_directories (yogi-core-static SYSTEM
@@ -149,6 +151,7 @@ add_executable (yogi-core-test
   test/api/errors_test.cc
   test/api/object_test.cc
   test/licenses/licenses_test.cc
+  test/network/message_test.cc
   test/network/msg_transport_test.cc
   test/network/serialize_test.cc
   test/network/tcp_transport_test.cc
@@ -163,7 +166,6 @@ add_executable (yogi-core-test
   test/objects/signal_set_test.cc
   test/objects/timer_test.cc
   test/utils/glob_test.cc
-  test/utils/payload_test.cc
   test/utils/ringbuffer_test.cc
   test/common.cc
   test/time_test.cc

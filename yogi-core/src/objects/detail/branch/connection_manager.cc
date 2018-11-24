@@ -101,7 +101,7 @@ void ConnectionManager::CancelAwaitEvent() {
   AwaitEventAsync(api::kNoEvent, {});
 }
 
-ConnectionManager::OperationTag ConnectionManager::MakeOperationTag()
+ConnectionManager::OperationTag ConnectionManager::MakeOperationId()
 {
   OperationTag tag;
   do {

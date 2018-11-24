@@ -31,26 +31,40 @@ BroadcastManager::~BroadcastManager() {}
 api::Result BroadcastManager::SendBroadcast(api::Encoding enc,
                                             boost::asio::const_buffer data,
                                             bool retry) {
+  throw "TODO";
   return api::kSuccess;
 }
 
 BroadcastManager::SendBroadcastOperationId BroadcastManager::SendBroadcastAsync(
     api::Encoding enc, boost::asio::const_buffer data, bool retry,
     SendBroadcastHandler handler) {
-  return 0;
+  network::Message msg(network::kBroadcast, data, enc);
+
+  auto oid = conn_manager_.MakeOperationId();
+  std::shared_ptr<int> pending_handlers;
+
+  conn_manager_.ForeachRunningSession([&](auto& conn) {
+    SendNowOrLater(&pending_handlers, &msg, conn, retry, handler, oid);
+  });
+
+  StoreOidForLaterOrCallHandlerNow(pending_handlers, handler, oid);
+
+  return oid;
 }
 
 bool BroadcastManager::CancelSendBroadcast(SendBroadcastOperationId oid) {
-  std::lock_guard<std::mutex> lock(mutex_);
-  auto it = std::find(oids_.begin(), oids_.end(), oid);
-  if (it == oids_.end()) return false;
-  oids_.erase(it);
+  {
+    std::lock_guard<std::mutex> lock(mutex_);
+    auto it = std::find(active_oids_.begin(), active_oids_.end(), oid);
+    if (it == active_oids_.end()) return false;
+    active_oids_.erase(it);
+  }
 
-  conn_manager_.ForeachRunningSession([&](auto& conn) {
-    conn->CancelSend(oid);
-  });
+  bool canceled = false;
+  conn_manager_.ForeachRunningSession(
+      [&](auto& conn) { canceled |= conn->CancelSend(oid); });
 
-  return true;
+  return canceled;
 }
 
 void BroadcastManager::ReceiveBroadcast(api::Encoding enc,
@@ -58,6 +72,68 @@ void BroadcastManager::ReceiveBroadcast(api::Encoding enc,
                                         ReceiveBroadcastHandler handler) {}
 
 bool BroadcastManager::CancelReceiveBroadcast() { return false; }
+
+void BroadcastManager::SendNowOrLater(SharedCounter* pending_handlers,
+                                      network::Message* msg,
+                                      BranchConnectionPtr conn, bool retry,
+                                      SendBroadcastHandler handler,
+                                      SendBroadcastOperationId oid) {
+  try {
+    if (!conn->TrySend(*msg)) {
+      if (!*pending_handlers) {
+        *pending_handlers = std::make_shared<int>(1);
+      } else {
+        ++**pending_handlers;
+      }
+
+      try {
+        auto weak_self = std::weak_ptr<BroadcastManager>{shared_from_this()};
+        conn->SendAsync(msg, [=](auto& res) {
+          if (--**pending_handlers == 0) {
+            auto self = weak_self.lock();
+            if (self) {
+              if (RemoveActiveOid(oid)) {
+                handler(api::kSuccess, oid);
+              } else {
+                handler(api::Error(YOGI_ERR_CANCELED), oid);
+              }
+            } else {
+              handler(api::Error(YOGI_ERR_CANCELED), oid);
+            }
+          }
+        });
+      } catch (...) {
+        --**pending_handlers;
+        throw;
+      }
+    }
+  } catch (const api::Error& err) {
+    YOGI_LOG_ERROR(logger_,
+                   "Could not send broadcast to " << conn << ": " << err);
+  }
+}
+
+void BroadcastManager::StoreOidForLaterOrCallHandlerNow(
+    SharedCounter pending_handlers, SendBroadcastHandler handler,
+    SendBroadcastOperationId oid) {
+  if (pending_handlers) {
+    std::lock_guard<std::mutex> lock(mutex_);
+    active_oids_.push_back(oid);
+  } else {
+    context_->Post([=] { handler(api::kSuccess, oid); });
+  }
+}
+
+bool BroadcastManager::RemoveActiveOid(SendBroadcastOperationId oid) {
+  std::lock_guard<std::mutex> lock(mutex_);
+  auto it = std::find(active_oids_.begin(), active_oids_.end(), oid);
+  if (it != active_oids_.end()) {
+    active_oids_.erase(it);
+    return true;
+  }
+
+  return false;
+}
 
 const LoggerPtr BroadcastManager::logger_ =
     Logger::CreateStaticInternalLogger("Branch.BroadcastManager");

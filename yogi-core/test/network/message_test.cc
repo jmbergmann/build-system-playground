@@ -16,4 +16,10 @@
  */
 
 #include "../common.h"
-#include "../../src/utils/glob.h"
+#include "../../src/network/message.h"
+
+class MessageTest : public TestFixture {
+};
+
+TEST_F(MessageTest, DISABLED_Bla) {
+}

@@ -66,6 +66,7 @@ class ErrorCode(IntEnum):
     TX_QUEUE_FULL = -41
     INVALID_OPERATION_ID = -42
     OPERATION_NOT_RUNNING = -43
+    INVALID_USER_MSGPACK = -44
 
 
 yogi.YOGI_GetErrorString.restype = c_char_p

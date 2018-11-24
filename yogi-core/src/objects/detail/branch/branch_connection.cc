@@ -31,7 +31,8 @@ BranchConnection::BranchConnection(network::TransportPtr transport,
       local_info_(local_info),
       peer_address_(peer_address),
       connected_since_(utils::Timestamp::Now()),
-      ack_msg_(utils::MakeSharedByteVector(utils::ByteVector{0x55})),
+      heartbeat_msg_(network::MessageType::kHeartbeat),
+      ack_msg_(network::MessageType::kAcknowledge),
       session_running_(false),
       heartbeat_timer_(context_->IoContext()),
       next_result_(api::kSuccess) {}
@@ -157,7 +158,7 @@ void BranchConnection::OnInfoBodyReceived(utils::SharedByteVector info_msg,
   }
 
   auto weak_self = MakeWeakPtr();
-  transport_->SendAllAsync(ack_msg_, [=](auto& res) {
+  transport_->SendAllAsync(ack_msg_.GetMessageAsSharedBytes(), [=](auto& res) {
     auto self = weak_self.lock();
     if (!self) return;
 
@@ -171,7 +172,7 @@ void BranchConnection::OnInfoBodyReceived(utils::SharedByteVector info_msg,
 
 void BranchConnection::OnInfoAckSent(CompletionHandler handler) {
   auto weak_self = MakeWeakPtr();
-  auto ack_msg = utils::MakeSharedByteVector(ack_msg_->size());
+  auto ack_msg = utils::MakeSharedByteVector(ack_msg_.GetSize());
   transport_->ReceiveAllAsync(ack_msg, [=](auto& res) {
     auto self = weak_self.lock();
     if (!self) return;
@@ -253,7 +254,7 @@ void BranchConnection::OnSolutionReceived(
     utils::SharedByteVector my_solution, CompletionHandler handler) {
   auto weak_self = MakeWeakPtr();
   bool solutions_match = *received_solution == *my_solution;
-  transport_->SendAllAsync(ack_msg_, [=](auto& res) {
+  transport_->SendAllAsync(ack_msg_.GetMessageAsSharedBytes(), [=](auto& res) {
     auto self = weak_self.lock();
     if (!self) return;
 
@@ -268,7 +269,7 @@ void BranchConnection::OnSolutionReceived(
 void BranchConnection::OnSolutionAckSent(bool solutions_match,
                                          CompletionHandler handler) {
   auto weak_self = MakeWeakPtr();
-  auto ack_msg = utils::MakeSharedByteVector(ack_msg_->size());
+  auto ack_msg = utils::MakeSharedByteVector(ack_msg_.GetSize());
   transport_->ReceiveAllAsync(ack_msg, [=](auto& res) {
     auto self = weak_self.lock();
     if (!self) return;
@@ -336,7 +337,7 @@ void BranchConnection::CheckAckAndSetNextResult(
     const api::Result& res, const utils::ByteVector& ack_msg) {
   if (res.IsError()) {
     next_result_ = res;
-  } else if (ack_msg != *ack_msg_) {
+  } else if (ack_msg != ack_msg_.GetMessageAsBytes()) {
     next_result_ = api::Error(YOGI_ERR_DESERIALIZE_MSG_FAILED);
   }
 }
@@ -357,3 +358,9 @@ const LoggerPtr BranchConnection::logger_ =
 
 }  // namespace detail
 }  // namespace objects
+
+std::ostream& operator<<(std::ostream& os,
+                         const objects::detail::BranchConnection& conn) {
+  os << conn.GetRemoteBranchInfo();
+  return os;
+}

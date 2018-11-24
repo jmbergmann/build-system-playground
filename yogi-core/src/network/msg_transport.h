@@ -21,6 +21,7 @@
 #include "../utils/ringbuffer.h"
 #include "../objects/logger.h"
 #include "transport.h"
+#include "message.h"
 
 #include <boost/asio/buffer.hpp>
 #include <functional>
@@ -57,12 +58,9 @@ class MessageTransport : public std::enable_shared_from_this<MessageTransport> {
 
   void Start();
 
-  bool TrySend(boost::asio::const_buffer msg);
-  void SendAsync(boost::asio::const_buffer msg, OperationTag tag,
-                 SendHandler handler);
-  void SendAsync(boost::asio::const_buffer msg, SendHandler handler) {
-    SendAsync(msg, 0, handler);
-  }
+  bool TrySend(const Message& msg);
+  void SendAsync(Message* msg, OperationTag tag, SendHandler handler);
+  void SendAsync(Message* msg, SendHandler handler);
   bool CancelSend(OperationTag tag);
   void ReceiveAsync(boost::asio::mutable_buffer msg, ReceiveHandler handler);
 
@@ -74,13 +72,14 @@ class MessageTransport : public std::enable_shared_from_this<MessageTransport> {
 
   struct PendingSend {
     OperationTag tag;  // 0 => operation cannot be canceled
-    boost::asio::const_buffer msg;
+    utils::SharedByteVector msg_bytes;
     SendHandler handler;
   };
 
   MessageTransportWeakPtr MakeWeakPtr() { return shared_from_this(); }
-  bool TrySendImpl(boost::asio::const_buffer msg);
+  bool TrySendImpl(const utils::ByteVector& msg_bytes);
   bool CanSend(std::size_t msg_size) const;
+  void SendAsyncImpl(Message* msg, OperationTag tag, SendHandler handler);
   void SendSomeBytesToTransport();
   void RetrySendingPendingSends();
   bool TryGetReceivedSizeField(std::size_t* msg_size);

@@ -169,6 +169,9 @@ public static partial class Yogi
 
         /// <summary>Operation is not running.</summary>
         OperationNotRunning = -43,
+
+        /// <summary>User-supplied data is not valid MessagePack.</summary>
+        InvalidUserMsgPack = -44,
     }
 
     /// <summary>

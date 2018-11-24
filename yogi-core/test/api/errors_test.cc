@@ -17,7 +17,7 @@
 
 #include "../common.h"
 
-static constexpr int kLastError = YOGI_ERR_OPERATION_NOT_RUNNING;
+static constexpr int kLastError = YOGI_ERR_INVALID_USER_MSGPACK;
 
 TEST(ErrorsTest, GetErrorString) {
   EXPECT_STRNE(YOGI_GetErrorString(-2), YOGI_GetErrorString(-1));

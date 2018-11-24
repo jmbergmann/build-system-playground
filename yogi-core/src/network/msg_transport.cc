@@ -78,40 +78,27 @@ MessageTransport::MessageTransport(TransportPtr transport,
 
 void MessageTransport::Start() { ReceiveSomeBytesFromTransport(); }
 
-bool MessageTransport::TrySend(boost::asio::const_buffer msg) {
+bool MessageTransport::TrySend(const Message& msg) {
   std::lock_guard<std::mutex> lock(tx_mutex_);
   if (last_tx_error_.IsError()) {
     throw last_tx_error_.ToError();
   }
 
   if (pending_sends_.empty()) {
-    return TrySendImpl(msg);
+    return TrySendImpl(msg.GetMessageAsBytes());
   } else {
     return false;
   }
 }
 
-void MessageTransport::SendAsync(boost::asio::const_buffer msg,
-                                 OperationTag tag, SendHandler handler) {
-  std::lock_guard<std::mutex> lock(tx_mutex_);
+void MessageTransport::SendAsync(Message* msg, OperationTag tag,
+                                 SendHandler handler) {
+  YOGI_ASSERT(tag != 0);
+  SendAsyncImpl(msg, tag, handler);
+}
 
-  if (tag != 0) {
-    CheckOperationTagIsNotUsed(tag);
-  }
-
-  if (last_tx_error_.IsError()) {
-    transport_->GetContext()->Post([=] { handler(last_tx_error_); });
-    return;
-  }
-
-  if (pending_sends_.empty() && TrySendImpl(msg)) {
-    transport_->GetContext()->Post([=] { handler(api::kSuccess); });
-  } else {
-    PendingSend ps = {tag, msg, handler};
-    pending_sends_.push_back(ps);
-
-    YOGI_ASSERT(send_to_transport_running_);
-  }
+void MessageTransport::SendAsync(Message* msg, SendHandler handler) {
+  SendAsyncImpl(msg, 0, handler);
 }
 
 bool MessageTransport::CancelSend(OperationTag tag) {
@@ -159,18 +146,18 @@ void MessageTransport::CancelReceive() {
       [=] { handler(api::Error(YOGI_ERR_CANCELED), 0); });
 }
 
-bool MessageTransport::TrySendImpl(boost::asio::const_buffer msg) {
-  if (!CanSend(msg.size())) return false;
+bool MessageTransport::TrySendImpl(const utils::ByteVector& msg_bytes) {
+  if (!CanSend(msg_bytes.size())) return false;
 
   SizeFieldBuffer size_field_buf;
-  auto n = internal::SerializeMsgSizeField(msg.size(), &size_field_buf);
+  auto n = internal::SerializeMsgSizeField(msg_bytes.size(), &size_field_buf);
   auto bytes_written = tx_rb_.Write(size_field_buf.data(), n);
   YOGI_UNUSED(bytes_written);
   YOGI_ASSERT(bytes_written == n);
 
-  bytes_written =
-      tx_rb_.Write(static_cast<const utils::Byte*>(msg.data()), msg.size());
-  YOGI_ASSERT(bytes_written == msg.size());
+  bytes_written = tx_rb_.Write(
+      static_cast<const utils::Byte*>(msg_bytes.data()), msg_bytes.size());
+  YOGI_ASSERT(bytes_written == msg_bytes.size());
 
   SendSomeBytesToTransport();
 
@@ -184,6 +171,29 @@ bool MessageTransport::CanSend(std::size_t msg_size) const {
   auto n = tx_rb_.AvailableForWrite();
   if (n >= msg_size + 5) return true;  // optimisation since this is very likely
   return n >= msg_size + internal::CalculateMsgSizeFieldLength(msg_size);
+}
+
+void MessageTransport::SendAsyncImpl(Message* msg, OperationTag tag,
+                                     SendHandler handler) {
+  std::lock_guard<std::mutex> lock(tx_mutex_);
+
+  if (tag != 0) {
+    CheckOperationTagIsNotUsed(tag);
+  }
+
+  if (last_tx_error_.IsError()) {
+    transport_->GetContext()->Post([=] { handler(last_tx_error_); });
+    return;
+  }
+
+  if (pending_sends_.empty() && TrySendImpl(msg->GetMessageAsBytes())) {
+    transport_->GetContext()->Post([=] { handler(api::kSuccess); });
+  } else {
+    PendingSend ps = {tag, msg->GetMessageAsSharedBytes(), handler};
+    pending_sends_.push_back(ps);
+
+    YOGI_ASSERT(send_to_transport_running_);
+  }
 }
 
 void MessageTransport::SendSomeBytesToTransport() {
@@ -216,7 +226,7 @@ void MessageTransport::SendSomeBytesToTransport() {
 
 void MessageTransport::RetrySendingPendingSends() {
   auto it = pending_sends_.begin();
-  while (it != pending_sends_.end() && TrySendImpl(it->msg)) {
+  while (it != pending_sends_.end() && TrySendImpl(*it->msg_bytes)) {
     auto handler = std::move(it->handler);
     transport_->GetContext()->Post([=] { handler(api::kSuccess); });
     ++it;

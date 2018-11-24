@@ -158,6 +158,9 @@ const char* Result::GetDescription() const {
 
     case YOGI_ERR_OPERATION_NOT_RUNNING:
       return "Operation is not running";
+
+    case YOGI_ERR_INVALID_USER_MSGPACK:
+      return "User-supplied data is not valid MessagePack";
   }
 
   return "Invalid error code";

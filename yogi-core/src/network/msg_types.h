@@ -18,15 +18,19 @@
 #pragma once
 
 #include "../config.h"
-#include "../api/enums.h"
+#include "../utils/types.h"
 
-#include <boost/asio/buffer.hpp>
+#include <fstream>
 
-namespace utils {
+namespace network {
 
-class Payload {
- public:
-  Payload(boost::asio::const_buffer data, api::Encoding enc) {}
+enum MessageType : utils::Byte {
+  kHeartbeat, // This is a message whose length is zero (msg type is omitted)
+  kAcknowledge,
+  kBroadcast,
 };
 
-}  // namespace utils
+}  // namespace network
+
+std::ostream& operator<<(std::ostream& os,
+                         const network::MessageType& msg_type);

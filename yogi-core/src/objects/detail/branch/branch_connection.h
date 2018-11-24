@@ -27,6 +27,7 @@
 #include <functional>
 #include <memory>
 #include <atomic>
+#include <fstream>
 
 namespace objects {
 namespace detail {
@@ -63,30 +64,16 @@ class BranchConnection : public std::enable_shared_from_this<BranchConnection> {
                     CompletionHandler handler);
   void RunSession(CompletionHandler handler);
 
-  bool TrySend(boost::asio::const_buffer msg) {
+  bool TrySend(const network::Message& msg) {
     return msg_transport_->TrySend(msg);
   }
 
-  bool TrySend(const utils::ByteVector& msg) {
-    return TrySend(boost::asio::buffer(msg));
-  }
-
-  void SendAsync(boost::asio::const_buffer msg, OperationTag tag,
-                 SendHandler handler) {
+  void SendAsync(network::Message* msg, OperationTag tag, SendHandler handler) {
     msg_transport_->SendAsync(msg, tag, handler);
   }
 
-  void SendAsync(boost::asio::const_buffer msg, SendHandler handler) {
-    SendAsync(msg, 0, handler);
-  }
-
-  void SendAsync(const utils::ByteVector& msg, OperationTag tag,
-                 SendHandler handler) {
-    SendAsync(boost::asio::buffer(msg), tag, handler);
-  }
-
-  void SendAsync(const utils::ByteVector& msg, SendHandler handler) {
-    SendAsync(msg, 0, handler);
+  void SendAsync(network::Message* msg, SendHandler handler) {
+    msg_transport_->SendAsync(msg, handler);
   }
 
   bool CancelSend(OperationTag tag) { return msg_transport_->CancelSend(tag); }
@@ -146,8 +133,8 @@ class BranchConnection : public std::enable_shared_from_this<BranchConnection> {
   const LocalBranchInfoPtr local_info_;
   const boost::asio::ip::address peer_address_;
   const utils::Timestamp connected_since_;
-  const utils::ByteVector heartbeat_msg_;
-  const utils::SharedByteVector ack_msg_;
+  network::Message heartbeat_msg_;
+  network::Message ack_msg_;
   RemoteBranchInfoPtr remote_info_;
   utils::SharedByteVector received_msg_;
   network::MessageTransportPtr msg_transport_;
@@ -159,3 +146,6 @@ class BranchConnection : public std::enable_shared_from_this<BranchConnection> {
 
 }  // namespace detail
 }  // namespace objects
+
+std::ostream& operator<<(std::ostream& os,
+                         const objects::detail::BranchConnection& conn);

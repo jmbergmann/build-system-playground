@@ -18,6 +18,7 @@
 #pragma once
 
 #include "../../../config.h"
+#include "../../../network/message.h"
 #include "../../context.h"
 #include "../../logger.h"
 #include "connection_manager.h"
@@ -33,10 +34,10 @@ class BroadcastManager final
     : public std::enable_shared_from_this<BroadcastManager> {
  public:
   typedef network::MessageTransport::OperationTag SendBroadcastOperationId;
-  typedef std::function<void(const api::Error& res,
+  typedef std::function<void(const api::Result& res,
                              SendBroadcastOperationId oid)>
       SendBroadcastHandler;
-  typedef std::function<void(const api::Error& res, std::size_t size)>
+  typedef std::function<void(const api::Result& res, std::size_t size)>
       ReceiveBroadcastHandler;
 
   BroadcastManager(ContextPtr context, ConnectionManager& conn_manager);
@@ -58,12 +59,25 @@ class BroadcastManager final
   bool CancelReceiveBroadcast();
 
  private:
+  typedef std::shared_ptr<int> SharedCounter;
+
+  void SendNowOrLater(SharedCounter* pending_handlers, network::Message* msg,
+                      BranchConnectionPtr conn, bool retry,
+                      SendBroadcastHandler handler,
+                      SendBroadcastOperationId oid);
+
+  void StoreOidForLaterOrCallHandlerNow(SharedCounter pending_handlers,
+                                        SendBroadcastHandler handler,
+                                        SendBroadcastOperationId oid);
+
+  bool RemoveActiveOid(SendBroadcastOperationId oid);
+
   static const LoggerPtr logger_;
 
   const ContextPtr context_;
   ConnectionManager& conn_manager_;
   std::mutex mutex_;
-  std::vector<SendBroadcastOperationId> oids_;
+  std::vector<SendBroadcastOperationId> active_oids_;
 };
 
 typedef std::shared_ptr<BroadcastManager> BroadcastManagerPtr;

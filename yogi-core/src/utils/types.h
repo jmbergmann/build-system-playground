@@ -22,6 +22,7 @@
 #include <vector>
 #include <memory>
 #include <utility>
+#include <fstream>
 
 #define YOGI_DEFINE_FLAG_OPERATORS(enum_)                                 \
   inline enum_ operator|(enum_ a, enum_ b) {                              \
@@ -43,3 +44,5 @@ SharedByteVector MakeSharedByteVector(Args&&... args) {
 }
 
 }  // namespace utils
+
+std::ostream& operator<<(std::ostream& os, const utils::ByteVector& bytes);

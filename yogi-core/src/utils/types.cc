@@ -15,12 +15,24 @@
  * along with this library. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "payload.h"
+#include "types.h"
 
-#include <msgpack.hpp>
+#include <ios>
+#include <iomanip>
 
-namespace utils {
+std::ostream& operator<<(std::ostream& os, const utils::ByteVector& bytes) {
+  auto flags = os.flags();
 
+  os << '[';
+  os << std::setw(2) << std::setfill('0') << std::hex;
+  for (std::size_t i = 0; i < bytes.size(); ++i) {
+    os << bytes[i];
+    if (i < bytes.size() - 1) {
+      os << ", ";
+    }
+  }
+  os << ']';
 
-
-}  // namespace utils
+  os.flags(flags);
+  return os;
+}

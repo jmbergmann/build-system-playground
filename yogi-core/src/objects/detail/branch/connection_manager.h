@@ -88,7 +88,7 @@ class ConnectionManager
     }
   }
 
-  OperationTag MakeOperationTag();
+  OperationTag MakeOperationId();
 
  private:
   typedef std::unordered_set<boost::uuids::uuid,

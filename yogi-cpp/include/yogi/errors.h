@@ -176,6 +176,9 @@ enum class ErrorCode {
 
   /// Operation is not running
   kOperationNotRunning = -43,
+
+  /// User-supplied data is not valid MessagePack
+  kInvalidUserMsgPack = -44,
 };
 
 template <>
