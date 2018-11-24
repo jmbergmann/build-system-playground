@@ -40,7 +40,13 @@ TEST(ObjectFormatTest, FormatObject) {
   res = YOGI_FormatObject(context, str, sizeof(str), "$T$X$x", nullptr);
   EXPECT_EQ(res, YOGI_OK);
   std::string s3 = str;
-  EXPECT_NE(s3, s2);
+
+  std::string tmp = s3.substr(sizeof("Context"));
+  if (tmp.find_first_of("abcdef") == std::string::npos) {
+    EXPECT_EQ(s3, s2);
+  } else {
+    EXPECT_NE(s3, s2);
+  }
 
   res = YOGI_FormatObject(nullptr, str, sizeof(str), nullptr, "abc");
   EXPECT_EQ(res, YOGI_OK);
