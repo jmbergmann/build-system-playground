@@ -137,7 +137,7 @@ TEST_F(TcpTransportTest, ConnectTimeout) {
   }
 
   EXPECT_GT(std::chrono::steady_clock::now(), start_time + 1ms);
-  EXPECT_LT(std::chrono::steady_clock::now(), start_time + 1ms + kTimingMargin);
+  EXPECT_LT(std::chrono::steady_clock::now(), start_time + 1ms + 1s);
 }
 
 TEST_F(TcpTransportTest, PeerDescription) {
