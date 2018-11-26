@@ -28,6 +28,7 @@ class Error;
 
 class Result {
  public:
+  Result() : ec_(YOGI_ERR_UNKNOWN) {}
   explicit Result(int error_code) : ec_(error_code) {}
 
   bool operator==(const Result& rhs) const { return ec_ == rhs.ec_; }

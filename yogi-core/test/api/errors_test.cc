@@ -19,6 +19,11 @@
 
 static constexpr int kLastError = YOGI_ERR_INVALID_USER_MSGPACK;
 
+TEST(ErrorsTest, DefaultResultConstructor) {
+  api::Result res;
+  EXPECT_EQ(res.GetValue(), YOGI_ERR_UNKNOWN);
+}
+
 TEST(ErrorsTest, GetErrorString) {
   EXPECT_STRNE(YOGI_GetErrorString(-2), YOGI_GetErrorString(-1));
   EXPECT_STREQ(YOGI_GetErrorString(0), YOGI_GetErrorString(1));

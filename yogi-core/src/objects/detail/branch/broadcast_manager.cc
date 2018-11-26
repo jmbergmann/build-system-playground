@@ -30,9 +30,17 @@ BroadcastManager::~BroadcastManager() {}
 
 api::Result BroadcastManager::SendBroadcast(api::Encoding enc,
                                             boost::asio::const_buffer data,
-                                            bool retry) {
-  throw "TODO";
-  return api::kSuccess;
+                                            bool block) {
+  api::Result result;
+  auto oid = SendBroadcastAsync(enc, data, block, [&](auto& res, auto oid) {
+    result = res;
+    this->sync_cv_.notify_all();
+  });
+
+  std::unique_lock<std::mutex> lock(sync_mutex_);
+  sync_cv_.wait(lock, [&] { return result != api::Result(); });
+
+  return result;
 }
 
 BroadcastManager::SendBroadcastOperationId BroadcastManager::SendBroadcastAsync(
@@ -54,7 +62,7 @@ BroadcastManager::SendBroadcastOperationId BroadcastManager::SendBroadcastAsync(
 
 bool BroadcastManager::CancelSendBroadcast(SendBroadcastOperationId oid) {
   {
-    std::lock_guard<std::mutex> lock(mutex_);
+    std::lock_guard<std::mutex> lock(oids_mutex_);
     auto it = std::find(active_oids_.begin(), active_oids_.end(), oid);
     if (it == active_oids_.end()) return false;
     active_oids_.erase(it);
@@ -117,7 +125,7 @@ void BroadcastManager::StoreOidForLaterOrCallHandlerNow(
     SharedCounter pending_handlers, SendBroadcastHandler handler,
     SendBroadcastOperationId oid) {
   if (pending_handlers) {
-    std::lock_guard<std::mutex> lock(mutex_);
+    std::lock_guard<std::mutex> lock(oids_mutex_);
     active_oids_.push_back(oid);
   } else {
     context_->Post([=] { handler(api::kSuccess, oid); });
@@ -125,7 +133,7 @@ void BroadcastManager::StoreOidForLaterOrCallHandlerNow(
 }
 
 bool BroadcastManager::RemoveActiveOid(SendBroadcastOperationId oid) {
-  std::lock_guard<std::mutex> lock(mutex_);
+  std::lock_guard<std::mutex> lock(oids_mutex_);
   auto it = std::find(active_oids_.begin(), active_oids_.end(), oid);
   if (it != active_oids_.end()) {
     active_oids_.erase(it);

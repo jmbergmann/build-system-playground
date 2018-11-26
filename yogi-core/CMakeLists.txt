@@ -1,6 +1,10 @@
 # Compiler flags
 if (WIN32)
-  set (CMAKE_CXX_FLAGS "/EHsc /permissive- /W4 /w14640")
+  set (CMAKE_CXX_FLAGS "/EHsc /permissive- /W4 /w14640 /GL")
+  set (CMAKE_STATIC_LINKER_FLAGS "/LTCG")
+  set (CMAKE_SHARED_LINKER_FLAGS "${CMAKE_STATIC_LINKER_FLAGS}")
+  set (CMAKE_MODULE_LINKER_FLAGS "${CMAKE_STATIC_LINKER_FLAGS}")
+  set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_STATIC_LINKER_FLAGS}")
   use_static_windows_runtime ()
 
   add_definitions(
@@ -16,7 +20,7 @@ else ()
   set (CMAKE_CXX_STANDARD        14)
   set (CMAKE_CXX_FLAGS           "-std=c++${CMAKE_CXX_STANDARD} ${warnings} ${ignored_warnings} -fvisibility=hidden -fPIC -DBOOST_ALL_DYN_LINK")
   set (CMAKE_CXX_FLAGS_DEBUG     "-g -ggdb")
-  set (CMAKE_CXX_FLAGS_RELEASE   "-O2 -DNDEBUG")
+  set (CMAKE_CXX_FLAGS_RELEASE   "-O2 -DNDEBUG -fwhole-program -flto")
   set (CMAKE_SHARED_LINKER_FLAGS "${export_map}")
 endif ()
 

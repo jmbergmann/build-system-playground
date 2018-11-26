@@ -44,40 +44,21 @@ class Branch : public api::ExposedObjectT<Branch, api::ObjectType::kBranch> {
 
   void Start();
 
-  const boost::uuids::uuid& GetUuid() const { return info_->GetUuid(); }
+  const boost::uuids::uuid& GetUuid() const;
   std::string MakeInfoString() const;
   BranchInfoStringsList MakeConnectedBranchesInfoStrings() const;
-
-  void AwaitEventAsync(api::BranchEvents events, BranchEventHandler handler) {
-    connection_manager_->AwaitEventAsync(events, handler);
-  }
-
-  void CancelAwaitEvent() { connection_manager_->CancelAwaitEvent(); }
-
+  void AwaitEventAsync(api::BranchEvents events, BranchEventHandler handler);
+  void CancelAwaitEvent();
   SendBroadcastOperationId SendBroadcastAsync(api::Encoding enc,
                                               boost::asio::const_buffer data,
                                               bool retry,
-                                              SendBroadcastHandler handler) {
-    return broadcast_manager_->SendBroadcastAsync(enc, data, retry, handler);
-  }
-
+                                              SendBroadcastHandler handler);
   api::Result SendBroadcast(api::Encoding enc, boost::asio::const_buffer data,
-                            bool retry) {
-    return broadcast_manager_->SendBroadcast(enc, data, retry);
-  }
-
-  bool CancelSendBroadcast(SendBroadcastOperationId oid) {
-    return broadcast_manager_->CancelSendBroadcast(oid);
-  }
-
+                            bool block);
+  bool CancelSendBroadcast(SendBroadcastOperationId oid);
   void ReceiveBroadcast(api::Encoding enc, boost::asio::mutable_buffer data,
-                        ReceiveBroadcastHandler handler) {
-    broadcast_manager_->ReceiveBroadcast(enc, data, handler);
-  }
-
-  bool CancelReceiveBroadcast() {
-    return broadcast_manager_->CancelReceiveBroadcast();
-  }
+                        ReceiveBroadcastHandler handler);
+  bool CancelReceiveBroadcast();
 
  private:
   void OnConnectionChanged(const api::Result& res,

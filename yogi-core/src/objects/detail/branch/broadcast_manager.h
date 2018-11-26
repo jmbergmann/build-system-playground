@@ -76,8 +76,10 @@ class BroadcastManager final
 
   const ContextPtr context_;
   ConnectionManager& conn_manager_;
-  std::mutex mutex_;
+  std::mutex oids_mutex_;
   std::vector<SendBroadcastOperationId> active_oids_;
+  std::mutex sync_mutex_;
+  std::condition_variable sync_cv_;
 };
 
 typedef std::shared_ptr<BroadcastManager> BroadcastManagerPtr;
