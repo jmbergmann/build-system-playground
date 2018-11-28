@@ -39,9 +39,10 @@ typedef std::weak_ptr<BranchConnection> BranchConnectionWeakPtr;
 class BranchConnection : public std::enable_shared_from_this<BranchConnection> {
  public:
   typedef std::function<void(const api::Result&)> CompletionHandler;
+  typedef std::function<void(const utils::SharedByteVector&)>
+      MessageReceiveHandler;
   using OperationTag = network::MessageTransport::OperationTag;
   using SendHandler = network::MessageTransport::SendHandler;
-  using ReceiveHandler = network::MessageTransport::ReceiveHandler;
 
   BranchConnection(network::TransportPtr transport,
                    const boost::asio::ip::address& peer_address,
@@ -62,7 +63,8 @@ class BranchConnection : public std::enable_shared_from_this<BranchConnection> {
   void ExchangeBranchInfo(CompletionHandler handler);
   void Authenticate(utils::SharedByteVector password_hash,
                     CompletionHandler handler);
-  void RunSession(CompletionHandler handler);
+  void RunSession(MessageReceiveHandler rcv_handler,
+                  CompletionHandler session_handler);
 
   bool TrySend(const network::Message& msg) {
     return msg_transport_->TrySend(msg);
@@ -77,16 +79,6 @@ class BranchConnection : public std::enable_shared_from_this<BranchConnection> {
   }
 
   bool CancelSend(OperationTag tag) { return msg_transport_->CancelSend(tag); }
-
-  void ReceiveAsync(boost::asio::mutable_buffer msg, ReceiveHandler handler) {
-    msg_transport_->ReceiveAsync(msg, handler);
-  }
-
-  void ReceiveAsync(utils::ByteVector* msg, ReceiveHandler handler) {
-    ReceiveAsync(boost::asio::buffer(*msg), handler);
-  }
-
-  void CancelReceive();
 
  private:
   BranchConnectionWeakPtr MakeWeakPtr() { return {shared_from_this()}; }
@@ -120,11 +112,12 @@ class BranchConnection : public std::enable_shared_from_this<BranchConnection> {
                              CompletionHandler handler);
   void RestartHeartbeatTimer();
   void OnHeartbeatTimerExpired();
-  void StartReceive();
+  void StartReceive(utils::SharedByteVector buffer);
   void OnSessionError(const api::Error& err);
   void CheckAckAndSetNextResult(const api::Result& res,
                                 const utils::ByteVector& ack_msg);
   bool CheckNextResult(CompletionHandler handler);
+  void OnMessageReceived(const utils::SharedByteVector& msg);
 
   static const LoggerPtr logger_;
 
@@ -136,10 +129,10 @@ class BranchConnection : public std::enable_shared_from_this<BranchConnection> {
   network::Message heartbeat_msg_;
   network::Message ack_msg_;
   RemoteBranchInfoPtr remote_info_;
-  utils::SharedByteVector received_msg_;
   network::MessageTransportPtr msg_transport_;
   std::atomic<bool> session_running_;
-  CompletionHandler session_completion_handler_;
+  CompletionHandler session_handler_;
+  MessageReceiveHandler rcv_handler_;
   boost::asio::steady_timer heartbeat_timer_;
   api::Result next_result_;
 };

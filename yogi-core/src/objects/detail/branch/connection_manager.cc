@@ -101,13 +101,11 @@ void ConnectionManager::CancelAwaitEvent() {
   AwaitEventAsync(api::kNoEvent, {});
 }
 
-ConnectionManager::OperationTag ConnectionManager::MakeOperationId()
-{
+ConnectionManager::OperationTag ConnectionManager::MakeOperationId() {
   OperationTag tag;
   do {
     tag = ++last_op_tag_;
-  }
-  while (tag == 0);
+  } while (tag == 0);
 
   return tag;
 }
@@ -411,10 +409,15 @@ void ConnectionManager::OnAuthenticateFinished(const api::Result& res,
 
 void ConnectionManager::StartSession(BranchConnectionPtr conn) {
   auto weak_conn = BranchConnectionWeakPtr(conn);
-  conn->RunSession([this, weak_conn](auto& res) {
-    YOGI_ASSERT(weak_conn.lock());
-    this->OnSessionTerminated(res.ToError(), weak_conn.lock());
-  });
+  conn->RunSession(
+      [this, weak_conn](auto& msg) {
+        // TODO
+        YOGI_LOG_FATAL(logger_, "TODO: handle msg");
+      },
+      [this, weak_conn](auto& res) {
+        YOGI_ASSERT(weak_conn.lock());
+        this->OnSessionTerminated(res.ToError(), weak_conn.lock());
+      });
 
   EmitBranchEvent(api::kConnectFinishedEvent, api::kSuccess,
                   conn->GetRemoteBranchInfo()->GetUuid());

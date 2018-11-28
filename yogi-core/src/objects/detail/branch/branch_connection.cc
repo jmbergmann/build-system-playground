@@ -81,21 +81,21 @@ void BranchConnection::Authenticate(utils::SharedByteVector password_hash,
   });
 }
 
-void BranchConnection::RunSession(CompletionHandler handler) {
+void BranchConnection::RunSession(MessageReceiveHandler rcv_handler,
+                                  CompletionHandler session_handler) {
   YOGI_ASSERT(remote_info_);
   YOGI_ASSERT(!SessionRunning());
 
-  if (!CheckNextResult(handler)) return;
+  if (!CheckNextResult(session_handler)) return;
 
-  received_msg_ = utils::MakeSharedByteVector();
   msg_transport_ = std::make_shared<network::MessageTransport>(
       transport_, local_info_->GetTxQueueSize(), local_info_->GetRxQueueSize());
   msg_transport_->Start();
 
   RestartHeartbeatTimer();
-  StartReceive();
+  StartReceive(utils::MakeSharedByteVector());
   session_running_ = true;
-  session_completion_handler_ = handler;
+  session_handler_ = session_handler;
 }
 
 void BranchConnection::OnInfoSent(CompletionHandler handler) {
@@ -311,26 +311,27 @@ void BranchConnection::OnHeartbeatTimerExpired() {
   RestartHeartbeatTimer();
 }
 
-void BranchConnection::StartReceive() {
+void BranchConnection::StartReceive(utils::SharedByteVector buffer) {
   auto weak_self = std::weak_ptr<BranchConnection>(shared_from_this());
-  auto msg = received_msg_;
-  msg->resize(api::kMinRxQueueSize);
-  ReceiveAsync(&*msg, [=](auto& res, auto msg_size) {
-    auto self = weak_self.lock();
-    if (!self) return;
+  buffer->resize(api::kMinRxQueueSize);  // This will fit an entire message
+  msg_transport_->ReceiveAsync(boost::asio::buffer(*buffer),
+                               [=](auto& res, auto msg_size) {
+                                 auto self = weak_self.lock();
+                                 if (!self) return;
 
-    if (res.IsError()) {
-      self->OnSessionError(res.ToError());
-    } else {
-      msg->resize(msg_size);
-      self->StartReceive();
-    }
-  });
+                                 if (res.IsError()) {
+                                   self->OnSessionError(res.ToError());
+                                 } else {
+                                   buffer->resize(msg_size);
+                                   self->OnMessageReceived(buffer);
+                                   self->StartReceive(buffer);
+                                 }
+                               });
 }
 
 void BranchConnection::OnSessionError(const api::Error& err) {
   heartbeat_timer_.cancel();
-  session_completion_handler_(err);
+  session_handler_(err);
 }
 
 void BranchConnection::CheckAckAndSetNextResult(
@@ -352,6 +353,10 @@ bool BranchConnection::CheckNextResult(CompletionHandler handler) {
 
   return true;
 }
+
+  void BranchConnection::OnMessageReceived(const utils::SharedByteVector& msg) {
+
+  }
 
 const LoggerPtr BranchConnection::logger_ =
     Logger::CreateStaticInternalLogger("Branch.Connection");
