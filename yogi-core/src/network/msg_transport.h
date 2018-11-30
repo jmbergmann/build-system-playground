@@ -21,7 +21,7 @@
 #include "../utils/ringbuffer.h"
 #include "../objects/logger.h"
 #include "transport.h"
-#include "message.h"
+#include "messages.h"
 
 #include <boost/asio/buffer.hpp>
 #include <functional>

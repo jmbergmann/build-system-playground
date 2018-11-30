@@ -19,7 +19,7 @@
 #include "../src/utils/crypto.h"
 #include "../src/utils/system.h"
 #include "../src/api/constants.h"
-#include "../src/network/msg_types.h"
+#include "../src/network/messages.h"
 
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/asio.hpp>

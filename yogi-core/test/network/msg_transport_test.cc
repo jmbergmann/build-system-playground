@@ -22,6 +22,13 @@
 #include <atomic>
 #include <algorithm>
 
+class FakeMessage : public network::Message {
+ public:
+  using network::Message::Message;
+
+  virtual std::string ToString() const override { return {}; }
+};
+
 class FakeTransport : public network::Transport {
  public:
   FakeTransport(objects::ContextPtr context)
@@ -82,9 +89,9 @@ class MessageTransportTest : public TestFixture {
     uut_ = std::make_shared<network::MessageTransport>(transport_, 8, 8);
   }
 
-  static network::Message MakeMessage(std::size_t msg_size) {
+  static FakeMessage MakeMessage(std::size_t msg_size) {
     if (msg_size == 0) {
-      return network::Message(network::MessageType::kHeartbeat);
+      return FakeMessage(network::MessageType::kHeartbeat);
     }
 
     static std::default_random_engine gen;
@@ -95,8 +102,8 @@ class MessageTransportTest : public TestFixture {
       byte = static_cast<utils::Byte>(dist(gen));
     }
 
-    network::Message msg(network::MessageType::kBroadcast,
-                         boost::asio::buffer(data));
+    FakeMessage msg(network::MessageType::kBroadcast,
+                    boost::asio::buffer(data));
     msg.GetMessageAsSharedBytes();  // To trigger copying the data vector
     return msg;
   }
@@ -375,7 +382,7 @@ TEST_F(MessageTransportTest, Stress) {
   static std::default_random_engine gen;
   std::uniform_int_distribution<std::size_t> dist(1, kQueueSize - 5);
 
-  std::vector<network::Message> msgs;
+  std::vector<FakeMessage> msgs;
   while (transport_->tx_data.size() < kInputSize) {
     auto msg = MakeMessage(dist(gen));
     msgs.push_back(msg);

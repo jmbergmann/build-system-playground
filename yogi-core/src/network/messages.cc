@@ -15,7 +15,7 @@
  * along with this library. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "message.h"
+#include "messages.h"
 #include "../api/errors.h"
 
 #include <nlohmann/json.hpp>
@@ -61,15 +61,6 @@ Message::Message(MessageType type, boost::asio::const_buffer user_data,
     : Message(type, {}, user_data, user_enc) {}
 
 std::size_t Message::GetSize() const { return GetMessageAsBytes().size(); }
-
-utils::ByteVector Message::GetHeader() const {
-  auto& msg = GetMessageAsBytes();
-  return utils::ByteVector(msg.begin() + 1, msg.begin() + 1 + header_size_);
-}
-
-std::size_t Message::GetUserDataSize() const {
-  return GetSize() - 1 - header_size_;
-}
 
 const utils::ByteVector& Message::GetMessageAsBytes() const {
   if (shared_msg_) {
@@ -149,14 +140,29 @@ void Message::CheckUserDataIsValidMsgPack(boost::asio::const_buffer user_data) {
   }
 }
 
+namespace messages {
+
+Heartbeat::Heartbeat() : Message(MessageType::kHeartbeat) {}
+
+std::string Heartbeat::ToString() const { return "Heartbeat"; }
+
+Acknowledge::Acknowledge() : Message(MessageType::kAcknowledge) {}
+
+std::string Acknowledge::ToString() const { return "Acknowledge"; }
+
+Broadcast::Broadcast(boost::asio::const_buffer data, api::Encoding enc)
+    : Message(MessageType::kBroadcast, data, enc) {}
+
+std::string Broadcast::ToString() const {
+  std::stringstream ss;
+  ss << "Broadcast, " << GetMessageAsBytes().size() - 1 << " bytes user data";
+  return ss.str();
+}
+
+}  // namespace messages
 }  // namespace network
 
 std::ostream& operator<<(std::ostream& os, const network::Message& msg) {
-  os << '[';
-  os << msg.GetType() << ", ";
-  os << msg.GetHeader() << ", ";
-  os << msg.GetUserDataSize() << " bytes user data";
-  os << ']';
-
+  os << msg.ToString();
   return os;
 }

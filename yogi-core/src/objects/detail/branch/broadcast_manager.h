@@ -18,7 +18,7 @@
 #pragma once
 
 #include "../../../config.h"
-#include "../../../network/message.h"
+#include "../../../network/messages.h"
 #include "../../context.h"
 #include "../../logger.h"
 #include "connection_manager.h"

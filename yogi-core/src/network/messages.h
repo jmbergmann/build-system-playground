@@ -20,13 +20,18 @@
 #include "../config.h"
 #include "../api/enums.h"
 #include "../utils/types.h"
-#include "msg_types.h"
 
 #include <boost/asio/buffer.hpp>
 #include <fstream>
 #include <array>
 
 namespace network {
+
+enum MessageType : utils::Byte {
+  kHeartbeat,
+  kAcknowledge,
+  kBroadcast,
+};
 
 class Message {
  public:
@@ -39,24 +44,46 @@ class Message {
 
   MessageType GetType() const { return type_; }
   std::size_t GetSize() const;
-  utils::ByteVector GetHeader() const;
-  std::size_t GetUserDataSize() const;
   const utils::ByteVector& GetMessageAsBytes() const;
   utils::SharedByteVector GetMessageAsSharedBytes();
+
+  virtual std::string ToString() const =0;
 
  private:
   void PopulateMsg(boost::asio::const_buffer header,
                    boost::asio::const_buffer user_data, api::Encoding user_enc);
   utils::ByteVector CheckAndConvertUserDataFromJsonToMsgPack(
       boost::asio::const_buffer user_data);
-  void CheckUserDataIsValidMsgPack(boost::asio::const_buffer user_data);
 
+  void CheckUserDataIsValidMsgPack(boost::asio::const_buffer user_data);
   const MessageType type_;
   const std::size_t header_size_;
   utils::ByteVector msg_;
   utils::SharedByteVector shared_msg_;
 };
 
+namespace messages {
+
+// This is a message whose length is zero (msg type is omitted)
+class Heartbeat : public Message {
+ public:
+  Heartbeat();
+  virtual std::string ToString() const override;
+};
+
+class Acknowledge : public Message {
+ public:
+  Acknowledge();
+  virtual std::string ToString() const override;
+};
+
+class Broadcast : public Message {
+ public:
+  Broadcast(boost::asio::const_buffer data, api::Encoding enc);
+  virtual std::string ToString() const override;
+};
+
+}  // namespace messages
 }  // namespace network
 
 std::ostream& operator<<(std::ostream& os, const network::Message& msg);

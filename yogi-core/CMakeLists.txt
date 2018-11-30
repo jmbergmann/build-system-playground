@@ -49,9 +49,8 @@ add_library (yogi-core-static STATIC
   src/licenses/3rd_party_licenses.cc
   src/licenses/yogi_license.cc
   src/network/ip.cc
-  src/network/message.cc
+  src/network/messages.cc
   src/network/msg_transport.cc
-  src/network/msg_types.cc
   src/network/tcp_transport.cc
   src/network/transport.cc
   src/objects/detail/branch/advertising_receiver.cc

@@ -31,8 +31,6 @@ BranchConnection::BranchConnection(network::TransportPtr transport,
       local_info_(local_info),
       peer_address_(peer_address),
       connected_since_(utils::Timestamp::Now()),
-      heartbeat_msg_(network::MessageType::kHeartbeat),
-      ack_msg_(network::MessageType::kAcknowledge),
       session_running_(false),
       heartbeat_timer_(context_->IoContext()),
       next_result_(api::kSuccess) {}

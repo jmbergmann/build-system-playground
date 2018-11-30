@@ -126,8 +126,8 @@ class BranchConnection : public std::enable_shared_from_this<BranchConnection> {
   const LocalBranchInfoPtr local_info_;
   const boost::asio::ip::address peer_address_;
   const utils::Timestamp connected_since_;
-  network::Message heartbeat_msg_;
-  network::Message ack_msg_;
+  network::messages::Heartbeat heartbeat_msg_;
+  network::messages::Acknowledge ack_msg_;
   RemoteBranchInfoPtr remote_info_;
   network::MessageTransportPtr msg_transport_;
   std::atomic<bool> session_running_;

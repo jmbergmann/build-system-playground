@@ -32,7 +32,7 @@ api::Result BroadcastManager::SendBroadcast(api::Encoding enc,
                                             boost::asio::const_buffer data,
                                             bool block) {
   api::Result result;
-  auto oid = SendBroadcastAsync(enc, data, block, [&](auto& res, auto oid) {
+  SendBroadcastAsync(enc, data, block, [&](auto& res, auto) {
     result = res;
     this->sync_cv_.notify_all();
   });
@@ -46,7 +46,7 @@ api::Result BroadcastManager::SendBroadcast(api::Encoding enc,
 BroadcastManager::SendBroadcastOperationId BroadcastManager::SendBroadcastAsync(
     api::Encoding enc, boost::asio::const_buffer data, bool retry,
     SendBroadcastHandler handler) {
-  network::Message msg(network::kBroadcast, data, enc);
+  network::messages::Broadcast msg(data, enc);
 
   auto oid = conn_manager_.MakeOperationId();
   std::shared_ptr<int> pending_handlers;
