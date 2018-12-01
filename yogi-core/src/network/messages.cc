@@ -40,7 +40,7 @@ struct MsgPackCheckVisitor : public msgpack::null_visitor {
 
 }  // namespace internal
 
-Message::Message(MessageType type) : type_(type), header_size_(0) {
+Message::Message(MessageType type) : type_(type) {
   if (type_ != MessageType::kHeartbeat) {
     msg_.push_back(type_);
   }
@@ -48,7 +48,7 @@ Message::Message(MessageType type) : type_(type), header_size_(0) {
 
 Message::Message(MessageType type, boost::asio::const_buffer header,
                  boost::asio::const_buffer user_data, api::Encoding user_enc)
-    : type_(type), header_size_(header.size()) {
+    : type_(type) {
   YOGI_ASSERT(type != MessageType::kHeartbeat);
   PopulateMsg(header, user_data, user_enc);
 }

@@ -97,3 +97,15 @@ TEST(MessagesTest, JsonToMsgPackConversion) {
   auto json = nlohmann::json::from_msgpack(data);
   EXPECT_EQ(json.value("x", -1), 456);
 }
+
+TEST(MessagesTest, CreateFromBytes) {
+  utils::ByteVector bytes = {MessageType::kBroadcast, 0x93, 0x01, 0x02, 0x03};
+
+  bool called = false;
+  FakeMessage::CreateFromBytes(bytes, [&](const Message& msg) {
+    EXPECT_EQ(msg.GetType(), MessageType::kBroadcast);
+    called = true;
+  });
+
+  EXPECT_TRUE(called);
+}

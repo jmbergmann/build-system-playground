@@ -35,6 +35,9 @@ enum MessageType : utils::Byte {
 
 class Message {
  public:
+  template <typename Fn>
+  static void CreateFromBytes(const utils::ByteVector& msg, Fn fn);
+
   explicit Message(MessageType type);
   Message(MessageType type, boost::asio::const_buffer header,
           boost::asio::const_buffer user_data, api::Encoding user_enc);
@@ -47,7 +50,7 @@ class Message {
   const utils::ByteVector& GetMessageAsBytes() const;
   utils::SharedByteVector GetMessageAsSharedBytes();
 
-  virtual std::string ToString() const =0;
+  virtual std::string ToString() const = 0;
 
  private:
   void PopulateMsg(boost::asio::const_buffer header,
@@ -57,7 +60,6 @@ class Message {
 
   void CheckUserDataIsValidMsgPack(boost::asio::const_buffer user_data);
   const MessageType type_;
-  const std::size_t header_size_;
   utils::ByteVector msg_;
   utils::SharedByteVector shared_msg_;
 };
@@ -79,11 +81,35 @@ class Acknowledge : public Message {
 
 class Broadcast : public Message {
  public:
+  Broadcast() : Message(MessageType::kBroadcast) {} // TODO: remove
   Broadcast(boost::asio::const_buffer data, api::Encoding enc);
   virtual std::string ToString() const override;
 };
 
 }  // namespace messages
+
+template <typename Fn>
+void Message::CreateFromBytes(const utils::ByteVector& msg, Fn fn) {
+  if (msg.empty()) {
+    fn(messages::Heartbeat());
+    return;
+  }
+
+  switch (msg[0]) {
+    case MessageType::kAcknowledge:
+      fn(messages::Acknowledge());
+      break;
+
+    case MessageType::kBroadcast:
+      fn(messages::Broadcast());
+      break;
+
+    default:
+      throw api::DescriptiveError(YOGI_ERR_DESERIALIZE_MSG_FAILED)
+          << "Unknown message type " << msg[0];
+  }
+}
+
 }  // namespace network
 
 std::ostream& operator<<(std::ostream& os, const network::Message& msg);
