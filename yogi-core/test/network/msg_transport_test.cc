@@ -17,23 +17,27 @@
 
 #include "../common.h"
 #include "../../src/network/msg_transport.h"
+using namespace network;
 
 #include <random>
 #include <atomic>
 #include <algorithm>
 
-class FakeMessage : public network::Message {
+class FakeOutgoingMessage : public OutgoingMessage,
+                            public MessageT<MessageType::kBroadcast> {
  public:
-  using network::Message::Message;
+  using MessageT::MakeMsgBytes;
+
+  FakeOutgoingMessage(utils::SmallByteVector serialized_msg)
+      : OutgoingMessage(serialized_msg) {}
 
   virtual std::string ToString() const override { return {}; }
 };
 
-class FakeTransport : public network::Transport {
+class FakeTransport : public Transport {
  public:
   FakeTransport(objects::ContextPtr context)
-      : network::Transport(context, std::chrono::nanoseconds::max(), true, "") {
-  }
+      : Transport(context, std::chrono::nanoseconds::max(), true, "") {}
 
   utils::ByteVector tx_data;
   utils::ByteVector rx_data;
@@ -86,25 +90,25 @@ class MessageTransportTest : public TestFixture {
   virtual void SetUp() override {
     context_ = std::make_shared<objects::Context>();
     transport_ = std::make_shared<FakeTransport>(context_);
-    uut_ = std::make_shared<network::MessageTransport>(transport_, 8, 8);
+    uut_ = std::make_shared<MessageTransport>(transport_, 8, 8);
   }
 
-  static FakeMessage MakeMessage(std::size_t msg_size) {
+  static FakeOutgoingMessage MakeMessage(std::size_t msg_size) {
     if (msg_size == 0) {
-      return FakeMessage(network::MessageType::kHeartbeat);
+      return FakeOutgoingMessage({});
     }
 
     static std::default_random_engine gen;
     std::uniform_int_distribution<int> dist(1, 100);
 
-    utils::ByteVector data(msg_size - 1);
+    utils::SmallByteVector data(msg_size - 1);
     for (auto& byte : data) {
       byte = static_cast<utils::Byte>(dist(gen));
     }
+    data.insert(data.begin(), FakeOutgoingMessage::kMessageType);
 
-    FakeMessage msg(network::MessageType::kBroadcast,
-                    boost::asio::buffer(data));
-    msg.GetMessageAsSharedBytes();  // To trigger copying the data vector
+    auto msg = FakeOutgoingMessage(data);
+    msg.SerializeShared();  // To trigger copying the data vector
     return msg;
   }
 
@@ -132,22 +136,22 @@ class MessageTransportTest : public TestFixture {
   }
 
   static void AppendToByteVector(utils::ByteVector* v,
-                                 const utils::ByteVector& bytes) {
+                                 const utils::SmallByteVector& bytes) {
     v->insert(v->end(), bytes.begin(), bytes.end());
   }
 
   static void AppendToByteVector(utils::ByteVector* v,
-                                 const network::Message& msg) {
-    AppendToByteVector(v, msg.GetMessageAsBytes());
+                                 const OutgoingMessage& msg) {
+    AppendToByteVector(v, msg.Serialize());
   }
 
   objects::ContextPtr context_;
   std::shared_ptr<FakeTransport> transport_;
-  network::MessageTransportPtr uut_;
+  MessageTransportPtr uut_;
 };
 
 TEST_F(MessageTransportTest, MsgSizeFieldSerialization) {
-  using namespace network::internal;
+  using namespace internal;
 
   struct Entry {
     std::size_t ser_length;
@@ -260,7 +264,7 @@ TEST_F(MessageTransportTest, CancelSend) {
   EXPECT_TRUE(uut_->TrySend(msg));
 
   bool called = false;
-  network::MessageTransport::OperationTag tag = 123;
+  MessageTransport::OperationTag tag = 123;
   uut_->SendAsync(&msg, tag, [&](auto& res) {
     EXPECT_EQ(res, api::Error(YOGI_ERR_CANCELED));
     called = true;
@@ -372,8 +376,7 @@ TEST_F(MessageTransportTest, MessageOrderPreservation) {
 TEST_F(MessageTransportTest, Stress) {
   // Bigger queue size so that the message size field can go beyond one byte
   const std::size_t kQueueSize = 300;
-  uut_ = std::make_shared<network::MessageTransport>(transport_, kQueueSize,
-                                                     kQueueSize);
+  uut_ = std::make_shared<MessageTransport>(transport_, kQueueSize, kQueueSize);
   uut_->Start();
 
   // Create randomly sized messages
@@ -382,7 +385,7 @@ TEST_F(MessageTransportTest, Stress) {
   static std::default_random_engine gen;
   std::uniform_int_distribution<std::size_t> dist(1, kQueueSize - 5);
 
-  std::vector<FakeMessage> msgs;
+  std::vector<FakeOutgoingMessage> msgs;
   while (transport_->tx_data.size() < kInputSize) {
     auto msg = MakeMessage(dist(gen));
     msgs.push_back(msg);
@@ -394,8 +397,7 @@ TEST_F(MessageTransportTest, Stress) {
 
   // Re-create the transport and load the messages
   transport_ = std::make_shared<FakeTransport>(context_);
-  uut_ = std::make_shared<network::MessageTransport>(transport_, kQueueSize,
-                                                     kQueueSize);
+  uut_ = std::make_shared<MessageTransport>(transport_, kQueueSize, kQueueSize);
   transport_->rx_data = old_tx_data;
   uut_->Start();
   context_->Poll();
@@ -421,7 +423,9 @@ TEST_F(MessageTransportTest, Stress) {
         bool called = false;
         uut_->SendAsync(&msg, [&](auto& res) {
           EXPECT_EQ(res, api::kSuccess);
-          sent_msgs_bytes.push_back(msg.GetMessageAsBytes());
+          auto bytes = msg.Serialize();
+          sent_msgs_bytes.push_back(
+              utils::ByteVector(bytes.begin(), bytes.end()));
           called = true;
         });
 

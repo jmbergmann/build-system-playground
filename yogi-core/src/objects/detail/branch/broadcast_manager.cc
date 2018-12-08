@@ -28,11 +28,10 @@ BroadcastManager::BroadcastManager(ContextPtr context,
 
 BroadcastManager::~BroadcastManager() {}
 
-api::Result BroadcastManager::SendBroadcast(api::Encoding enc,
-                                            boost::asio::const_buffer data,
+api::Result BroadcastManager::SendBroadcast(const network::UserData& user_data,
                                             bool block) {
   api::Result result;
-  SendBroadcastAsync(enc, data, block, [&](auto& res, auto) {
+  SendBroadcastAsync(user_data, block, [&](auto& res, auto) {
     result = res;
     this->sync_cv_.notify_all();
   });
@@ -44,9 +43,9 @@ api::Result BroadcastManager::SendBroadcast(api::Encoding enc,
 }
 
 BroadcastManager::SendBroadcastOperationId BroadcastManager::SendBroadcastAsync(
-    api::Encoding enc, boost::asio::const_buffer data, bool retry,
+    const network::UserData& user_data, bool retry,
     SendBroadcastHandler handler) {
-  network::messages::Broadcast msg(data, enc);
+  network::messages::BroadcastOutgoing msg(user_data);
 
   auto oid = conn_manager_.MakeOperationId();
   std::shared_ptr<int> pending_handlers;
@@ -82,7 +81,7 @@ void BroadcastManager::ReceiveBroadcast(api::Encoding enc,
 bool BroadcastManager::CancelReceiveBroadcast() { return false; }
 
 void BroadcastManager::SendNowOrLater(SharedCounter* pending_handlers,
-                                      network::Message* msg,
+                                      network::OutgoingMessage* msg,
                                       BranchConnectionPtr conn, bool retry,
                                       SendBroadcastHandler handler,
                                       SendBroadcastOperationId oid) {

@@ -21,89 +21,109 @@ using namespace network;
 
 #include <nlohmann/json.hpp>
 
-class FakeMessage : public Message {
+class FakeOutgoingMessage : public OutgoingMessage,
+                            public MessageT<MessageType::kBroadcast> {
  public:
-  using network::Message::Message;
+  using MessageT::MakeMsgBytes;
+
+  FakeOutgoingMessage(utils::SmallByteVector serialized_msg)
+      : OutgoingMessage(serialized_msg) {}
 
   virtual std::string ToString() const override { return {}; }
 };
 
-TEST(MessagesTest, Constructors) {
-  auto msg1 = FakeMessage(MessageType::kHeartbeat);
-  EXPECT_TRUE(msg1.GetMessageAsBytes().empty());
+TEST(MessagesTest, UserDataJson) {
+  auto user_data =
+      UserData(boost::asio::buffer("{\"x\": 456}"), api::Encoding::kJson);
 
-  auto msg2 = FakeMessage(MessageType::kAcknowledge);
-  EXPECT_GT(msg2.GetMessageAsBytes().size(), 0);
+  utils::SmallByteVector buffer;
+  EXPECT_NO_THROW(user_data.SerializeTo(&buffer));
 
-  auto type = MessageType::kBroadcast;
-  auto hdr = boost::asio::buffer("Header");
-  auto usr_msgpack = boost::asio::buffer("a");
-  auto usr_json = boost::asio::buffer("{\"x\": 456}");
-  const unsigned char usr_invalid_data[] = {200};
-  auto usr_invalid = boost::asio::buffer(usr_invalid_data);
+  auto json = nlohmann::json::from_msgpack(buffer);
+  EXPECT_EQ(json.value("x", -1), 456);
 
-  EXPECT_NO_THROW(FakeMessage(type, hdr, usr_msgpack, api::Encoding::kMsgPack));
-  EXPECT_NO_THROW(FakeMessage(type, hdr, usr_json, api::Encoding::kJson));
-  EXPECT_NO_THROW(FakeMessage(type, usr_json, api::Encoding::kJson));
-  EXPECT_NO_THROW(FakeMessage(type, usr_msgpack, api::Encoding::kMsgPack));
-
-  EXPECT_THROW_ERROR(FakeMessage(type, hdr, usr_invalid, api::Encoding::kJson),
+  const utils::Byte invalid_data[] = {200};
+  user_data = UserData(boost::asio::buffer(invalid_data), api::Encoding::kJson);
+  EXPECT_THROW_ERROR(user_data.SerializeTo(&buffer),
                      YOGI_ERR_PARSING_JSON_FAILED);
-  EXPECT_THROW_ERROR(
-      FakeMessage(type, hdr, usr_invalid, api::Encoding::kMsgPack),
-      YOGI_ERR_INVALID_USER_MSGPACK);
-  EXPECT_THROW_ERROR(FakeMessage(type, usr_invalid, api::Encoding::kJson),
-                     YOGI_ERR_PARSING_JSON_FAILED);
-  EXPECT_THROW_ERROR(FakeMessage(type, usr_invalid, api::Encoding::kMsgPack),
+}
+
+TEST(MessageTest, UserDataMsgPack) {
+  auto data = utils::SmallByteVector{0x93, 0x1, 0x2, 0x3};
+  auto user_data = UserData(boost::asio::buffer(data.data(), data.size()),
+                            api::Encoding::kMsgPack);
+
+  utils::SmallByteVector buffer;
+  EXPECT_NO_THROW(user_data.SerializeTo(&buffer));
+  EXPECT_EQ(buffer, data);
+
+  const utils::Byte invalid_data[] = {200};
+  user_data =
+      UserData(boost::asio::buffer(invalid_data), api::Encoding::kMsgPack);
+  EXPECT_THROW_ERROR(user_data.SerializeTo(&buffer),
                      YOGI_ERR_INVALID_USER_MSGPACK);
 }
 
 TEST(MessagesTest, GetType) {
-  auto msg = FakeMessage(MessageType::kBroadcast);
-  EXPECT_EQ(MessageType::kBroadcast, msg.GetType());
+  auto msg = FakeOutgoingMessage({});
+  EXPECT_EQ(FakeOutgoingMessage::kMessageType, MessageType::kBroadcast);
+  EXPECT_EQ(FakeOutgoingMessage::kMessageType, msg.GetType());
+}
+
+TEST(MessagesTest, MakeMsgBytes) {
+  auto type = FakeOutgoingMessage::kMessageType;
+  auto user_data =
+      UserData(boost::asio::buffer("x", 1), api::Encoding::kMsgPack);
+
+  auto bytes = FakeOutgoingMessage::MakeMsgBytes();
+  EXPECT_EQ(bytes, utils::SmallByteVector{type});
+
+  bytes = FakeOutgoingMessage::MakeMsgBytes(user_data);
+  EXPECT_EQ(bytes, (utils::SmallByteVector{type, 'x'}));
+
+  bytes = FakeOutgoingMessage::MakeMsgBytes(std::make_tuple(true, false, 123));
+  EXPECT_EQ(bytes, (utils::SmallByteVector{type, 0x93, 0xc3, 0xc2, 0x7b}));
+
+  bytes = FakeOutgoingMessage::MakeMsgBytes(std::make_tuple(true, false, 123),
+                                            user_data);
+  EXPECT_EQ(bytes, (utils::SmallByteVector{type, 0x93, 0xc3, 0xc2, 0x7b, 'x'}));
 }
 
 TEST(MessagesTest, GetSize) {
-  auto msg = FakeMessage(MessageType::kBroadcast, boost::asio::buffer("Header"),
-                         boost::asio::buffer("a"), api::Encoding::kMsgPack);
-  EXPECT_EQ(msg.GetSize(), 1 + 7 + 2);
+  auto msg = FakeOutgoingMessage({1, 2, 3});
+  EXPECT_EQ(msg.GetSize(), 3);
 }
 
-TEST(MessagesTest, GetMessageAsBytes) {
-  auto msg = FakeMessage(MessageType::kBroadcast, boost::asio::buffer("X"),
-                         boost::asio::buffer("a"), api::Encoding::kMsgPack);
-  auto bytes = msg.GetMessageAsBytes();
-  EXPECT_EQ(bytes, (utils::ByteVector{msg.GetType(), 'X', '\0', 'a', '\0'}));
+TEST(MessagesTest, Serialize) {
+  auto msg = FakeOutgoingMessage({1, 2, 3});
+  auto bytes = msg.Serialize();
+  EXPECT_EQ(bytes, (utils::SmallByteVector{1, 2, 3}));
 
-  msg.GetMessageAsSharedBytes();
-  EXPECT_EQ(msg.GetMessageAsBytes(), bytes);
+  msg.SerializeShared();
+  EXPECT_EQ(msg.Serialize(), bytes);
 }
 
-TEST(MessagesTest, GetMessageAsSharedBytes) {
-  auto msg = FakeMessage(MessageType::kBroadcast, boost::asio::buffer("X"),
-                         boost::asio::buffer("a"), api::Encoding::kMsgPack);
-  auto bytes = msg.GetMessageAsSharedBytes();
-  EXPECT_EQ(*bytes, (utils::ByteVector{msg.GetType(), 'X', '\0', 'a', '\0'}));
+TEST(MessagesTest, SerializeShared) {
+  auto msg = FakeOutgoingMessage({1, 2, 3});
+  auto bytes = msg.SerializeShared();
+  EXPECT_EQ(*bytes, (utils::SmallByteVector{1, 2, 3}));
 }
 
-TEST(MessagesTest, JsonToMsgPackConversion) {
-  auto msg =
-      FakeMessage(MessageType::kBroadcast, boost::asio::buffer("{\"x\": 456}"),
-                  api::Encoding::kJson);
-
-  auto data = msg.GetMessageAsBytes();
-  data.erase(data.begin(), data.begin() + 1);
-
-  auto json = nlohmann::json::from_msgpack(data);
-  EXPECT_EQ(json.value("x", -1), 456);
-}
-
-TEST(MessagesTest, CreateFromBytes) {
+TEST(MessagesTest, Deserialize) {
   utils::ByteVector bytes = {MessageType::kBroadcast, 0x93, 0x01, 0x02, 0x03};
 
   bool called = false;
-  FakeMessage::CreateFromBytes(bytes, [&](const Message& msg) {
+  IncomingMessage::Deserialize(bytes, [&](const IncomingMessage& msg) {
     EXPECT_EQ(msg.GetType(), MessageType::kBroadcast);
+
+    auto bcm = dynamic_cast<const messages::BroadcastIncoming*>(&msg);
+    ASSERT_NE(bcm, nullptr);
+
+    utils::SmallByteVector user_data;
+    bcm->GetUserData().SerializeTo(&user_data);
+    EXPECT_EQ(user_data,
+              utils::SmallByteVector(bytes.begin() + 1, bytes.end()));
+
     called = true;
   });
 

@@ -19,6 +19,7 @@
 
 #include "../config.h"
 
+#include <boost/container/small_vector.hpp>
 #include <vector>
 #include <memory>
 #include <utility>
@@ -37,10 +38,17 @@ namespace utils {
 typedef unsigned char Byte;
 typedef std::vector<Byte> ByteVector;
 typedef std::shared_ptr<ByteVector> SharedByteVector;
+typedef boost::container::small_vector<Byte, 32> SmallByteVector;
+typedef std::shared_ptr<SmallByteVector> SharedSmallByteVector;
 
 template <typename... Args>
 SharedByteVector MakeSharedByteVector(Args&&... args) {
   return std::make_shared<ByteVector>(std::forward<Args>(args)...);
+}
+
+template <typename... Args>
+SharedSmallByteVector MakeSharedSmallByteVector(Args&&... args) {
+  return std::make_shared<SmallByteVector>(std::forward<Args>(args)...);
 }
 
 }  // namespace utils

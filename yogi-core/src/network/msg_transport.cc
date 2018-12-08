@@ -78,26 +78,26 @@ MessageTransport::MessageTransport(TransportPtr transport,
 
 void MessageTransport::Start() { ReceiveSomeBytesFromTransport(); }
 
-bool MessageTransport::TrySend(const Message& msg) {
+bool MessageTransport::TrySend(const OutgoingMessage& msg) {
   std::lock_guard<std::mutex> lock(tx_mutex_);
   if (last_tx_error_.IsError()) {
     throw last_tx_error_.ToError();
   }
 
   if (pending_sends_.empty()) {
-    return TrySendImpl(msg.GetMessageAsBytes());
+    return TrySendImpl(msg.Serialize());
   } else {
     return false;
   }
 }
 
-void MessageTransport::SendAsync(Message* msg, OperationTag tag,
+void MessageTransport::SendAsync(OutgoingMessage* msg, OperationTag tag,
                                  SendHandler handler) {
   YOGI_ASSERT(tag != 0);
   SendAsyncImpl(msg, tag, handler);
 }
 
-void MessageTransport::SendAsync(Message* msg, SendHandler handler) {
+void MessageTransport::SendAsync(OutgoingMessage* msg, SendHandler handler) {
   SendAsyncImpl(msg, 0, handler);
 }
 
@@ -146,7 +146,7 @@ void MessageTransport::CancelReceive() {
       [=] { handler(api::Error(YOGI_ERR_CANCELED), 0); });
 }
 
-bool MessageTransport::TrySendImpl(const utils::ByteVector& msg_bytes) {
+bool MessageTransport::TrySendImpl(const utils::SmallByteVector& msg_bytes) {
   if (!CanSend(msg_bytes.size())) return false;
 
   SizeFieldBuffer size_field_buf;
@@ -173,7 +173,7 @@ bool MessageTransport::CanSend(std::size_t msg_size) const {
   return n >= msg_size + internal::CalculateMsgSizeFieldLength(msg_size);
 }
 
-void MessageTransport::SendAsyncImpl(Message* msg, OperationTag tag,
+void MessageTransport::SendAsyncImpl(OutgoingMessage* msg, OperationTag tag,
                                      SendHandler handler) {
   std::lock_guard<std::mutex> lock(tx_mutex_);
 
@@ -186,10 +186,10 @@ void MessageTransport::SendAsyncImpl(Message* msg, OperationTag tag,
     return;
   }
 
-  if (pending_sends_.empty() && TrySendImpl(msg->GetMessageAsBytes())) {
+  if (pending_sends_.empty() && TrySendImpl(msg->Serialize())) {
     transport_->GetContext()->Post([=] { handler(api::kSuccess); });
   } else {
-    PendingSend ps = {tag, msg->GetMessageAsSharedBytes(), handler};
+    PendingSend ps = {tag, msg->SerializeShared(), handler};
     pending_sends_.push_back(ps);
 
     YOGI_ASSERT(send_to_transport_running_);

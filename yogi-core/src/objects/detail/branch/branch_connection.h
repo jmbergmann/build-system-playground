@@ -66,15 +66,16 @@ class BranchConnection : public std::enable_shared_from_this<BranchConnection> {
   void RunSession(MessageReceiveHandler rcv_handler,
                   CompletionHandler session_handler);
 
-  bool TrySend(const network::Message& msg) {
+  bool TrySend(const network::OutgoingMessage& msg) {
     return msg_transport_->TrySend(msg);
   }
 
-  void SendAsync(network::Message* msg, OperationTag tag, SendHandler handler) {
+  void SendAsync(network::OutgoingMessage* msg, OperationTag tag,
+                 SendHandler handler) {
     msg_transport_->SendAsync(msg, tag, handler);
   }
 
-  void SendAsync(network::Message* msg, SendHandler handler) {
+  void SendAsync(network::OutgoingMessage* msg, SendHandler handler) {
     msg_transport_->SendAsync(msg, handler);
   }
 
@@ -126,8 +127,8 @@ class BranchConnection : public std::enable_shared_from_this<BranchConnection> {
   const LocalBranchInfoPtr local_info_;
   const boost::asio::ip::address peer_address_;
   const utils::Timestamp connected_since_;
-  network::messages::Heartbeat heartbeat_msg_;
-  network::messages::Acknowledge ack_msg_;
+  network::messages::HeartbeatOutgoing heartbeat_msg_;
+  network::messages::AcknowledgeOutgoing ack_msg_;
   RemoteBranchInfoPtr remote_info_;
   network::MessageTransportPtr msg_transport_;
   std::atomic<bool> session_running_;

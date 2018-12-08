@@ -56,6 +56,8 @@ class Transport : public std::enable_shared_from_this<Transport> {
                      TransferSomeHandler handler);
   void SendAllAsync(boost::asio::const_buffer data, TransferAllHandler handler);
   void SendAllAsync(utils::SharedByteVector data, TransferAllHandler handler);
+  void SendAllAsync(utils::SharedSmallByteVector data,
+                    TransferAllHandler handler);
   void ReceiveSomeAsync(boost::asio::mutable_buffer data,
                         TransferSomeHandler handler);
   void ReceiveAllAsync(boost::asio::mutable_buffer data,

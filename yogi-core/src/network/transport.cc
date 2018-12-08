@@ -72,6 +72,12 @@ void Transport::SendAllAsync(utils::SharedByteVector data,
                [=, _ = data](auto& res) { handler(res); });
 }
 
+void Transport::SendAllAsync(utils::SharedSmallByteVector data,
+                             TransferAllHandler handler) {
+  SendAllAsync(boost::asio::buffer(data->data(), data->size()),
+               [=, _ = data](auto& res) { handler(res); });
+}
+
 void Transport::ReceiveSomeAsync(boost::asio::mutable_buffer data,
                                  TransferSomeHandler handler) {
   YOGI_ASSERT(data.size() > 0);

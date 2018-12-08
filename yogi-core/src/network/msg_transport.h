@@ -58,9 +58,9 @@ class MessageTransport : public std::enable_shared_from_this<MessageTransport> {
 
   void Start();
 
-  bool TrySend(const Message& msg);
-  void SendAsync(Message* msg, OperationTag tag, SendHandler handler);
-  void SendAsync(Message* msg, SendHandler handler);
+  bool TrySend(const OutgoingMessage& msg);
+  void SendAsync(OutgoingMessage* msg, OperationTag tag, SendHandler handler);
+  void SendAsync(OutgoingMessage* msg, SendHandler handler);
   bool CancelSend(OperationTag tag);
   void ReceiveAsync(boost::asio::mutable_buffer msg, ReceiveHandler handler);
 
@@ -72,14 +72,15 @@ class MessageTransport : public std::enable_shared_from_this<MessageTransport> {
 
   struct PendingSend {
     OperationTag tag;  // 0 => operation cannot be canceled
-    utils::SharedByteVector msg_bytes;
+    utils::SharedSmallByteVector msg_bytes;
     SendHandler handler;
   };
 
   MessageTransportWeakPtr MakeWeakPtr() { return shared_from_this(); }
-  bool TrySendImpl(const utils::ByteVector& msg_bytes);
+  bool TrySendImpl(const utils::SmallByteVector& msg_bytes);
   bool CanSend(std::size_t msg_size) const;
-  void SendAsyncImpl(Message* msg, OperationTag tag, SendHandler handler);
+  void SendAsyncImpl(OutgoingMessage* msg, OperationTag tag,
+                     SendHandler handler);
   void SendSomeBytesToTransport();
   void RetrySendingPendingSends();
   bool TryGetReceivedSizeField(std::size_t* msg_size);

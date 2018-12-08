@@ -156,7 +156,7 @@ void BranchConnection::OnInfoBodyReceived(utils::SharedByteVector info_msg,
   }
 
   auto weak_self = MakeWeakPtr();
-  transport_->SendAllAsync(ack_msg_.GetMessageAsSharedBytes(), [=](auto& res) {
+  transport_->SendAllAsync(ack_msg_.SerializeShared(), [=](auto& res) {
     auto self = weak_self.lock();
     if (!self) return;
 
@@ -252,7 +252,7 @@ void BranchConnection::OnSolutionReceived(
     utils::SharedByteVector my_solution, CompletionHandler handler) {
   auto weak_self = MakeWeakPtr();
   bool solutions_match = *received_solution == *my_solution;
-  transport_->SendAllAsync(ack_msg_.GetMessageAsSharedBytes(), [=](auto& res) {
+  transport_->SendAllAsync(ack_msg_.SerializeShared(), [=](auto& res) {
     auto self = weak_self.lock();
     if (!self) return;
 
@@ -336,7 +336,8 @@ void BranchConnection::CheckAckAndSetNextResult(
     const api::Result& res, const utils::ByteVector& ack_msg) {
   if (res.IsError()) {
     next_result_ = res;
-  } else if (ack_msg != ack_msg_.GetMessageAsBytes()) {
+  } else if (ack_msg.size() != ack_msg_.GetSize() ||
+             ack_msg[0] != ack_msg_.Serialize()[0]) {
     next_result_ = api::Error(YOGI_ERR_DESERIALIZE_MSG_FAILED);
   }
 }
@@ -352,9 +353,7 @@ bool BranchConnection::CheckNextResult(CompletionHandler handler) {
   return true;
 }
 
-  void BranchConnection::OnMessageReceived(const utils::SharedByteVector& msg) {
-
-  }
+void BranchConnection::OnMessageReceived(const utils::SharedByteVector& msg) {}
 
 const LoggerPtr BranchConnection::logger_ =
     Logger::CreateStaticInternalLogger("Branch.Connection");

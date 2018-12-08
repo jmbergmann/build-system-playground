@@ -43,13 +43,11 @@ class BroadcastManager final
   BroadcastManager(ContextPtr context, ConnectionManager& conn_manager);
   virtual ~BroadcastManager();
 
-  api::Result SendBroadcast(api::Encoding enc, boost::asio::const_buffer data,
-                            bool retry);
+  api::Result SendBroadcast(const network::UserData& user_data, bool retry);
 
-  SendBroadcastOperationId SendBroadcastAsync(api::Encoding enc,
-                                              boost::asio::const_buffer data,
-                                              bool retry,
-                                              SendBroadcastHandler handler);
+  SendBroadcastOperationId SendBroadcastAsync(
+      const network::UserData& user_data, bool retry,
+      SendBroadcastHandler handler);
 
   bool CancelSendBroadcast(SendBroadcastOperationId oid);
 
@@ -61,9 +59,9 @@ class BroadcastManager final
  private:
   typedef std::shared_ptr<int> SharedCounter;
 
-  void SendNowOrLater(SharedCounter* pending_handlers, network::Message* msg,
-                      BranchConnectionPtr conn, bool retry,
-                      SendBroadcastHandler handler,
+  void SendNowOrLater(SharedCounter* pending_handlers,
+                      network::OutgoingMessage* msg, BranchConnectionPtr conn,
+                      bool retry, SendBroadcastHandler handler,
                       SendBroadcastOperationId oid);
 
   void StoreOidForLaterOrCallHandlerNow(SharedCounter pending_handlers,

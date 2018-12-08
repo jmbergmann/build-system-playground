@@ -19,7 +19,6 @@
 #include "../api/errors.h"
 
 #include <nlohmann/json.hpp>
-#include <msgpack.hpp>
 
 namespace network {
 namespace internal {
@@ -38,86 +37,21 @@ struct MsgPackCheckVisitor : public msgpack::null_visitor {
   }
 };
 
-}  // namespace internal
+namespace {
 
-Message::Message(MessageType type) : type_(type) {
-  if (type_ != MessageType::kHeartbeat) {
-    msg_.push_back(type_);
+void CheckUserDataIsValidMsgPack(const char* data, std::size_t size) {
+  MsgPackCheckVisitor visitor;
+  bool ok = msgpack::parse(data, size, visitor);
+  if (!ok) {
+    throw api::DescriptiveError(YOGI_ERR_INVALID_USER_MSGPACK)
+        << "msgpack::parse() returned false";
   }
 }
 
-Message::Message(MessageType type, boost::asio::const_buffer header,
-                 boost::asio::const_buffer user_data, api::Encoding user_enc)
-    : type_(type) {
-  YOGI_ASSERT(type != MessageType::kHeartbeat);
-  PopulateMsg(header, user_data, user_enc);
-}
-
-Message::Message(MessageType type, boost::asio::const_buffer header)
-    : Message(type, header, {}, {}) {}
-
-Message::Message(MessageType type, boost::asio::const_buffer user_data,
-                 api::Encoding user_enc)
-    : Message(type, {}, user_data, user_enc) {}
-
-std::size_t Message::GetSize() const { return GetMessageAsBytes().size(); }
-
-const utils::ByteVector& Message::GetMessageAsBytes() const {
-  if (shared_msg_) {
-    return *shared_msg_;
-  } else {
-    return msg_;
-  }
-}
-
-utils::SharedByteVector Message::GetMessageAsSharedBytes() {
-  if (!shared_msg_) {
-    shared_msg_ = utils::MakeSharedByteVector(std::move(msg_));
-  }
-
-  return shared_msg_;
-}
-
-void Message::PopulateMsg(boost::asio::const_buffer header,
-                          boost::asio::const_buffer user_data,
-                          api::Encoding user_enc) {
-  auto header_raw = static_cast<const utils::Byte*>(header.data());
-  auto user_data_raw = static_cast<const utils::Byte*>(user_data.data());
-
-  switch (user_enc) {
-    case api::Encoding::kJson: {
-      utils::ByteVector data;
-      if (user_data.size() > 0) {
-        data = CheckAndConvertUserDataFromJsonToMsgPack(user_data);
-      }
-
-      msg_.reserve(1 + header.size() + data.size());
-      msg_.push_back(type_);
-      msg_.insert(msg_.end(), header_raw, header_raw + header.size());
-      msg_.insert(msg_.end(), data.begin(), data.end());
-      break;
-    }
-
-    case api::Encoding::kMsgPack:
-      if (user_data.size() > 0) {
-        CheckUserDataIsValidMsgPack(user_data);
-      }
-
-      msg_.reserve(1 + header.size() + user_data.size());
-      msg_.push_back(type_);
-      msg_.insert(msg_.end(), header_raw, header_raw + header.size());
-      msg_.insert(msg_.end(), user_data_raw, user_data_raw + user_data.size());
-      break;
-
-    default:
-      YOGI_NEVER_REACHED;
-  }
-}
-
-utils::ByteVector Message::CheckAndConvertUserDataFromJsonToMsgPack(
-    boost::asio::const_buffer user_data) {
-  auto data = static_cast<const char*>(user_data.data());
-  if (data[user_data.size() - 1] != '\0') {
+utils::ByteVector CheckAndConvertUserDataFromJsonToMsgPack(const char* data,
+                                                           std::size_t size) {
+  YOGI_ASSERT(size > 0);
+  if (data[size - 1] != '\0') {
     throw api::DescriptiveError(YOGI_ERR_PARSING_JSON_FAILED)
         << "Unterminated string";
   }
@@ -130,32 +64,75 @@ utils::ByteVector Message::CheckAndConvertUserDataFromJsonToMsgPack(
   }
 }
 
-void Message::CheckUserDataIsValidMsgPack(boost::asio::const_buffer user_data) {
-  internal::MsgPackCheckVisitor visitor;
-  bool ok = msgpack::parse(static_cast<const char*>(user_data.data()),
-                           user_data.size(), visitor);
-  if (!ok) {
-    throw api::DescriptiveError(YOGI_ERR_INVALID_USER_MSGPACK)
-        << "msgpack::parse() returned false";
+}  // anonymous namespace
+}  // namespace internal
+
+void UserData::SerializeTo(utils::SmallByteVector* buffer) const {
+  if (data_.size() == 0) return;
+
+  auto raw = static_cast<const char*>(data_.data());
+
+  switch (enc_) {
+    case api::Encoding::kJson: {
+      auto data =
+          internal::CheckAndConvertUserDataFromJsonToMsgPack(raw, data_.size());
+      buffer->insert(buffer->end(), data.begin(), data.end());
+      break;
+    }
+
+    case api::Encoding::kMsgPack: {
+      internal::CheckUserDataIsValidMsgPack(raw, data_.size());
+      buffer->insert(buffer->end(), raw, raw + data_.size());
+
+      break;
+    }
+
+    default:
+      YOGI_NEVER_REACHED;
   }
 }
 
+std::size_t OutgoingMessage::GetSize() const { return Serialize().size(); }
+
+const utils::SmallByteVector& OutgoingMessage::Serialize() const {
+  if (shared_serialized_msg_) {
+    return *shared_serialized_msg_;
+  } else {
+    return serialized_msg_;
+  }
+}
+
+utils::SharedSmallByteVector OutgoingMessage::SerializeShared() {
+  if (!shared_serialized_msg_) {
+    shared_serialized_msg_ =
+        utils::MakeSharedSmallByteVector(std::move(serialized_msg_));
+  }
+
+  return shared_serialized_msg_;
+}
+
+OutgoingMessage::OutgoingMessage(utils::SmallByteVector serialized_msg)
+    : serialized_msg_(serialized_msg) {}
+
 namespace messages {
 
-Heartbeat::Heartbeat() : Message(MessageType::kHeartbeat) {}
+BroadcastIncoming::BroadcastIncoming(const utils::ByteVector& serialized_msg)
+    : user_data_(boost::asio::buffer(serialized_msg) + 1,
+                 api::Encoding::kMsgPack) {}
 
-std::string Heartbeat::ToString() const { return "Heartbeat"; }
-
-Acknowledge::Acknowledge() : Message(MessageType::kAcknowledge) {}
-
-std::string Acknowledge::ToString() const { return "Acknowledge"; }
-
-Broadcast::Broadcast(boost::asio::const_buffer data, api::Encoding enc)
-    : Message(MessageType::kBroadcast, data, enc) {}
-
-std::string Broadcast::ToString() const {
+std::string BroadcastIncoming::ToString() const {
   std::stringstream ss;
-  ss << "Broadcast, " << GetMessageAsBytes().size() - 1 << " bytes user data";
+  ss << "Broadcast, " << BroadcastOutgoing(user_data_).Serialize().size() - 1
+     << " bytes user data";
+  return ss.str();
+}
+
+BroadcastOutgoing::BroadcastOutgoing(const UserData& user_data)
+    : OutgoingMessage(MakeMsgBytes(user_data)) {}
+
+std::string BroadcastOutgoing::ToString() const {
+  std::stringstream ss;
+  ss << "Broadcast, " << GetSize() - 1 << " bytes user data";
   return ss.str();
 }
 

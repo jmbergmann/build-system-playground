@@ -229,6 +229,24 @@ TEST_F(TransportTest, SendAllSharedByteVector) {
   EXPECT_TRUE(called);
 }
 
+TEST_F(TransportTest, SendAllSharedSmallByteVector) {
+  // clang-format off
+  EXPECT_CALL(*transport_, WriteSomeAsync(_, _))
+    .WillOnce(InvokeArgument<1>(api::kSuccess, data_.size()));
+  // clang-format on
+
+  bool called = false;
+  transport_->SendAllAsync(
+      utils::MakeSharedSmallByteVector(data_.begin(), data_.end()),
+      [&](auto& res) {
+        EXPECT_EQ(res, api::kSuccess);
+        called = true;
+      });
+
+  context_->Poll();
+  EXPECT_TRUE(called);
+}
+
 TEST_F(TransportTest, ReceiveSomeSuccess) {
   // clang-format off
   EXPECT_CALL(*transport_, Shutdown())

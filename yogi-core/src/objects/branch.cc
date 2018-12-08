@@ -67,14 +67,14 @@ void Branch::AwaitEventAsync(api::BranchEvents events,
 void Branch::CancelAwaitEvent() { connection_manager_->CancelAwaitEvent(); }
 
 Branch::SendBroadcastOperationId Branch::SendBroadcastAsync(
-    api::Encoding enc, boost::asio::const_buffer data, bool retry,
+    const network::UserData& user_data, bool retry,
     SendBroadcastHandler handler) {
-  return broadcast_manager_->SendBroadcastAsync(enc, data, retry, handler);
+  return broadcast_manager_->SendBroadcastAsync(user_data, retry, handler);
 }
 
-api::Result Branch::SendBroadcast(api::Encoding enc,
-                                  boost::asio::const_buffer data, bool block) {
-  return broadcast_manager_->SendBroadcast(enc, data, block);
+api::Result Branch::SendBroadcast(const network::UserData& user_data,
+                                  bool block) {
+  return broadcast_manager_->SendBroadcast(user_data, block);
 }
 
 bool Branch::CancelSendBroadcast(SendBroadcastOperationId oid) {
@@ -100,7 +100,7 @@ void Branch::OnConnectionChanged(const api::Result& res,
 
 void Branch::OnMessageReceived(const utils::ByteVector& msg, std::size_t size,
                                const detail::BranchConnectionPtr& conn) {
-  // TODO
+  auto type = static_cast<network::MessageType>(msg[0]);
 }
 
 const LoggerPtr Branch::logger_ = Logger::CreateStaticInternalLogger("Branch");
