@@ -48,13 +48,28 @@ BroadcastManager::SendBroadcastOperationId BroadcastManager::SendBroadcastAsync(
   network::messages::BroadcastOutgoing msg(user_data);
 
   auto oid = conn_manager_.MakeOperationId();
-  std::shared_ptr<int> pending_handlers;
 
-  conn_manager_.ForeachRunningSession([&](auto& conn) {
-    SendNowOrLater(&pending_handlers, &msg, conn, retry, handler, oid);
-  });
+  if (retry) {
+    std::shared_ptr<int> pending_handlers;
+    conn_manager_.ForeachRunningSession([&](auto& conn) {
+      SendNowOrLater(&pending_handlers, &msg, conn, handler, oid);
+    });
 
-  StoreOidForLaterOrCallHandlerNow(pending_handlers, handler, oid);
+    StoreOidForLaterOrCallHandlerNow(pending_handlers, handler, oid);
+  } else {
+    bool all_sent = true;
+    conn_manager_.ForeachRunningSession([&](auto& conn) {
+      if (!conn->TrySend(msg)) {
+        all_sent = false;
+      }
+    });
+
+    if (all_sent) {
+      context_->Post([=] { handler(api::kSuccess, oid); });
+    } else {
+      context_->Post([=] { handler(api::Error(YOGI_ERR_TX_QUEUE_FULL), oid); });
+    }
+  }
 
   return oid;
 }
@@ -82,7 +97,7 @@ bool BroadcastManager::CancelReceiveBroadcast() { return false; }
 
 void BroadcastManager::SendNowOrLater(SharedCounter* pending_handlers,
                                       network::OutgoingMessage* msg,
-                                      BranchConnectionPtr conn, bool retry,
+                                      BranchConnectionPtr conn,
                                       SendBroadcastHandler handler,
                                       SendBroadcastOperationId oid) {
   try {

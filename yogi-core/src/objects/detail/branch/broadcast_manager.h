@@ -61,7 +61,7 @@ class BroadcastManager final
 
   void SendNowOrLater(SharedCounter* pending_handlers,
                       network::OutgoingMessage* msg, BranchConnectionPtr conn,
-                      bool retry, SendBroadcastHandler handler,
+                      SendBroadcastHandler handler,
                       SendBroadcastOperationId oid);
 
   void StoreOidForLaterOrCallHandlerNow(SharedCounter pending_handlers,

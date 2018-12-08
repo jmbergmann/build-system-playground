@@ -94,6 +94,7 @@ void BranchConnection::RunSession(MessageReceiveHandler rcv_handler,
   StartReceive(utils::MakeSharedByteVector());
   session_running_ = true;
   session_handler_ = session_handler;
+  rcv_handler_ = rcv_handler;
 }
 
 void BranchConnection::OnInfoSent(CompletionHandler handler) {
@@ -353,7 +354,9 @@ bool BranchConnection::CheckNextResult(CompletionHandler handler) {
   return true;
 }
 
-void BranchConnection::OnMessageReceived(const utils::SharedByteVector& msg) {}
+void BranchConnection::OnMessageReceived(const utils::SharedByteVector& msg) {
+  network::IncomingMessage::Deserialize(*msg, rcv_handler_);
+}
 
 const LoggerPtr BranchConnection::logger_ =
     Logger::CreateStaticInternalLogger("Branch.Connection");

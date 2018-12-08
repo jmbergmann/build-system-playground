@@ -49,9 +49,9 @@ class ConnectionManager
       BranchEventHandler;
   typedef std::function<void(const api::Result&, BranchConnectionPtr)>
       ConnectionChangedHandler;
-  typedef std::function<void(const ByteVector&, std::size_t,
+  typedef std::function<void(const network::IncomingMessage&,
                              const BranchConnectionPtr&)>
-      MessageHandler;
+      MessageReceiveHandler;
   typedef std::vector<std::pair<boost::uuids::uuid, std::string>>
       BranchInfoStringsList;
   using OperationTag = network::MessageTransport::OperationTag;
@@ -59,7 +59,7 @@ class ConnectionManager
   ConnectionManager(ContextPtr context, const std::string& password,
                     const boost::asio::ip::udp::endpoint& adv_ep,
                     ConnectionChangedHandler connection_changed_handler,
-                    MessageHandler message_handler);
+                    MessageReceiveHandler message_handler);
   virtual ~ConnectionManager();
 
   void Start(LocalBranchInfoPtr info);
@@ -155,7 +155,7 @@ class ConnectionManager
   const ContextPtr context_;
   const utils::SharedByteVector password_hash_;
   const ConnectionChangedHandler connection_changed_handler_;
-  const MessageHandler message_handler_;
+  const MessageReceiveHandler message_handler_;
   const detail::AdvertisingSenderPtr adv_sender_;
   const detail::AdvertisingReceiverPtr adv_receiver_;
   boost::asio::ip::tcp::acceptor acceptor_;

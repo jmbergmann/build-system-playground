@@ -39,8 +39,7 @@ typedef std::weak_ptr<BranchConnection> BranchConnectionWeakPtr;
 class BranchConnection : public std::enable_shared_from_this<BranchConnection> {
  public:
   typedef std::function<void(const api::Result&)> CompletionHandler;
-  typedef std::function<void(const utils::SharedByteVector&)>
-      MessageReceiveHandler;
+  using MessageReceiveHandler =  network::IncomingMessage::MessageHandler;
   using OperationTag = network::MessageTransport::OperationTag;
   using SendHandler = network::MessageTransport::SendHandler;
 

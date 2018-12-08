@@ -28,7 +28,7 @@ ConnectionManager::ConnectionManager(
     ContextPtr context, const std::string& password,
     const boost::asio::ip::udp::endpoint& adv_ep,
     ConnectionChangedHandler connection_changed_handler,
-    MessageHandler message_handler)
+    MessageReceiveHandler message_handler)
     : context_(context),
       password_hash_(utils::MakeSharedByteVector(
           utils::MakeSha256({password.cbegin(), password.cend()}))),
@@ -411,8 +411,8 @@ void ConnectionManager::StartSession(BranchConnectionPtr conn) {
   auto weak_conn = BranchConnectionWeakPtr(conn);
   conn->RunSession(
       [this, weak_conn](auto& msg) {
-        // TODO
-        YOGI_LOG_FATAL(logger_, "TODO: handle msg");
+        YOGI_ASSERT(weak_conn.lock());
+        this->message_handler_(msg, weak_conn.lock());
       },
       [this, weak_conn](auto& res) {
         YOGI_ASSERT(weak_conn.lock());

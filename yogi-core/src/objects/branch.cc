@@ -33,8 +33,8 @@ Branch::Branch(ContextPtr context, std::string name, std::string description,
       connection_manager_(std::make_shared<detail::ConnectionManager>(
           context, password, adv_ep,
           [&](auto& res, auto conn) { this->OnConnectionChanged(res, conn); },
-          [&](auto& msg, auto size, auto& conn) {
-            this->OnMessageReceived(msg, size, conn);
+          [&](auto& msg, auto& conn) {
+            this->OnMessageReceived(msg, conn);
           })),
       info_(std::make_shared<detail::LocalBranchInfo>(
           name, description, net_name, path,
@@ -98,9 +98,9 @@ void Branch::OnConnectionChanged(const api::Result& res,
   // TODO
 }
 
-void Branch::OnMessageReceived(const utils::ByteVector& msg, std::size_t size,
+void Branch::OnMessageReceived(const network::IncomingMessage& msg,
                                const detail::BranchConnectionPtr& conn) {
-  auto type = static_cast<network::MessageType>(msg[0]);
+  YOGI_LOG_FATAL(logger_, "Msg received: " << msg);
 }
 
 const LoggerPtr Branch::logger_ = Logger::CreateStaticInternalLogger("Branch");

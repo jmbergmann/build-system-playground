@@ -57,8 +57,10 @@ class Message {
 
 class IncomingMessage : virtual public Message {
  public:
-  template <typename Fn>
-  static void Deserialize(const utils::ByteVector& serialized_msg, Fn fn);
+  typedef std::function<void(const IncomingMessage&)> MessageHandler;
+
+  static void Deserialize(const utils::ByteVector& serialized_msg,
+                          const MessageHandler& fn);
 
  protected:
   IncomingMessage() = default;
@@ -173,30 +175,6 @@ class BroadcastOutgoing : public OutgoingMessage, public Broadcast {
 };
 
 }  // namespace messages
-
-template <typename Fn>
-void IncomingMessage::Deserialize(const utils::ByteVector& serialized_msg,
-                                  Fn fn) {
-  if (serialized_msg.empty()) {
-    fn(messages::HeartbeatIncoming());
-    return;
-  }
-
-  switch (serialized_msg[0]) {
-    case MessageType::kAcknowledge:
-      fn(messages::AcknowledgeIncoming());
-      break;
-
-    case MessageType::kBroadcast:
-      fn(messages::BroadcastIncoming(serialized_msg));
-      break;
-
-    default:
-      throw api::DescriptiveError(YOGI_ERR_DESERIALIZE_MSG_FAILED)
-          << "Unknown message type " << serialized_msg[0];
-  }
-}
-
 }  // namespace network
 
 std::ostream& operator<<(std::ostream& os, const network::Message& msg);

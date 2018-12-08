@@ -67,6 +67,28 @@ utils::ByteVector CheckAndConvertUserDataFromJsonToMsgPack(const char* data,
 }  // anonymous namespace
 }  // namespace internal
 
+void IncomingMessage::Deserialize(const utils::ByteVector& serialized_msg,
+                                  const MessageHandler& fn) {
+  if (serialized_msg.empty()) {
+    fn(messages::HeartbeatIncoming());
+    return;
+  }
+
+  switch (serialized_msg[0]) {
+    case MessageType::kAcknowledge:
+      fn(messages::AcknowledgeIncoming());
+      break;
+
+    case MessageType::kBroadcast:
+      fn(messages::BroadcastIncoming(serialized_msg));
+      break;
+
+    default:
+      throw api::DescriptiveError(YOGI_ERR_DESERIALIZE_MSG_FAILED)
+          << "Unknown message type " << serialized_msg[0];
+  }
+}
+
 void UserData::SerializeTo(utils::SmallByteVector* buffer) const {
   if (data_.size() == 0) return;
 
