@@ -25,6 +25,7 @@
 #include <nlohmann/json.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/asio/ip/tcp.hpp>
+#include <boost/asio/ip/udp.hpp>
 #include <string>
 #include <chrono>
 #include <memory>
@@ -39,7 +40,7 @@ class BranchInfo {
     kInfoMessageHeaderSize = kAdvertisingMessageSize + 4,
   };
 
-  virtual ~BranchInfo() = 0 {}
+  virtual ~BranchInfo() = default;
 
   const boost::uuids::uuid& GetUuid() const { return uuid_; }
   const std::string& GetName() const { return name_; }

@@ -43,20 +43,44 @@ void AdvertisingReceiver::Start(LocalBranchInfoPtr info) {
 }
 
 void AdvertisingReceiver::SetupSocket() {
+  using namespace boost::asio::ip;
+
   boost::system::error_code ec;
   socket_.open(adv_ep_.protocol(), ec);
   if (ec) throw api::Error(YOGI_ERR_OPEN_SOCKET_FAILED);
 
-  socket_.set_option(boost::asio::ip::udp::socket::reuse_address(true), ec);
+  socket_.set_option(udp::socket::reuse_address(true), ec);
   if (ec) throw api::Error(YOGI_ERR_SET_SOCKET_OPTION_FAILED);
 
-  socket_.bind(
-      boost::asio::ip::udp::endpoint(adv_ep_.protocol(), adv_ep_.port()), ec);
+  address listen_addr;
+  if (adv_ep_.address().is_v6()) {
+    listen_addr = address(address_v6::any());
+  } else {
+    listen_addr = address(address_v6::any());
+  }
+
+  socket_.bind(udp::endpoint(listen_addr, adv_ep_.port()), ec);
   if (ec) throw api::Error(YOGI_ERR_BIND_SOCKET_FAILED);
 
-  socket_.set_option(boost::asio::ip::multicast::join_group(adv_ep_.address()),
-                     ec);
-  if (ec) throw api::Error(YOGI_ERR_SET_SOCKET_OPTION_FAILED);
+  JoinMulticastGroup();
+}
+
+void AdvertisingReceiver::JoinMulticastGroup() {
+  using namespace boost::asio::ip;
+
+  boost::system::error_code ec;
+  socket_.set_option(multicast::join_group(adv_ep_.address()), ec);
+
+  if (ec && adv_ep_.address().is_v6()) {
+    unsigned long net_if = 0;
+    do {
+      socket_.set_option(
+          multicast::join_group(adv_ep_.address().to_v6(), net_if), ec);
+      ++net_if;
+    } while (ec && net_if < 20);
+  }
+
+  if (ec) throw api::Error(YOGI_ERR_JOIN_MULTICAST_GROUP_FAILED);
 }
 
 void AdvertisingReceiver::StartReceiveAdvertisement() {

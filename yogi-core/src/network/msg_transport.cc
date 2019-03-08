@@ -70,9 +70,9 @@ MessageTransport::MessageTransport(TransportPtr transport,
       tx_rb_(tx_queue_size),
       rx_rb_(rx_queue_size),
       last_tx_error_(api::kSuccess),
-      last_rx_error_(api::kSuccess),
       send_to_transport_running_(false),
-      receive_from_transport_running_(false) {
+      receive_from_transport_running_(false),
+      last_rx_error_(api::kSuccess) {
   ResetReceivedSizeField();
 }
 

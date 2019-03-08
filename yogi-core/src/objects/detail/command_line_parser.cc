@@ -264,7 +264,7 @@ void CommandLineParser::PopulateVariablesMap() {
                   .positional(positional_options_)
                   .run(),
               vm_);
-  } catch (const po::error& e) {
+  } catch (const std::exception& e) {
     throw api::DescriptiveError(YOGI_ERR_PARSING_CMDLINE_FAILED) << e.what();
   }
 }

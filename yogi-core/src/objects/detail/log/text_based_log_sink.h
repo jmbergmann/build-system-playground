@@ -38,8 +38,8 @@ class TextBasedLogSink : public LogSink {
                           const char* msg) override;
 
   virtual void WritePartialOutput(const std::string& str) = 0;
-  virtual void SetOutputColours(api::Verbosity) {}
-  virtual void ResetOutputColours() {}
+  virtual void SetOutputColors(api::Verbosity) {}
+  virtual void ResetOutputColors() {}
   virtual void Flush() {}
 
  private:

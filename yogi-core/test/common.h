@@ -34,26 +34,27 @@
 
 using namespace std::chrono_literals;
 
-#define EXPECT_THROW_ERROR(statement, ec)    \
-  try {                                      \
-    statement;                               \
-    FAIL() << "No exception thrown";         \
-  } catch (const api::Error& err) {          \
-    EXPECT_EQ(err.GetValue(), ec);           \
-  } catch (...) {                            \
-    FAIL() << "Wrong exception type thrown"; \
+#define _EXPECT_THROW_ERROR(statement, ec, catch_statement)       \
+  try {                                                           \
+    statement;                                                    \
+    FAIL() << "No exception thrown";                              \
+  }                                                               \
+  catch_statement catch (const std::exception& e) {               \
+    FAIL() << "Wrong exception type thrown: " << typeid(e).name() \
+           << " with msg: " << e.what();                          \
   }
 
-#define EXPECT_THROW_DESCRIPTIVE_ERROR(statement, ec) \
-  try {                                               \
-    statement;                                        \
-    FAIL() << "No exception thrown";                  \
-  } catch (const api::DescriptiveError& err) {        \
-    EXPECT_EQ(err.GetValue(), ec);                    \
-    EXPECT_FALSE(err.GetDetails().empty());           \
-  } catch (...) {                                     \
-    FAIL() << "Wrong exception type thrown";          \
-  }
+#define EXPECT_THROW_ERROR(statement, ec)                            \
+  _EXPECT_THROW_ERROR(statement, ec, catch (const api::Error& err) { \
+    EXPECT_EQ(err.GetValue(), ec);                                   \
+  })
+
+#define EXPECT_THROW_DESCRIPTIVE_ERROR(statement, ec)            \
+  _EXPECT_THROW_ERROR(statement, ec,                             \
+                      catch (const api::DescriptiveError& err) { \
+                        EXPECT_EQ(err.GetValue(), ec);           \
+                        EXPECT_FALSE(err.GetDetails().empty());  \
+                      })
 
 static const nlohmann::json kBranchProps = nlohmann::json::parse(R"raw(
   {

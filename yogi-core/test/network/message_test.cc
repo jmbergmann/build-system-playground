@@ -95,7 +95,9 @@ TEST(MessageTest, JsonToMsgPackConversion) {
                      boost::asio::buffer("{\"x\": 456}"), api::Encoding::kJson);
 
   auto data = msg.GetMessageAsBytes();
-  data.erase(data.begin(), data.end() - msg.GetUserDataSize());
+  data.erase(data.begin(),
+             data.end() - static_cast<utils::ByteVector::difference_type>(
+                              msg.GetUserDataSize()));
 
   auto json = nlohmann::json::from_msgpack(data);
   EXPECT_EQ(json.value("x", -1), 456);

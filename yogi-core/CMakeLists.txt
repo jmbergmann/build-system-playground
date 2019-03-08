@@ -14,14 +14,16 @@ if (WIN32)
     -D_WINSOCK_DEPRECATED_NO_WARNINGS
   )
 else ()
-  set (warnings                  "-Wall -Wextra -Wnon-virtual-dtor -pedantic -Wold-style-cast -Wcast-align -Wunused -Woverloaded-virtual -Wconversion -Wsign-conversion -Wduplicated-cond -Wlogical-op -Wnull-dereference")
-  set (ignored_warnings          "-Wno-unused-variable -Wno-unused-function -Wno-overloaded-virtual -Wno-unused-value -Wno-shadow -Wno-trigraphs")
-  set (export_map                "-Wl,--version-script='${CMAKE_CURRENT_LIST_DIR}/src/export.map'")
+  set (warnings                  "-Wall -Wextra -Wnon-virtual-dtor -pedantic -Wold-style-cast -Wcast-align -Wunused -Woverloaded-virtual -Wconversion -Wsign-conversion -Wnull-dereference")
+  set (ignored_warnings          "-Wno-unused-variable -Wno-unused-function -Wno-overloaded-virtual -Wno-unused-value -Wno-shadow -Wno-trigraphs -Wno-unused-private-field -Wno-unused-parameter")
   set (CMAKE_CXX_STANDARD        14)
   set (CMAKE_CXX_FLAGS           "-std=c++${CMAKE_CXX_STANDARD} ${warnings} ${ignored_warnings} -fvisibility=hidden -fPIC -DBOOST_ALL_DYN_LINK")
   set (CMAKE_CXX_FLAGS_DEBUG     "-g -ggdb")
   set (CMAKE_CXX_FLAGS_RELEASE   "-O2 -DNDEBUG -fwhole-program -flto")
-  set (CMAKE_SHARED_LINKER_FLAGS "${export_map}")
+  
+  if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    set (CMAKE_SHARED_LINKER_FLAGS "-Wl,--version-script='${CMAKE_CURRENT_LIST_DIR}/src/export.map'")
+  endif ()
 endif ()
 
 # OpenSSL
@@ -148,6 +150,7 @@ export (TARGETS yogi-core-header
 
 # Tests
 find_package (GMock REQUIRED)
+find_package (GTest REQUIRED)
 include_directories (SYSTEM ${GMOCK_INCLUDE_DIRS})
 
 add_executable (yogi-core-test
@@ -180,6 +183,7 @@ target_link_libraries (yogi-core-test
   yogi-core-static
   yogi-core
   ${GMOCK_BOTH_LIBRARIES}
+  ${GTEST_LIBRARIES}
   Threads::Threads
 )
 

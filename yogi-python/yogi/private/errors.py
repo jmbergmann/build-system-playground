@@ -67,6 +67,7 @@ class ErrorCode(IntEnum):
     INVALID_OPERATION_ID = -42
     OPERATION_NOT_RUNNING = -43
     INVALID_USER_MSGPACK = -44
+    JOIN_MULTICAST_GROUP_FAILED = -45
 
 
 yogi.YOGI_GetErrorString.restype = c_char_p

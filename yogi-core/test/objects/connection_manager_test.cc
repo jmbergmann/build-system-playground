@@ -33,14 +33,24 @@ class ConnectionManagerTest : public TestFixture {
 
 TEST_F(ConnectionManagerTest, Advertising) {
   using namespace boost::asio;
+
   io_context ioc;
   ip::udp::endpoint ep(ip::make_address("0::0"),
                        kBranchProps["advertising_port"]);
   ip::udp::socket socket(ioc, ep.protocol());
   socket.set_option(ip::udp::socket::reuse_address(true));
   socket.bind(ep);
-  socket.set_option(ip::multicast::join_group(ip::make_address(
-      static_cast<const std::string&>(kBranchProps["advertising_address"]))));
+
+  boost::system::error_code ec;
+  for (unsigned long net_if = 0; net_if < 20; ++net_if) {
+    socket.set_option(
+        ip::multicast::join_group(
+            ip::make_address(static_cast<const std::string&>(
+                                 kBranchProps["advertising_address"]))
+                .to_v6(),
+            net_if),
+        ec);
+  }
 
   boost::system::error_code error_code;
   std::array<char, 100> data;

@@ -172,6 +172,9 @@ public static partial class Yogi
 
         /// <summary>User-supplied data is not valid MessagePack.</summary>
         InvalidUserMsgPack = -44,
+
+        /// <summary>Joining UDP multicast group failed.</summary>
+        JoinMulticastGroupFailed = -45,
     }
 
     /// <summary>

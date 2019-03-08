@@ -28,13 +28,13 @@ ConsoleLogSink::ConsoleLogSink(api::Verbosity verbosity, FILE* stream,
                                std::string fmt)
     : TextBasedLogSink(verbosity, time_fmt, fmt, !color),
       stream_(stream),
-      colour_(color) {}
+      color_(color) {}
 
 void ConsoleLogSink::WritePartialOutput(const std::string& str) {
   fputs(str.c_str(), stream_);
 }
 
-void ConsoleLogSink::SetOutputColours(api::Verbosity severity) {
+void ConsoleLogSink::SetOutputColors(api::Verbosity severity) {
   switch (severity) {
     case api::Verbosity::kFatal:
       utils::SetConsoleColour(stream_, utils::ForegroundColour::kWhite);
@@ -67,7 +67,7 @@ void ConsoleLogSink::SetOutputColours(api::Verbosity severity) {
   }
 }
 
-void ConsoleLogSink::ResetOutputColours() {
+void ConsoleLogSink::ResetOutputColors() {
   utils::ResetConsoleColours(stream_);
 }
 

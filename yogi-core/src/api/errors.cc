@@ -161,6 +161,9 @@ const char* Result::GetDescription() const {
 
     case YOGI_ERR_INVALID_USER_MSGPACK:
       return "User-supplied data is not valid MessagePack";
+
+    case YOGI_ERR_JOIN_MULTICAST_GROUP_FAILED:
+      return "Joining UDP multicast group failed";
   }
 
   return "Invalid error code";

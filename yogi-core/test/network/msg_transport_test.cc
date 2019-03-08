@@ -55,7 +55,9 @@ class FakeTransport : public network::Transport {
         1, std::min(data.size(), rx_data.size()));
     auto n = dist(gen);
     std::copy_n(rx_data.begin(), n, static_cast<char*>(data.data()));
-    rx_data.erase(rx_data.begin(), rx_data.begin() + n);
+    rx_data.erase(
+        rx_data.begin(),
+        rx_data.begin() + static_cast<utils::ByteVector::difference_type>(n));
 
     PostHandler(handler, n);
   }
@@ -400,7 +402,7 @@ TEST_F(MessageTransportTest, Stress) {
 
   std::vector<utils::ByteVector> sent_msgs_bytes;
   std::vector<utils::ByteVector> received_msgs_bytes;
-  std::atomic<bool> send_done = false;
+  std::atomic<bool> send_done{false};
 
   // Start threads simultaneously'ish (that's what the mutex is for)
   {
@@ -437,13 +439,15 @@ TEST_F(MessageTransportTest, Stress) {
                       [] { return static_cast<utils::Byte>(0); });
 
         bool called = false;
-        uut_->ReceiveAsync(
-            boost::asio::buffer(msg_bytes), [&](auto& res, auto msg_size) {
-              EXPECT_EQ(res, api::kSuccess);
-              received_msgs_bytes.push_back(utils::ByteVector(
-                  msg_bytes.begin(), msg_bytes.begin() + msg_size));
-              called = true;
-            });
+        uut_->ReceiveAsync(boost::asio::buffer(msg_bytes), [&](auto& res,
+                                                               auto msg_size) {
+          EXPECT_EQ(res, api::kSuccess);
+          received_msgs_bytes.push_back(utils::ByteVector(
+              msg_bytes.begin(),
+              msg_bytes.begin() +
+                  static_cast<utils::ByteVector::difference_type>(msg_size)));
+          called = true;
+        });
 
         while (!called) {
           context_->Poll();

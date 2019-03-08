@@ -179,6 +179,9 @@ enum class ErrorCode {
 
   /// User-supplied data is not valid MessagePack
   kInvalidUserMsgPack = -44,
+
+  /// Joining UDP multicast group failed
+  kJoinMulticastGroupFailed = -45,
 };
 
 template <>
@@ -228,6 +231,7 @@ inline std::string ToString<ErrorCode>(const ErrorCode& ec) {
     _YOGI_TO_STRING_ENUM_CASE(ErrorCode, kTxQueueFull)
     _YOGI_TO_STRING_ENUM_CASE(ErrorCode, kInvalidOperationId)
     _YOGI_TO_STRING_ENUM_CASE(ErrorCode, kOperationNotRunning)
+    _YOGI_TO_STRING_ENUM_CASE(ErrorCode, kJoinMulticastGroupFailed)
   }
 
   bool should_never_get_here = false;

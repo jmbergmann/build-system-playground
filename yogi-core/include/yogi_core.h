@@ -29,10 +29,10 @@
 //!
 //! @{
 
-#define YOGI_HDR_VERSION "0.0.3" ///< Whole version number
-#define YOGI_HDR_VERSION_MAJOR 0 ///< Major version number
-#define YOGI_HDR_VERSION_MINOR 0 ///< Minor version number
-#define YOGI_HDR_VERSION_PATCH 3 ///< Patch version number
+#define YOGI_HDR_VERSION "0.0.3"  ///< Whole version number
+#define YOGI_HDR_VERSION_MAJOR 0  ///< Major version number
+#define YOGI_HDR_VERSION_MINOR 0  ///< Minor version number
+#define YOGI_HDR_VERSION_PATCH 3  ///< Patch version number
 
 //! @}
 //!
@@ -259,6 +259,9 @@
 //! User-supplied data is not valid MessagePack
 #define YOGI_ERR_INVALID_USER_MSGPACK -44
 
+//! Joining UDP multicast group failed
+#define YOGI_ERR_JOIN_MULTICAST_GROUP_FAILED -45
+
 //! @}
 //!
 //! @defgroup VB Log verbosity/severity
@@ -333,46 +336,40 @@
 #define YOGI_SIG_NONE 0
 
 //! Interrupt (e.g. by receiving SIGINT or pressing STRG + C)
-#define YOGI_SIG_INT (1<<0)
+#define YOGI_SIG_INT (1 << 0)
 
 //! Termination request (e.g. by receiving SIGTERM)
-#define YOGI_SIG_TERM (1<<1)
+#define YOGI_SIG_TERM (1 << 1)
 
 //! User-defined signal 1
-#define YOGI_SIG_USR1 (1<<24)
+#define YOGI_SIG_USR1 (1 << 24)
 
 //! User-defined signal 2
-#define YOGI_SIG_USR2 (1<<25)
+#define YOGI_SIG_USR2 (1 << 25)
 
 //! User-defined signal 3
-#define YOGI_SIG_USR3 (1<<26)
+#define YOGI_SIG_USR3 (1 << 26)
 
 //! User-defined signal 4
-#define YOGI_SIG_USR4 (1<<27)
+#define YOGI_SIG_USR4 (1 << 27)
 
 //! User-defined signal 5
-#define YOGI_SIG_USR5 (1<<28)
+#define YOGI_SIG_USR5 (1 << 28)
 
 //! User-defined signal 6
-#define YOGI_SIG_USR6 (1<<29)
+#define YOGI_SIG_USR6 (1 << 29)
 
 //! User-defined signal 7
-#define YOGI_SIG_USR7 (1<<30)
+#define YOGI_SIG_USR7 (1 << 30)
 
 //! User-defined signal 8
-#define YOGI_SIG_USR8 (1<<31)
+#define YOGI_SIG_USR8 (1 << 31)
 
 //! All signals
-#define YOGI_SIG_ALL ( YOGI_SIG_INT  \
-                     | YOGI_SIG_TERM \
-                     | YOGI_SIG_USR1 \
-                     | YOGI_SIG_USR2 \
-                     | YOGI_SIG_USR3 \
-                     | YOGI_SIG_USR4 \
-                     | YOGI_SIG_USR5 \
-                     | YOGI_SIG_USR6 \
-                     | YOGI_SIG_USR7 \
-                     | YOGI_SIG_USR8 )
+#define YOGI_SIG_ALL                                               \
+  (YOGI_SIG_INT | YOGI_SIG_TERM | YOGI_SIG_USR1 | YOGI_SIG_USR2 |  \
+   YOGI_SIG_USR3 | YOGI_SIG_USR4 | YOGI_SIG_USR5 | YOGI_SIG_USR6 | \
+   YOGI_SIG_USR7 | YOGI_SIG_USR8)
 
 //! @}
 //!
@@ -417,13 +414,13 @@
 //!   quotation marks as shown for the *MAX_DURATION* variable above. Othwise,
 //!   the target value will remain a string and the placeholder will be replaced
 //!   with the stringified value of the variable.
-#define YOGI_CFG_DISABLE_VARIABLES (1<<0)
+#define YOGI_CFG_DISABLE_VARIABLES (1 << 0)
 
 //! Makes configuration options given directly on the command line overridable
 //!
 //! By default, configuration options given direclty on the command line are
 //! immutable, i.e. they will never be updated from another source.
-#define YOGI_CFG_MUTABLE_CMD_LINE (1<<1)
+#define YOGI_CFG_MUTABLE_CMD_LINE (1 << 1)
 
 //! @}
 //!
@@ -437,37 +434,37 @@
 #define YOGI_CLO_NONE 0
 
 //! Include the \c --log... switches for configuring file logging
-#define YOGI_CLO_LOGGING (1<<0)
+#define YOGI_CLO_LOGGING (1 << 0)
 
 //! Include the \c --name switch for setting the branch name
-#define YOGI_CLO_BRANCH_NAME (1<<1)
+#define YOGI_CLO_BRANCH_NAME (1 << 1)
 
 //! Include the \c --description switch for setting the branch description
-#define YOGI_CLO_BRANCH_DESCRIPTION (1<<2)
+#define YOGI_CLO_BRANCH_DESCRIPTION (1 << 2)
 
 //! Include the \c --network switch for setting the network name
-#define YOGI_CLO_BRANCH_NETWORK (1<<3)
+#define YOGI_CLO_BRANCH_NETWORK (1 << 3)
 
 //! Include the \c --password switch for setting the network password
-#define YOGI_CLO_BRANCH_PASSWORD (1<<4)
+#define YOGI_CLO_BRANCH_PASSWORD (1 << 4)
 
 //! Include the \c --path switch for setting the branch path
-#define YOGI_CLO_BRANCH_PATH (1<<5)
+#define YOGI_CLO_BRANCH_PATH (1 << 5)
 
 //! Include the \c --adv-addr switch for setting the branch advertising address
-#define YOGI_CLO_BRANCH_ADV_ADDR (1<<6)
+#define YOGI_CLO_BRANCH_ADV_ADDR (1 << 6)
 
 //! Include the \c --adv-port switch for setting the branch advertising port
-#define YOGI_CLO_BRANCH_ADV_PORT (1<<7)
+#define YOGI_CLO_BRANCH_ADV_PORT (1 << 7)
 
 //! Include the \c --adv-int switch for setting the branch advertising interval
-#define YOGI_CLO_BRANCH_ADV_INT (1<<8)
+#define YOGI_CLO_BRANCH_ADV_INT (1 << 8)
 
 //! Include the \c --timeout switch for setting the branch timeout
-#define YOGI_CLO_BRANCH_TIMEOUT (1<<9)
+#define YOGI_CLO_BRANCH_TIMEOUT (1 << 9)
 
 //! Include the \c --ghost_mode switch for enabling ghost mode for the branch
-#define YOGI_CLO_BRANCH_GHOST_MODE (1<<10)
+#define YOGI_CLO_BRANCH_GHOST_MODE (1 << 10)
 
 //! Parse configuration files given on the command line
 //!
@@ -475,10 +472,10 @@
 //! in two supplied configuration files, then the value from the rightmost file
 //! will be used. However, values given directly on the command line, i.e. not
 //! through files, have higher priority.
-#define YOGI_CLO_FILES (1<<11)
+#define YOGI_CLO_FILES (1 << 11)
 
 //! Same as #YOGI_CLO_FILES but at least one configuration must be given
-#define YOGI_CLO_FILES_REQUIRED (1<<12)
+#define YOGI_CLO_FILES_REQUIRED (1 << 12)
 
 //! Include the \c --override switch for overriding arbitrary configuration
 //! sections
@@ -490,34 +487,25 @@
 //!   Parameters supplied in this way override the same parameters in any
 //!   given configuration file. If the same parameter is set directly on the
 //!   command line multiple times, then the rightmost value is used.
-#define YOGI_CLO_OVERRIDES (1<<13)
+#define YOGI_CLO_OVERRIDES (1 << 13)
 
 //! Include the \c --var switch for setting variables
-#define YOGI_CLO_VARIABLES (1<<14)
+#define YOGI_CLO_VARIABLES (1 << 14)
 
 //! Combination of all branch flags
-#define YOGI_CLO_BRANCH_ALL ( YOGI_CLO_BRANCH_NAME        \
-                            | YOGI_CLO_BRANCH_DESCRIPTION \
-                            | YOGI_CLO_BRANCH_NETWORK     \
-                            | YOGI_CLO_BRANCH_PASSWORD    \
-                            | YOGI_CLO_BRANCH_PATH        \
-                            | YOGI_CLO_BRANCH_ADV_ADDR    \
-                            | YOGI_CLO_BRANCH_ADV_PORT    \
-                            | YOGI_CLO_BRANCH_ADV_INT     \
-                            | YOGI_CLO_BRANCH_TIMEOUT     \
-                            | YOGI_CLO_BRANCH_GHOST_MODE  \
-                            )
+#define YOGI_CLO_BRANCH_ALL                                                    \
+  (YOGI_CLO_BRANCH_NAME | YOGI_CLO_BRANCH_DESCRIPTION |                        \
+   YOGI_CLO_BRANCH_NETWORK | YOGI_CLO_BRANCH_PASSWORD | YOGI_CLO_BRANCH_PATH | \
+   YOGI_CLO_BRANCH_ADV_ADDR | YOGI_CLO_BRANCH_ADV_PORT |                       \
+   YOGI_CLO_BRANCH_ADV_INT | YOGI_CLO_BRANCH_TIMEOUT |                         \
+   YOGI_CLO_BRANCH_GHOST_MODE)
 
 //! Combination of all flags
 //!
 //! This is usually used when using the application object.
-#define YOGI_CLO_ALL ( YOGI_CLO_LOGGING        \
-                     | YOGI_CLO_BRANCH_ALL     \
-                     | YOGI_CLO_FILES          \
-                     | YOGI_CLO_FILES_REQUIRED \
-                     | YOGI_CLO_OVERRIDES      \
-                     | YOGI_CLO_VARIABLES      \
-                     )
+#define YOGI_CLO_ALL                                         \
+  (YOGI_CLO_LOGGING | YOGI_CLO_BRANCH_ALL | YOGI_CLO_FILES | \
+   YOGI_CLO_FILES_REQUIRED | YOGI_CLO_OVERRIDES | YOGI_CLO_VARIABLES)
 
 //! @}
 //!
@@ -547,7 +535,7 @@
 //!     "tcp_server_port":    43384
 //!   }
 //! \endcode
-#define YOGI_BEV_BRANCH_DISCOVERED (1<<0)
+#define YOGI_BEV_BRANCH_DISCOVERED (1 << 0)
 
 //! Querying a new branch for information finished (successfully or not)
 //!
@@ -570,7 +558,7 @@
 //!     "ghost_mode":           false
 //!   }
 //! \endcode
-#define YOGI_BEV_BRANCH_QUERIED (1<<1)
+#define YOGI_BEV_BRANCH_QUERIED (1 << 1)
 
 //! Connecting to a branch finished (successfully or not)
 //!
@@ -581,7 +569,7 @@
 //!     "uuid": "123e4567-e89b-12d3-a456-426655440000"
 //!   }
 //! \endcode
-#define YOGI_BEV_CONNECT_FINISHED (1<<2)
+#define YOGI_BEV_CONNECT_FINISHED (1 << 2)
 
 //! The connection to a branch was lost
 //!
@@ -592,14 +580,12 @@
 //!     "uuid": "123e4567-e89b-12d3-a456-426655440000"
 //!   }
 //! \endcode
-#define YOGI_BEV_CONNECTION_LOST (1<<3)
+#define YOGI_BEV_CONNECTION_LOST (1 << 3)
 
 //! All branch events
-#define YOGI_BEV_ALL ( YOGI_BEV_BRANCH_DISCOVERED \
-                     | YOGI_BEV_BRANCH_QUERIED    \
-                     | YOGI_BEV_CONNECT_FINISHED  \
-                     | YOGI_BEV_CONNECTION_LOST   \
-                     )
+#define YOGI_BEV_ALL                                      \
+  (YOGI_BEV_BRANCH_DISCOVERED | YOGI_BEV_BRANCH_QUERIED | \
+   YOGI_BEV_CONNECT_FINISHED | YOGI_BEV_CONNECTION_LOST)
 
 //! @}
 //!
@@ -660,11 +646,11 @@
 //! @}
 
 #ifndef YOGI_API
-# ifdef _MSC_VER
-#   define YOGI_API __declspec(dllimport)
-# else
-#   define YOGI_API
-# endif
+#ifdef _MSC_VER
+#define YOGI_API __declspec(dllimport)
+#else
+#define YOGI_API
+#endif
 #endif
 
 //! @defgroup FN Library Functions
@@ -1290,8 +1276,8 @@ YOGI_API int YOGI_ContextCreate(void** context);
  * blocking, until the YOGI_ContextStop() function has been called or there
  * are no more ready handlers.
  *
- * This function must be called from outside any handler functions that are being
- * executed through the context.
+ * This function must be called from outside any handler functions that are
+ * being executed through the context.
  *
  * \param[in]  context The context to use
  * \param[out] count   Number of executed handlers (may be set to NULL)
@@ -1309,8 +1295,8 @@ YOGI_API int YOGI_ContextPoll(void* context, int* count);
  * functions registered through YOGI_ContextPost()) that is ready to run,
  * without blocking.
  *
- * This function must be called from outside any handler functions that are being
- * executed through the context.
+ * This function must be called from outside any handler functions that are
+ * being executed through the context.
  *
  * \param[in]  context The context to use
  * \param[out] count   Number of executed handlers (may be set to NULL)
@@ -1328,8 +1314,8 @@ YOGI_API int YOGI_ContextPollOne(void* context, int* count);
  * registered through YOGI_ContextPost()) for the specified duration unless
  * YOGI_ContextStop() is called within that time.
  *
- * This function must be called from outside any handler functions that are being
- * executed through the context.
+ * This function must be called from outside any handler functions that are
+ * being executed through the context.
  *
  * \param[in]  context  The context to use
  * \param[out] count    Number of executed handlers (may be set to NULL)
@@ -1350,8 +1336,8 @@ YOGI_API int YOGI_ContextRun(void* context, int* count, long long duration);
  * single handler function has been executed, unless YOGI_ContextStop() is
  * called within that time.
  *
- * This function must be called from outside any handler functions that are being
- * executed through the context.
+ * This function must be called from outside any handler functions that are
+ * being executed through the context.
  *
  * \param[in]  context  The context to use
  * \param[out] count    Number of executed handlers (may be set to NULL)
@@ -1370,8 +1356,8 @@ YOGI_API int YOGI_ContextRunOne(void* context, int* count, long long duration);
  * calling the appropriate YOGI_ContextRun... or YOGI_ContextPoll... functions
  * themself. The thread can be stopped using YOGI_ContextStop().
  *
- * This function must be called from outside any handler functions that are being
- * executed through the context.
+ * This function must be called from outside any handler functions that are
+ * being executed through the context.
  *
  * \param[in] context The context to use
  *
@@ -1405,8 +1391,8 @@ YOGI_API int YOGI_ContextStop(void* context);
  * timeout, then the #YOGI_ERR_TIMEOUT error is returned. This also applies when
  * this function is used in polling mode as described above.
  *
- * This function must be called from outside any handler functions that are being
- * executed through the context.
+ * This function must be called from outside any handler functions that are
+ * being executed through the context.
  *
  * \param[in] context  The context to use
  * \param[in] duration Maximum time to wait in nanoseconds (-1 for infinity)
@@ -1427,8 +1413,8 @@ YOGI_API int YOGI_ContextWaitForRunning(void* context, long long duration);
  * timeout, then the #YOGI_ERR_TIMEOUT error is returned. This also applies when
  * this function is used in polling mode as described above.
  *
- * This function must be called from outside any handler functions that are being
- * executed through the context.
+ * This function must be called from outside any handler functions that are
+ * being executed through the context.
  *
  * \param[in] context  The context to use
  * \param[in] duration Maximum time to wait in nanoseconds (-1 for infinity)
@@ -2083,11 +2069,11 @@ YOGI_API int YOGI_TerminalCreate(void** terminal, void* branch,
  * Destroys an object.
  *
  * Tries to destroy the object belonging to the given handle. The call fails and
- * returns #YOGI_ERR_OBJECT_STILL_USED if the object is still being used by other
- * objects that have been created via other library calls.
+ * returns #YOGI_ERR_OBJECT_STILL_USED if the object is still being used by
+ * other objects that have been created via other library calls.
  *
- * Never destroy a context object from within a handler function that is executed
- * through the same context.
+ * Never destroy a context object from within a handler function that is
+ * executed through the same context.
  *
  * Destroying an object will cause any active asynchronous operations to get
  * canceled and the corresponding completion handlers will be invoked with an
@@ -2121,7 +2107,7 @@ YOGI_API int YOGI_DestroyAll();
 //! @}
 
 #ifdef __cplusplus
-} // extern "C"
+}  // extern "C"
 #endif
 
 /**
@@ -2434,4 +2420,4 @@ YOGI_API int YOGI_DestroyAll();
  * TBD
  */
 
-#endif // YOGI_CORE_H
+#endif  // YOGI_CORE_H

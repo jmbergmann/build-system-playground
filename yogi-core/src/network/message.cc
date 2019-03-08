@@ -64,7 +64,10 @@ std::size_t Message::GetSize() const { return GetMessageAsBytes().size(); }
 
 utils::ByteVector Message::GetHeader() const {
   auto& msg = GetMessageAsBytes();
-  return utils::ByteVector(msg.begin() + 1, msg.begin() + 1 + header_size_);
+  return utils::ByteVector(
+      msg.begin() + 1,
+      msg.begin() + 1 +
+          static_cast<utils::ByteVector::difference_type>(header_size_));
 }
 
 std::size_t Message::GetUserDataSize() const {

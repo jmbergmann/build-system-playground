@@ -17,7 +17,7 @@
 
 #include "../common.h"
 
-static constexpr int kLastError = YOGI_ERR_INVALID_USER_MSGPACK;
+static constexpr int kLastError = YOGI_ERR_JOIN_MULTICAST_GROUP_FAILED;
 
 TEST(ErrorsTest, DefaultResultConstructor) {
   api::Result res;
@@ -37,7 +37,7 @@ TEST(ErrorsTest, DescriptionForEachError) {
   }
 
   for (int i = kLastError - 1; i < kLastError - 10; --i) {
-    EXPECT_STREQ(YOGI_GetErrorString(i), inv_err_str)  << "Error code: " << i;
+    EXPECT_STREQ(YOGI_GetErrorString(i), inv_err_str) << "Error code: " << i;
   }
 }
 

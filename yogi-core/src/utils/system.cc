@@ -20,11 +20,11 @@
 #include <boost/asio/ip/host_name.hpp>
 
 #ifdef _WIN32
-# include <process.h>
+#include <process.h>
 #else
-# include <sys/types.h>
-# include <unistd.h>
-# include <sys/syscall.h>
+#include <sys/types.h>
+#include <unistd.h>
+#include <sys/syscall.h>
 #endif
 
 namespace utils {
@@ -48,8 +48,11 @@ int GetProcessId() {
 }
 
 int GetCurrentThreadId() {
-#ifdef _WIN32
+#if defined(_WIN32)
   auto id = ::GetCurrentThreadId();
+#elif defined(__APPLE__)
+  std::uint64_t id;
+  pthread_threadid_np(NULL, &id);
 #else
   auto id = syscall(SYS_gettid);
 #endif

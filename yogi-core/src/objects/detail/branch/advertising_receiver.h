@@ -46,6 +46,7 @@ class AdvertisingReceiver
 
  private:
   void SetupSocket();
+  void JoinMulticastGroup();
   void StartReceiveAdvertisement();
   void OnReceivedAdvertisementFinished(const boost::system::error_code& ec,
                                        std::size_t bytes_received);
