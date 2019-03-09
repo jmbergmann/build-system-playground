@@ -29,7 +29,13 @@ namespace internal {
 
 const char* Library::GetFilename() {
   const char* s = std::getenv("YOGI_CORE_LIBRARY");
-  return s ? s : "yogi-core.so";
+  if (s) return s;
+
+#ifdef __APPLE__
+  return "libyogi-core.dylib";
+#else
+  return "libyogi-core.so";
+#endif
 }
 
 Library::LibraryHandle Library::LoadLibrary(const char* filename) {

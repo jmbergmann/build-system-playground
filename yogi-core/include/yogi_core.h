@@ -58,62 +58,65 @@
 //! Major version number of the library (int)
 #define YOGI_CONST_VERSION_PATCH 4
 
+//! Address of the network interface that is used by default (const char*)
+#define YOGI_CONST_DEFAULT_INTERFACE_ADDRESS 5
+
 //! Default multicast addresses to use for advertising (const char*)
-#define YOGI_CONST_DEFAULT_ADV_ADDRESS 5
+#define YOGI_CONST_DEFAULT_ADV_ADDRESS 6
 
 //! Default port to use for advertising via UDP IPv6 multicasts (int)
-#define YOGI_CONST_DEFAULT_ADV_PORT 6
+#define YOGI_CONST_DEFAULT_ADV_PORT 7
 
 //! Default advertising interval in nanoseconds (long long)
-#define YOGI_CONST_DEFAULT_ADV_INTERVAL 7
+#define YOGI_CONST_DEFAULT_ADV_INTERVAL 8
 
 //! Default connection timeout in nanoseconds (long long)
-#define YOGI_CONST_DEFAULT_CONNECTION_TIMEOUT 8
+#define YOGI_CONST_DEFAULT_CONNECTION_TIMEOUT 9
 
 //! Default logging verbosity (int)
-#define YOGI_CONST_DEFAULT_LOGGER_VERBOSITY 9
+#define YOGI_CONST_DEFAULT_LOGGER_VERBOSITY 10
 
 //! Default textual format for timestamps in log entries (const char*)
-#define YOGI_CONST_DEFAULT_LOG_TIME_FORMAT 10
+#define YOGI_CONST_DEFAULT_LOG_TIME_FORMAT 11
 
 //! Default textual format for log entries (const char*)
-#define YOGI_CONST_DEFAULT_LOG_FORMAT 11
+#define YOGI_CONST_DEFAULT_LOG_FORMAT 12
 
 //! Maximum size of the payload in a message (int)
-#define YOGI_CONST_MAX_MESSAGE_PAYLOAD_SIZE 12
+#define YOGI_CONST_MAX_MESSAGE_PAYLOAD_SIZE 13
 
 //! Default textual format for timestamps (const char*)
-#define YOGI_CONST_DEFAULT_TIME_FORMAT 13
+#define YOGI_CONST_DEFAULT_TIME_FORMAT 14
 
 //! Default string to denote an infinite duration (const char*)
-#define YOGI_CONST_DEFAULT_INF_DURATION_STRING 14
+#define YOGI_CONST_DEFAULT_INF_DURATION_STRING 15
 
 //! Default textual format for duration strings (const char*)
-#define YOGI_CONST_DEFAULT_DURATION_FORMAT 15
+#define YOGI_CONST_DEFAULT_DURATION_FORMAT 16
 
 //! Default string to denote an invalid object handle (const char*)
-#define YOGI_CONST_DEFAULT_INVALID_HANDLE_STRING 16
+#define YOGI_CONST_DEFAULT_INVALID_HANDLE_STRING 17
 
 //! Default textual format for strings describing an object (const char*)
-#define YOGI_CONST_DEFAULT_OBJECT_FORMAT 17
+#define YOGI_CONST_DEFAULT_OBJECT_FORMAT 18
 
 //! Minimum size of a send queue for a remote branch (int)
-#define YOGI_CONST_MIN_TX_QUEUE_SIZE 18
+#define YOGI_CONST_MIN_TX_QUEUE_SIZE 19
 
 //! Maximum size of a send queue for a remote branch (int)
-#define YOGI_CONST_MAX_TX_QUEUE_SIZE 19
+#define YOGI_CONST_MAX_TX_QUEUE_SIZE 20
 
 //! Default size of a send queue for a remote branch (int)
-#define YOGI_CONST_DEFAULT_TX_QUEUE_SIZE 20
+#define YOGI_CONST_DEFAULT_TX_QUEUE_SIZE 21
 
 // Minimum size of a receive queue for a remote branch (int)
-#define YOGI_CONST_MIN_RX_QUEUE_SIZE 21
+#define YOGI_CONST_MIN_RX_QUEUE_SIZE 22
 
 // Maximum size of a receive queue for a remote branch (int)
-#define YOGI_CONST_MAX_RX_QUEUE_SIZE 22
+#define YOGI_CONST_MAX_RX_QUEUE_SIZE 23
 
 // Default size of a receive queue for a remote branch (int)
-#define YOGI_CONST_DEFAULT_RX_QUEUE_SIZE 23
+#define YOGI_CONST_DEFAULT_RX_QUEUE_SIZE 24
 
 //! @}
 //!
@@ -1601,6 +1604,7 @@ YOGI_API int YOGI_TimerCancel(void* timer);
  *     "path":                 "/Cooling System/Fan Controller",
  *     "network_name":         "Hardware Control",
  *     "network_password":     "secret",
+ *     "interface_address":    "0::0",
  *     "advertising_address":  "ff31::8000:2439",
  *     "advertising_port":     13531,
  *     "advertising_interval": 1.0,
@@ -1622,6 +1626,8 @@ YOGI_API int YOGI_TimerCancel(void* timer);
  *  - __network_name__: Name of the network to join (default: the machine's
  *    hostname).
  *  - __network_password__: Password for the network (default: no password)
+ *  - __interface_address__: Address of the network interface to use or
+ *    0.0.0.0 and 0::0 to use all IPv4/IPv6 interfaces respectively.
  *  - __advertising_address__: Multicast address to use for advertising, e.g.
  *    239.255.0.1 for IPv4 or ff31::8000:1234 for IPv6.
  *  - __advertising_port__: Port to use for advertising.
@@ -1691,6 +1697,7 @@ YOGI_API int YOGI_BranchCreate(void** branch, void* context, const char* props,
  *     "path":                 "/Cooling System/Fan Controller",
  *     "hostname":             "beaglebone",
  *     "pid":                  4124,
+ *     "interface_address":    "0::0",
  *     "advertising_address":  "ff31::8000:2439",
  *     "advertising_port":     13531,
  *     "advertising_interval": 1.0,

@@ -55,6 +55,7 @@ TEST(ConstantsTest, GetEachConstant) {
   check(YOGI_CONST_VERSION_MAJOR,                 kVersionMajor);
   check(YOGI_CONST_VERSION_MINOR,                 kVersionMinor);
   check(YOGI_CONST_VERSION_PATCH,                 kVersionPatch);
+  check(YOGI_CONST_DEFAULT_INTERFACE_ADDRESS,     kDefaultInterfaceAddress);
   check(YOGI_CONST_DEFAULT_ADV_ADDRESS,           kDefaultAdvAddress);
   check(YOGI_CONST_DEFAULT_ADV_PORT,              kDefaultAdvPort);
   check(YOGI_CONST_DEFAULT_ADV_INTERVAL,          kDefaultAdvInterval);

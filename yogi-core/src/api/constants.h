@@ -27,6 +27,7 @@ SCC char*     kVersionNumber                 = YOGI_HDR_VERSION;
 SCC int       kVersionMajor                  = YOGI_HDR_VERSION_MAJOR;
 SCC int       kVersionMinor                  = YOGI_HDR_VERSION_MINOR;
 SCC int       kVersionPatch                  = YOGI_HDR_VERSION_PATCH;
+SCC char*     kDefaultInterfaceAddress       = "0::0";
 SCC char*     kDefaultAdvAddress             = "ff31::8000:2439";
 SCC int       kDefaultAdvPort                = 13531;
 SCC long long kDefaultAdvInterval            = 1'000'000'000;

@@ -17,40 +17,22 @@
     "**/__pycache__/": true,
     "**/*.dll": true
   },
-  "python.unitTest.unittestArgs": [
-    "-v",
-    "-s",
-    "./yogi-python",
-    "-p",
-    "test_*.py"
-  ],
-  "python.unitTest.pyTestEnabled": false,
-  "python.unitTest.nosetestsEnabled": false,
-  "python.unitTest.unittestEnabled": false,
-  "python.unitTest.promptToConfigure": false,
+  "python.unitTest.cwd": "yogi-python",
+  "python.unitTest.unittestArgs": ["-v", "-s", ".", "-p", "test_*.py"],
+  "python.unitTest.unittestEnabled": true,
   "python.formatting.provider": "autopep8",
-  "python.formatting.autopep8Args": [
-    "--max-line-length", "80"
-  ],
+  "python.formatting.autopep8Args": ["--max-line-length", "80"],
   "[python]": {
-    "editor.rulers": [
-      79
-    ]
+    "editor.rulers": [79]
   },
   "[c]": {
-    "editor.rulers": [
-      80
-    ]
+    "editor.rulers": [80]
   },
   "[cpp]": {
-    "editor.rulers": [
-      80
-    ]
+    "editor.rulers": [80]
   },
   "[csharp]": {
-    "editor.rulers": [
-      100
-    ]
+    "editor.rulers": [100]
   },
   "files.associations": {
     "xtr1common": "cpp",
@@ -140,5 +122,6 @@
     "strstream": "cpp",
     "unordered_set": "cpp",
     "xxatomic": "cpp"
-  }
+  },
+  "python.pythonPath": "/usr/local/opt/python/bin/python3.7"
 }

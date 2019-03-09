@@ -23,6 +23,8 @@ lib_filename = os.getenv('YOGI_CORE_LIBRARY')
 if lib_filename is None:
     if platform.system() == 'Windows':
         lib_filename = "yogi-core.dll"
+    elif platform.system() == 'Darwin':
+        lib_filename = "libyogi-core.dylib"
     elif platform.system() == 'Linux':
         lib_filename = "libyogi-core.so"
     else:

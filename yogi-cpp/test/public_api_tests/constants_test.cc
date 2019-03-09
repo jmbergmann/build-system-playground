@@ -37,6 +37,10 @@ TEST(ConstantsTest, kVersionPatch) {
   EXPECT_EQ(yogi::constants::kVersionPatch, YOGI_HDR_VERSION_PATCH);
 }
 
+TEST(ConstantsTest, kDefaultInterfaceAddress) {
+  EXPECT_FALSE(yogi::constants::kDefaultInterfaceAddress.empty());
+}
+
 TEST(ConstantsTest, kDefaultAdvAddress) {
   EXPECT_FALSE(yogi::constants::kDefaultAdvAddress.empty());
 }
@@ -94,7 +98,8 @@ TEST(ConstantsTest, kDefaultObjectFormat) {
 }
 
 TEST(ConstantsTest, kMinTxQueueSize) {
-  EXPECT_GE(yogi::constants::kMinTxQueueSize, yogi::constants::kMaxMessagePayloadSize);
+  EXPECT_GE(yogi::constants::kMinTxQueueSize,
+            yogi::constants::kMaxMessagePayloadSize);
 }
 
 TEST(ConstantsTest, kMaxTxQueueSize) {
@@ -107,7 +112,8 @@ TEST(ConstantsTest, kDefaultTxQueueSize) {
 }
 
 TEST(ConstantsTest, kMinRxQueueSize) {
-  EXPECT_GE(yogi::constants::kMinRxQueueSize, yogi::constants::kMaxMessagePayloadSize);
+  EXPECT_GE(yogi::constants::kMinRxQueueSize,
+            yogi::constants::kMaxMessagePayloadSize);
 }
 
 TEST(ConstantsTest, kMaxRxQueueSize) {

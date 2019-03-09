@@ -231,6 +231,7 @@ inline std::string ToString<ErrorCode>(const ErrorCode& ec) {
     _YOGI_TO_STRING_ENUM_CASE(ErrorCode, kTxQueueFull)
     _YOGI_TO_STRING_ENUM_CASE(ErrorCode, kInvalidOperationId)
     _YOGI_TO_STRING_ENUM_CASE(ErrorCode, kOperationNotRunning)
+    _YOGI_TO_STRING_ENUM_CASE(ErrorCode, kInvalidUserMsgPack)
     _YOGI_TO_STRING_ENUM_CASE(ErrorCode, kJoinMulticastGroupFailed)
   }
 

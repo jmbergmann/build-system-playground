@@ -57,6 +57,7 @@ TEST_F(BranchTest, Info) {
     "network_name": "My Network",
     "network_password": "Password",
     "path": "/some/path",
+    "interface_address": "0.0.0.0",
     "advertising_address": "239.255.0.1",
     "advertising_port": 12345,
     "advertising_interval": 7,
@@ -73,6 +74,7 @@ TEST_F(BranchTest, Info) {
   EXPECT_EQ(info.GetPath(), "/some/path");
   EXPECT_FALSE(info.GetHostname().empty());
   EXPECT_GT(info.GetPid(), 0);
+  EXPECT_EQ(info.GetInterfaceAddress(), "192.168.1.123");
   EXPECT_EQ(info.GetAdvertisingAddress(), "239.255.0.1");
   EXPECT_EQ(info.GetAdvertisingPort(), 12345);
   EXPECT_EQ(info.GetAdvertisingInterval(), yogi::Duration::FromSeconds(7));
@@ -91,6 +93,7 @@ TEST_F(BranchTest, Info) {
   EXPECT_EQ(branch->GetPath(), info.GetPath());
   EXPECT_EQ(branch->GetHostname(), info.GetHostname());
   EXPECT_EQ(branch->GetPid(), info.GetPid());
+  EXPECT_EQ(branch->GetInterfaceAddress(), info.GetInterfaceAddress());
   EXPECT_EQ(branch->GetAdvertisingAddress(), info.GetAdvertisingAddress());
   EXPECT_EQ(branch->GetAdvertisingPort(), info.GetAdvertisingPort());
   EXPECT_EQ(branch->GetAdvertisingInterval(), info.GetAdvertisingInterval());

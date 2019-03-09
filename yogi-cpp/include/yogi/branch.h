@@ -238,6 +238,13 @@ class LocalBranchInfo : public BranchInfo {
     return ToJson()["advertising_address"];
   }
 
+  /// IP address of the used network interface.
+  ///
+  /// \return The IP address of the used network interface.
+  std::string GetInterfaceAddress() const {
+    return ToJson()["interface_address"];
+  }
+
   /// Advertising port.
   ///
   /// \returns The advertising port.
@@ -476,6 +483,7 @@ class Branch : public ObjectT<Branch> {
   ///     "path":                 "/Cooling System/Fan Controller",
   ///     "network_name":         "Hardware Control",
   ///     "network_password":     "secret",
+  ///     "interface_address":    "0::0",
   ///     "advertising_address":  "ff31::8000:2439",
   ///     "advertising_port":     13531,
   ///     "advertising_interval": 1.0,
@@ -497,6 +505,8 @@ class Branch : public ObjectT<Branch> {
   ///  - __network_name__: Name of the network to join (default: the machine's
   ///    hostname).
   ///  - __network_password__: Password for the network (default: no password)
+  ///  - __interface_address__: Address of the network interface to use or
+  ///    0.0.0.0 and 0::0 to use all IPv4/IPv6 interfaces respectively.
   ///  - __advertising_address__: Multicast address to use for advertising, e.g.
   ///    239.255.0.1 for IPv4 or ff31::8000:1234 for IPv6.
   ///  - __advertising_port__: Port to use for advertising.
@@ -507,7 +517,7 @@ class Branch : public ObjectT<Branch> {
   ///  - __rx_queue_size__: Size of the receive queues for remote branches.
   ///
   /// Advertising and establishing connections can be limited to certain network
-  /// interfaces via the _interface_ property. The default is to use all
+  /// interfaces via the _interface_address_ property. The default is to use all
   /// available interfaces.
   ///
   /// Setting the _ghost_mode_ property to _true_ prevents the branch from
@@ -610,6 +620,13 @@ class Branch : public ObjectT<Branch> {
   ///
   /// \return True if the branch is in ghost mode.
   bool GetGhostMode() const { return info_.GetGhostMode(); }
+
+  /// IP address of the used network interface.
+  ///
+  /// \return The IP address of the used network interface.
+  std::string GetInterfaceAddress() const {
+    return info_.GetInterfaceAddress();
+  }
 
   /// Advertising IP address.
   ///
