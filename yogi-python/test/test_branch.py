@@ -45,7 +45,6 @@ class TestBranches(TestCase):
             "network_name": "My Network",
             "network_password": "Password",
             "path": "/some/path",
-            "interface_address": "192.168.1.123",
             "advertising_address": "239.255.0.1",
             "advertising_port": 12345,
             "advertising_interval": 7,
@@ -63,7 +62,6 @@ class TestBranches(TestCase):
         self.assertEqual(info.path, "/some/path")
         self.assertEqual(info.hostname, socket.gethostname())
         self.assertEqual(info.pid, os.getpid())
-        self.assertEqual(info.interface_address, "192.168.1.123")
         self.assertEqual(info.advertising_address, "239.255.0.1")
         self.assertEqual(info.advertising_port, 12345)
         self.assertEqual(info.advertising_interval, 7.0)
