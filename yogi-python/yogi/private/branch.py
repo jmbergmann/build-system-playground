@@ -161,11 +161,6 @@ class LocalBranchInfo(BranchInfo):
         BranchInfo.__init__(self, info_string)
 
     @property
-    def interface_address(self) -> str:
-        """IP address of the used network interface."""
-        return self._info["interface_address"]
-
-    @property
     def advertising_address(self) -> str:
         """Advertising IP address."""
         return self._info["advertising_address"]
@@ -282,7 +277,6 @@ class Branch(Object):
               "path":                 "/Cooling System/Fan Controller",
               "network_name":         "Hardware Control",
               "network_password":     "secret",
-              "interface_address":    "192.168.1.123",
               "advertising_address":  "ff31::8000:2439",
               "advertising_port":     13531,
               "advertising_interval": 1.0,
@@ -301,8 +295,6 @@ class Branch(Object):
          - network_name: Name of the network to join (default: the machine's
            hostname).
          - network_password: Password for the network (default: no password)
-         - interface_address: Address of the network interface to use or
-           0.0.0.0 and 0::0 to use all IPv4/IPv6 interfaces respectively.
          - advertising_address: Multicast address to use for advertising, e.g.
            239.255.0.1 for IPv4 or ff31::8000:1234 for IPv6.
          - advertising_port: Port to use for advertising.
@@ -402,11 +394,6 @@ class Branch(Object):
     def pid(self) -> int:
         """ID of the process."""
         return self._info.pid
-
-    @property
-    def interface_address(self) -> str:
-        """IP address of the used network interface."""
-        return self._info.interface_address
 
     @property
     def advertising_address(self) -> str:

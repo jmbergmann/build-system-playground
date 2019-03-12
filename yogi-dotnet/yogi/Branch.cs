@@ -217,15 +217,11 @@ public static partial class Yogi
         public LocalBranchInfo(string json)
         : base(json)
         {
-            InterfaceAddress = IPAddress.Parse((string)Data["interface_address"]);
             AdvertisingAddress = IPAddress.Parse((string)Data["advertising_address"]);
             AdvertisingPort = (int)Data["advertising_port"];
             TxQueueSize = (int)Data["tx_queue_size"];
             RxQueueSize = (int)Data["rx_queue_size"];
         }
-
-        /// <summary>IP address of the used network interface.</summary>
-        public IPAddress InterfaceAddress { get; }
 
         /// <summary>Advertising IP address.</summary>
         public IPAddress AdvertisingAddress { get; }
@@ -416,7 +412,6 @@ public static partial class Yogi
         ///      "path":                 "/Cooling System/Fan Controller",
         ///      "network_name":         "Hardware Control",
         ///      "network_password":     "secret",
-        ///      "interface_address":    "0::0",
         ///      "advertising_address":  "ff31::8000:2439",
         ///      "advertising_port":     13531,
         ///      "advertising_interval": 1.0,
@@ -433,9 +428,7 @@ public static partial class Yogi
         ///    the name of the branch). Must start with a slash.
         ///  - network_name: Name of the network to join (default: the machine's
         ///    hostname).
-        ///  - network_password: Password for the network (default: no password).
-        ///  - interface_address: Address of the network interface to use or
-        ///    0.0.0.0 and 0::0 to use all IPv4/IPv6 interfaces respectively.
+        ///  - network_password: Password for the network (default: no password)
         ///  - advertising_address: Multicast address to use for advertising, e.g.
         ///    239.255.0.1 for IPv4 or ff31::8000:1234 for IPv6.
         ///  - advertising_port: Port to use for advertising.
@@ -446,7 +439,7 @@ public static partial class Yogi
         ///  - rx_queue_size: Size of the receive queues for remote branches.
         ///
         /// Advertising and establishing connections can be limited to certain network
-        /// interfaces via the _interface_address_ property. The default is to use all
+        /// interfaces via the _interface_ property. The default is to use all
         /// available interfaces.
         ///
         /// Setting the ghost_mode property to true prevents the branch from actively
@@ -486,7 +479,6 @@ public static partial class Yogi
         ///      "path":                 "/Cooling System/Fan Controller",
         ///      "network_name":         "Hardware Control",
         ///      "network_password":     "secret",
-        ///      "interface_address":    "0::0",
         ///      "advertising_address":  "ff31::8000:2439",
         ///      "advertising_port":     13531,
         ///      "advertising_interval": 1.0,
@@ -505,9 +497,7 @@ public static partial class Yogi
         ///    the name of the branch). Must start with a slash.
         ///  - network_name: Name of the network to join (default: the machine's
         ///    hostname).
-        ///  - network_password: Password for the network (default: no password).
-        ///  - interface_address: Address of the network interface to use or
-        ///    0.0.0.0 and 0::0 to use all IPv4/IPv6 interfaces respectively.
+        ///  - network_password: Password for the network (default: no password)
         ///  - advertising_address: Multicast address to use for advertising, e.g.
         ///    239.255.0.1 for IPv4 or ff31::8000:1234 for IPv6.
         ///  - advertising_port: Port to use for advertising.
@@ -518,7 +508,7 @@ public static partial class Yogi
         ///  - rx_queue_size: Size of the receive queues for remote branches.
         ///
         /// Advertising and establishing connections can be limited to certain network
-        /// interfaces via the _interface_address_ property. The default is to use all
+        /// interfaces via the _interface_ property. The default is to use all
         /// available interfaces.
         ///
         /// Setting the ghost_mode property to true prevents the branch from actively
@@ -577,9 +567,6 @@ public static partial class Yogi
 
         /// <summary>True if the branch is in ghost mode.</summary>
         public bool GhostMode { get { return Info.GhostMode; } }
-
-        /// <summary>IP address of the used network interface.</summary>
-        public IPAddress InterfaceAddress { get { return Info.InterfaceAddress; } }
 
         /// <summary>Advertising IP address.</summary>
         public IPAddress AdvertisingAddress { get { return Info.AdvertisingAddress; } }

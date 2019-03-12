@@ -38,10 +38,6 @@ void GetConstant(void* dest, int constant) {
       *static_cast<int*>(dest) = kVersionPatch;
       break;
 
-    case YOGI_CONST_DEFAULT_INTERFACE_ADDRESS:
-      *static_cast<const char**>(dest) = kDefaultInterfaceAddress;
-      break;
-
     case YOGI_CONST_DEFAULT_ADV_ADDRESS:
       *static_cast<const char**>(dest) = kDefaultAdvAddress;
       break;
@@ -125,4 +121,4 @@ void GetConstant(void* dest, int constant) {
   }
 }
 
-}  // namespace api
+} // namespace api

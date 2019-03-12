@@ -62,9 +62,6 @@ public static partial class Yogi
         /// <summary>Yogi Core patch version number.</summary>
         public static readonly int VersionPatch;
 
-        /// <summary>Address of the network interface that is used by default.</summary>
-        public static readonly string DefaultInterfaceAddress;
-
         /// <summary>Default IP address for advertising.</summary>
         public static readonly string DefaultAdvAddress;
 
@@ -133,54 +130,51 @@ public static partial class Yogi
             CheckErrorCode(Api.YOGI_GetIntConstant(ref VersionPatch, 4));
 
             CheckErrorCode(Api.YOGI_GetStringConstant(ref str, 5));
-            DefaultInterfaceAddress = Marshal.PtrToStringAnsi(str);
-
-            CheckErrorCode(Api.YOGI_GetStringConstant(ref str, 6));
             DefaultAdvAddress = Marshal.PtrToStringAnsi(str);
 
-            CheckErrorCode(Api.YOGI_GetIntConstant(ref DefaultAdvPort, 7));
+            CheckErrorCode(Api.YOGI_GetIntConstant(ref DefaultAdvPort, 6));
 
             long t = -1;
-            CheckErrorCode(Api.YOGI_GetLongLongConstant(ref t, 8));
+            CheckErrorCode(Api.YOGI_GetLongLongConstant(ref t, 7));
             DefaultAdvInterval = Duration.FromNanoseconds(t);
 
-            CheckErrorCode(Api.YOGI_GetLongLongConstant(ref t, 9));
+            CheckErrorCode(Api.YOGI_GetLongLongConstant(ref t, 8));
             DefaultConnectionTimeout = Duration.FromNanoseconds(t);
 
             int n = -1;
-            CheckErrorCode(Api.YOGI_GetIntConstant(ref n, 10));
+            CheckErrorCode(Api.YOGI_GetIntConstant(ref n, 9));
             DefaultLoggerVerbosity = (Verbosity)n;
 
-            CheckErrorCode(Api.YOGI_GetStringConstant(ref str, 11));
+            CheckErrorCode(Api.YOGI_GetStringConstant(ref str, 10));
             DefaultLogTimeFormat = Marshal.PtrToStringAnsi(str);
 
-            CheckErrorCode(Api.YOGI_GetStringConstant(ref str, 12));
+            CheckErrorCode(Api.YOGI_GetStringConstant(ref str, 11));
             DefaultLogFormat = Marshal.PtrToStringAnsi(str);
 
-            CheckErrorCode(Api.YOGI_GetIntConstant(ref MaxMessagePayloadSize, 13));
+            CheckErrorCode(Api.YOGI_GetIntConstant(ref MaxMessagePayloadSize, 12));
 
-            CheckErrorCode(Api.YOGI_GetStringConstant(ref str, 14));
+            CheckErrorCode(Api.YOGI_GetStringConstant(ref str, 13));
             DefaultTimeFormat = Marshal.PtrToStringAnsi(str);
 
-            CheckErrorCode(Api.YOGI_GetStringConstant(ref str, 15));
+            CheckErrorCode(Api.YOGI_GetStringConstant(ref str, 14));
             DefaultInfiniteDurationString = Marshal.PtrToStringAnsi(str);
 
-            CheckErrorCode(Api.YOGI_GetStringConstant(ref str, 16));
+            CheckErrorCode(Api.YOGI_GetStringConstant(ref str, 15));
             DefaultDurationFormat = Marshal.PtrToStringAnsi(str);
 
-            CheckErrorCode(Api.YOGI_GetStringConstant(ref str, 17));
+            CheckErrorCode(Api.YOGI_GetStringConstant(ref str, 16));
             DefaultInvalidHandleString = Marshal.PtrToStringAnsi(str);
 
-            CheckErrorCode(Api.YOGI_GetStringConstant(ref str, 18));
+            CheckErrorCode(Api.YOGI_GetStringConstant(ref str, 17));
             DefaultObjectFormat = Marshal.PtrToStringAnsi(str);
 
-            CheckErrorCode(Api.YOGI_GetIntConstant(ref MinTxQueueSize, 19));
-            CheckErrorCode(Api.YOGI_GetIntConstant(ref MaxTxQueueSize, 20));
-            CheckErrorCode(Api.YOGI_GetIntConstant(ref DefaultTxQueueSize, 21));
+            CheckErrorCode(Api.YOGI_GetIntConstant(ref MinTxQueueSize, 18));
+            CheckErrorCode(Api.YOGI_GetIntConstant(ref MaxTxQueueSize, 19));
+            CheckErrorCode(Api.YOGI_GetIntConstant(ref DefaultTxQueueSize, 20));
 
-            CheckErrorCode(Api.YOGI_GetIntConstant(ref MinRxQueueSize, 22));
-            CheckErrorCode(Api.YOGI_GetIntConstant(ref MaxRxQueueSize, 23));
-            CheckErrorCode(Api.YOGI_GetIntConstant(ref DefaultRxQueueSize, 24));
+            CheckErrorCode(Api.YOGI_GetIntConstant(ref MinRxQueueSize, 21));
+            CheckErrorCode(Api.YOGI_GetIntConstant(ref MaxRxQueueSize, 22));
+            CheckErrorCode(Api.YOGI_GetIntConstant(ref DefaultRxQueueSize, 23));
         }
     }
 }

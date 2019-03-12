@@ -59,7 +59,6 @@ namespace test
             props["network_name"] = "My Network";
             props["network_password"] = "Password";
             props["path"] = "/some/path";
-            props["interface_address"] = "192.168.1.123";
             props["advertising_address"] = "239.255.0.1";
             props["advertising_port"] = 12345;
             props["advertising_interval"] = 7;
@@ -76,7 +75,6 @@ namespace test
             Assert.Equal(Dns.GetHostName(), info.Hostname);
             Assert.Equal(System.Diagnostics.Process.GetCurrentProcess().Id, info.Pid);
             Assert.IsType<IPAddress>(info.AdvertisingAddress);
-            Assert.Equal("192.168.1.123", info.InterfaceAddress.ToString());
             Assert.Equal("239.255.0.1", info.AdvertisingAddress.ToString());
             Assert.Equal(12345, info.AdvertisingPort);
             Assert.Equal(7, info.AdvertisingInterval.TotalSeconds, precision: 5);
@@ -95,7 +93,6 @@ namespace test
             Assert.Equal(info.Path, branch.Path);
             Assert.Equal(info.Hostname, branch.Hostname);
             Assert.Equal(info.Pid, branch.Pid);
-            Assert.Equal(info.InterfaceAddress, branch.InterfaceAddress);
             Assert.Equal(info.AdvertisingAddress, branch.AdvertisingAddress);
             Assert.Equal(info.AdvertisingPort, branch.AdvertisingPort);
             Assert.Equal(info.AdvertisingInterval, branch.AdvertisingInterval);
@@ -112,7 +109,7 @@ namespace test
         public void GetConnectedBranches()
         {
             var branch = new Yogi.Branch(context, "{\"name\":\"My Branch\"}");
-            var branch_a = new Yogi.Branch(context, "{\"name\":\"A\"}");
+            var branch_a = new Yogi.Branch(context,"{\"name\":\"A\"}");
             var branch_b = new Yogi.Branch(context, "{\"name\":\"B\"}");
 
             while (!branch.GetConnectedBranches().ContainsKey(branch_a.Uuid)
@@ -139,8 +136,7 @@ namespace test
 
             var events = Yogi.BranchEvents.BranchQueried | Yogi.BranchEvents.ConnectionLost;
             bool called = false;
-            branch.AwaitEventAsync(events, (res, ev, evres, info) =>
-            {
+            branch.AwaitEventAsync(events, (res, ev, evres, info) => {
                 Assert.IsType<Yogi.Success>(res);
                 Assert.Equal(Yogi.ErrorCode.Ok, res.ErrorCode);
                 Assert.IsType<Yogi.BranchEvents>(ev);
@@ -174,8 +170,7 @@ namespace test
             var branch = new Yogi.Branch(context, "{\"name\":\"My Branch\"}");
 
             bool called = false;
-            branch.AwaitEventAsync(Yogi.BranchEvents.All, (res, ev, evres, info) =>
-            {
+            branch.AwaitEventAsync(Yogi.BranchEvents.All, (res, ev, evres, info) => {
                 Assert.IsType<Yogi.Failure>(res);
                 Assert.Equal(Yogi.ErrorCode.Canceled, res.ErrorCode);
                 Assert.IsType<Yogi.BranchEvents>(ev);
