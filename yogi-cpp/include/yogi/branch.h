@@ -476,7 +476,7 @@ class Branch : public ObjectT<Branch> {
   ///     "path":                 "/Cooling System/Fan Controller",
   ///     "network_name":         "Hardware Control",
   ///     "network_password":     "secret",
-  ///     "advertising_address":  "ff31::8000:2439",
+  ///     "advertising_address":  "ff02::8000:2439",
   ///     "advertising_port":     13531,
   ///     "advertising_interval": 1.0,
   ///     "timeout":              3.0,
@@ -498,7 +498,7 @@ class Branch : public ObjectT<Branch> {
   ///    hostname).
   ///  - __network_password__: Password for the network (default: no password)
   ///  - __advertising_address__: Multicast address to use for advertising, e.g.
-  ///    239.255.0.1 for IPv4 or ff31::8000:1234 for IPv6.
+  ///    239.255.0.1 for IPv4 or ff02::8000:1234 for IPv6.
   ///  - __advertising_port__: Port to use for advertising.
   ///  - __advertising_interval__: Time between advertising messages. Must be at
   ///    least 1 ms.

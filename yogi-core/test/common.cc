@@ -95,15 +95,29 @@ FakeBranch::FakeBranch()
   acceptor_.bind(boost::asio::ip::tcp::endpoint(kTcpProtocol, 0));
   acceptor_.listen();
 
+  auto ifs = utils::GetFilteredNetworkInterfaces({"localhost"});
+
   info_ = std::make_shared<objects::detail::LocalBranchInfo>(
-      "Fake Branch", "", utils::GetHostname(), "/Fake Branch", udp_ep_,
+      "Fake Branch", "", utils::GetHostname(), "/Fake Branch", ifs, udp_ep_,
       acceptor_.local_endpoint(), 1s, 1s, false, api::kMinTxQueueSize,
       api::kMinRxQueueSize);
 
   udp_socket_.set_option(boost::asio::ip::udp::socket::reuse_address(true));
   udp_socket_.bind(boost::asio::ip::udp::endpoint(kUdpProtocol, 0));
-  udp_socket_.set_option(boost::asio::ip::multicast::join_group(
-      boost::asio::ip::make_address(kAdvAddress)));
+
+  if (udp_ep_.address().is_v6()) {
+    for (auto& addr : ifs[0].addresses) {
+      if (addr.is_v4()) continue;
+      udp_socket_.set_option(boost::asio::ip::multicast::join_group(
+          udp_ep_.address().to_v6(), addr.to_v6().scope_id()));
+      udp_socket_.set_option(boost::asio::ip::multicast::outbound_interface(
+          static_cast<unsigned int>(addr.to_v6().scope_id())));
+    }
+  } else {
+    udp_socket_.set_option(boost::asio::ip::multicast::join_group(
+        udp_ep_.address().to_v4(),
+        boost::asio::ip::make_address_v4("127.0.0.1")));
+  }
 }
 
 void FakeBranch::Connect(void* branch,

@@ -1,4 +1,0 @@
-{
-global: YOGI_*;
-local: *;
-};

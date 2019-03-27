@@ -66,14 +66,14 @@ void BranchInfo::PopulateJson() {
   };
 }
 
-LocalBranchInfo::LocalBranchInfo(std::string name, std::string description,
-                                 std::string net_name, std::string path,
-                                 const boost::asio::ip::udp::endpoint& adv_ep,
-                                 const boost::asio::ip::tcp::endpoint& tcp_ep,
-                                 const std::chrono::nanoseconds& timeout,
-                                 const std::chrono::nanoseconds& adv_interval,
-                                 bool ghost_mode, std::size_t tx_queue_size,
-                                 std::size_t rx_queue_size) {
+LocalBranchInfo::LocalBranchInfo(
+    std::string name, std::string description, std::string net_name,
+    std::string path, const std::vector<utils::NetworkInterfaceInfo>& adv_ifs,
+    const boost::asio::ip::udp::endpoint& adv_ep,
+    const boost::asio::ip::tcp::endpoint& tcp_ep,
+    const std::chrono::nanoseconds& timeout,
+    const std::chrono::nanoseconds& adv_interval, bool ghost_mode,
+    std::size_t tx_queue_size, std::size_t rx_queue_size) {
   uuid_ = boost::uuids::random_generator()();
   name_ = name;
   description_ = description;
@@ -81,6 +81,7 @@ LocalBranchInfo::LocalBranchInfo(std::string name, std::string description,
   path_ = path;
   hostname_ = utils::GetHostname();
   pid_ = utils::GetProcessId();
+  adv_ifs_ = adv_ifs;
   tcp_ep_ = tcp_ep;
   start_time_ = utils::Timestamp::Now();
   timeout_ = timeout;
@@ -92,11 +93,7 @@ LocalBranchInfo::LocalBranchInfo(std::string name, std::string description,
 
   PopulateMessages();
   PopulateJson();
-
-  json_["advertising_address"] = network::MakeIpAddressString(adv_ep_);
-  json_["advertising_port"] = adv_ep_.port();
-  json_["tx_queue_size"] = tx_queue_size_;
-  json_["rx_queue_size"] = rx_queue_size_;
+  PopulateJsonWithLocalInfo();
 }
 
 void LocalBranchInfo::PopulateMessages() {
@@ -126,6 +123,29 @@ void LocalBranchInfo::PopulateMessages() {
   network::Serialize(&*info_msg_, buffer.size());
   YOGI_ASSERT(info_msg_->size() == kInfoMessageHeaderSize);
   info_msg_->insert(info_msg_->end(), buffer.begin(), buffer.end());
+}
+
+void LocalBranchInfo::PopulateJsonWithLocalInfo() {
+  nlohmann::json::array_t ifs;
+  for (auto& info : adv_ifs_) {
+    nlohmann::json::array_t addrs;
+    for (auto& addr : info.addresses) {
+      addrs.push_back(addr.to_string());
+    }
+
+    auto entry = nlohmann::json{{"name", info.name},
+                                {"identifier", info.identifier},
+                                {"mac", info.mac},
+                                {"addresses", addrs},
+                                {"is_loopback", info.is_loopback}};
+    ifs.push_back(entry);
+  }
+
+  json_["advertising_interfaces"] = ifs;
+  json_["advertising_address"] = network::MakeIpAddressString(adv_ep_);
+  json_["advertising_port"] = adv_ep_.port();
+  json_["tx_queue_size"] = tx_queue_size_;
+  json_["rx_queue_size"] = rx_queue_size_;
 }
 
 RemoteBranchInfo::RemoteBranchInfo(const utils::ByteVector& info_msg,

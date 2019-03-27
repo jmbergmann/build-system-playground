@@ -58,8 +58,9 @@ using namespace std::chrono_literals;
 
 static const nlohmann::json kBranchProps = nlohmann::json::parse(R"raw(
   {
+    "advertising_interfaces": ["localhost"],
     "advertising_port": 44442,
-    "advertising_address": "ff31::8000:2439",
+    "advertising_address": "ff02::8000:2439",
     "advertising_interval": 0.1,
     "timeout": 3.0
   }

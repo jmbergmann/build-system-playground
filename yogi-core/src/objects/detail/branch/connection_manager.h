@@ -20,6 +20,7 @@
 #include "../../../config.h"
 #include "../../../api/enums.h"
 #include "../../../network/tcp_transport.h"
+#include "../../../utils/system.h"
 #include "advertising_receiver.h"
 #include "advertising_sender.h"
 #include "branch_connection.h"
@@ -57,12 +58,18 @@ class ConnectionManager
   using OperationTag = network::MessageTransport::OperationTag;
 
   ConnectionManager(ContextPtr context, const std::string& password,
+                    const std::vector<std::string>& adv_if_strings,
                     const boost::asio::ip::udp::endpoint& adv_ep,
                     ConnectionChangedHandler connection_changed_handler,
                     MessageHandler message_handler);
   virtual ~ConnectionManager();
 
   void Start(LocalBranchInfoPtr info);
+
+  const std::vector<utils::NetworkInterfaceInfo>& GetAdvertisingInterfaces()
+      const {
+    return adv_ifs_;
+  }
 
   const boost::asio::ip::udp::endpoint& GetAdvertisingEndpoint() const {
     return adv_sender_->GetEndpoint();
@@ -153,6 +160,7 @@ class ConnectionManager
   static const LoggerPtr logger_;
 
   const ContextPtr context_;
+  const std::vector<utils::NetworkInterfaceInfo> adv_ifs_;
   const utils::SharedByteVector password_hash_;
   const ConnectionChangedHandler connection_changed_handler_;
   const MessageHandler message_handler_;

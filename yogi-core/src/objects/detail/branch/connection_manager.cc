@@ -26,10 +26,12 @@ namespace detail {
 
 ConnectionManager::ConnectionManager(
     ContextPtr context, const std::string& password,
+    const std::vector<std::string>& adv_if_strings,
     const boost::asio::ip::udp::endpoint& adv_ep,
     ConnectionChangedHandler connection_changed_handler,
     MessageHandler message_handler)
     : context_(context),
+      adv_ifs_(utils::GetFilteredNetworkInterfaces(adv_if_strings)),
       password_hash_(utils::MakeSharedByteVector(
           utils::MakeSha256({password.cbegin(), password.cend()}))),
       connection_changed_handler_(connection_changed_handler),
@@ -101,13 +103,11 @@ void ConnectionManager::CancelAwaitEvent() {
   AwaitEventAsync(api::kNoEvent, {});
 }
 
-ConnectionManager::OperationTag ConnectionManager::MakeOperationId()
-{
+ConnectionManager::OperationTag ConnectionManager::MakeOperationId() {
   OperationTag tag;
   do {
     tag = ++last_op_tag_;
-  }
-  while (tag == 0);
+  } while (tag == 0);
 
   return tag;
 }

@@ -36,13 +36,20 @@ class AdvertisingSender
                     const boost::asio::ip::udp::endpoint& adv_ep);
   void Start(LocalBranchInfoPtr info);
 
-  const boost::asio::ip::udp::endpoint& GetEndpoint() const {
-    return adv_ep_;
-  }
+  const boost::asio::ip::udp::endpoint& GetEndpoint() const { return adv_ep_; }
 
  private:
-  void SetupSocket();
-  void SendAdvertisement();
+  struct SocketEntry {
+    std::string interface_name;
+    boost::asio::ip::address address;
+    boost::asio::ip::udp::socket socket;
+
+    SocketEntry(boost::asio::io_context& ioc) : socket(ioc) {}
+  };
+
+  void SetupSockets();
+  bool ConfigureSocket(std::shared_ptr<SocketEntry> entry);
+  void SendAdvertisements();
   void StartTimer();
 
   static const LoggerPtr logger_;
@@ -50,8 +57,9 @@ class AdvertisingSender
   const ContextPtr context_;
   const boost::asio::ip::udp::endpoint adv_ep_;
   LocalBranchInfoPtr info_;
-  boost::asio::ip::udp::socket socket_;
   boost::asio::steady_timer timer_;
+  std::vector<std::shared_ptr<SocketEntry>> sockets_;
+  int active_send_ops_;
 };
 
 typedef std::shared_ptr<AdvertisingSender> AdvertisingSenderPtr;

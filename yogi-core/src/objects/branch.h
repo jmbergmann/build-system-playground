@@ -37,6 +37,7 @@ class Branch : public api::ExposedObjectT<Branch, api::ObjectType::kBranch> {
 
   Branch(ContextPtr context, std::string name, std::string description,
          std::string net_name, std::string password, std::string path,
+         const std::vector<std::string>& adv_if_strings,
          const boost::asio::ip::udp::endpoint& adv_ep,
          std::chrono::nanoseconds adv_interval,
          std::chrono::nanoseconds timeout, bool ghost_mode,

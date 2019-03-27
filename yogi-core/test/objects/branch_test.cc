@@ -149,4 +149,24 @@ TEST_F(BranchTest, GetInfoJson) {
   EXPECT_EQ(json.value("ghost_mode", true), false);
   EXPECT_EQ(json.value("tx_queue_size", -1), api::kDefaultTxQueueSize);
   EXPECT_EQ(json.value("rx_queue_size", -1), api::kDefaultRxQueueSize);
+
+  auto ifs = json["advertising_interfaces"];
+  ASSERT_TRUE(ifs.is_array());
+  ASSERT_FALSE(ifs.empty());
+  EXPECT_TRUE(ifs[0]["name"].is_string());
+  EXPECT_TRUE(ifs[0]["identifier"].is_string());
+  EXPECT_TRUE(ifs[0]["mac"].is_string());
+  EXPECT_TRUE(ifs[0]["is_loopback"].is_boolean());
+  EXPECT_TRUE(!ifs[0].value("mac", "").empty() ||
+              ifs[0].value("is_loopback", false));
+
+  auto addrs = ifs[0]["addresses"];
+  ASSERT_TRUE(addrs.is_array());
+  ASSERT_FALSE(addrs.empty());
+  EXPECT_TRUE(addrs[0].is_string());
+
+  bool loopback_found = std::count_if(ifs.begin(), ifs.end(), [](auto& info) {
+                          return info["is_loopback"].template get<bool>();
+                        }) > 0;
+  EXPECT_TRUE(loopback_found);
 }

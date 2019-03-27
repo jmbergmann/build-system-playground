@@ -39,7 +39,9 @@ void AdvertisingReceiver::Start(LocalBranchInfoPtr info) {
   YOGI_ASSERT(!info_);
 
   info_ = info;
-  StartReceiveAdvertisement();
+  if (JoinMulticastGroups()) {
+    StartReceiveAdvertisement();
+  }
 }
 
 void AdvertisingReceiver::SetupSocket() {
@@ -61,26 +63,47 @@ void AdvertisingReceiver::SetupSocket() {
 
   socket_.bind(udp::endpoint(listen_addr, adv_ep_.port()), ec);
   if (ec) throw api::Error(YOGI_ERR_BIND_SOCKET_FAILED);
-
-  JoinMulticastGroup();
 }
 
-void AdvertisingReceiver::JoinMulticastGroup() {
+bool AdvertisingReceiver::JoinMulticastGroups() {
   using namespace boost::asio::ip;
 
-  boost::system::error_code ec;
-  socket_.set_option(multicast::join_group(adv_ep_.address()), ec);
+  bool joined_at_least_once = false;
+  for (auto& ifc : info_->GetAdvertisingInterfaces()) {
+    for (auto& addr : ifc.addresses) {
+      if (addr.is_v6() != adv_ep_.address().is_v6()) continue;
 
-  if (ec && adv_ep_.address().is_v6()) {
-    unsigned long net_if = 0;
-    do {
-      socket_.set_option(
-          multicast::join_group(adv_ep_.address().to_v6(), net_if), ec);
-      ++net_if;
-    } while (ec && net_if < 20);
+      boost::system::error_code ec;
+      if (addr.is_v6()) {
+        socket_.set_option(multicast::join_group(adv_ep_.address().to_v6(),
+                                                 addr.to_v6().scope_id()),
+                           ec);
+      } else {
+        socket_.set_option(
+            multicast::join_group(adv_ep_.address().to_v4(), addr.to_v4()), ec);
+      }
+
+      if (ec) {
+        YOGI_LOG_ERROR(logger_,
+                       info_ << " Could not join advertising multicast group "
+                             << adv_ep_ << " for interface " << addr << ": "
+                             << ec.message()
+                             << ". This interface will be ignored.");
+        continue;
+      }
+
+      YOGI_LOG_INFO(logger_, info_ << " Using interface " << addr
+                                   << " for receiving advertising messages.");
+      joined_at_least_once = true;
+    }
+
+    if (!joined_at_least_once) {
+      YOGI_LOG_ERROR(logger_, info_ << " No network interfaces available for "
+                                       "receiving advertising messages.");
+    }
   }
 
-  if (ec) throw api::Error(YOGI_ERR_JOIN_MULTICAST_GROUP_FAILED);
+  return joined_at_least_once;
 }
 
 void AdvertisingReceiver::StartReceiveAdvertisement() {

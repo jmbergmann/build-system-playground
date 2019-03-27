@@ -58,62 +58,65 @@
 //! Major version number of the library (int)
 #define YOGI_CONST_VERSION_PATCH 4
 
+//! Default network interfaces to use for advertising (const char*)
+#define YOGI_CONST_DEFAULT_ADV_INTERFACES 5
+
 //! Default multicast addresses to use for advertising (const char*)
-#define YOGI_CONST_DEFAULT_ADV_ADDRESS 5
+#define YOGI_CONST_DEFAULT_ADV_ADDRESS 6
 
 //! Default port to use for advertising via UDP IPv6 multicasts (int)
-#define YOGI_CONST_DEFAULT_ADV_PORT 6
+#define YOGI_CONST_DEFAULT_ADV_PORT 7
 
 //! Default advertising interval in nanoseconds (long long)
-#define YOGI_CONST_DEFAULT_ADV_INTERVAL 7
+#define YOGI_CONST_DEFAULT_ADV_INTERVAL 8
 
 //! Default connection timeout in nanoseconds (long long)
-#define YOGI_CONST_DEFAULT_CONNECTION_TIMEOUT 8
+#define YOGI_CONST_DEFAULT_CONNECTION_TIMEOUT 9
 
 //! Default logging verbosity (int)
-#define YOGI_CONST_DEFAULT_LOGGER_VERBOSITY 9
+#define YOGI_CONST_DEFAULT_LOGGER_VERBOSITY 10
 
 //! Default textual format for timestamps in log entries (const char*)
-#define YOGI_CONST_DEFAULT_LOG_TIME_FORMAT 10
+#define YOGI_CONST_DEFAULT_LOG_TIME_FORMAT 11
 
 //! Default textual format for log entries (const char*)
-#define YOGI_CONST_DEFAULT_LOG_FORMAT 11
+#define YOGI_CONST_DEFAULT_LOG_FORMAT 12
 
 //! Maximum size of the payload in a message (int)
-#define YOGI_CONST_MAX_MESSAGE_PAYLOAD_SIZE 12
+#define YOGI_CONST_MAX_MESSAGE_PAYLOAD_SIZE 13
 
 //! Default textual format for timestamps (const char*)
-#define YOGI_CONST_DEFAULT_TIME_FORMAT 13
+#define YOGI_CONST_DEFAULT_TIME_FORMAT 14
 
 //! Default string to denote an infinite duration (const char*)
-#define YOGI_CONST_DEFAULT_INF_DURATION_STRING 14
+#define YOGI_CONST_DEFAULT_INF_DURATION_STRING 15
 
 //! Default textual format for duration strings (const char*)
-#define YOGI_CONST_DEFAULT_DURATION_FORMAT 15
+#define YOGI_CONST_DEFAULT_DURATION_FORMAT 16
 
 //! Default string to denote an invalid object handle (const char*)
-#define YOGI_CONST_DEFAULT_INVALID_HANDLE_STRING 16
+#define YOGI_CONST_DEFAULT_INVALID_HANDLE_STRING 17
 
 //! Default textual format for strings describing an object (const char*)
-#define YOGI_CONST_DEFAULT_OBJECT_FORMAT 17
+#define YOGI_CONST_DEFAULT_OBJECT_FORMAT 18
 
 //! Minimum size of a send queue for a remote branch (int)
-#define YOGI_CONST_MIN_TX_QUEUE_SIZE 18
+#define YOGI_CONST_MIN_TX_QUEUE_SIZE 19
 
 //! Maximum size of a send queue for a remote branch (int)
-#define YOGI_CONST_MAX_TX_QUEUE_SIZE 19
+#define YOGI_CONST_MAX_TX_QUEUE_SIZE 20
 
 //! Default size of a send queue for a remote branch (int)
-#define YOGI_CONST_DEFAULT_TX_QUEUE_SIZE 20
+#define YOGI_CONST_DEFAULT_TX_QUEUE_SIZE 21
 
 // Minimum size of a receive queue for a remote branch (int)
-#define YOGI_CONST_MIN_RX_QUEUE_SIZE 21
+#define YOGI_CONST_MIN_RX_QUEUE_SIZE 22
 
 // Maximum size of a receive queue for a remote branch (int)
-#define YOGI_CONST_MAX_RX_QUEUE_SIZE 22
+#define YOGI_CONST_MAX_RX_QUEUE_SIZE 23
 
 // Default size of a receive queue for a remote branch (int)
-#define YOGI_CONST_DEFAULT_RX_QUEUE_SIZE 23
+#define YOGI_CONST_DEFAULT_RX_QUEUE_SIZE 24
 
 //! @}
 //!
@@ -261,6 +264,9 @@
 
 //! Joining UDP multicast group failed
 #define YOGI_ERR_JOIN_MULTICAST_GROUP_FAILED -45
+
+//! Enumerating network interfaces failed
+#define YOGI_ERR_ENUMERATE_NETWORK_INTERFACES_FAILED -46
 
 //! @}
 //!
@@ -1596,38 +1602,42 @@ YOGI_API int YOGI_TimerCancel(void* timer);
  *
  * \code
  *   {
- *     "name":                 "Fan Controller",
- *     "description":          "Controls a fan via PWM",
- *     "path":                 "/Cooling System/Fan Controller",
- *     "network_name":         "Hardware Control",
- *     "network_password":     "secret",
- *     "advertising_address":  "ff31::8000:2439",
- *     "advertising_port":     13531,
- *     "advertising_interval": 1.0,
- *     "timeout":              3.0,
- *     "ghost_mode":           false,
- *     "tx_queue_size":        1000000,
- *     "rx_queue_size":        100000
+ *     "name":                   "Fan Controller",
+ *     "description":            "Controls a fan via PWM",
+ *     "path":                   "/Cooling System/Fan Controller",
+ *     "network_name":           "Hardware Control",
+ *     "network_password":       "secret",
+ *     "advertising_interfaces": ["localhost"],
+ *     "advertising_address":    "ff02::8000:2439",
+ *     "advertising_port":       13531,
+ *     "advertising_interval":   1.0,
+ *     "timeout":                3.0,
+ *     "ghost_mode":             false,
+ *     "tx_queue_size":          1000000,
+ *     "rx_queue_size":          100000
  *   }
  * \endcode
  *
  * All of the properties are optional and if unspecified (or set to _null_),
  * their respective default values will be used (see \ref CV). The properties
  * have the following meaning:
- *  - __name__: Name of the branch (default: PID\@hostname without the
- *    backslash).
+ *  - __name__: Name of the branch.
  *  - __description__: Description of the branch.
- *  - __path__: Path of the branch in the network (default: /name where name is
- *    the name of the branch). Must start with a slash.
- *  - __network_name__: Name of the network to join (default: the machine's
- *    hostname).
- *  - __network_password__: Password for the network (default: no password)
+ *  - __path__: Path of the branch in the network. Must start with a slash.
+ *  - __network_name__: Name of the network to join.
+ *  - __network_password__: Password for the network.
+ *  - __advertising_interfaces__: Network interfaces to use for advertising and
+ *    for branch connections. Valid strings are Unix device names ("eth0",
+ *    "en5", "wlan0"), adapter names on Windows ("Ethernet",
+ *     "VMware Network Adapter WMnet1") or MAC addresses ("11:22:33:44:55:66").
+ *     Furthermore, the special strings "localhost" and "all" can be used to
+ *     denote loopback and all available interfaces respectively.
  *  - __advertising_address__: Multicast address to use for advertising, e.g.
- *    239.255.0.1 for IPv4 or ff31::8000:1234 for IPv6.
+ *    239.255.0.1 for IPv4 or ff02::8000:1234 for IPv6.
  *  - __advertising_port__: Port to use for advertising.
  *  - __advertising_interval__: Time between advertising messages. Must be at
  *    least 1 ms.
- *  - __ghost_mode__: Set to true to activate ghost mode (default: false).
+ *  - __ghost_mode__: Set to true to activate ghost mode.
  *  - __tx_queue_size__: Size of the send queues for remote branches.
  *  - __rx_queue_size__: Size of the receive queues for remote branches.
  *
@@ -1684,21 +1694,22 @@ YOGI_API int YOGI_BranchCreate(void** branch, void* context, const char* props,
  *
  * \code
  *   {
- *     "uuid":                 "6ba7b810-9dad-11d1-80b4-00c04fd430c8",
- *     "name":                 "Fan Controller",
- *     "description":          "Controls a fan via PWM",
- *     "network_name":         "Hardware Control",
- *     "path":                 "/Cooling System/Fan Controller",
- *     "hostname":             "beaglebone",
- *     "pid":                  4124,
- *     "advertising_address":  "ff31::8000:2439",
- *     "advertising_port":     13531,
- *     "advertising_interval": 1.0,
- *     "tcp_server_address":   "::",
- *     "tcp_server_port":      53332,
- *     "start_time":           "2018-04-23T18:25:43.511Z",
- *     "timeout":              3.0,
- *     "ghost_mode":           false
+ *     "uuid":                   "6ba7b810-9dad-11d1-80b4-00c04fd430c8",
+ *     "name":                   "Fan Controller",
+ *     "description":            "Controls a fan via PWM",
+ *     "network_name":           "Hardware Control",
+ *     "path":                   "/Cooling System/Fan Controller",
+ *     "hostname":               "beaglebone",
+ *     "pid":                    4124,
+ *     "advertising_interfaces": ["localhost"],
+ *     "advertising_address":    "ff02::8000:2439",
+ *     "advertising_port":       13531,
+ *     "advertising_interval":   1.0,
+ *     "tcp_server_address":     "::",
+ *     "tcp_server_port":        53332,
+ *     "start_time":             "2018-04-23T18:25:43.511Z",
+ *     "timeout":                3.0,
+ *     "ghost_mode":             false
  *   }
  * \endcode
  *
@@ -1863,7 +1874,7 @@ YOGI_API int YOGI_BranchCancelAwaitEvent(void* branch);
  * \param[in] enc      Encoding type used for \p data (see \ref ENC)
  * \param[in] data     Payload encoded according to \p datafmt
  * \param[in] datasize Number of bytes in \p data
- * \param[in] block    Block until message has been put in the send buffer
+ * \param[in] block    Block until message has been put into all send buffers
  *                     (#YOGI_TRUE or #YOGI_FALSE)
  *
  * \returns [=0] #YOGI_OK if successful

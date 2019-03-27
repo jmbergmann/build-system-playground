@@ -25,19 +25,21 @@ namespace objects {
 
 Branch::Branch(ContextPtr context, std::string name, std::string description,
                std::string net_name, std::string password, std::string path,
+               const std::vector<std::string>& adv_if_strings,
                const boost::asio::ip::udp::endpoint& adv_ep,
                std::chrono::nanoseconds adv_interval,
                std::chrono::nanoseconds timeout, bool ghost_mode,
                std::size_t tx_queue_size, std::size_t rx_queue_size)
     : context_(context),
       connection_manager_(std::make_shared<detail::ConnectionManager>(
-          context, password, adv_ep,
+          context, password, adv_if_strings, adv_ep,
           [&](auto& res, auto conn) { this->OnConnectionChanged(res, conn); },
           [&](auto& msg, auto size, auto& conn) {
             this->OnMessageReceived(msg, size, conn);
           })),
       info_(std::make_shared<detail::LocalBranchInfo>(
           name, description, net_name, path,
+          connection_manager_->GetAdvertisingInterfaces(),
           connection_manager_->GetAdvertisingEndpoint(),
           connection_manager_->GetTcpServerEndpoint(), timeout, adv_interval,
           ghost_mode, tx_queue_size, rx_queue_size)),

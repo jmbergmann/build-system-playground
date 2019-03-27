@@ -166,7 +166,7 @@ void CommandLineParser::AddBranchOptions() {
       "adv-addr", po::value<std::string>()->notifier([&](auto& val) {
         direct_json_["branch"]["advertising-address"] = val;
       }),
-      "Branch advertising address (e.g. --adv-addr 'ff31::8000:2439')"
+      "Branch advertising address (e.g. --adv-addr 'ff02::8000:2439')"
     );
   }
 

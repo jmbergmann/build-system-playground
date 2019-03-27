@@ -17,6 +17,8 @@
 
 #include "advertising_sender.h"
 
+#include <boost/asio/ip/multicast.hpp>
+
 namespace objects {
 namespace detail {
 
@@ -24,43 +26,105 @@ AdvertisingSender::AdvertisingSender(
     ContextPtr context, const boost::asio::ip::udp::endpoint& adv_ep)
     : context_(context),
       adv_ep_(adv_ep),
-      socket_(context->IoContext()),
-      timer_(context->IoContext()) {
-  SetupSocket();
-}
+      timer_(context->IoContext()),
+      active_send_ops_(0) {}
 
 void AdvertisingSender::Start(LocalBranchInfoPtr info) {
   YOGI_ASSERT(!info_);
 
   info_ = info;
-  SendAdvertisement();
+  for (auto& socket : sockets_) {
+    YOGI_LOG_INFO(logger_, info_ << " Using interface " << socket->address
+                                 << " for sending advertising messages.");
+  }
+
+  SetupSockets();
+  SendAdvertisements();
 }
 
-void AdvertisingSender::SetupSocket() {
-  boost::system::error_code ec;
-  socket_.open(adv_ep_.protocol(), ec);
-  if (ec) {
-    throw api::Error(YOGI_ERR_OPEN_SOCKET_FAILED);
+void AdvertisingSender::SetupSockets() {
+  for (auto& ifc : info_->GetAdvertisingInterfaces()) {
+    for (auto& addr : ifc.addresses) {
+      if (addr.is_v6() != adv_ep_.address().is_v6()) continue;
+
+      auto entry = std::make_shared<SocketEntry>(context_->IoContext());
+      entry->interface_name = ifc.name;
+      entry->address = addr;
+      if (ConfigureSocket(entry)) {
+        sockets_.push_back(entry);
+      }
+    }
   }
 }
 
-void AdvertisingSender::SendAdvertisement() {
+bool AdvertisingSender::ConfigureSocket(std::shared_ptr<SocketEntry> entry) {
+  boost::system::error_code ec;
+  entry->socket.open(adv_ep_.protocol(), ec);
+  if (ec) {
+    throw api::Error(YOGI_ERR_OPEN_SOCKET_FAILED);
+  }
+
+  if (entry->address.is_v6()) {
+    entry->socket.set_option(
+        boost::asio::ip::multicast::outbound_interface(
+            static_cast<unsigned int>(entry->address.to_v6().scope_id())),
+        ec);
+  } else {
+    entry->socket.set_option(
+        boost::asio::ip::multicast::outbound_interface(entry->address.to_v4()),
+        ec);
+  }
+
+  if (ec) {
+    YOGI_LOG_ERROR(
+        logger_,
+        info_ << " Could not set outbound interface for socket using address "
+              << entry->address << ": " << ec.message()
+              << ". This interface will be ignored.");
+    return false;
+  }
+
+  return true;
+}
+
+void AdvertisingSender::SendAdvertisements() {
+  YOGI_ASSERT(active_send_ops_ == 0);
+
+  if (sockets_.empty()) {
+    YOGI_LOG_ERROR(logger_, info_ << " No network interfaces available for "
+                                     "sending advertising messages.");
+    return;
+  }
+
   auto weak_self = std::weak_ptr<AdvertisingSender>{shared_from_this()};
   auto msg = info_->MakeAdvertisingMessage();
-  socket_.async_send_to(
-      boost::asio::buffer(*msg), adv_ep_, [weak_self, msg](auto ec, auto) {
-        auto self = weak_self.lock();
-        if (!self) return;
 
-        if (!ec) {
-          self->StartTimer();
-        } else {
-          YOGI_LOG_ERROR(
-              logger_, self->info_
-                           << " Sending advertisement failed: " << ec.message()
-                           << ". No more advertising messages will be sent.");
-        }
-      });
+  for (const auto& socket : sockets_) {
+    socket->socket.async_send_to(
+        boost::asio::buffer(*msg), adv_ep_,
+        [weak_self, msg, socket](auto ec, auto) {
+          auto self = weak_self.lock();
+          if (!self) return;
+
+          if (ec) {
+            YOGI_LOG_ERROR(logger_, self->info_
+                                        << " Sending advertisement over "
+                                        << socket->address
+                                        << " failed: " << ec.message()
+                                        << ". No more advertising messages "
+                                           "will be sent over this interface.");
+
+            self->sockets_.erase(std::find(self->sockets_.begin(),
+                                           self->sockets_.end(), socket));
+          }
+
+          --self->active_send_ops_;
+          if (self->active_send_ops_ == 0) {
+            self->StartTimer();
+          }
+        });
+    ++active_send_ops_;
+  }
 }
 
 void AdvertisingSender::StartTimer() {
@@ -72,7 +136,7 @@ void AdvertisingSender::StartTimer() {
     if (!self) return;
 
     if (!ec) {
-      self->SendAdvertisement();
+      self->SendAdvertisements();
     } else {
       YOGI_LOG_ERROR(logger_,
                      self->info_

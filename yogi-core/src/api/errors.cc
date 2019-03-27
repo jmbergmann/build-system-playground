@@ -164,6 +164,9 @@ const char* Result::GetDescription() const {
 
     case YOGI_ERR_JOIN_MULTICAST_GROUP_FAILED:
       return "Joining UDP multicast group failed";
+
+    case YOGI_ERR_ENUMERATE_NETWORK_INTERFACES_FAILED:
+      return "Enumerating network interfaces failed";
   }
 
   return "Invalid error code";

@@ -31,7 +31,9 @@ class ConnectionManagerTest : public TestFixture {
   void* branch_;
 };
 
-TEST_F(ConnectionManagerTest, Advertising) {
+TEST_F(ConnectionManagerTest, DISABLED_AdvertisingIPv4) {}
+
+TEST_F(ConnectionManagerTest, AdvertisingIPv6) {
   using namespace boost::asio;
 
   io_context ioc;
