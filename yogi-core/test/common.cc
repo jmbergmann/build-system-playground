@@ -108,15 +108,9 @@ FakeBranch::FakeBranch()
   if (udp_ep_.address().is_v6()) {
     for (auto& addr : ifs[0].addresses) {
       if (addr.is_v4()) continue;
-      udp_socket_.set_option(boost::asio::ip::multicast::join_group(
-          udp_ep_.address().to_v6(), addr.to_v6().scope_id()));
       udp_socket_.set_option(boost::asio::ip::multicast::outbound_interface(
           static_cast<unsigned int>(addr.to_v6().scope_id())));
     }
-  } else {
-    udp_socket_.set_option(boost::asio::ip::multicast::join_group(
-        udp_ep_.address().to_v4(),
-        boost::asio::ip::make_address_v4("127.0.0.1")));
   }
 }
 
