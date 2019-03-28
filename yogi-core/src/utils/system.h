@@ -22,6 +22,7 @@
 #include <vector>
 #include <string>
 #include <boost/asio/ip/address.hpp>
+#include <boost/asio/ip/udp.hpp>
 
 namespace utils {
 
@@ -38,6 +39,7 @@ int GetProcessId();
 int GetCurrentThreadId();
 std::vector<NetworkInterfaceInfo> GetNetworkInterfaces();
 std::vector<NetworkInterfaceInfo> GetFilteredNetworkInterfaces(
-    const std::vector<std::string>& adv_if_strings);
+    const std::vector<std::string>& adv_if_strings,
+    const boost::asio::ip::udp& protocol);
 
 }  // namespace utils

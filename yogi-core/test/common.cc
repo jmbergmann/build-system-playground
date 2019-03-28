@@ -95,7 +95,8 @@ FakeBranch::FakeBranch()
   acceptor_.bind(boost::asio::ip::tcp::endpoint(kTcpProtocol, 0));
   acceptor_.listen();
 
-  auto ifs = utils::GetFilteredNetworkInterfaces({"localhost"});
+  auto ifs =
+      utils::GetFilteredNetworkInterfaces({"localhost"}, udp_ep_.protocol());
 
   info_ = std::make_shared<objects::detail::LocalBranchInfo>(
       "Fake Branch", "", utils::GetHostname(), "/Fake Branch", ifs, udp_ep_,

@@ -45,8 +45,6 @@ void AdvertisingSender::Start(LocalBranchInfoPtr info) {
 void AdvertisingSender::SetupSockets() {
   for (auto& ifc : info_->GetAdvertisingInterfaces()) {
     for (auto& addr : ifc.addresses) {
-      if (addr.is_v6() != adv_ep_.address().is_v6()) continue;
-
       auto entry = std::make_shared<SocketEntry>(context_->IoContext());
       entry->interface_name = ifc.name;
       entry->address = addr;

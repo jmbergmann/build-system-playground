@@ -174,21 +174,29 @@ std::vector<NetworkInterfaceInfo> GetNetworkInterfaces() {
 }
 
 std::vector<utils::NetworkInterfaceInfo> GetFilteredNetworkInterfaces(
-    const std::vector<std::string>& adv_if_strings) {
+    const std::vector<std::string>& adv_if_strings,
+    const boost::asio::ip::udp& protocol) {
   std::vector<utils::NetworkInterfaceInfo> ifs;
-
   for (auto& string : adv_if_strings) {
     for (auto& info : GetNetworkInterfaces()) {
-      auto string_lower = boost::to_lower_copy(string);
-      if (string_lower == "all" || string == info.name || string == info.mac ||
-          (string_lower == "localhost" && info.is_loopback)) {
-        bool already_exists =
-            std::find_if(ifs.begin(), ifs.end(), [&](auto& existing_info) {
-              return existing_info.name == info.name;
-            }) != ifs.end();
-        if (!already_exists) {
-          ifs.push_back(info);
-        }
+      bool all = boost::iequals(string, "all");
+      bool same_name = string == info.name;
+      bool same_mac = boost::iequals(string, info.mac);
+      bool both_are_localhost =
+          boost::iequals(string, "localhost") && info.is_loopback;
+
+      if (!all && !same_name && !same_mac && !both_are_localhost) continue;
+
+      auto ifc = info;
+      ifc.addresses.erase(
+          std::remove_if(ifc.addresses.begin(), ifc.addresses.end(),
+                         [&](auto& addr) {
+                           return addr.is_v6() != (protocol == protocol.v6());
+                         }),
+          ifc.addresses.end());
+
+      if (!ifc.addresses.empty()) {
+        ifs.push_back(ifc);
       }
     }
   }

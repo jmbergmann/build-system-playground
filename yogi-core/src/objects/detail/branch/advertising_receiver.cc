@@ -71,8 +71,6 @@ bool AdvertisingReceiver::JoinMulticastGroups() {
   bool joined_at_least_once = false;
   for (auto& ifc : info_->GetAdvertisingInterfaces()) {
     for (auto& addr : ifc.addresses) {
-      if (addr.is_v6() != adv_ep_.address().is_v6()) continue;
-
       boost::system::error_code ec;
       if (addr.is_v6()) {
         socket_.set_option(multicast::join_group(adv_ep_.address().to_v6(),

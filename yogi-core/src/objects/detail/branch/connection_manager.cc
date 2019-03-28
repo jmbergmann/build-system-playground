@@ -31,7 +31,8 @@ ConnectionManager::ConnectionManager(
     ConnectionChangedHandler connection_changed_handler,
     MessageHandler message_handler)
     : context_(context),
-      adv_ifs_(utils::GetFilteredNetworkInterfaces(adv_if_strings)),
+      adv_ifs_(utils::GetFilteredNetworkInterfaces(adv_if_strings,
+                                                   adv_ep.protocol())),
       password_hash_(utils::MakeSharedByteVector(
           utils::MakeSha256({password.cbegin(), password.cend()}))),
       connection_changed_handler_(connection_changed_handler),

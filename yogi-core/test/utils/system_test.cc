@@ -57,25 +57,29 @@ TEST(SystemTest, GetNetworkInterfaces) {
 }
 
 TEST(SystemTest, GetFilteredNetworkInterfaces) {
-  auto ifs = utils::GetFilteredNetworkInterfaces({"localhost"});
-  ASSERT_EQ(ifs.size(), 1);
-  EXPECT_TRUE(ifs[0].is_loopback);
+  std::vector<boost::asio::ip::udp> protocols = {boost::asio::ip::udp::v4(),
+                                                 boost::asio::ip::udp::v6()};
+  for (auto protocol : protocols) {
+    auto ifs = utils::GetFilteredNetworkInterfaces({"localhost"}, protocol);
+    ASSERT_EQ(ifs.size(), 1);
+    EXPECT_TRUE(ifs[0].is_loopback);
 
-  ifs = utils::GetFilteredNetworkInterfaces({"all"});
-  ASSERT_GT(ifs.size(), 1);
+    ifs = utils::GetFilteredNetworkInterfaces({"all"}, protocol);
+    ASSERT_GT(ifs.size(), 1);
 
-  auto if_it = std::find_if(ifs.begin(), ifs.end(), [](auto& info) {
-    return !info.is_loopback && !info.mac.empty();
-  });
-  ASSERT_NE(if_it, ifs.end()) << "No network interface found that has a MAC "
-                                 "and that is not a loopback interface.";
-  auto ifc = *if_it;
+    auto if_it = std::find_if(ifs.begin(), ifs.end(), [](auto& info) {
+      return !info.is_loopback && !info.mac.empty();
+    });
+    ASSERT_NE(if_it, ifs.end()) << "No network interface found that has a MAC "
+                                   "and that is not a loopback interface.";
+    auto ifc = *if_it;
 
-  ifs = utils::GetFilteredNetworkInterfaces({ifc.name});
-  ASSERT_EQ(ifs.size(), 1);
-  EXPECT_EQ(ifs[0].name, ifc.name);
+    ifs = utils::GetFilteredNetworkInterfaces({ifc.name}, protocol);
+    ASSERT_EQ(ifs.size(), 1);
+    EXPECT_EQ(ifs[0].name, ifc.name);
 
-  ifs = utils::GetFilteredNetworkInterfaces({ifc.mac});
-  ASSERT_EQ(ifs.size(), 1);
-  EXPECT_EQ(ifs[0].mac, ifc.mac);
+    ifs = utils::GetFilteredNetworkInterfaces({ifc.mac}, protocol);
+    ASSERT_EQ(ifs.size(), 1);
+    EXPECT_EQ(ifs[0].mac, ifc.mac);
+  }
 }
