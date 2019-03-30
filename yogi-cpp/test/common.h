@@ -76,7 +76,7 @@ struct CommandLine final {
 
   CommandLine(std::initializer_list<std::string> args) {
     argc = static_cast<int>(args.size() + 1);
-    argv = new char*[argc];
+    argv = new char*[static_cast<std::size_t>(argc)];
 
     std::string exe = "executable-name";
     argv[0] = new char[exe.size() + 1];
@@ -100,7 +100,7 @@ struct CommandLine final {
   }
 
   CommandLine(const CommandLine&) = delete;
-  CommandLine& operator= (const CommandLine&) = delete;
+  CommandLine& operator=(const CommandLine&) = delete;
 };
 
 std::ostream& operator<<(std::ostream& os, const std::chrono::nanoseconds& ns) {

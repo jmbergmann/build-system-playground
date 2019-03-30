@@ -8,6 +8,8 @@ build-*/
 .idea/
 *.userprefs
 *.user
+.vscode/.ropeproject
+.vscode/ipch
 
 # NodeJS
 node_modules/
@@ -23,9 +25,6 @@ __pycache__/
 yogi-dotnet/**/bin/
 yogi-dotnet/**/obj/
 yogi-dotnet/**/packages/
-
-# VSCode
-.vscode/.ropeproject
 
 # Doxygen
 **/doc/*.tmp

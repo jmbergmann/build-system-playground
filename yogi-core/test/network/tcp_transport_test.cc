@@ -127,7 +127,8 @@ TEST_F(TcpTransportTest, ConnectTimeout) {
   bool called = false;
   auto guard = network::TcpTransport::ConnectAsync(
       context_, acceptor_ep_, 1ms, [&](auto& res, auto transport, auto) {
-        EXPECT_EQ(res, api::Error(YOGI_ERR_TIMEOUT));
+        EXPECT_TRUE(res == api::Error(YOGI_ERR_TIMEOUT) ||
+                    res == api::Error(YOGI_ERR_CONNECT_SOCKET_FAILED));
         EXPECT_FALSE(!!transport);
         called = true;
       });
@@ -136,7 +137,6 @@ TEST_F(TcpTransportTest, ConnectTimeout) {
     context_->RunOne(100us);
   }
 
-  EXPECT_GT(std::chrono::steady_clock::now(), start_time + 1ms);
   EXPECT_LT(std::chrono::steady_clock::now(), start_time + 1ms + 1s);
 }
 

@@ -25,6 +25,33 @@
 #include <string>
 using namespace std::string_literals;
 
+namespace {
+
+boost::asio::ip::udp::endpoint ExtractAdvEndpoint(
+    const nlohmann::json& properties) {
+  auto adv_addr = properties.value<std::string>("advertising_address",
+                                                api::kDefaultAdvAddress);
+  auto adv_port = ExtractLimitedNumber<unsigned short>(
+      properties, "advertising_port", api::kDefaultAdvPort, 1, 65535);
+
+  if (adv_addr.empty()) {
+    throw api::DescriptiveError(YOGI_ERR_INVALID_PARAM)
+        << "Property \"advertising_addr\" must not be empty.";
+  }
+
+  boost::system::error_code ec;
+  auto adv_ep = boost::asio::ip::udp::endpoint(
+      boost::asio::ip::make_address(adv_addr, ec), adv_port);
+  if (ec) {
+    throw api::DescriptiveError(YOGI_ERR_INVALID_PARAM)
+        << "Could not parse address in property \"advertising_address\".";
+  }
+
+  return adv_ep;
+}
+
+}  // anonymous namespace
+
 YOGI_API int YOGI_BranchCreate(void** branch, void* context, const char* props,
                                const char* section, char* err, int errsize) {
   CHECK_PARAM(branch != nullptr);
@@ -32,85 +59,32 @@ YOGI_API int YOGI_BranchCreate(void** branch, void* context, const char* props,
 
   try {
     auto ctx = api::ObjectRegister::Get<objects::Context>(context);
-
-    auto properties = nlohmann::json::object();
-    if (props) {
-      try {
-        properties = nlohmann::json::parse(props);
-      } catch (const nlohmann::json::exception& e) {
-        throw api::DescriptiveError(YOGI_ERR_PARSING_JSON_FAILED)
-            << "Could not parse JSON string: " << e.what();
-      }
-
-      if (section) {
-        nlohmann::json::json_pointer jp;
-
-        try {
-          jp = nlohmann::json::json_pointer(section);
-        } catch (const nlohmann::json::exception& e) {
-          throw api::DescriptiveError(YOGI_ERR_INVALID_PARAM)
-              << "Could not parse JSON pointer: " << e.what();
-        }
-
-        properties = properties[jp];
-        if (!properties.is_object()) {
-          throw api::DescriptiveError(YOGI_ERR_PARSING_JSON_FAILED)
-              << "Could not find section \"" << section
-              << "\" in branch properties.";
-        }
-      }
-    }
+    auto properties = ParseBranchProps(props, section);
 
     auto name = properties.value("name", std::to_string(utils::GetProcessId()) +
                                              '@' + utils::GetHostname());
-    auto adv_addr = properties.value<std::string>("advertising_address",
-                                                  api::kDefaultAdvAddress);
-    auto adv_port = properties.value("advertising_port", api::kDefaultAdvPort);
+    auto adv_if_strings = ExtractArrayOfStrings(
+        properties, "advertising_interfaces", api::kDefaultAdvInterfaces);
+    auto adv_ep = ExtractAdvEndpoint(properties);
     auto adv_int = ExtractDuration(properties, "advertising_interval",
                                    api::kDefaultAdvInterval);
     auto description = properties.value("description", std::string{});
     auto network = properties.value("network_name", utils::GetHostname());
     auto password = properties.value("network_password", std::string{});
     auto path = properties.value("path", "/"s + name);
-
-    if (adv_addr.empty()) {
-      throw api::DescriptiveError(YOGI_ERR_INVALID_PARAM)
-          << "Property \"advertising_port\" must not be empty.";
-    }
-
-    boost::system::error_code ec;
-    auto adv_ep = boost::asio::ip::udp::endpoint(
-        boost::asio::ip::make_address(adv_addr, ec),
-        static_cast<unsigned short>(adv_port));
-    if (ec) {
-      throw api::DescriptiveError(YOGI_ERR_INVALID_PARAM)
-          << "Could not parse address in property \"advertising_port\".";
-    };
-
     auto timeout =
         ExtractDuration(properties, "timeout", api::kDefaultConnectionTimeout);
     auto ghost = properties.value("ghost_mode", false);
-
-    auto tx_queue_size =
-        properties.value("tx_queue_size", api::kDefaultTxQueueSize);
-    if (tx_queue_size < api::kMinTxQueueSize ||
-        tx_queue_size > api::kMaxTxQueueSize) {
-      throw api::DescriptiveError(YOGI_ERR_INVALID_PARAM)
-          << "Property \"tx_queue_size\" is out of range.";
-    }
-
-    auto rx_queue_size =
-        properties.value("rx_queue_size", api::kDefaultRxQueueSize);
-    if (rx_queue_size < api::kMinRxQueueSize ||
-        rx_queue_size > api::kMaxRxQueueSize) {
-      throw api::DescriptiveError(YOGI_ERR_INVALID_PARAM)
-          << "Property \"rx_queue_size\" is out of range.";
-    }
+    auto tx_queue_size = ExtractLimitedNumber<std::size_t>(
+        properties, "tx_queue_size", api::kDefaultTxQueueSize,
+        api::kMinTxQueueSize, api::kMaxTxQueueSize);
+    auto rx_queue_size = ExtractLimitedNumber<std::size_t>(
+        properties, "rx_queue_size", api::kDefaultRxQueueSize,
+        api::kMinRxQueueSize, api::kMaxRxQueueSize);
 
     auto brn = objects::Branch::Create(
-        ctx, name, description, network, password, path, adv_ep, adv_int,
-        timeout, ghost, static_cast<std::size_t>(tx_queue_size),
-        static_cast<std::size_t>(rx_queue_size));
+        ctx, name, description, network, password, path, adv_if_strings, adv_ep,
+        adv_int, timeout, ghost, tx_queue_size, rx_queue_size);
     brn->Start();
 
     *branch = api::ObjectRegister::Register(brn);

@@ -23,6 +23,7 @@
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
 #include <string>
+#include <vector>
 
 inline std::chrono::nanoseconds ConvertDuration(long long duration) {
   return duration == -1 ? std::chrono::nanoseconds::max()
@@ -32,6 +33,19 @@ inline std::chrono::nanoseconds ConvertDuration(long long duration) {
 std::chrono::nanoseconds ExtractDuration(const nlohmann::json& json,
                                          const char* key,
                                          long long defaultValue);
+std::vector<std::string> ExtractArrayOfStrings(const nlohmann::json& json,
+                                               const char* key,
+                                               const char* default_val);
+
+int ExtractLimitedInt(const nlohmann::json& json, const char* key,
+                      int default_val, int min_val, int max_val);
+
+template <typename T>
+T ExtractLimitedNumber(const nlohmann::json& json, const char* key,
+                       int default_val, int min_val, int max_val) {
+  return static_cast<T>(
+      ExtractLimitedInt(json, key, default_val, min_val, max_val));
+}
 
 template <typename Enum>
 inline Enum ConvertFlags(int flags, Enum default_flags) {
@@ -44,3 +58,5 @@ bool IsLogFormatValid(std::string fmt);
 void CopyUuidToUserBuffer(const boost::uuids::uuid& uuid, void* buffer);
 bool CopyStringToUserBuffer(const std::string& str, char* buffer,
                             int buffer_size);
+
+nlohmann::json ParseBranchProps(const char* props, const char* section);

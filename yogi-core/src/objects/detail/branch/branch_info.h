@@ -21,10 +21,12 @@
 #include "../../../api/errors.h"
 #include "../../../utils/timestamp.h"
 #include "../../../utils/types.h"
+#include "../../../utils/system.h"
 
 #include <nlohmann/json.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/asio/ip/tcp.hpp>
+#include <boost/asio/ip/udp.hpp>
 #include <string>
 #include <chrono>
 #include <memory>
@@ -39,7 +41,7 @@ class BranchInfo {
     kInfoMessageHeaderSize = kAdvertisingMessageSize + 4,
   };
 
-  virtual ~BranchInfo() = 0 {}
+  virtual ~BranchInfo() = default;
 
   const boost::uuids::uuid& GetUuid() const { return uuid_; }
   const std::string& GetName() const { return name_; }
@@ -92,11 +94,17 @@ class LocalBranchInfo : public BranchInfo {
  public:
   LocalBranchInfo(std::string name, std::string description,
                   std::string net_name, std::string path,
+                  const std::vector<utils::NetworkInterfaceInfo>& adv_ifs,
                   const boost::asio::ip::udp::endpoint& adv_ep,
                   const boost::asio::ip::tcp::endpoint& tcp_ep,
                   const std::chrono::nanoseconds& timeout,
                   const std::chrono::nanoseconds& adv_interval, bool ghost_mode,
                   std::size_t tx_queue_size, std::size_t rx_queue_size);
+
+  const std::vector<utils::NetworkInterfaceInfo>& GetAdvertisingInterfaces()
+      const {
+    return adv_ifs_;
+  }
 
   const boost::asio::ip::udp::endpoint& GetAdvertisingEndpoint() const {
     return adv_ep_;
@@ -117,7 +125,9 @@ class LocalBranchInfo : public BranchInfo {
 
  private:
   void PopulateMessages();
+  void PopulateJsonWithLocalInfo();
 
+  std::vector<utils::NetworkInterfaceInfo> adv_ifs_;
   boost::asio::ip::udp::endpoint adv_ep_;
   std::size_t tx_queue_size_;
   std::size_t rx_queue_size_;

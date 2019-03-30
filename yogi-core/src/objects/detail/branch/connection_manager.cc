@@ -26,10 +26,13 @@ namespace detail {
 
 ConnectionManager::ConnectionManager(
     ContextPtr context, const std::string& password,
+    const std::vector<std::string>& adv_if_strings,
     const boost::asio::ip::udp::endpoint& adv_ep,
     ConnectionChangedHandler connection_changed_handler,
     MessageReceiveHandler message_handler)
     : context_(context),
+      adv_ifs_(utils::GetFilteredNetworkInterfaces(adv_if_strings,
+                                                   adv_ep.protocol())),
       password_hash_(utils::MakeSharedByteVector(
           utils::MakeSha256({password.cbegin(), password.cend()}))),
       connection_changed_handler_(connection_changed_handler),

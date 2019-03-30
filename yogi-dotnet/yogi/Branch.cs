@@ -412,7 +412,7 @@ public static partial class Yogi
         ///      "path":                 "/Cooling System/Fan Controller",
         ///      "network_name":         "Hardware Control",
         ///      "network_password":     "secret",
-        ///      "advertising_address":  "ff31::8000:2439",
+        ///      "advertising_address":  "ff02::8000:2439",
         ///      "advertising_port":     13531,
         ///      "advertising_interval": 1.0,
         ///      "timeout":              3.0,
@@ -430,7 +430,7 @@ public static partial class Yogi
         ///    hostname).
         ///  - network_password: Password for the network (default: no password)
         ///  - advertising_address: Multicast address to use for advertising, e.g.
-        ///    239.255.0.1 for IPv4 or ff31::8000:1234 for IPv6.
+        ///    239.255.0.1 for IPv4 or ff02::8000:1234 for IPv6.
         ///  - advertising_port: Port to use for advertising.
         ///  - advertising_interval: Time between advertising messages. Must be at
         ///    least 1 ms.
@@ -479,7 +479,7 @@ public static partial class Yogi
         ///      "path":                 "/Cooling System/Fan Controller",
         ///      "network_name":         "Hardware Control",
         ///      "network_password":     "secret",
-        ///      "advertising_address":  "ff31::8000:2439",
+        ///      "advertising_address":  "ff02::8000:2439",
         ///      "advertising_port":     13531,
         ///      "advertising_interval": 1.0,
         ///      "timeout":              3.0,
@@ -499,7 +499,7 @@ public static partial class Yogi
         ///    hostname).
         ///  - network_password: Password for the network (default: no password)
         ///  - advertising_address: Multicast address to use for advertising, e.g.
-        ///    239.255.0.1 for IPv4 or ff31::8000:1234 for IPv6.
+        ///    239.255.0.1 for IPv4 or ff02::8000:1234 for IPv6.
         ///  - advertising_port: Port to use for advertising.
         ///  - advertising_interval: Time between advertising messages. Must be at
         ///    least 1 ms.

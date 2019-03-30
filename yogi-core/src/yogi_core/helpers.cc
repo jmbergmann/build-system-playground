@@ -16,6 +16,7 @@
  */
 
 #include "helpers.h"
+#include "../api/errors.h"
 
 #include <string.h>
 #include <boost/algorithm/string.hpp>
@@ -27,14 +28,54 @@ std::chrono::nanoseconds ExtractDuration(const nlohmann::json& json,
   float seconds = json.value(key, static_cast<float>(defaultValue) / 1e9f);
   if (seconds == -1) {
     return (std::chrono::nanoseconds::max)();
-  }
-  else if (seconds < 0) {
+  } else if (seconds < 0) {
     return (std::chrono::nanoseconds::max)();
     // TODO: Throw exception with additional information
   }
 
   auto ns = static_cast<long long>(seconds * 1e9f);
   return std::chrono::nanoseconds(ns);
+}
+
+std::vector<std::string> ExtractArrayOfStrings(const nlohmann::json& json,
+                                               const char* key,
+                                               const char* default_val) {
+  std::vector<std::string> v;
+  nlohmann::json json_vec;
+
+  if (json.count(key)) {
+    json_vec = json[key];
+  } else {
+    json_vec = nlohmann::json::parse(default_val);
+  }
+
+  if (!json_vec.is_array()) {
+    return v;
+    // TODO: Throw exception
+  }
+
+  for (auto& elem : json_vec) {
+    if (!elem.is_string()) {
+      continue;
+      // TODO: Throw exception
+    }
+
+    v.push_back(elem.get<std::string>());
+  }
+
+  return v;
+}
+
+int ExtractLimitedInt(const nlohmann::json& json, const char* key,
+                      int default_val, int min_val, int max_val) {
+  int val = json.value(key, default_val);
+  if (min_val > val || val > max_val) {
+    throw api::DescriptiveError(YOGI_ERR_INVALID_PARAM)
+        << "Property \"" << key << "\" is out of range. Allowed range is "
+        << min_val << " to " << max_val << ".";
+  }
+
+  return val;
 }
 
 bool IsExactlyOneBitSet(int bit_field) {
@@ -74,4 +115,36 @@ bool CopyStringToUserBuffer(const std::string& str, char* buffer,
   }
 
   return true;
+}
+
+nlohmann::json ParseBranchProps(const char* props, const char* section) {
+  auto properties = nlohmann::json::object();
+  if (props) {
+    try {
+      properties = nlohmann::json::parse(props);
+    } catch (const nlohmann::json::exception& e) {
+      throw api::DescriptiveError(YOGI_ERR_PARSING_JSON_FAILED)
+          << "Could not parse JSON string: " << e.what();
+    }
+
+    if (section) {
+      nlohmann::json::json_pointer jp;
+
+      try {
+        jp = nlohmann::json::json_pointer(section);
+      } catch (const nlohmann::json::exception& e) {
+        throw api::DescriptiveError(YOGI_ERR_INVALID_PARAM)
+            << "Could not parse JSON pointer: " << e.what();
+      }
+
+      properties = properties[jp];
+      if (!properties.is_object()) {
+        throw api::DescriptiveError(YOGI_ERR_PARSING_JSON_FAILED)
+            << "Could not find section \"" << section
+            << "\" in branch properties.";
+      }
+    }
+  }
+
+  return properties;
 }

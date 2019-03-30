@@ -115,7 +115,7 @@ void TextBasedLogSink::WriteEntry(api::Verbosity severity,
             ss.str(std::string());
           }
 
-          SetOutputColours(severity);
+          SetOutputColors(severity);
           colour_cleared = false;
         }
         break;
@@ -127,7 +127,7 @@ void TextBasedLogSink::WriteEntry(api::Verbosity severity,
             ss.str(std::string());
           }
 
-          ResetOutputColours();
+          ResetOutputColors();
           colour_cleared = true;
         }
         break;
@@ -145,7 +145,7 @@ void TextBasedLogSink::WriteEntry(api::Verbosity severity,
   ss << std::endl;
   WritePartialOutput(ss.str());
   if (!colour_cleared) {
-    ResetOutputColours();
+    ResetOutputColors();
   }
 
   Flush();

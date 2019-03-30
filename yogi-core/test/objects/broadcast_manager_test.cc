@@ -15,31 +15,23 @@
  * along with this library. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
+#include "../common.h"
 
-#include "../config.h"
+class BroadcastManagerTest : public TestFixture {
+ protected:
+  virtual void SetUp() override {
+    context_ = CreateContext();
+    branch_a_ = CreateBranch(context_);
+    branch_b_ = CreateBranch(context_);
+    branch_c_ = CreateBranch(context_);
+  }
 
-#include <vector>
-#include <string>
-#include <boost/asio/ip/address.hpp>
-#include <boost/asio/ip/udp.hpp>
-
-namespace utils {
-
-struct NetworkInterfaceInfo {
-  std::string name;
-  std::string identifier;  // The part after the % sign (e.g. ::1%en5 => "en5")
-  std::string mac;
-  std::vector<boost::asio::ip::address> addresses;
-  bool is_loopback = false;
+  void* context_;
+  void* branch_a_;
+  void* branch_b_;
+  void* branch_c_;
 };
 
-std::string GetHostname();
-int GetProcessId();
-int GetCurrentThreadId();
-std::vector<NetworkInterfaceInfo> GetNetworkInterfaces();
-std::vector<NetworkInterfaceInfo> GetFilteredNetworkInterfaces(
-    const std::vector<std::string>& adv_if_strings,
-    const boost::asio::ip::udp& protocol);
+TEST_F(BroadcastManagerTest, DISABLED_Bla) {
 
-}  // namespace utils
+}

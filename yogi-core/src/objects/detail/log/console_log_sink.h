@@ -30,13 +30,13 @@ class ConsoleLogSink : public TextBasedLogSink {
 
  protected:
   virtual void WritePartialOutput(const std::string& str) override;
-  virtual void SetOutputColours(api::Verbosity severity) override;
-  virtual void ResetOutputColours() override;
+  virtual void SetOutputColors(api::Verbosity severity) override;
+  virtual void ResetOutputColors() override;
   virtual void Flush() override;
 
  private:
   FILE* const stream_;
-  const bool colour_;
+  const bool color_;
 };
 
 typedef std::unique_ptr<ConsoleLogSink> ConsoleLogSinkPtr;

@@ -17,40 +17,22 @@
     "**/__pycache__/": true,
     "**/*.dll": true
   },
-  "python.unitTest.unittestArgs": [
-    "-v",
-    "-s",
-    "./yogi-python",
-    "-p",
-    "test_*.py"
-  ],
-  "python.unitTest.pyTestEnabled": false,
-  "python.unitTest.nosetestsEnabled": false,
-  "python.unitTest.unittestEnabled": false,
-  "python.unitTest.promptToConfigure": false,
+  "python.unitTest.cwd": "yogi-python",
+  "python.unitTest.unittestArgs": ["-v", "-s", ".", "-p", "test_*.py"],
+  "python.unitTest.unittestEnabled": true,
   "python.formatting.provider": "autopep8",
-  "python.formatting.autopep8Args": [
-    "--max-line-length", "80"
-  ],
+  "python.formatting.autopep8Args": ["--max-line-length", "80"],
   "[python]": {
-    "editor.rulers": [
-      79
-    ]
+    "editor.rulers": [79]
   },
   "[c]": {
-    "editor.rulers": [
-      80
-    ]
+    "editor.rulers": [80]
   },
   "[cpp]": {
-    "editor.rulers": [
-      80
-    ]
+    "editor.rulers": [80]
   },
   "[csharp]": {
-    "editor.rulers": [
-      100
-    ]
+    "editor.rulers": [100]
   },
   "files.associations": {
     "xtr1common": "cpp",
@@ -139,6 +121,22 @@
     "queue": "cpp",
     "strstream": "cpp",
     "unordered_set": "cpp",
-    "xxatomic": "cpp"
-  }
+    "xxatomic": "cpp",
+    "__bit_reference": "cpp",
+    "__config": "cpp",
+    "__debug": "cpp",
+    "__functional_base": "cpp",
+    "__hash_table": "cpp",
+    "__locale": "cpp",
+    "__mutex_base": "cpp",
+    "__nullptr": "cpp",
+    "__split_buffer": "cpp",
+    "__string": "cpp",
+    "__threading_support": "cpp",
+    "__tree": "cpp",
+    "__tuple": "cpp",
+    "*.tcc": "cpp",
+    "memory_resource": "cpp"
+  },
+  "python.pythonPath": "/usr/local/opt/python/bin/python3.7"
 }

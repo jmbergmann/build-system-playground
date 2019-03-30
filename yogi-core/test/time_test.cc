@@ -18,11 +18,15 @@
 #include "common.h"
 #include <yogi_core.h>
 
+#include <thread>
+
 TEST(TimeTest, GetCurrentTime) {
   long long time_a = 0;
   int res = YOGI_GetCurrentTime(&time_a);
   EXPECT_EQ(res, YOGI_OK);
   EXPECT_GT(time_a, 0);
+
+  std::this_thread::sleep_for(std::chrono::microseconds(100));
 
   long long time_b = 0;
   res = YOGI_GetCurrentTime(&time_b);
@@ -103,11 +107,13 @@ TEST(TimeTest, FormatDuration) {
   EXPECT_EQ(res, YOGI_OK);
   EXPECT_STREQ(str, "-inf");
 
-  res = YOGI_FormatDuration(-1, YOGI_FALSE, str, sizeof(str), nullptr, "%+%-abc");
+  res =
+      YOGI_FormatDuration(-1, YOGI_FALSE, str, sizeof(str), nullptr, "%+%-abc");
   EXPECT_EQ(res, YOGI_OK);
   EXPECT_STREQ(str, "+abc");
 
-  res = YOGI_FormatDuration(-1, YOGI_TRUE, str, sizeof(str), nullptr, "%+%-abc");
+  res =
+      YOGI_FormatDuration(-1, YOGI_TRUE, str, sizeof(str), nullptr, "%+%-abc");
   EXPECT_EQ(res, YOGI_OK);
   EXPECT_STREQ(str, "--abc");
 

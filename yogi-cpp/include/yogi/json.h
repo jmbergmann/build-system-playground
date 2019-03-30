@@ -27,7 +27,17 @@
 #error "Incompatible version of Niels Lohmann's JSON library has been included"
 #endif
 #else
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wall"
+#pragma GCC diagnostic ignored "-Wextra"
+
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Weverything"
+
 #include "3rd_party/nlohmann/json.hpp"
+
+#pragma GCC diagnostic pop
+#pragma clang diagnostic pop
 #endif
 
 namespace yogi {

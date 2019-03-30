@@ -20,11 +20,14 @@ if (${VCPKG_TARGET_TRIPLET} MATCHES ".*-windows.*")
   endif ()
 endif ()
 
-
 get_filename_component (triplet_path ${CMAKE_TOOLCHAIN_FILE} DIRECTORY)
 get_filename_component (triplet_path ${triplet_path}, DIRECTORY)
 get_filename_component (triplet_path ${triplet_path}, DIRECTORY)
 set (triplet_path "${triplet_path}/triplets/${VCPKG_TARGET_TRIPLET}.cmake")
+
+if (NOT EXISTS "${triplet_path}")
+  message (FATAL_ERROR "Target triplet ${triplet_path}: No such file or directory")
+endif ()
 
 set (regex "set *\\( *VCPKG_TARGET_ARCHITECTURE *(.*) *\\)")
 file (

@@ -16,15 +16,29 @@
  */
 
 #include "system.h"
+#include "../api/errors.h"
 
 #include <boost/asio/ip/host_name.hpp>
+#include <boost/algorithm/string.hpp>
+#include <algorithm>
+
+#include <memory>
+#include <algorithm>
+#include <cstdio>
 
 #ifdef _WIN32
-# include <process.h>
+#include <process.h>
 #else
-# include <sys/types.h>
-# include <unistd.h>
-# include <sys/syscall.h>
+#include <sys/types.h>
+#include <unistd.h>
+#include <sys/syscall.h>
+#include <sys/types.h>
+#include <ifaddrs.h>
+#include <arpa/inet.h>
+#endif
+
+#ifdef __APPLE__
+#include <net/if_dl.h>
 #endif
 
 namespace utils {
@@ -48,13 +62,146 @@ int GetProcessId() {
 }
 
 int GetCurrentThreadId() {
-#ifdef _WIN32
+#if defined(_WIN32)
   auto id = ::GetCurrentThreadId();
+#elif defined(__APPLE__)
+  std::uint64_t id;
+  pthread_threadid_np(NULL, &id);
 #else
   auto id = syscall(SYS_gettid);
 #endif
 
   return static_cast<int>(id);
+}
+
+std::vector<NetworkInterfaceInfo> GetNetworkInterfaces() {
+  std::vector<NetworkInterfaceInfo> ifs;
+
+#ifdef _WIN32
+#error \
+    "Implement me: https://docs.microsoft.com/en-us/windows/desktop/api/iphlpapi/nf-iphlpapi-getadaptersaddresses"
+#else
+  std::unique_ptr<ifaddrs, decltype(&freeifaddrs)> if_addr_list(nullptr,
+                                                                &freeifaddrs);
+  {
+    ifaddrs* p;
+    if (getifaddrs(&p) == -1) {
+      char str[100] = {0};
+      strerror_r(errno, str, sizeof(str));
+      throw api::DescriptiveError(YOGI_ERR_ENUMERATE_NETWORK_INTERFACES_FAILED)
+          << str;
+    }
+    if_addr_list.reset(p);
+
+    for (auto ifa = if_addr_list.get(); ifa != nullptr; ifa = ifa->ifa_next) {
+      auto info = std::find_if(ifs.begin(), ifs.end(), [&](auto& info) {
+        return info.name == ifa->ifa_name;
+      });
+
+      if (info == ifs.end()) {
+        info = ifs.insert(ifs.end(), NetworkInterfaceInfo{});
+        info->name = ifa->ifa_name;
+        info->identifier = info->name;
+      }
+
+      switch (ifa->ifa_addr->sa_family) {
+#ifdef __APPLE__
+        case AF_LINK: {
+          auto addr = reinterpret_cast<sockaddr_dl*>(ifa->ifa_addr);
+          auto p =
+              reinterpret_cast<unsigned char*>(addr->sdl_data + addr->sdl_nlen);
+#else
+        case AF_PACKET: {
+          auto addr = reinterpret_cast<sockaddr_ll*>(ifa->ifa_addr);
+          auto p = addr->sll_addr;
+#endif
+          if (*p || (*(p + 1)) || (*(p + 2)) || (*(p + 3)) || (*(p + 4)) ||
+              (*(p + 5))) {
+            char mac[18];
+            snprintf(mac, sizeof(mac), "%02x:%02x:%02x:%02x:%02x:%02x", *p,
+                     *(p + 1), *(p + 2), *(p + 3), *(p + 4), *(p + 5));
+            info->mac = mac;
+          }
+
+          break;
+        }
+
+        case AF_INET:
+        case AF_INET6: {
+          char str[INET6_ADDRSTRLEN];
+          boost::asio::ip::address addr;
+
+          if (ifa->ifa_addr->sa_family == AF_INET) {
+            auto sin = reinterpret_cast<sockaddr_in*>(ifa->ifa_addr);
+            if (inet_ntop(AF_INET, &sin->sin_addr, str, sizeof(str))) {
+              addr = boost::asio::ip::make_address_v4(str);
+            }
+          } else {
+            auto sin = reinterpret_cast<sockaddr_in6*>(ifa->ifa_addr);
+            if (inet_ntop(AF_INET6, &sin->sin6_addr, str, sizeof(str))) {
+              auto v6addr = boost::asio::ip::make_address_v6(str);
+              if (sin->sin6_scope_id != 0) {  // Ignores ::1 but keeps fe80::1
+                v6addr.scope_id(sin->sin6_scope_id);
+                addr = v6addr;
+              }
+            }
+          }
+
+          if (!addr.is_unspecified()) {
+            info->addresses.push_back(addr);
+            if (addr.is_loopback()) {
+              info->is_loopback = true;
+            }
+          }
+
+          break;
+        }
+      }
+    }
+  }
+#endif
+
+  auto it = ifs.begin();
+  while (it != ifs.end()) {
+    if (it->mac.empty() && it->addresses.empty()) {
+      it = ifs.erase(it);
+    } else {
+      ++it;
+    }
+  }
+
+  return ifs;
+}
+
+std::vector<utils::NetworkInterfaceInfo> GetFilteredNetworkInterfaces(
+    const std::vector<std::string>& adv_if_strings,
+    const boost::asio::ip::udp& protocol) {
+  std::vector<utils::NetworkInterfaceInfo> ifs;
+  for (auto& string : adv_if_strings) {
+    for (auto& info : GetNetworkInterfaces()) {
+      bool all = boost::iequals(string, "all");
+      bool same_name = string == info.name;
+      bool same_mac = boost::iequals(string, info.mac);
+      bool both_are_localhost =
+          boost::iequals(string, "localhost") && info.is_loopback;
+
+      if (!all && !same_name && !same_mac && !both_are_localhost) continue;
+
+      auto ifc = info;
+      ifc.addresses.erase(
+          std::remove_if(ifc.addresses.begin(), ifc.addresses.end(),
+                         [&](auto& addr) {
+                           return addr.is_v6() != (protocol == protocol.v6());
+                         }),
+          ifc.addresses.end());
+
+      if (!ifc.addresses.empty()) {
+        ifs.push_back(ifc);
+      }
+    }
+  }
+
+  return ifs;
 }
 
 }  // namespace utils

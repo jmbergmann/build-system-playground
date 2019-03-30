@@ -95,15 +95,24 @@ FakeBranch::FakeBranch()
   acceptor_.bind(boost::asio::ip::tcp::endpoint(kTcpProtocol, 0));
   acceptor_.listen();
 
+  auto ifs =
+      utils::GetFilteredNetworkInterfaces({"localhost"}, udp_ep_.protocol());
+
   info_ = std::make_shared<objects::detail::LocalBranchInfo>(
-      "Fake Branch", "", utils::GetHostname(), "/Fake Branch", udp_ep_,
+      "Fake Branch", "", utils::GetHostname(), "/Fake Branch", ifs, udp_ep_,
       acceptor_.local_endpoint(), 1s, 1s, false, api::kMinTxQueueSize,
       api::kMinRxQueueSize);
 
   udp_socket_.set_option(boost::asio::ip::udp::socket::reuse_address(true));
   udp_socket_.bind(boost::asio::ip::udp::endpoint(kUdpProtocol, 0));
-  udp_socket_.set_option(boost::asio::ip::multicast::join_group(
-      boost::asio::ip::make_address(kAdvAddress)));
+
+  if (udp_ep_.address().is_v6()) {
+    for (auto& addr : ifs[0].addresses) {
+      if (addr.is_v4()) continue;
+      udp_socket_.set_option(boost::asio::ip::multicast::outbound_interface(
+          static_cast<unsigned int>(addr.to_v6().scope_id())));
+    }
+  }
 }
 
 void FakeBranch::Connect(void* branch,
@@ -216,7 +225,7 @@ TemporaryWorkdirGuard::~TemporaryWorkdirGuard() {
 
 CommandLine::CommandLine(std::initializer_list<std::string> args) {
   argc = static_cast<int>(args.size() + 1);
-  argv = new char*[argc];
+  argv = new char*[static_cast<std::size_t>(argc)];
 
   std::string exe = "executable-name";
   argv[0] = new char[exe.size() + 1];

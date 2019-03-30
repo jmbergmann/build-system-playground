@@ -14,14 +14,12 @@ if (WIN32)
     -D_WINSOCK_DEPRECATED_NO_WARNINGS
   )
 else ()
-  set (warnings                  "-Wall -Wextra -Wnon-virtual-dtor -pedantic -Wold-style-cast -Wcast-align -Wunused -Woverloaded-virtual -Wconversion -Wsign-conversion -Wduplicated-cond -Wlogical-op -Wnull-dereference")
-  set (ignored_warnings          "-Wno-unused-variable -Wno-unused-function -Wno-overloaded-virtual -Wno-unused-value -Wno-shadow -Wno-trigraphs")
-  set (export_map                "-Wl,--version-script='${CMAKE_CURRENT_LIST_DIR}/src/export.map'")
-  set (CMAKE_CXX_STANDARD        14)
-  set (CMAKE_CXX_FLAGS           "-std=c++${CMAKE_CXX_STANDARD} ${warnings} ${ignored_warnings} -fvisibility=hidden -fPIC -DBOOST_ALL_DYN_LINK")
+  set (warnings                  "-Wall -Wextra -Wnon-virtual-dtor -pedantic -Wold-style-cast -Wcast-align -Wunused -Woverloaded-virtual -Wconversion -Wsign-conversion -Wnull-dereference")
+  set (ignored_warnings          "-Wno-unused-variable -Wno-unused-function -Wno-overloaded-virtual -Wno-unused-value -Wno-shadow -Wno-trigraphs -Wno-unused-private-field -Wno-unused-parameter")
+  set (CMAKE_CXX_STANDARD        17)
+  set (CMAKE_CXX_FLAGS           "-std=c++${CMAKE_CXX_STANDARD} ${warnings} ${ignored_warnings} -fPIC -DBOOST_ALL_DYN_LINK -fvisibility=hidden")
   set (CMAKE_CXX_FLAGS_DEBUG     "-g -ggdb")
   set (CMAKE_CXX_FLAGS_RELEASE   "-O2 -DNDEBUG -fwhole-program -flto")
-  set (CMAKE_SHARED_LINKER_FLAGS "${export_map}")
 endif ()
 
 # OpenSSL
@@ -31,14 +29,14 @@ find_package (OpenSSL REQUIRED)
 # Boost
 set (Boost_USE_STATIC_LIBS ON)
 set (Boost_USE_STATIC_RUNTIME OFF)
-set (Boost_USE_DEBUG_RUNTIME ON)
+set (Boost_USE_DEBUG_RUNTIME ON) # TODO?
 set (Boost_MULTITHREADED ON)
 find_package (Boost 1.66
   COMPONENTS system filesystem thread date_time program_options
   REQUIRED)
 add_library (boost INTERFACE IMPORTED)
 set_property (TARGET boost
-  PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIR})
+  PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIRS})
 find_package (Threads REQUIRED)
 
 # Static library
@@ -81,7 +79,7 @@ add_library (yogi-core-static STATIC
 )
 
 target_include_directories (yogi-core-static SYSTEM
-  PUBLIC ${Boost_INCLUDE_DIR}
+  PUBLIC ${Boost_INCLUDE_DIRS}
 )
 
 cotire (yogi-core-static)
@@ -147,6 +145,7 @@ export (TARGETS yogi-core-header
 
 # Tests
 find_package (GMock REQUIRED)
+find_package (GTest REQUIRED)
 include_directories (SYSTEM ${GMOCK_INCLUDE_DIRS})
 
 add_executable (yogi-core-test
@@ -160,6 +159,7 @@ add_executable (yogi-core-test
   test/network/tcp_transport_test.cc
   test/network/transport_test.cc
   test/objects/branch_test.cc
+  test/objects/broadcast_manager_test.cc
   test/objects/command_line_parser_test.cc
   test/objects/configuration_test.cc
   test/objects/connection_manager_test.cc
@@ -170,6 +170,7 @@ add_executable (yogi-core-test
   test/objects/timer_test.cc
   test/utils/glob_test.cc
   test/utils/ringbuffer_test.cc
+  test/utils/system_test.cc
   test/common.cc
   test/time_test.cc
   test/version_test.cc
@@ -179,6 +180,7 @@ target_link_libraries (yogi-core-test
   yogi-core-static
   yogi-core
   ${GMOCK_BOTH_LIBRARIES}
+  ${GTEST_LIBRARIES}
   Threads::Threads
 )
 
