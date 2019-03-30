@@ -51,6 +51,8 @@ enum MessageType : utils::Byte {
 
 class Message {
  public:
+  virtual ~Message() {}
+
   virtual MessageType GetType() const = 0;
   virtual std::string ToString() const = 0;
 };

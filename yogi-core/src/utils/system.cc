@@ -73,7 +73,7 @@ void AppendIpAddress(NetworkInterfaceInfo* info, const sockaddr* sa) {
   }
 }
 
-void RemoveUnusableIpv6LoopbackAddresses(
+void RemoveUnneededIpv6LoopbackAddresses(
     std::vector<NetworkInterfaceInfo>* ifs) {
   for (auto& info : *ifs) {
     if (!info.is_loopback) continue;
