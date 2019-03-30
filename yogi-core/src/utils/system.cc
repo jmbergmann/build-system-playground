@@ -32,8 +32,8 @@
 #include <iphlpapi.h>
 #include <ws2tcpip.h>
 #else
-#include <sys/types.h>
 #include <unistd.h>
+#include <sys/types.h>
 #include <sys/syscall.h>
 #include <sys/types.h>
 #include <ifaddrs.h>
@@ -42,6 +42,10 @@
 
 #ifdef __APPLE__
 #include <net/if_dl.h>
+#endif
+
+#ifdef __linux__
+#include <linux/if_packet.h>
 #endif
 
 namespace utils {

@@ -52,7 +52,7 @@ BroadcastManager::SendBroadcastOperationId BroadcastManager::SendBroadcastAsync(
   if (retry) {
     std::shared_ptr<int> pending_handlers;
     conn_manager_.ForeachRunningSession([&](auto& conn) {
-      SendNowOrLater(&pending_handlers, &msg, conn, handler, oid);
+      this->SendNowOrLater(&pending_handlers, &msg, conn, handler, oid);
     });
 
     StoreOidForLaterOrCallHandlerNow(pending_handlers, handler, oid);
@@ -114,7 +114,7 @@ void BroadcastManager::SendNowOrLater(SharedCounter* pending_handlers,
           if (--**pending_handlers == 0) {
             auto self = weak_self.lock();
             if (self) {
-              if (RemoveActiveOid(oid)) {
+              if (self->RemoveActiveOid(oid)) {
                 handler(api::kSuccess, oid);
               } else {
                 handler(api::Error(YOGI_ERR_CANCELED), oid);

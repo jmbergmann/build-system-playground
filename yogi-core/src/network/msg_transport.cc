@@ -21,7 +21,7 @@ namespace network {
 namespace internal {
 
 std::size_t CalculateMsgSizeFieldLength(std::size_t msg_size) {
-  return 1 + (msg_size >= (1 << 7)) + (msg_size >= (1 << 14)) +
+  return 1u + (msg_size >= (1 << 7)) + (msg_size >= (1 << 14)) +
          (msg_size >= (1 << 21)) + (msg_size >= (1 << 28));
 }
 
@@ -32,7 +32,7 @@ std::size_t SerializeMsgSizeField(std::size_t msg_size,
   auto it = buffer->begin();
   for (auto i = length; i > 0; --i) {
     auto byte = static_cast<utils::Byte>((msg_size >> ((i - 1) * 7)) & 0x7F);
-    byte |= (i > 1 ? (1 << 7) : 0);
+    byte |= static_cast<utils::Byte>((i > 1 ? (1 << 7) : 0));
     *it++ = byte;
   }
 
