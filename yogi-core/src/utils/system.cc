@@ -28,6 +28,9 @@
 
 #ifdef _WIN32
 #include <process.h>
+#include <winsock2.h>
+#include <iphlpapi.h>
+#include <ws2tcpip.h>
 #else
 #include <sys/types.h>
 #include <unistd.h>
@@ -42,6 +45,56 @@
 #endif
 
 namespace utils {
+namespace {
+
+void AppendIpAddress(NetworkInterfaceInfo* info, const sockaddr* sa) {
+  char str[INET6_ADDRSTRLEN];
+  boost::asio::ip::address addr;
+
+  if (sa->sa_family == AF_INET) {
+    auto sin = reinterpret_cast<const sockaddr_in*>(sa);
+    if (inet_ntop(AF_INET, &sin->sin_addr, str, sizeof(str))) {
+      addr = boost::asio::ip::make_address_v4(str);
+    }
+  } else {
+    auto sin = reinterpret_cast<const sockaddr_in6*>(sa);
+    if (inet_ntop(AF_INET6, &sin->sin6_addr, str, sizeof(str))) {
+      auto v6addr = boost::asio::ip::make_address_v6(str);
+      v6addr.scope_id(sin->sin6_scope_id);
+      addr = v6addr;
+    }
+  }
+
+  if (!addr.is_unspecified()) {
+    info->addresses.push_back(addr);
+    if (addr.is_loopback()) {
+      info->is_loopback = true;
+    }
+  }
+}
+
+void RemoveUnusableIpv6LoopbackAddresses(
+    std::vector<NetworkInterfaceInfo>* ifs) {
+  for (auto& info : *ifs) {
+    if (!info.is_loopback) continue;
+
+    bool has_proper_v6_addr =
+        std::find_if(info.addresses.begin(), info.addresses.end(),
+                     [](auto& addr) {
+                       return addr.is_v6() && addr.to_v6().scope_id() != 0;
+                     }) != info.addresses.end();
+    if (!has_proper_v6_addr) continue;
+
+    info.addresses.erase(
+        std::remove_if(info.addresses.begin(), info.addresses.end(),
+                       [](auto& addr) {
+                         return addr.is_v6() && addr.to_v6().scope_id() == 0;
+                       }),
+        info.addresses.end());
+  }
+}
+
+}  // anonymous namespace
 
 std::string GetHostname() {
   boost::system::error_code ec;
@@ -78,8 +131,61 @@ std::vector<NetworkInterfaceInfo> GetNetworkInterfaces() {
   std::vector<NetworkInterfaceInfo> ifs;
 
 #ifdef _WIN32
-#error \
-    "Implement me: https://docs.microsoft.com/en-us/windows/desktop/api/iphlpapi/nf-iphlpapi-getadaptersaddresses"
+  std::vector<char> buffer(4096);
+  PIP_ADAPTER_ADDRESSES adapters;
+
+  DWORD res;
+  do {
+    buffer.resize(buffer.size() * 2);
+    adapters = reinterpret_cast<PIP_ADAPTER_ADDRESSES>(buffer.data());
+    auto n = static_cast<ULONG>(buffer.size());
+    res = GetAdaptersAddresses(AF_UNSPEC,
+                               GAA_FLAG_SKIP_ANYCAST | GAA_FLAG_SKIP_MULTICAST |
+                                   GAA_FLAG_SKIP_DNS_SERVER,
+                               nullptr, adapters, &n);
+  } while (res == ERROR_BUFFER_OVERFLOW);
+
+  if (res != NO_ERROR) {
+    std::string s;
+    LPSTR msg = nullptr;
+    auto n = FormatMessage(
+        FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM |
+            FORMAT_MESSAGE_IGNORE_INSERTS,
+        nullptr, res, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+        reinterpret_cast<LPTSTR>(&msg), 0, nullptr);
+    if (n) {
+      s.assign(msg, msg + n);
+      LocalFree(msg);
+    }
+
+    throw api::DescriptiveError(YOGI_ERR_ENUMERATE_NETWORK_INTERFACES_FAILED)
+        << "GetAdaptersAddresses() failed: " << s;
+  }
+
+  for (auto adapter = adapters; adapter != nullptr; adapter = adapter->Next) {
+    NetworkInterfaceInfo info;
+    info.identifier = std::to_string(adapter->Ipv6IfIndex);
+
+    std::wstring name(adapter->FriendlyName);
+    info.name = std::string(name.begin(), name.end());
+
+    if (adapter->PhysicalAddressLength == 6) {
+      auto p = adapter->PhysicalAddress;
+      char mac[18];
+      snprintf(mac, sizeof(mac), "%02x:%02x:%02x:%02x:%02x:%02x", *p, *(p + 1),
+               *(p + 2), *(p + 3), *(p + 4), *(p + 5));
+      info.mac = mac;
+    }
+
+    for (auto uc_addr = adapter->FirstUnicastAddress; uc_addr != nullptr;
+         uc_addr = uc_addr->Next) {
+      AppendIpAddress(&info, uc_addr->Address.lpSockaddr);
+    }
+
+    if (!info.addresses.empty()) {
+      ifs.push_back(info);
+    }
+  }
 #else
   std::unique_ptr<ifaddrs, decltype(&freeifaddrs)> if_addr_list(nullptr,
                                                                 &freeifaddrs);
@@ -127,38 +233,14 @@ std::vector<NetworkInterfaceInfo> GetNetworkInterfaces() {
         }
 
         case AF_INET:
-        case AF_INET6: {
-          char str[INET6_ADDRSTRLEN];
-          boost::asio::ip::address addr;
-
-          if (ifa->ifa_addr->sa_family == AF_INET) {
-            auto sin = reinterpret_cast<sockaddr_in*>(ifa->ifa_addr);
-            if (inet_ntop(AF_INET, &sin->sin_addr, str, sizeof(str))) {
-              addr = boost::asio::ip::make_address_v4(str);
-            }
-          } else {
-            auto sin = reinterpret_cast<sockaddr_in6*>(ifa->ifa_addr);
-            if (inet_ntop(AF_INET6, &sin->sin6_addr, str, sizeof(str))) {
-              auto v6addr = boost::asio::ip::make_address_v6(str);
-              if (sin->sin6_scope_id != 0) {  // Ignores ::1 but keeps fe80::1
-                v6addr.scope_id(sin->sin6_scope_id);
-                addr = v6addr;
-              }
-            }
-          }
-
-          if (!addr.is_unspecified()) {
-            info->addresses.push_back(addr);
-            if (addr.is_loopback()) {
-              info->is_loopback = true;
-            }
-          }
-
+        case AF_INET6:
+          AppendIpAddress(&*info, ifa->ifa_addr);
           break;
-        }
       }
     }
   }
+
+  RemoveUnneededIpv6LoopbackAddresses(&ifs);
 #endif
 
   auto it = ifs.begin();

@@ -111,6 +111,7 @@ target_link_libraries (yogi-core
 if (WIN32)
   target_link_libraries (yogi-core
     bcrypt.lib
+    IPHLPAPI.lib
   )
 endif ()
 
