@@ -117,6 +117,14 @@ class BranchEventRecorder final {
   std::vector<CallbackData> events_;
 };
 
+class MulticastSocket final {
+ public:
+  MulticastSocket(const boost::asio::ip::udp::endpoint& ep);
+
+  void Send(const utils::ByteVector& msg);
+  utils::ByteVector Receive();
+};
+
 class FakeBranch final {
  public:
   FakeBranch();

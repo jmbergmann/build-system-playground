@@ -65,9 +65,9 @@ TEST(MessageTest, UserDataMsgPack) {
 }
 
 TEST(MessagesTest, GetType) {
-  auto msg = FakeOutgoingMessage({});
-  EXPECT_EQ(FakeOutgoingMessage::kMessageType, MessageType::kBroadcast);
-  EXPECT_EQ(FakeOutgoingMessage::kMessageType, msg.GetType());
+  auto fakeType = FakeOutgoingMessage::kMessageType;
+  EXPECT_EQ(fakeType, MessageType::kBroadcast);
+  EXPECT_EQ(fakeType, FakeOutgoingMessage({}).GetType());
 }
 
 TEST(MessagesTest, MakeMsgBytes) {
