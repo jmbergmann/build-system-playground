@@ -85,34 +85,56 @@ void BranchEventRecorder::Callback(int res, int event, int ev_res,
   self->StartAwaitEvent();
 }
 
+MulticastSocket::MulticastSocket(
+    const boost::asio::ip::udp::endpoint& multicast_ep)
+    : mc_ep_(multicast_ep), socket_(ioc_, mc_ep_.protocol()) {
+  using namespace boost::asio::ip;
+
+  socket_.set_option(udp::socket::reuse_address(true));
+  socket_.bind(udp::endpoint(mc_ep_.protocol(), mc_ep_.port()));
+
+  auto ifs =
+      utils::GetFilteredNetworkInterfaces({"localhost"}, mc_ep_.protocol());
+  auto addr = ifs[0].addresses[0];
+
+  if (addr.is_v6()) {
+    socket_.set_option(multicast::join_group(mc_ep_.address().to_v6(),
+                                             addr.to_v6().scope_id()));
+    socket_.set_option(boost::asio::ip::multicast::outbound_interface(
+        static_cast<unsigned int>(addr.to_v6().scope_id())));
+  } else {
+    socket_.set_option(
+        multicast::join_group(mc_ep_.address().to_v4(), addr.to_v4()));
+  }
+}
+
+void MulticastSocket::Send(const utils::ByteVector& msg) {
+  socket_.send_to(boost::asio::buffer(msg), mc_ep_);
+}
+
+utils::ByteVector MulticastSocket::Receive() {
+  utils::ByteVector msg;
+  throw "Implement me";
+  return msg;
+}
+
 FakeBranch::FakeBranch()
-    : udp_ep_(boost::asio::ip::make_address(kAdvAddress), kAdvPort),
-      udp_socket_(ioc_, kUdpProtocol),
-      acceptor_(ioc_),
-      tcp_socket_(ioc_) {
+    : acceptor_(ioc_),
+      tcp_socket_(ioc_),
+      adv_ep_(boost::asio::ip::make_address(kAdvAddress), kAdvPort),
+      mc_socket_(adv_ep_) {
   acceptor_.open(kTcpProtocol);
   acceptor_.set_option(boost::asio::ip::tcp::acceptor::reuse_address(true));
   acceptor_.bind(boost::asio::ip::tcp::endpoint(kTcpProtocol, 0));
   acceptor_.listen();
 
   auto ifs =
-      utils::GetFilteredNetworkInterfaces({"localhost"}, udp_ep_.protocol());
+      utils::GetFilteredNetworkInterfaces({"localhost"}, adv_ep_.protocol());
 
   info_ = std::make_shared<objects::detail::LocalBranchInfo>(
-      "Fake Branch", "", utils::GetHostname(), "/Fake Branch", ifs, udp_ep_,
+      "Fake Branch", "", utils::GetHostname(), "/Fake Branch", ifs, adv_ep_,
       acceptor_.local_endpoint(), 1s, 1s, false, api::kMinTxQueueSize,
       api::kMinRxQueueSize);
-
-  udp_socket_.set_option(boost::asio::ip::udp::socket::reuse_address(true));
-  udp_socket_.bind(boost::asio::ip::udp::endpoint(kUdpProtocol, 0));
-
-  if (udp_ep_.address().is_v6()) {
-    for (auto& addr : ifs[0].addresses) {
-      if (addr.is_v4()) continue;
-      udp_socket_.set_option(boost::asio::ip::multicast::outbound_interface(
-          static_cast<unsigned int>(addr.to_v6().scope_id())));
-    }
-  }
 }
 
 void FakeBranch::Connect(void* branch,
@@ -135,7 +157,7 @@ void FakeBranch::Advertise(
     std::function<void(utils::ByteVector*)> msg_changer) {
   auto msg = *info_->MakeAdvertisingMessage();
   if (msg_changer) msg_changer(&msg);
-  udp_socket_.send_to(boost::asio::buffer(msg), udp_ep_);
+  mc_socket_.Send(msg);
 }
 
 bool FakeBranch::IsConnectedTo(void* branch) const {

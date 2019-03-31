@@ -62,16 +62,13 @@ bool AdvertisingSender::ConfigureSocket(std::shared_ptr<SocketEntry> entry) {
     throw api::Error(YOGI_ERR_OPEN_SOCKET_FAILED);
   }
 
-  if (entry->address.is_v6()) {
-    entry->socket.set_option(
-        boost::asio::ip::multicast::outbound_interface(
-            static_cast<unsigned int>(entry->address.to_v6().scope_id())),
-        ec);
-  } else {
-    entry->socket.set_option(
-        boost::asio::ip::multicast::outbound_interface(entry->address.to_v4()),
-        ec);
-  }
+  auto opt =
+      entry->address.is_v6()
+          ? boost::asio::ip::multicast::outbound_interface(
+                static_cast<unsigned int>(entry->address.to_v6().scope_id()))
+          : boost::asio::ip::multicast::outbound_interface(
+                entry->address.to_v4());
+  entry->socket.set_option(opt, ec);
 
   if (ec) {
     YOGI_LOG_ERROR(

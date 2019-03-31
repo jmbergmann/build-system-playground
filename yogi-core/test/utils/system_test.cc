@@ -65,7 +65,8 @@ TEST(SystemTest, GetFilteredNetworkInterfaces) {
     EXPECT_TRUE(ifs[0].is_loopback);
 
     ifs = utils::GetFilteredNetworkInterfaces({"all"}, protocol);
-    ASSERT_GT(ifs.size(), 1);
+    ASSERT_GT(ifs.size(), 1)
+        << "Make sure you have an active LAN or Wi-Fi connection!";
 
     auto if_it = std::find_if(ifs.begin(), ifs.end(), [](auto& info) {
       return !info.is_loopback && !info.mac.empty();

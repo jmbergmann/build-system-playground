@@ -119,10 +119,15 @@ class BranchEventRecorder final {
 
 class MulticastSocket final {
  public:
-  MulticastSocket(const boost::asio::ip::udp::endpoint& ep);
+  MulticastSocket(const boost::asio::ip::udp::endpoint& multicast_ep);
 
   void Send(const utils::ByteVector& msg);
   utils::ByteVector Receive();
+
+ private:
+  boost::asio::io_context ioc_;
+  boost::asio::ip::udp::endpoint mc_ep_;
+  boost::asio::ip::udp::socket socket_;
 };
 
 class FakeBranch final {
@@ -143,10 +148,10 @@ class FakeBranch final {
 
   objects::detail::LocalBranchInfoPtr info_;
   boost::asio::io_context ioc_;
-  boost::asio::ip::udp::endpoint udp_ep_;
-  boost::asio::ip::udp::socket udp_socket_;
   boost::asio::ip::tcp::acceptor acceptor_;
   boost::asio::ip::tcp::socket tcp_socket_;
+  boost::asio::ip::udp::endpoint adv_ep_;
+  MulticastSocket mc_socket_;
 };
 
 class TemporaryWorkdirGuard final {

@@ -54,14 +54,7 @@ void AdvertisingReceiver::SetupSocket() {
   socket_.set_option(udp::socket::reuse_address(true), ec);
   if (ec) throw api::Error(YOGI_ERR_SET_SOCKET_OPTION_FAILED);
 
-  address listen_addr;
-  if (adv_ep_.address().is_v6()) {
-    listen_addr = address(address_v6::any());
-  } else {
-    listen_addr = address(address_v6::any());
-  }
-
-  socket_.bind(udp::endpoint(listen_addr, adv_ep_.port()), ec);
+  socket_.bind(udp::endpoint(adv_ep_.protocol(), adv_ep_.port()), ec);
   if (ec) throw api::Error(YOGI_ERR_BIND_SOCKET_FAILED);
 }
 
@@ -72,14 +65,11 @@ bool AdvertisingReceiver::JoinMulticastGroups() {
   for (auto& ifc : info_->GetAdvertisingInterfaces()) {
     for (auto& addr : ifc.addresses) {
       boost::system::error_code ec;
-      if (addr.is_v6()) {
-        socket_.set_option(multicast::join_group(adv_ep_.address().to_v6(),
-                                                 addr.to_v6().scope_id()),
-                           ec);
-      } else {
-        socket_.set_option(
-            multicast::join_group(adv_ep_.address().to_v4(), addr.to_v4()), ec);
-      }
+      auto opt = addr.is_v6() ? multicast::join_group(adv_ep_.address().to_v6(),
+                                                      addr.to_v6().scope_id())
+                              : multicast::join_group(adv_ep_.address().to_v4(),
+                                                      addr.to_v4());
+      socket_.set_option(opt, ec);
 
       if (ec) {
         YOGI_LOG_ERROR(logger_,
