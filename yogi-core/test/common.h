@@ -122,7 +122,8 @@ class MulticastSocket final {
   MulticastSocket(const boost::asio::ip::udp::endpoint& multicast_ep);
 
   void Send(const utils::ByteVector& msg);
-  utils::ByteVector Receive();
+  utils::ByteVector Receive(
+      const std::chrono::milliseconds& timeout = std::chrono::seconds(1));
 
  private:
   boost::asio::io_context ioc_;
@@ -180,7 +181,8 @@ void* CreateContext();
 void RunContextInBackground(void* context);
 void* CreateBranch(void* context, const char* name = nullptr,
                    const char* net_name = nullptr,
-                   const char* password = nullptr, const char* path = nullptr);
+                   const char* password = nullptr, const char* path = nullptr,
+                   const char* adv_addr = nullptr);
 boost::asio::ip::tcp::endpoint GetBranchTcpEndpoint(void* branch);
 boost::uuids::uuid GetBranchUuid(void* branch);
 nlohmann::json GetBranchInfo(void* branch);

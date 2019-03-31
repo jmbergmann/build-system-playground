@@ -112,9 +112,21 @@ void MulticastSocket::Send(const utils::ByteVector& msg) {
   socket_.send_to(boost::asio::buffer(msg), mc_ep_);
 }
 
-utils::ByteVector MulticastSocket::Receive() {
-  utils::ByteVector msg;
-  throw "Implement me";
+utils::ByteVector MulticastSocket::Receive(
+    const std::chrono::milliseconds& timeout) {
+  utils::ByteVector msg(1000);
+  boost::asio::ip::udp::endpoint sender_ep;
+  socket_.async_receive_from(boost::asio::buffer(msg), sender_ep,
+                             [&](auto ec, auto size) {
+                               EXPECT_FALSE(ec) << ec.message();
+                               msg.resize(size);
+                             });
+
+  if (!ioc_.run_one_for(timeout)) {
+    throw std::runtime_error(
+        "No multicast message received within the specified time.");
+  }
+
   return msg;
 }
 
@@ -294,13 +306,15 @@ void RunContextInBackground(void* context) {
 }
 
 void* CreateBranch(void* context, const char* name, const char* net_name,
-                   const char* password, const char* path) {
+                   const char* password, const char* path,
+                   const char* adv_addr) {
   auto props = kBranchProps;
   props["description"] = "Description";
   if (name) props["name"] = name;
   if (net_name) props["network_name"] = net_name;
   if (password) props["network_password"] = password;
   if (path) props["path"] = path;
+  if (adv_addr) props["advertising_address"] = adv_addr;
 
   void* branch = nullptr;
   int res = YOGI_BranchCreate(&branch, context, props.dump().c_str(), nullptr,

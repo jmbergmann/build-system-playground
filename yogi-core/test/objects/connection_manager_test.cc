@@ -27,70 +27,68 @@ class ConnectionManagerTest : public TestFixture {
     branch_ = CreateBranch(context_);
   }
 
-  void* context_;
-  void* branch_;
-};
-
-TEST_F(ConnectionManagerTest, DISABLED_AdvertisingIPv4) {}
-
-TEST_F(ConnectionManagerTest, AdvertisingIPv6) {
-  using namespace boost::asio;
-
-  io_context ioc;
-  ip::udp::endpoint ep(ip::make_address("0::0"),
-                       kBranchProps["advertising_port"]);
-  ip::udp::socket socket(ioc, ep.protocol());
-  socket.set_option(ip::udp::socket::reuse_address(true));
-  socket.bind(ep);
-
-  boost::system::error_code ec;
-  for (unsigned long net_if = 0; net_if < 20; ++net_if) {
-    socket.set_option(
-        ip::multicast::join_group(
-            ip::make_address(static_cast<const std::string&>(
-                                 kBranchProps["advertising_address"]))
-                .to_v6(),
-            net_if),
-        ec);
+  void ReCreateBranch(const char* adv_addr) {
+    auto res = YOGI_Destroy(branch_);
+    ASSERT_EQ(res, YOGI_OK);
+    branch_ =
+        CreateBranch(context_, nullptr, nullptr, nullptr, nullptr, adv_addr);
   }
 
-  boost::system::error_code error_code;
-  std::array<char, 100> data;
-  std::size_t data_size = 0;
-  ip::udp::endpoint sender_ep;
-  bool rx_callback_called = false;
+  void* context_;
+  void* branch_;
 
-  socket.async_receive_from(buffer(data), sender_ep, [&](auto ec, auto size) {
-    error_code = ec;
-    data_size = size;
-    rx_callback_called = true;
-  });
+  void TestAdvertising(const char* adv_addr) {
+    MulticastSocket multicast(boost::asio::ip::udp::endpoint(
+        boost::asio::ip::make_address(adv_addr), kAdvPort));
 
-  RunContextInBackground(context_);
+    ReCreateBranch(adv_addr);
+    RunContextInBackground(context_);
 
-  ioc.run_one_for(1s);
+    auto msg = multicast.Receive();
+    ASSERT_EQ(msg.size(), 25) << "Unexpected advertising message size";
 
-  ASSERT_TRUE(rx_callback_called) << "UDP receive callback function not called";
-  EXPECT_FALSE(error_code) << error_code.message();
-  ASSERT_EQ(data_size, 25) << "Unexpected advertising message size";
+    boost::uuids::uuid uuid;
+    YOGI_BranchGetInfo(branch_, &uuid, nullptr, 0);
 
-  boost::uuids::uuid uuid;
-  YOGI_BranchGetInfo(branch_, &uuid, nullptr, 0);
+    EXPECT_EQ(msg[0], 'Y');
+    EXPECT_EQ(msg[1], 'O');
+    EXPECT_EQ(msg[2], 'G');
+    EXPECT_EQ(msg[3], 'I');
+    EXPECT_EQ(msg[4], '\0');
+    EXPECT_EQ(msg[5], api::kVersionMajor);
+    EXPECT_EQ(msg[6], api::kVersionMinor);
+    EXPECT_EQ(std::memcmp(&uuid, msg.data() + 7, sizeof(uuid)), 0);
+    EXPECT_TRUE(msg[23] != 0 || msg[24] != 0);
+  }
 
-  EXPECT_STREQ(data.data(), "YOGI");
-  EXPECT_EQ(data[5], api::kVersionMajor);
-  EXPECT_EQ(data[6], api::kVersionMinor);
-  EXPECT_EQ(std::memcmp(&uuid, data.data() + 7, sizeof(uuid)), 0);
-  EXPECT_TRUE(data[23] != 0 || data[24] != 0);
+  void TestConnectNormally(const char* adv_addr) {
+    ReCreateBranch(adv_addr);
+
+    void* branch_a =
+        CreateBranch(context_, "a", nullptr, nullptr, nullptr, adv_addr);
+    void* branch_b =
+        CreateBranch(context_, "b", nullptr, nullptr, nullptr, adv_addr);
+
+    BranchEventRecorder rec(context_, branch_);
+    rec.RunContextUntil(YOGI_BEV_CONNECT_FINISHED, branch_a, YOGI_OK);
+    rec.RunContextUntil(YOGI_BEV_CONNECT_FINISHED, branch_b, YOGI_OK);
+  }
+};
+
+TEST_F(ConnectionManagerTest, AdvertisingIPv4) {
+  TestAdvertising("239.255.0.1");
 }
 
-TEST_F(ConnectionManagerTest, ConnectNormally) {
-  void* branch_a = CreateBranch(context_, "a");
-  void* branch_b = CreateBranch(context_, "b");
+TEST_F(ConnectionManagerTest, AdvertisingIPv6) {
+  TestAdvertising("ff02::8000:2439");
+}
 
-  BranchEventRecorder rec(context_, branch_);
-  rec.RunContextUntil(YOGI_BEV_CONNECT_FINISHED, branch_a, YOGI_OK);
-  rec.RunContextUntil(YOGI_BEV_CONNECT_FINISHED, branch_b, YOGI_OK);
+TEST_F(ConnectionManagerTest, ConnectNormallyIPv4) {
+  TestConnectNormally("239.255.0.1");
+}
+
+TEST_F(ConnectionManagerTest, ConnectNormallyIPv6) {
+  TestConnectNormally("ff02::8000:2439");
 }
 
 TEST_F(ConnectionManagerTest, DuplicateBranchName) {
