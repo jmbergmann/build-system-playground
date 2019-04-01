@@ -182,6 +182,9 @@ enum class ErrorCode {
 
   /// Joining UDP multicast group failed
   kJoinMulticastGroupFailed = -45,
+
+  /// Enumerating network interfaces failed
+  kEnumerateNetworkInterfacesFailed = -46
 };
 
 template <>
@@ -233,6 +236,7 @@ inline std::string ToString<ErrorCode>(const ErrorCode& ec) {
     _YOGI_TO_STRING_ENUM_CASE(ErrorCode, kOperationNotRunning)
     _YOGI_TO_STRING_ENUM_CASE(ErrorCode, kInvalidUserMsgPack)
     _YOGI_TO_STRING_ENUM_CASE(ErrorCode, kJoinMulticastGroupFailed)
+    _YOGI_TO_STRING_ENUM_CASE(ErrorCode, kEnumerateNetworkInterfacesFailed)
   }
 
   bool should_never_get_here = false;
