@@ -30,7 +30,9 @@ std::chrono::nanoseconds ExtractDuration(const nlohmann::json& json,
     return (std::chrono::nanoseconds::max)();
   } else if (seconds < 0) {
     return (std::chrono::nanoseconds::max)();
-    // TODO: Throw exception with additional information
+    throw api::DescriptiveError(YOGI_ERR_CONFIG_NOT_VALID)
+        << "Invalid duration value in \"" << key
+        << "\". Valid values are >= 0 or -1 for infinity.";
   }
 
   auto ns = static_cast<long long>(seconds * 1e9f);
@@ -50,14 +52,14 @@ std::vector<std::string> ExtractArrayOfStrings(const nlohmann::json& json,
   }
 
   if (!json_vec.is_array()) {
-    return v;
-    // TODO: Throw exception
+    throw api::DescriptiveError(YOGI_ERR_CONFIG_NOT_VALID)
+        << "Configuration value \"" << key << "\" is not an array.";
   }
 
   for (auto& elem : json_vec) {
     if (!elem.is_string()) {
-      continue;
-      // TODO: Throw exception
+      throw api::DescriptiveError(YOGI_ERR_CONFIG_NOT_VALID)
+          << "A value in array \"" << key << "\" is not a string.";
     }
 
     v.push_back(elem.get<std::string>());
