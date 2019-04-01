@@ -3,7 +3,6 @@
     {
       "name": "Mac",
       "includePath": [
-        "/usr/include",
         "/usr/local/include",
         "~/Projects/vcpkg/installed/x64-osx/include",
         "${workspaceRoot}/yogi-core/include",
@@ -13,7 +12,6 @@
       "intelliSenseMode": "clang-x64",
       "browse": {
         "path": [
-          "/usr/include",
           "/usr/local/include",
           "${workspaceRoot}/yogi-core/include",
           "${workspaceRoot}/yogi-cpp/include"
