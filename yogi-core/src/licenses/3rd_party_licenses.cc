@@ -16,8 +16,8 @@
  */
 
 #include "licenses.h"
+#include "../utils/algorithm.h"
 
-#include <algorithm>
 #include <string>
 
 namespace licenses {
@@ -232,7 +232,7 @@ const std::string k3rdPartyLicenses = ([] {
   for (const char* license : licenses) {
     auto tmp = std::string(license);
     tmp.erase(0, tmp.find('\n') + 1);
-    tmp.erase(std::remove(tmp.begin(), tmp.end(), '\r'), tmp.end());
+    utils::remove_erase(tmp, '\r');
     s += tmp;
     s += "\n\n";
   }

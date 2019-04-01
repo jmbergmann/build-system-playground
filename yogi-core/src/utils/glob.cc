@@ -16,13 +16,13 @@
  */
 
 #include "glob.h"
+#include "../utils/algorithm.h"
 
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/algorithm/string/replace.hpp>
 #include <boost/filesystem.hpp>
 #include <vector>
-#include <algorithm>
 #include <regex>
 #include <stdexcept>
 
@@ -76,8 +76,8 @@ std::regex GlobExpressionToRegex(std::string pattern) {
 }
 
 void RecursivelyFindFiles(std::vector<std::string>* filenames,
-                            const fs::path& path,
-                            std::vector<std::string> pattern_parts) {
+                          const fs::path& path,
+                          std::vector<std::string> pattern_parts) {
   std::regex regex(GlobExpressionToRegex(pattern_parts.front()));
 
   for (fs::directory_iterator it(path); it != fs::directory_iterator(); ++it) {
@@ -137,9 +137,9 @@ std::vector<std::string> GlobSinglePattern(const std::string& pattern) {
 }
 
 void MergeVectors(std::vector<std::string>* filenames,
-                   const std::vector<std::string>& new_filenames) {
+                  const std::vector<std::string>& new_filenames) {
   for (auto& filename : new_filenames) {
-    auto it = std::find(filenames->begin(), filenames->end(), filename);
+    auto it = utils::find(*filenames, filename);
     if (it != filenames->end()) {
       // move filename to end of vector
       std::rotate(it, it + 1, filenames->end());
@@ -157,7 +157,8 @@ std::vector<std::string> Glob(const std::vector<std::string>& patterns) {
   for (auto& pattern : patterns) {
     auto new_filenames = GlobSinglePattern(pattern);
     if (new_filenames.empty()) {
-      throw std::runtime_error("Pattern \"" + pattern + "\" did not match any files");
+      throw std::runtime_error("Pattern \"" + pattern +
+                               "\" did not match any files");
     }
 
     MergeVectors(&filenames, new_filenames);

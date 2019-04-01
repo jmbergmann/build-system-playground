@@ -17,8 +17,8 @@
 
 #include "../common.h"
 #include "../../src/utils/system.h"
+#include "../../src/utils/algorithm.h"
 
-#include <algorithm>
 #include <regex>
 
 TEST(SystemTest, GetHostname) { EXPECT_FALSE(utils::GetHostname().empty()); }
@@ -46,9 +46,8 @@ TEST(SystemTest, GetNetworkInterfaces) {
       EXPECT_TRUE(std::regex_match(info.mac, m, re)) << "String: " << info.mac;
     }
 
-    bool is_loopback =
-        std::count_if(info.addresses.begin(), info.addresses.end(),
-                      [](auto& addr) { return addr.is_loopback(); }) > 0;
+    bool is_loopback = utils::contains_if(
+        info.addresses, [](auto& addr) { return addr.is_loopback(); });
     EXPECT_EQ(is_loopback, info.is_loopback);
     localhost_found |= is_loopback;
   }
@@ -68,9 +67,8 @@ TEST(SystemTest, GetFilteredNetworkInterfaces) {
     ASSERT_GT(ifs.size(), 1)
         << "Make sure you have an active LAN or Wi-Fi connection!";
 
-    auto if_it = std::find_if(ifs.begin(), ifs.end(), [](auto& info) {
-      return !info.is_loopback && !info.mac.empty();
-    });
+    auto if_it = utils::find_if(
+        ifs, [](auto& info) { return !info.is_loopback && !info.mac.empty(); });
     ASSERT_NE(if_it, ifs.end()) << "No network interface found that has a MAC "
                                    "and that is not a loopback interface.";
     auto ifc = *if_it;

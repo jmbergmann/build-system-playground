@@ -17,13 +17,12 @@
 
 #include "system.h"
 #include "../api/errors.h"
+#include "../utils/algorithm.h"
 
 #include <boost/asio/ip/host_name.hpp>
 #include <boost/algorithm/string.hpp>
-#include <algorithm>
 
 #include <memory>
-#include <algorithm>
 #include <cstdio>
 
 #ifdef _WIN32
@@ -83,18 +82,14 @@ void RemoveUnneededIpv6LoopbackAddresses(
     if (!info.is_loopback) continue;
 
     bool has_proper_v6_addr =
-        std::find_if(info.addresses.begin(), info.addresses.end(),
-                     [](auto& addr) {
-                       return addr.is_v6() && addr.to_v6().scope_id() != 0;
-                     }) != info.addresses.end();
+        utils::contains_if(info.addresses, [](auto& addr) {
+          return addr.is_v6() && addr.to_v6().scope_id() != 0;
+        });
     if (!has_proper_v6_addr) continue;
 
-    info.addresses.erase(
-        std::remove_if(info.addresses.begin(), info.addresses.end(),
-                       [](auto& addr) {
-                         return addr.is_v6() && addr.to_v6().scope_id() == 0;
-                       }),
-        info.addresses.end());
+    utils::remove_erase_if(info.addresses, [](auto& addr) {
+      return addr.is_v6() && addr.to_v6().scope_id() == 0;
+    });
   }
 }
 
@@ -204,9 +199,8 @@ std::vector<NetworkInterfaceInfo> GetNetworkInterfaces() {
     if_addr_list.reset(p);
 
     for (auto ifa = if_addr_list.get(); ifa != nullptr; ifa = ifa->ifa_next) {
-      auto info = std::find_if(ifs.begin(), ifs.end(), [&](auto& info) {
-        return info.name == ifa->ifa_name;
-      });
+      auto info = utils::find_if(
+          ifs, [&](auto& info) { return info.name == ifa->ifa_name; });
 
       if (info == ifs.end()) {
         info = ifs.insert(ifs.end(), NetworkInterfaceInfo{});
@@ -274,12 +268,9 @@ std::vector<utils::NetworkInterfaceInfo> GetFilteredNetworkInterfaces(
       if (!all && !same_name && !same_mac && !both_are_localhost) continue;
 
       auto ifc = info;
-      ifc.addresses.erase(
-          std::remove_if(ifc.addresses.begin(), ifc.addresses.end(),
-                         [&](auto& addr) {
-                           return addr.is_v6() != (protocol == protocol.v6());
-                         }),
-          ifc.addresses.end());
+      utils::remove_erase_if(ifc.addresses, [&](auto& addr) {
+        return addr.is_v6() != (protocol == protocol.v6());
+      });
 
       if (!ifc.addresses.empty()) {
         ifs.push_back(ifc);

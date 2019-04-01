@@ -25,7 +25,6 @@
 #include <boost/optional/optional_io.hpp>
 #include <sstream>
 #include <fstream>
-#include <algorithm>
 
 namespace po = boost::program_options;
 

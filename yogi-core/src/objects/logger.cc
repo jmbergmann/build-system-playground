@@ -20,7 +20,6 @@
 #include "../utils/system.h"
 
 #include <boost/algorithm/string.hpp>
-#include <algorithm>
 #include <stdexcept>
 
 using namespace std::string_literals;

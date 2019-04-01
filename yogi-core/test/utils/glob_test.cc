@@ -17,10 +17,10 @@
 
 #include "../common.h"
 #include "../../src/utils/glob.h"
+#include "../../src/utils/algorithm.h"
 
 #include <boost/filesystem.hpp>
 #include <fstream>
-#include <algorithm>
 
 namespace fs = boost::filesystem;
 
@@ -53,19 +53,16 @@ struct GlobTest : public TestFixture {
     EXPECT_EQ(expectedFilenames.size(), filenames.size());
 
     for (auto& filename : expectedFilenames) {
-      bool found =
-          std::find_if(filenames.begin(), filenames.end(), [&](auto& s) {
-            return fs::equivalent(filename, s);
-          }) != filenames.end();
+      bool found = utils::contains_if(
+          filenames, [&](auto& s) { return fs::equivalent(filename, s); });
       EXPECT_TRUE(found) << "Filename '" << filename
                          << "' expected but not found by glob()";
     }
 
     for (auto& filename : filenames) {
-      bool found = std::find_if(expectedFilenames.begin(),
-                                expectedFilenames.end(), [&](auto& s) {
-                                  return fs::equivalent(filename, s);
-                                }) != expectedFilenames.end();
+      bool found = utils::contains_if(expectedFilenames, [&](auto& s) {
+        return fs::equivalent(filename, s);
+      });
       EXPECT_TRUE(found) << "Filename '" << filename
                          << "' unexpectedly found by glob()";
     }

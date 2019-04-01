@@ -17,6 +17,7 @@
 
 #include "../common.h"
 #include "../../src/utils/system.h"
+#include "../../src/utils/algorithm.h"
 #include "../../src/api/constants.h"
 
 #include <nlohmann/json.hpp>
@@ -165,8 +166,7 @@ TEST_F(BranchTest, GetInfoJson) {
   ASSERT_FALSE(addrs.empty());
   EXPECT_TRUE(addrs[0].is_string());
 
-  bool loopback_found = std::count_if(ifs.begin(), ifs.end(), [](auto& info) {
-                          return info["is_loopback"].template get<bool>();
-                        }) > 0;
+  bool loopback_found = utils::contains_if(
+      ifs, [](auto& info) { return info["is_loopback"].template get<bool>(); });
   EXPECT_TRUE(loopback_found);
 }

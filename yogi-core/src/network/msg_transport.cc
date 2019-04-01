@@ -16,6 +16,7 @@
  */
 
 #include "msg_transport.h"
+#include "../utils/algorithm.h"
 
 namespace network {
 namespace internal {
@@ -105,8 +106,8 @@ bool MessageTransport::CancelSend(OperationTag tag) {
   YOGI_ASSERT(tag != 0);
 
   std::lock_guard<std::mutex> lock(tx_mutex_);
-  auto it = std::find_if(pending_sends_.begin(), pending_sends_.end(),
-                         [&](auto& ps) { return ps.tag == tag; });
+  auto it =
+      utils::find_if(pending_sends_, [&](auto& ps) { return ps.tag == tag; });
 
   if (it == pending_sends_.end()) return false;
 
@@ -352,11 +353,8 @@ void MessageTransport::HandleReceiveError(const api::Error& err) {
 
 void MessageTransport::CheckOperationTagIsNotUsed(OperationTag tag) {
   YOGI_ASSERT(tag != 0);
-
-  auto& v = pending_sends_;
-  YOGI_ASSERT((std::find_if(v.begin(), v.end(), [&](auto& ps) {
-                return ps.tag == tag;
-              })) == v.end());
+  YOGI_ASSERT(!utils::contains_if(pending_sends_,
+                                  [&](auto& ps) { return ps.tag == tag; }));
 }
 
 const objects::LoggerPtr MessageTransport::logger_ =

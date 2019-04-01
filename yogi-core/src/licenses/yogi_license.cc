@@ -16,14 +16,14 @@
  */
 
 #include "licenses.h"
+#include "../utils/algorithm.h"
 
-#include <algorithm>
 #include <string>
 
 namespace licenses {
 
 constexpr const char* parts[] = {
-R"raw(
+    R"raw(
                       GNU GENERAL PUBLIC LICENSE
                        Version 3, 29 June 2007
 
@@ -315,7 +315,8 @@ in one of these ways:
     you inform other peers where the object code and Corresponding
     Source of the work are being offered to the general public at no
     charge under subsection 6d.
-)raw", R"raw(
+)raw",
+    R"raw(
   A separable portion of the object code, whose source code is excluded
 from the Corresponding Source as a System Library, need not be
 included in conveying the object code work.
@@ -613,7 +614,8 @@ author or copyright holder as a result of your choosing to follow a
 later version.
 
   15. Disclaimer of Warranty.
-)raw", R"raw(
+)raw",
+    R"raw(
   THERE IS NO WARRANTY FOR THE PROGRAM, TO THE EXTENT PERMITTED BY
 APPLICABLE LAW.  EXCEPT WHEN OTHERWISE STATED IN WRITING THE COPYRIGHT
 HOLDERS AND/OR OTHER PARTIES PROVIDE THE PROGRAM "AS IS" WITHOUT WARRANTY
@@ -698,8 +700,7 @@ may consider it more useful to permit linking proprietary applications with
 the library.  If this is what you want to do, use the GNU Lesser General
 Public License instead of this License.  But first, please read
 <http://www.gnu.org/philosophy/why-not-lgpl.html>.
-)raw"
-};
+)raw"};
 
 // NOLINTNEXTLINE(cert-err58-cpp)
 const std::string kYogiLicense = ([] {
@@ -709,7 +710,7 @@ const std::string kYogiLicense = ([] {
   }
 
   s.erase(0, s.find('\n') + 1);
-  s.erase(std::remove(s.begin(), s.end(), '\r'), s.end());
+  utils::remove_erase(s, '\r');
 
   return s;
 })();

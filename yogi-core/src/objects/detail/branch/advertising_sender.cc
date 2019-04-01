@@ -16,6 +16,7 @@
  */
 
 #include "advertising_sender.h"
+#include "../../../utils/algorithm.h"
 
 #include <boost/asio/ip/multicast.hpp>
 
@@ -109,8 +110,7 @@ void AdvertisingSender::SendAdvertisements() {
                                         << ". No more advertising messages "
                                            "will be sent over this interface.");
 
-            self->sockets_.erase(std::find(self->sockets_.begin(),
-                                           self->sockets_.end(), socket));
+            self->sockets_.erase(utils::find(self->sockets_, socket));
           }
 
           --self->active_send_ops_;

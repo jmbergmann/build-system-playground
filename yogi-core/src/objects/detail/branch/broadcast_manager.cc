@@ -16,8 +16,7 @@
  */
 
 #include "broadcast_manager.h"
-
-#include <algorithm>
+#include "../../../utils/algorithm.h"
 
 namespace objects {
 namespace detail {
@@ -77,7 +76,7 @@ BroadcastManager::SendBroadcastOperationId BroadcastManager::SendBroadcastAsync(
 bool BroadcastManager::CancelSendBroadcast(SendBroadcastOperationId oid) {
   {
     std::lock_guard<std::mutex> lock(oids_mutex_);
-    auto it = std::find(active_oids_.begin(), active_oids_.end(), oid);
+    auto it = utils::find(active_oids_, oid);
     if (it == active_oids_.end()) return false;
     active_oids_.erase(it);
   }
@@ -148,7 +147,7 @@ void BroadcastManager::StoreOidForLaterOrCallHandlerNow(
 
 bool BroadcastManager::RemoveActiveOid(SendBroadcastOperationId oid) {
   std::lock_guard<std::mutex> lock(oids_mutex_);
-  auto it = std::find(active_oids_.begin(), active_oids_.end(), oid);
+  auto it = utils::find(active_oids_, oid);
   if (it != active_oids_.end()) {
     active_oids_.erase(it);
     return true;
