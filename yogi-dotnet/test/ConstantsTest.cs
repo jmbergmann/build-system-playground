@@ -51,6 +51,13 @@ namespace test
         }
 
         [Fact]
+        public void DefaultAdvInterfaces()
+        {
+            Assert.IsType<string>(Yogi.Constants.DefaultAdvInterfaces);
+            Assert.True(Yogi.Constants.DefaultAdvInterfaces.Length > 1);
+        }
+
+        [Fact]
         public void DefaultAdvAddress()
         {
             Assert.IsType<string>(Yogi.Constants.DefaultAdvAddress);

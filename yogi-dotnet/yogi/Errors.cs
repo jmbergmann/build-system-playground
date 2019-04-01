@@ -175,6 +175,9 @@ public static partial class Yogi
 
         /// <summary>Joining UDP multicast group failed.</summary>
         JoinMulticastGroupFailed = -45,
+
+        /// <summary>Enumerating network interfaces failed.</summary>
+        EnumerateNetworkInterfacesFailed = -46,
     }
 
     /// <summary>
@@ -437,10 +440,12 @@ public static partial class Yogi
         if (res < 0)
         {
             var s = err.ToString();
-            if (s.Length > 0) {
+            if (s.Length > 0)
+            {
                 throw new DescriptiveFailureException((ErrorCode)res, err.ToString());
             }
-            else {
+            else
+            {
                 throw new FailureException((ErrorCode)res);
             }
         }
