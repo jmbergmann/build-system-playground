@@ -36,6 +36,14 @@ class TestCase(unittest.TestCase):
         if not m:
             raise Exception(
                 "Macro {} not found in yogi_core.h".format(macro_name))
+
+        if m.group(1).startswith('('):
+            regex = re.compile("#define {} (\\(.+\\)).*".format(macro_name))
+            m = re.search(regex, yogi_core_h)
+            if not m:
+                raise Exception(
+                    "Cannot parse macro {} in yogi_core.h".format(macro_name))
+
         return eval(m.group(1))
 
     def assertEnumElementMatches(self, macro_prefix, elem):

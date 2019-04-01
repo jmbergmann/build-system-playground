@@ -2,6 +2,7 @@
 build/
 build-*/
 *.dll
+.DS_Store
 
 # IDEs
 .vs/

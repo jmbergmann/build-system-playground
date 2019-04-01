@@ -74,7 +74,8 @@ class TestBranches(TestCase):
         self.assertGreater(info.rx_queue_size, 1000)
 
         for key in info._info:
-            self.assertEqual(getattr(branch, key), info._info[key])
+            if key not in ["advertising_interfaces"]:
+                self.assertEqual(getattr(branch, key), info._info[key])
 
     def test_get_connected_branches(self):
         branch = yogi.Branch(self.context, '{"name":"My Branch"}')

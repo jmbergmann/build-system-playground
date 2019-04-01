@@ -68,6 +68,7 @@ class ErrorCode(IntEnum):
     OPERATION_NOT_RUNNING = -43
     INVALID_USER_MSGPACK = -44
     JOIN_MULTICAST_GROUP_FAILED = -45
+    ENUMERATE_NETWORK_INTERFACES_FAILED = -46
 
 
 yogi.YOGI_GetErrorString.restype = c_char_p
@@ -177,6 +178,7 @@ class FailureException(Exception):
 
     This exception type is used for failures without a detailed description.
     """
+
     def __init__(self, ec: ErrorCode):
         """Constructs the exception.
 
@@ -197,6 +199,7 @@ class DescriptiveFailureException(FailureException):
     This exception type is used for failures that have detailed information
     available
     """
+
     def __init__(self, ec: ErrorCode, description: str):
         """Constructs the exception.
 

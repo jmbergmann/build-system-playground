@@ -44,6 +44,11 @@ class TestConstants(TestCase):
         self.assertGreaterEqual(
             c, self.get_core_macro("YOGI_HDR_VERSION_PATCH"))
 
+    def test_default_adv_interfaces(self):
+        c = yogi.Constants.DEFAULT_ADV_INTERFACES
+        self.assertIsInstance(c, str)
+        self.assertGreater(len(c), 1)
+
     def test_default_adv_address(self):
         c = yogi.Constants.DEFAULT_ADV_ADDRESS
         self.assertIsInstance(c, str)
