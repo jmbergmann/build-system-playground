@@ -43,6 +43,7 @@ TEST(ConfigurationTest, CommandLineOptions) {
   CHECK_ENUM_ELEMENT(CommandLineOptions, kBranchNetwork,     YOGI_CLO_BRANCH_NETWORK);
   CHECK_ENUM_ELEMENT(CommandLineOptions, kBranchPassword,    YOGI_CLO_BRANCH_PASSWORD);
   CHECK_ENUM_ELEMENT(CommandLineOptions, kBranchPath,        YOGI_CLO_BRANCH_PATH);
+  CHECK_ENUM_ELEMENT(CommandLineOptions, kBranchAdvIfs,      YOGI_CLO_BRANCH_ADV_IFS);
   CHECK_ENUM_ELEMENT(CommandLineOptions, kBranchAdvAddr,     YOGI_CLO_BRANCH_ADV_ADDR);
   CHECK_ENUM_ELEMENT(CommandLineOptions, kBranchAdvPort,     YOGI_CLO_BRANCH_ADV_PORT);
   CHECK_ENUM_ELEMENT(CommandLineOptions, kBranchAdvInt,      YOGI_CLO_BRANCH_ADV_INT);
@@ -58,52 +59,75 @@ TEST(ConfigurationTest, CommandLineOptions) {
 
   auto options = yogi::CommandLineOptions::kNone;
   EXPECT_EQ(yogi::ToString(options), "kNone");
+
   options = options | yogi::CommandLineOptions::kLogging;
   EXPECT_EQ(yogi::ToString(options), "kLogging");
+
   options |= yogi::CommandLineOptions::kBranchName;
   EXPECT_EQ(yogi::ToString(options), "kLogging | kBranchName");
+
   options |= yogi::CommandLineOptions::kBranchDescription;
   EXPECT_EQ(yogi::ToString(options),
             "kLogging | kBranchName | kBranchDescription");
+
   options |= yogi::CommandLineOptions::kBranchNetwork;
   EXPECT_EQ(yogi::ToString(options),
             "kLogging | kBranchName | kBranchDescription | kBranchNetwork");
+
   options |= yogi::CommandLineOptions::kBranchPassword;
   EXPECT_EQ(yogi::ToString(options),
             "kLogging | kBranchName | kBranchDescription | kBranchNetwork | "
             "kBranchPassword");
+
   options |= yogi::CommandLineOptions::kBranchPath;
   EXPECT_EQ(yogi::ToString(options),
             "kLogging | kBranchName | kBranchDescription | kBranchNetwork | "
             "kBranchPassword | kBranchPath");
+
+  options |= yogi::CommandLineOptions::kBranchAdvIfs;
+  EXPECT_EQ(yogi::ToString(options),
+            "kLogging | kBranchName | kBranchDescription | kBranchNetwork | "
+            "kBranchPassword | kBranchPath | kBranchAdvIfs");
+
   options |= yogi::CommandLineOptions::kBranchAdvAddr;
   EXPECT_EQ(yogi::ToString(options),
             "kLogging | kBranchName | kBranchDescription | kBranchNetwork | "
-            "kBranchPassword | kBranchPath | kBranchAdvAddr");
+            "kBranchPassword | kBranchPath | kBranchAdvIfs | kBranchAdvAddr");
+
   options |= yogi::CommandLineOptions::kBranchAdvPort;
   EXPECT_EQ(yogi::ToString(options),
             "kLogging | kBranchName | kBranchDescription | kBranchNetwork | "
-            "kBranchPassword | kBranchPath | kBranchAdvAddr | kBranchAdvPort");
+            "kBranchPassword | kBranchPath | kBranchAdvIfs | kBranchAdvAddr | "
+            "kBranchAdvPort");
+
   options |= yogi::CommandLineOptions::kBranchAdvInt;
   EXPECT_EQ(yogi::ToString(options),
             "kLogging | kBranchName | kBranchDescription | kBranchNetwork | "
-            "kBranchPassword | kBranchPath | kBranchAdvAddr | kBranchAdvPort | "
+            "kBranchPassword | kBranchPath | kBranchAdvIfs | kBranchAdvAddr | "
+            "kBranchAdvPort | "
             "kBranchAdvInt");
+
   options |= yogi::CommandLineOptions::kBranchTimeout;
   EXPECT_EQ(yogi::ToString(options),
             "kLogging | kBranchName | kBranchDescription | kBranchNetwork | "
-            "kBranchPassword | kBranchPath | kBranchAdvAddr | kBranchAdvPort | "
+            "kBranchPassword | kBranchPath | kBranchAdvIfs | kBranchAdvAddr | "
+            "kBranchAdvPort | "
             "kBranchAdvInt | kBranchTimeout");
+
   options |= yogi::CommandLineOptions::kBranchGhostMode;
   EXPECT_EQ(yogi::ToString(options), "kLogging | kBranchAll");
+
   options |= yogi::CommandLineOptions::kFiles;
   EXPECT_EQ(yogi::ToString(options), "kLogging | kBranchAll | kFiles");
+
   options |= yogi::CommandLineOptions::kFilesRequired;
   EXPECT_EQ(yogi::ToString(options),
             "kLogging | kBranchAll | kFiles | kFilesRequired");
+
   options |= yogi::CommandLineOptions::kOverrides;
   EXPECT_EQ(yogi::ToString(options),
             "kLogging | kBranchAll | kFiles | kFilesRequired | kOverrides");
+
   options |= yogi::CommandLineOptions::kVariables;
   EXPECT_EQ(yogi::ToString(options), "kAll");
 }

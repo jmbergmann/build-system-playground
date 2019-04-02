@@ -50,6 +50,7 @@ class CommandLineOptions(IntEnum):
         BRANCH_NETWORK     Include network name configuration.
         BRANCH_PASSWORD    Include network password configuration.
         BRANCH_PATH        Include branch path configuration.
+        BRANCH_ADV_IFS     Include branch advertising interfaces configuration.
         BRANCH_ADV_ADDR    Include branch advertising address configuration.
         BRANCH_ADV_PORT    Include branch advertising port configuration.
         BRANCH_ADV_INT     Include branch advertising interval configuration.
@@ -71,17 +72,18 @@ class CommandLineOptions(IntEnum):
     BRANCH_NETWORK = (1 << 3)
     BRANCH_PASSWORD = (1 << 4)
     BRANCH_PATH = (1 << 5)
-    BRANCH_ADV_ADDR = (1 << 6)
-    BRANCH_ADV_PORT = (1 << 7)
-    BRANCH_ADV_INT = (1 << 8)
-    BRANCH_TIMEOUT = (1 << 9)
-    BRANCH_GHOST_MODE = (1 << 10)
-    FILES = (1 << 11)
-    FILES_REQUIRED = (1 << 12)
-    OVERRIDES = (1 << 13)
-    VARIABLES = (1 << 14)
+    BRANCH_ADV_IFS = (1 << 6)
+    BRANCH_ADV_ADDR = (1 << 7)
+    BRANCH_ADV_PORT = (1 << 8)
+    BRANCH_ADV_INT = (1 << 9)
+    BRANCH_TIMEOUT = (1 << 10)
+    BRANCH_GHOST_MODE = (1 << 11)
+    FILES = (1 << 12)
+    FILES_REQUIRED = (1 << 13)
+    OVERRIDES = (1 << 14)
+    VARIABLES = (1 << 15)
     BRANCH_ALL = BRANCH_NAME | BRANCH_DESCRIPTION | BRANCH_NETWORK \
-        | BRANCH_PASSWORD | BRANCH_PATH | BRANCH_ADV_ADDR \
+        | BRANCH_PASSWORD | BRANCH_PATH | BRANCH_ADV_IFS | BRANCH_ADV_ADDR \
         | BRANCH_ADV_PORT | BRANCH_ADV_INT | BRANCH_TIMEOUT \
         | BRANCH_GHOST_MODE
     ALL = LOGGING | BRANCH_ALL | FILES | FILES_REQUIRED | OVERRIDES \

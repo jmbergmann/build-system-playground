@@ -128,37 +128,41 @@ public static partial class Yogi
         /// <summary>Include branch path configuration.</summary>
         BranchPath = (1 << 5),
 
+        /// <summary>Include branch advertising interfaces configuration.</summary>
+        BranchAdvIfs = (1 << 6),
+
         /// <summary>Include branch advertising address configuration.</summary>
-        BranchAdvAddr = (1 << 6),
+        BranchAdvAddr = (1 << 7),
 
         /// <summary>Include branch advertising port configuration.</summary>
-        BranchAdvPort = (1 << 7),
+        BranchAdvPort = (1 << 8),
 
         /// <summary>Include branch advertising interval configuration.</summary>
-        BranchAdvInt = (1 << 8),
+        BranchAdvInt = (1 << 9),
 
         /// <summary>Include branch timeout configuration.</summary>
-        BranchTimeout = (1 << 9),
+        BranchTimeout = (1 << 10),
 
         /// <summary>Include ghost mode configuration.</summary>
-        BranchGhostMode = (1 << 10),
+        BranchGhostMode = (1 << 11),
 
         /// <summary>Parse configuration files given on the command line.</summary>
-        Files = (1 << 11),
+        Files = (1 << 12),
 
         /// <summary>Same as the Files option but at least one configuration file must be
         /// given.</summary>
-        FilesRequired = (1 << 12),
+        FilesRequired = (1 << 13),
 
         /// <summary>Allow overriding arbitrary configuration sections.</summary>
-        Overrides = (1 << 13),
+        Overrides = (1 << 14),
 
         /// <summary>Allow setting variables via a dedicated switch.</summary>
-        Variables = (1 << 14),
+        Variables = (1 << 15),
 
         /// <summary>Combination of all branch flags.</summary>
         BranchAll = BranchName | BranchDescription | BranchNetwork | BranchPassword | BranchPath
-            | BranchAdvAddr | BranchAdvPort | BranchAdvInt | BranchTimeout | BranchGhostMode,
+            | BranchAdvIfs | BranchAdvAddr | BranchAdvPort | BranchAdvInt | BranchTimeout
+            | BranchGhostMode,
 
         /// <summary>Combination of all flags.</summary>
         All = Logging | BranchAll | Files | FilesRequired | Overrides | Variables,

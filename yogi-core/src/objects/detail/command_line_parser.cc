@@ -160,10 +160,19 @@ void CommandLineParser::AddBranchOptions() {
     );
   }
 
+  if (options_ & api::kBranchAdvInterfacesOption) {
+    visible_options_.add_options()(
+      "adv-ifs", po::value<std::vector<std::string>>()->notifier([&](auto& val) {
+        direct_json_["branch"]["advertising_interfaces"] = val;
+      }),
+      "Branch advertising interfaces (e.g. --adv-ifs 'eth0' --adv-ifs 'localhost' --adv-ifs '11:22:33:44:55:66')"
+    );
+  }
+
   if (options_ & api::kBranchAdvAddressOption) {
     visible_options_.add_options()(
       "adv-addr", po::value<std::string>()->notifier([&](auto& val) {
-        direct_json_["branch"]["advertising-address"] = val;
+        direct_json_["branch"]["advertising_address"] = val;
       }),
       "Branch advertising address (e.g. --adv-addr 'ff02::8000:2439')"
     );
@@ -172,7 +181,7 @@ void CommandLineParser::AddBranchOptions() {
   if (options_ & api::kBranchAdvPortOption) {
     visible_options_.add_options()(
       "adv-port", po::value<unsigned>()->notifier([&](auto& val) {
-        direct_json_["branch"]["advertising-port"] = val;
+        direct_json_["branch"]["advertising_port"] = val;
       }),
       "Branch advertising port (e.g. --adv-port 13531"
     );
@@ -181,7 +190,7 @@ void CommandLineParser::AddBranchOptions() {
   if (options_ & api::kBranchAdvIntervalOption) {
     visible_options_.add_options()(
       "adv-int", po::value<float>()->notifier([&](auto& val) {
-        direct_json_["branch"]["advertising-interval"] = val;
+        direct_json_["branch"]["advertising_interval"] = val;
       }),
       "Branch advertising interval in seconds (e.g. --adv-int 3.0)"
     );

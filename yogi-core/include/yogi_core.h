@@ -457,20 +457,24 @@
 //! Include the \c --path switch for setting the branch path
 #define YOGI_CLO_BRANCH_PATH (1 << 5)
 
+//! Include the \c --adv-interfaces switch for setting the branch advertising
+//! interfaces
+#define YOGI_CLO_BRANCH_ADV_IFS (1 << 6)
+
 //! Include the \c --adv-addr switch for setting the branch advertising address
-#define YOGI_CLO_BRANCH_ADV_ADDR (1 << 6)
+#define YOGI_CLO_BRANCH_ADV_ADDR (1 << 7)
 
 //! Include the \c --adv-port switch for setting the branch advertising port
-#define YOGI_CLO_BRANCH_ADV_PORT (1 << 7)
+#define YOGI_CLO_BRANCH_ADV_PORT (1 << 8)
 
 //! Include the \c --adv-int switch for setting the branch advertising interval
-#define YOGI_CLO_BRANCH_ADV_INT (1 << 8)
+#define YOGI_CLO_BRANCH_ADV_INT (1 << 9)
 
 //! Include the \c --timeout switch for setting the branch timeout
-#define YOGI_CLO_BRANCH_TIMEOUT (1 << 9)
+#define YOGI_CLO_BRANCH_TIMEOUT (1 << 10)
 
 //! Include the \c --ghost_mode switch for enabling ghost mode for the branch
-#define YOGI_CLO_BRANCH_GHOST_MODE (1 << 10)
+#define YOGI_CLO_BRANCH_GHOST_MODE (1 << 11)
 
 //! Parse configuration files given on the command line
 //!
@@ -478,10 +482,10 @@
 //! in two supplied configuration files, then the value from the rightmost file
 //! will be used. However, values given directly on the command line, i.e. not
 //! through files, have higher priority.
-#define YOGI_CLO_FILES (1 << 11)
+#define YOGI_CLO_FILES (1 << 12)
 
 //! Same as #YOGI_CLO_FILES but at least one configuration must be given
-#define YOGI_CLO_FILES_REQUIRED (1 << 12)
+#define YOGI_CLO_FILES_REQUIRED (1 << 13)
 
 //! Include the \c --override switch for overriding arbitrary configuration
 //! sections
@@ -493,18 +497,18 @@
 //!   Parameters supplied in this way override the same parameters in any
 //!   given configuration file. If the same parameter is set directly on the
 //!   command line multiple times, then the rightmost value is used.
-#define YOGI_CLO_OVERRIDES (1 << 13)
+#define YOGI_CLO_OVERRIDES (1 << 14)
 
 //! Include the \c --var switch for setting variables
-#define YOGI_CLO_VARIABLES (1 << 14)
+#define YOGI_CLO_VARIABLES (1 << 15)
 
 //! Combination of all branch flags
 #define YOGI_CLO_BRANCH_ALL                                                    \
   (YOGI_CLO_BRANCH_NAME | YOGI_CLO_BRANCH_DESCRIPTION |                        \
    YOGI_CLO_BRANCH_NETWORK | YOGI_CLO_BRANCH_PASSWORD | YOGI_CLO_BRANCH_PATH | \
-   YOGI_CLO_BRANCH_ADV_ADDR | YOGI_CLO_BRANCH_ADV_PORT |                       \
-   YOGI_CLO_BRANCH_ADV_INT | YOGI_CLO_BRANCH_TIMEOUT |                         \
-   YOGI_CLO_BRANCH_GHOST_MODE)
+   YOGI_CLO_BRANCH_ADV_IFS | YOGI_CLO_BRANCH_ADV_ADDR |                        \
+   YOGI_CLO_BRANCH_ADV_PORT | YOGI_CLO_BRANCH_ADV_INT |                        \
+   YOGI_CLO_BRANCH_TIMEOUT | YOGI_CLO_BRANCH_GHOST_MODE)
 
 //! Combination of all flags
 //!

@@ -156,19 +156,35 @@ TEST_F(CommandLineParserTest, BranchPathOption) {
                           "branch", "path");
 }
 
+TEST_F(CommandLineParserTest, BranchAdvertisingInterfacesOption) {
+  // clang-format off
+  CommandLine cmdline{
+    "--adv-ifs", "localhost",
+    "--adv-ifs", "wlan0",
+  };
+  // clang-format on
+
+  auto section = CheckParsingSucceeds(cmdline, api::kBranchAdvInterfacesOption,
+                                      "branch")["advertising_interfaces"];
+
+  std::cout << section << std::endl;
+  EXPECT_EQ(section[0].get<std::string>(), "localhost");
+  EXPECT_EQ(section[1].get<std::string>(), "wlan0");
+}
+
 TEST_F(CommandLineParserTest, BranchAdvertisingAddressOption) {
   CheckParsingSingleValue("--adv-addr", "0::0", api::kBranchAdvAddressOption,
-                          "branch", "advertising-address");
+                          "branch", "advertising_address");
 }
 
 TEST_F(CommandLineParserTest, BranchAdvertisingPortOption) {
   CheckParsingSingleValue("--adv-port", 12345, api::kBranchAdvPortOption,
-                          "branch", "advertising-port");
+                          "branch", "advertising_port");
 }
 
 TEST_F(CommandLineParserTest, BranchAdvertisingIntervalOption) {
   CheckParsingSingleValue("--adv-int", 3.5, api::kBranchAdvIntervalOption,
-                          "branch", "advertising-interval");
+                          "branch", "advertising_interval");
 }
 
 TEST_F(CommandLineParserTest, BranchTimeoutOption) {

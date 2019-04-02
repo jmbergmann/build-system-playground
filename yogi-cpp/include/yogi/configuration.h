@@ -111,38 +111,42 @@ enum class CommandLineOptions {
   /// Include branch path configuration.
   kBranchPath = (1 << 5),
 
+  /// Include branch advertising interfaces configuration.
+  kBranchAdvIfs = (1 << 6),
+
   /// Include branch advertising address configuration.
-  kBranchAdvAddr = (1 << 6),
+  kBranchAdvAddr = (1 << 7),
 
   /// Include branch advertising port configuration.
-  kBranchAdvPort = (1 << 7),
+  kBranchAdvPort = (1 << 8),
 
   /// Include branch advertising interval configuration.
-  kBranchAdvInt = (1 << 8),
+  kBranchAdvInt = (1 << 9),
 
   /// Include branch timeout configuration.
-  kBranchTimeout = (1 << 9),
+  kBranchTimeout = (1 << 10),
 
   /// Include ghost mode configuration.
-  kBranchGhostMode = (1 << 10),
+  kBranchGhostMode = (1 << 11),
 
   /// Parse configuration files given on the command line.
-  kFiles = (1 << 11),
+  kFiles = (1 << 12),
 
   /// Same as the Files option but at least one configuration file must be
   /// given.
-  kFilesRequired = (1 << 12),
+  kFilesRequired = (1 << 13),
 
   /// Allow overriding arbitrary configuration sections.
-  kOverrides = (1 << 13),
+  kOverrides = (1 << 14),
 
   /// Allow setting variables via a dedicated switch.
-  kVariables = (1 << 14),
+  kVariables = (1 << 15),
 
   /// Combination of all branch flags.
   kBranchAll = kBranchName | kBranchDescription | kBranchNetwork |
-               kBranchPassword | kBranchPath | kBranchAdvAddr | kBranchAdvPort |
-               kBranchAdvInt | kBranchTimeout | kBranchGhostMode,
+               kBranchPassword | kBranchPath | kBranchAdvIfs | kBranchAdvAddr |
+               kBranchAdvPort | kBranchAdvInt | kBranchTimeout |
+               kBranchGhostMode,
 
   /// Combination of all flags.
   kAll =
@@ -162,6 +166,7 @@ inline std::string ToString<CommandLineOptions>(
     _YOGI_TO_STRING_ENUM_CASE(CommandLineOptions, kBranchNetwork)
     _YOGI_TO_STRING_ENUM_CASE(CommandLineOptions, kBranchPassword)
     _YOGI_TO_STRING_ENUM_CASE(CommandLineOptions, kBranchPath)
+    _YOGI_TO_STRING_ENUM_CASE(CommandLineOptions, kBranchAdvIfs)
     _YOGI_TO_STRING_ENUM_CASE(CommandLineOptions, kBranchAdvAddr)
     _YOGI_TO_STRING_ENUM_CASE(CommandLineOptions, kBranchAdvPort)
     _YOGI_TO_STRING_ENUM_CASE(CommandLineOptions, kBranchAdvInt)
@@ -187,6 +192,7 @@ inline std::string ToString<CommandLineOptions>(
     _YOGI_TO_STRING_FLAG_APPENDER(options, CommandLineOptions, kBranchNetwork)
     _YOGI_TO_STRING_FLAG_APPENDER(options, CommandLineOptions, kBranchPassword)
     _YOGI_TO_STRING_FLAG_APPENDER(options, CommandLineOptions, kBranchPath)
+    _YOGI_TO_STRING_FLAG_APPENDER(options, CommandLineOptions, kBranchAdvIfs)
     _YOGI_TO_STRING_FLAG_APPENDER(options, CommandLineOptions, kBranchAdvAddr)
     _YOGI_TO_STRING_FLAG_APPENDER(options, CommandLineOptions, kBranchAdvPort)
     _YOGI_TO_STRING_FLAG_APPENDER(options, CommandLineOptions, kBranchAdvInt)

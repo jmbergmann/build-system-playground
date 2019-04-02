@@ -50,6 +50,7 @@ enum CommandLineOptions {
   kBranchNetworkOption = YOGI_CLO_BRANCH_NETWORK,
   kBranchPasswordOption = YOGI_CLO_BRANCH_PASSWORD,
   kBranchPathOption = YOGI_CLO_BRANCH_PATH,
+  kBranchAdvInterfacesOption = YOGI_CLO_BRANCH_ADV_IFS,
   kBranchAdvAddressOption = YOGI_CLO_BRANCH_ADV_ADDR,
   kBranchAdvPortOption = YOGI_CLO_BRANCH_ADV_PORT,
   kBranchAdvIntervalOption = YOGI_CLO_BRANCH_ADV_INT,
