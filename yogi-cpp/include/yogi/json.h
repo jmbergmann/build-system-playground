@@ -32,13 +32,19 @@
 #pragma GCC diagnostic ignored "-Wextra"
 #pragma GCC diagnostic ignored "-Wsign-conversion"
 
+#ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Weverything"
+#endif
 
 #include "3rd_party/nlohmann/json.hpp"
 
 #pragma GCC diagnostic pop
+
+#ifdef __clang__
 #pragma clang diagnostic pop
+#endif
+
 #endif
 
 namespace yogi {
