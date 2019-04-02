@@ -65,7 +65,9 @@ TEST(SystemTest, GetFilteredNetworkInterfaces) {
 
     ifs = utils::GetFilteredNetworkInterfaces({"all"}, protocol);
     ASSERT_GT(ifs.size(), 1)
-        << "Make sure you have an active LAN or Wi-Fi connection!";
+        << "Make sure you have an active LAN or Wi-Fi connection, otherwise "
+           "the test fails because it cannot find any network interfaces other "
+           "than the loopback interface.";
 
     auto if_it = utils::find_if(
         ifs, [](auto& info) { return !info.is_loopback && !info.mac.empty(); });
