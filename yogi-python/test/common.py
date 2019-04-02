@@ -31,7 +31,7 @@ with open(os.path.join(os.path.dirname(__file__),
 
 class TestCase(unittest.TestCase):
     def get_core_macro(self, macro_name: str) -> Union[str, int]:
-        regex = re.compile("#define {} ([^ \\s]+).*".format(macro_name))
+        regex = re.compile("#define {} ([^ \\s]*).*".format(macro_name))
         m = re.search(regex, yogi_core_h)
         if not m:
             raise Exception(

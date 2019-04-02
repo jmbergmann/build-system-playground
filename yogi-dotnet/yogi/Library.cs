@@ -17,6 +17,7 @@
 
 using System;
 using System.Runtime.InteropServices;
+using System.ComponentModel;
 
 public static partial class Yogi
 {
@@ -43,7 +44,15 @@ public static partial class Yogi
 
             IntPtr LibUtils.LoadLibrary(string fileName)
             {
-                return LoadLibrary(fileName);
+                var dll = LoadLibrary(fileName);
+
+                if (dll == IntPtr.Zero)
+                {
+                    var desc = new Win32Exception(Marshal.GetLastWin32Error()).Message;
+                    throw new DllNotFoundException($"Could not load library {filename}: " + desc);
+                }
+
+                return dll;
             }
 
             [DllImport("kernel32")]
@@ -60,7 +69,18 @@ public static partial class Yogi
         {
             public IntPtr LoadLibrary(string fileName)
             {
-                return dlopen(fileName, RTLD_NOW);
+                // clear previous errors if any
+                dlerror();
+
+                var res = dlopen(fileName, RTLD_NOW);
+                var errPtr = dlerror();
+                if (errPtr != IntPtr.Zero)
+                {
+                    throw new DllNotFoundException($"Could not load library {fileName}: "
+                        + Marshal.PtrToStringAnsi(errPtr));
+                }
+
+                return res;
             }
 
             public void FreeLibrary(IntPtr handle)
@@ -72,12 +92,15 @@ public static partial class Yogi
             {
                 // clear previous errors if any
                 dlerror();
+
                 var res = dlsym(dllHandle, name);
+
                 var errPtr = dlerror();
                 if (errPtr != IntPtr.Zero)
                 {
                     throw new System.Exception("dlsym: " + Marshal.PtrToStringAnsi(errPtr));
                 }
+
                 return res;
             }
 
@@ -121,10 +144,6 @@ public static partial class Yogi
             }
 
             dll = utils.LoadLibrary(filename);
-            if (dll == IntPtr.Zero)
-            {
-                throw new DllNotFoundException($"Could not load library {filename}");
-            }
         }
 
         internal static T GetDelegateForFunction<T>(string functionName) where T : class

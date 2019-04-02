@@ -39,11 +39,21 @@ namespace test
 
         public static string GetCoreMacroString(string macroName)
         {
-            var regex = new Regex($"#define {macroName} ([^ \\s]+).*");
+            var regex = new Regex($"#define {macroName} ([^ \\s]*).*");
             Match m = regex.Match(yogiCoreH);
             if (!m.Success)
             {
                 throw new IOException($"Macro {macroName} not found in yogi_core.h");
+            }
+
+            if (m.Groups[1].Value.StartsWith('('))
+            {
+                regex = new Regex($"#define {macroName} (\\(.+\\)).*");
+                m = regex.Match(yogiCoreH);
+                if (!m.Success)
+                {
+                    throw new IOException($"Cannot parse macro {macroName} in yogi_core.h");
+                }
             }
 
             var str = m.Groups[1].Value;
