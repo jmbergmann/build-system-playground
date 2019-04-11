@@ -32,11 +32,11 @@ api::Result BroadcastManager::SendBroadcast(const network::UserData& user_data,
   api::Result result;
   SendBroadcastAsync(user_data, block, [&](auto& res, auto) {
     result = res;
-    this->sync_cv_.notify_all();
+    this->tx_sync_cv_.notify_all();
   });
 
-  std::unique_lock<std::mutex> lock(sync_mutex_);
-  sync_cv_.wait(lock, [&] { return result != api::Result(); });
+  std::unique_lock<std::mutex> lock(tx_sync_mutex_);
+  tx_sync_cv_.wait(lock, [&] { return result != api::Result(); });
 
   return result;
 }
@@ -75,10 +75,10 @@ BroadcastManager::SendBroadcastOperationId BroadcastManager::SendBroadcastAsync(
 
 bool BroadcastManager::CancelSendBroadcast(SendBroadcastOperationId oid) {
   {
-    std::lock_guard<std::mutex> lock(oids_mutex_);
-    auto it = utils::find(active_oids_, oid);
-    if (it == active_oids_.end()) return false;
-    active_oids_.erase(it);
+    std::lock_guard<std::mutex> lock(tx_oids_mutex_);
+    auto it = utils::find(tx_active_oids_, oid);
+    if (it == tx_active_oids_.end()) return false;
+    tx_active_oids_.erase(it);
   }
 
   bool canceled = false;
@@ -90,9 +90,46 @@ bool BroadcastManager::CancelSendBroadcast(SendBroadcastOperationId oid) {
 
 void BroadcastManager::ReceiveBroadcast(api::Encoding enc,
                                         boost::asio::mutable_buffer data,
-                                        ReceiveBroadcastHandler handler) {}
+                                        ReceiveBroadcastHandler handler) {
+  YOGI_ASSERT(handler);
 
-bool BroadcastManager::CancelReceiveBroadcast() { return false; }
+  std::lock_guard<std::recursive_mutex> lock(rx_mutex_);
+
+  if (rx_handler_) {
+    auto old_handler = rx_handler_;
+    context_->Post([=] { old_handler(api::Error(YOGI_ERR_CANCELED), 0); });
+  }
+
+  rx_enc_ = enc;
+  rx_data_ = data;
+  rx_handler_ = handler;
+}
+
+bool BroadcastManager::CancelReceiveBroadcast() {
+  std::lock_guard<std::recursive_mutex> lock(rx_mutex_);
+
+  if (rx_handler_) {
+    auto handler = rx_handler_;
+    rx_handler_ = {};
+    context_->Post([=] { handler(api::Error(YOGI_ERR_CANCELED), 0); });
+    return true;
+  }
+
+  return false;
+}
+
+void BroadcastManager::OnBroadcastReceived(
+    const network::messages::BroadcastIncoming& msg) {
+  std::lock_guard<std::recursive_mutex> lock(rx_mutex_);
+
+  if (rx_handler_) {
+    auto handler = rx_handler_;
+    rx_handler_ = {};
+    std::size_t n = 0;
+    auto res = msg.GetUserData().SerializeToUserBuffer(rx_data_, rx_enc_, &n);
+    handler(res, n);  // TODO
+  }
+}
 
 void BroadcastManager::SendNowOrLater(SharedCounter* pending_handlers,
                                       network::OutgoingMessage* msg,
@@ -138,18 +175,18 @@ void BroadcastManager::StoreOidForLaterOrCallHandlerNow(
     SharedCounter pending_handlers, SendBroadcastHandler handler,
     SendBroadcastOperationId oid) {
   if (pending_handlers) {
-    std::lock_guard<std::mutex> lock(oids_mutex_);
-    active_oids_.push_back(oid);
+    std::lock_guard<std::mutex> lock(tx_oids_mutex_);
+    tx_active_oids_.push_back(oid);
   } else {
     context_->Post([=] { handler(api::kSuccess, oid); });
   }
 }
 
 bool BroadcastManager::RemoveActiveOid(SendBroadcastOperationId oid) {
-  std::lock_guard<std::mutex> lock(oids_mutex_);
-  auto it = utils::find(active_oids_, oid);
-  if (it != active_oids_.end()) {
-    active_oids_.erase(it);
+  std::lock_guard<std::mutex> lock(tx_oids_mutex_);
+  auto it = utils::find(tx_active_oids_, oid);
+  if (it != tx_active_oids_.end()) {
+    tx_active_oids_.erase(it);
     return true;
   }
 

@@ -34,9 +34,7 @@ Branch::Branch(ContextPtr context, std::string name, std::string description,
       connection_manager_(std::make_shared<detail::ConnectionManager>(
           context, password, adv_if_strings, adv_ep,
           [&](auto& res, auto conn) { this->OnConnectionChanged(res, conn); },
-          [&](auto& msg, auto& conn) {
-            this->OnMessageReceived(msg, conn);
-          })),
+          [&](auto& msg, auto& conn) { this->OnMessageReceived(msg, conn); })),
       info_(std::make_shared<detail::LocalBranchInfo>(
           name, description, net_name, path,
           connection_manager_->GetAdvertisingInterfaces(),
@@ -95,14 +93,33 @@ bool Branch::CancelReceiveBroadcast() {
 
 void Branch::OnConnectionChanged(const api::Result& res,
                                  const detail::BranchConnectionPtr& conn) {
-  YOGI_LOG_INFO(logger_, "Connection to " << conn->GetRemoteBranchInfo()
-                                          << " changed: " << res);
+  YOGI_LOG_INFO(logger_, info_ << ": Connection to "
+                               << conn->GetRemoteBranchInfo()
+                               << " changed: " << res);
   // TODO
 }
 
 void Branch::OnMessageReceived(const network::IncomingMessage& msg,
                                const detail::BranchConnectionPtr& conn) {
-  YOGI_LOG_FATAL(logger_, "Msg received: " << msg);
+  using namespace network;
+
+  YOGI_LOG_TRACE(logger_, info_ << ": Message received: " << msg);
+
+  switch (msg.GetType()) {
+    case MessageType::kHeartbeat:
+      break;
+
+    case MessageType::kBroadcast:
+      broadcast_manager_->OnBroadcastReceived(
+          static_cast<const messages::BroadcastIncoming&>(msg));
+      break;
+
+    default:
+      YOGI_LOG_ERROR(logger_,
+                     info_ << ": Message of unexpected type received: " << msg);
+      YOGI_NEVER_REACHED;
+      break;
+  }
 }
 
 const LoggerPtr Branch::logger_ = Logger::CreateStaticInternalLogger("Branch");

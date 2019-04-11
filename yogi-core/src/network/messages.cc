@@ -114,6 +114,53 @@ void UserData::SerializeTo(utils::SmallByteVector* buffer) const {
   }
 }
 
+api::Result UserData::SerializeToUserBuffer(boost::asio::mutable_buffer buffer,
+                                            api::Encoding enc,
+                                            std::size_t* bytes_written) const {
+  utils::ByteVector tmp_buf;
+  std::string tmp_str;
+  boost::asio::const_buffer src;
+
+  if (enc == enc_) {
+    src = data_;
+  } else {
+    switch (enc) {
+      case api::Encoding::kJson: {
+        auto raw = static_cast<const unsigned char*>(data_.data());
+        auto json = nlohmann::json::from_msgpack(raw);
+        tmp_str = json.dump();
+        src = boost::asio::buffer(tmp_str.data(), tmp_str.size() + 1);
+        break;
+      }
+
+      case api::Encoding::kMsgPack: {
+        auto raw = static_cast<const char*>(data_.data());
+        auto json = nlohmann::json::parse(raw);
+        tmp_buf = nlohmann::json::to_msgpack(json);
+        src = boost::asio::buffer(tmp_buf);
+        break;
+      }
+
+      default:
+        YOGI_NEVER_REACHED;
+    }
+  }
+
+  auto n = boost::asio::buffer_copy(buffer, src);
+  YOGI_ASSERT(bytes_written != nullptr);
+  *bytes_written = n;
+
+  if (n < src.size()) {
+    if (enc == api::Encoding::kJson) {
+      static_cast<char*>(buffer.data())[buffer.size() - 1] = '\0';
+    }
+
+    return api::Error(YOGI_ERR_BUFFER_TOO_SMALL);
+  }
+
+  return api::kSuccess;
+}
+
 std::size_t OutgoingMessage::GetSize() const { return Serialize().size(); }
 
 const utils::SmallByteVector& OutgoingMessage::Serialize() const {

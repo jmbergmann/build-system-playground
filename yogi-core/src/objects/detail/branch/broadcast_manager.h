@@ -56,6 +56,8 @@ class BroadcastManager final
 
   bool CancelReceiveBroadcast();
 
+  void OnBroadcastReceived(const network::messages::BroadcastIncoming& msg);
+
  private:
   typedef std::shared_ptr<int> SharedCounter;
 
@@ -74,10 +76,14 @@ class BroadcastManager final
 
   const ContextPtr context_;
   ConnectionManager& conn_manager_;
-  std::mutex oids_mutex_;
-  std::vector<SendBroadcastOperationId> active_oids_;
-  std::mutex sync_mutex_;
-  std::condition_variable sync_cv_;
+  std::mutex tx_oids_mutex_;
+  std::vector<SendBroadcastOperationId> tx_active_oids_;
+  std::mutex tx_sync_mutex_;
+  std::condition_variable tx_sync_cv_;
+  std::recursive_mutex rx_mutex_;
+  api::Encoding rx_enc_;
+  boost::asio::mutable_buffer rx_data_;
+  ReceiveBroadcastHandler rx_handler_;
 };
 
 typedef std::shared_ptr<BroadcastManager> BroadcastManagerPtr;

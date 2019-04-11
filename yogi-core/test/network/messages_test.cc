@@ -64,6 +64,56 @@ TEST(MessageTest, UserDataMsgPack) {
                      YOGI_ERR_INVALID_USER_MSGPACK);
 }
 
+TEST(MessagesTest, UserDataSerializeToUserBuffer) {
+  auto json = utils::ByteVector{'[', '1', ',', '2', ',', '3', ']', '\0'};
+  auto msgpack = utils::ByteVector{0x93, 0x1, 0x2, 0x3};
+
+  auto fn = [&](const utils::ByteVector& bytes, api::Encoding enc) {
+    UserData user_data(boost::asio::buffer(bytes), enc);
+    utils::ByteVector data;
+    std::size_t n = 0;
+
+    // To JSON: Buffer too small
+    data.resize(3);
+    auto res = user_data.SerializeToUserBuffer(boost::asio::buffer(data),
+                                               api::Encoding::kJson, &n);
+    EXPECT_EQ(res, api::Error(YOGI_ERR_BUFFER_TOO_SMALL));
+    EXPECT_EQ(n, data.size());
+    EXPECT_EQ(data[0], json[0]);
+    EXPECT_EQ(data[1], json[1]);
+    EXPECT_EQ(data[2], '\0');
+
+    // To JSON: Success
+    data.resize(json.size());
+    res = user_data.SerializeToUserBuffer(boost::asio::buffer(data),
+                                          api::Encoding::kJson, &n);
+    EXPECT_EQ(res, api::kSuccess);
+    EXPECT_EQ(n, json.size());
+    EXPECT_EQ(data, json);
+
+    // To MsgPack: Buffer too small
+    data.resize(3);
+    res = user_data.SerializeToUserBuffer(boost::asio::buffer(data),
+                                          api::Encoding::kMsgPack, &n);
+    EXPECT_EQ(res, api::Error(YOGI_ERR_BUFFER_TOO_SMALL));
+    EXPECT_EQ(n, data.size());
+    EXPECT_EQ(data[0], msgpack[0]);
+    EXPECT_EQ(data[1], msgpack[1]);
+    EXPECT_EQ(data[2], msgpack[2]);
+
+    // To MsgPack: Success
+    data.resize(msgpack.size());
+    res = user_data.SerializeToUserBuffer(boost::asio::buffer(data),
+                                          api::Encoding::kMsgPack, &n);
+    EXPECT_EQ(res, api::kSuccess);
+    EXPECT_EQ(n, msgpack.size());
+    EXPECT_EQ(data, msgpack);
+  };
+
+  fn(json, api::Encoding::kJson);
+  fn(msgpack, api::Encoding::kMsgPack);
+}
+
 TEST(MessagesTest, GetType) {
   auto fakeType = FakeOutgoingMessage::kMessageType;
   EXPECT_EQ(fakeType, MessageType::kBroadcast);

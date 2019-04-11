@@ -18,6 +18,7 @@
 #pragma once
 
 #include "../config.h"
+#include "../api/errors.h"
 #include "../api/enums.h"
 #include "../utils/types.h"
 
@@ -74,6 +75,9 @@ class UserData {
       : data_(data), enc_(enc) {}
 
   void SerializeTo(utils::SmallByteVector* buffer) const;
+  api::Result SerializeToUserBuffer(boost::asio::mutable_buffer buffer,
+                                    api::Encoding enc,
+                                    std::size_t* bytes_written) const;
 
  private:
   boost::asio::const_buffer data_;
