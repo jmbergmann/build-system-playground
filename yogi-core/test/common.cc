@@ -66,6 +66,43 @@ nlohmann::json BranchEventRecorder::RunContextUntil(int event, void* branch,
   return RunContextUntil(event, GetBranchUuid(branch), ev_res);
 }
 
+void RunContextUntilBranchesAreConnected(
+    void* context, std::initializer_list<void*> branches) {
+  std::map<void*, std::set<boost::uuids::uuid>> uuids;
+  for (auto branch : branches) {
+    uuids[branch] = {};
+  }
+  for (auto& entry : uuids) {
+    for (auto branch : branches) {
+      if (branch != entry.first) {
+        entry.second.insert(GetBranchUuid(branch));
+      }
+    }
+  }
+
+  auto start = std::chrono::steady_clock::now();
+
+  while (!uuids.empty()) {
+    auto res = YOGI_ContextPoll(context, nullptr);
+    EXPECT_EQ(res, YOGI_OK);
+
+    auto entry = uuids.begin();
+    auto infos = GetConnectedBranches(entry->first);
+    for (auto& info : infos) {
+      auto uuid = info.first;
+      entry->second.erase(uuid);
+    }
+
+    if (entry->second.empty()) {
+      uuids.erase(entry);
+    }
+
+    if (std::chrono::steady_clock::now() - start > 3s) {
+      throw std::runtime_error("Branches did not connect");
+    }
+  }
+}
+
 void BranchEventRecorder::StartAwaitEvent() {
   int res = YOGI_BranchAwaitEventAsync(
       branch_, YOGI_BEV_ALL, &uuid_, json_str_.data(),

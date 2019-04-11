@@ -26,6 +26,7 @@
 #include <vector>
 #include <functional>
 #include <sstream>
+#include <initializer_list>
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/ip/udp.hpp>
 #include <boost/asio/ip/tcp.hpp>
@@ -179,6 +180,8 @@ struct CommandLine final {
 void SetupLogging(int verbosity);
 void* CreateContext();
 void RunContextInBackground(void* context);
+void RunContextUntilBranchesAreConnected(void* context,
+                                         std::initializer_list<void*> branches);
 void* CreateBranch(void* context, const char* name = nullptr,
                    const char* net_name = nullptr,
                    const char* password = nullptr, const char* path = nullptr,

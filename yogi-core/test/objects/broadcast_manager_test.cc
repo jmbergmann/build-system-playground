@@ -76,7 +76,10 @@ class BroadcastManagerTest : public TestFixture {
         branch_c_(CreateBranch(context_, "c")),
         rcv_a_(branch_a_),
         rcv_b_(branch_b_),
-        rcv_c_(branch_c_) {}
+        rcv_c_(branch_c_) {
+    RunContextUntilBranchesAreConnected(context_,
+                                        {branch_a_, branch_b_, branch_c_});
+  }
 
   virtual void TearDown() {
     // To avoid potential seg faults from active receive broadcast operations
@@ -99,8 +102,6 @@ class BroadcastManagerTest : public TestFixture {
 TEST_F(BroadcastManagerTest, SendJson) {
   RunContextInBackground(context_);
 
-  std::this_thread::sleep_for(std::chrono::seconds(1));
-
   auto res = YOGI_BranchSendBroadcast(branch_a_, YOGI_ENC_JSON, json_data_,
                                       sizeof(json_data_), YOGI_FALSE);
   ASSERT_EQ(res, YOGI_OK);
@@ -111,9 +112,23 @@ TEST_F(BroadcastManagerTest, SendJson) {
   EXPECT_FALSE(rcv_a_.BroadcastReceived());
 }
 
-TEST_F(BroadcastManagerTest, DISABLED_SendMessagePack) {}
+TEST_F(BroadcastManagerTest, SendMessagePack) {
+  RunContextInBackground(context_);
+
+  auto res =
+      YOGI_BranchSendBroadcast(branch_a_, YOGI_ENC_MSGPACK, msgpack_data_,
+                               sizeof(msgpack_data_), YOGI_FALSE);
+  ASSERT_EQ(res, YOGI_OK);
+
+  rcv_b_.WaitForBroadcast();
+  rcv_b_.CheckReceivedDataEquals(json_data_);
+  rcv_c_.WaitForBroadcast();
+  EXPECT_FALSE(rcv_a_.BroadcastReceived());
+}
 
 TEST_F(BroadcastManagerTest, DISABLED_SendBlock) {}
+
+TEST_F(BroadcastManagerTest, DISABLED_SendNoBlock) {}
 
 TEST_F(BroadcastManagerTest, DISABLED_AsyncSendJson) {}
 
