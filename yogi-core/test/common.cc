@@ -335,6 +335,16 @@ void* CreateContext() {
   return context;
 }
 
+void PollContext(void* context) {
+  int res = YOGI_ContextPoll(context, nullptr);
+  EXPECT_EQ(res, YOGI_OK);
+}
+
+void PollContextOne(void* context) {
+  int res = YOGI_ContextPollOne(context, nullptr);
+  EXPECT_EQ(res, YOGI_OK);
+}
+
 void RunContextInBackground(void* context) {
   int res = YOGI_ContextRunInBackground(context);
   EXPECT_EQ(res, YOGI_OK);

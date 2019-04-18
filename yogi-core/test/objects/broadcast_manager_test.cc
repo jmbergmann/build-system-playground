@@ -206,44 +206,45 @@ TEST_F(BroadcastManagerTest, DISABLED_AsyncSendMessagePack) {
 }
 
 TEST_F(BroadcastManagerTest, AsyncSendRetry) {
-  RunContextInBackground(context_);
-
   auto data = MakeBigJsonData();
 
-  for (int i = 0; i < 10; ++i) {
-    std::atomic<int> err{123};
-    int res = YOGI_BranchSendBroadcastAsync(
+  const int n = 10;
+  std::vector<int> errs;
+  for (int i = 0; i < n; ++i) {
+    int oid = YOGI_BranchSendBroadcastAsync(
         branch_c_, YOGI_ENC_JSON, data.data(), static_cast<int>(data.size()),
         YOGI_TRUE,
         [](int res, int oid, void* userarg) {
-          *static_cast<decltype(err)*>(userarg) = res;
+          static_cast<decltype(errs)*>(userarg)->push_back(res);
         },
-        &err);
-    EXPECT_GT(res, 0);
+        &errs);
+    EXPECT_GT(oid, 0);
+  }
 
-    while (err == 123) std::this_thread::yield();
+  while (errs.size() != n) {
+    PollContext(context_);
+  }
+
+  for (int err : errs) {
     EXPECT_EQ(err, YOGI_OK);
   }
 }
 
 TEST_F(BroadcastManagerTest, AsyncSendNoRetry) {
-  RunContextInBackground(context_);
-
   auto data = MakeBigJsonData();
 
-  std::atomic<int> err;
+  int err = YOGI_OK;
   do {
-    err = 123;
-    int res = YOGI_BranchSendBroadcastAsync(
-        branch_c_, YOGI_ENC_JSON, data.data(), static_cast<int>(data.size()),
-        YOGI_FALSE,
-        [](int res, int oid, void* userarg) {
-          *static_cast<decltype(err)*>(userarg) = res;
-        },
-        &err);
-    EXPECT_GT(res, 0);
+    int oid =
+        YOGI_BranchSendBroadcastAsync(branch_c_, YOGI_ENC_JSON, data.data(),
+                                      static_cast<int>(data.size()), YOGI_FALSE,
+                                      [](int res, int oid, void* userarg) {
+                                        *static_cast<int*>(userarg) = res;
+                                      },
+                                      &err);
+    EXPECT_GT(oid, 0);
 
-    while (err == 123) std::this_thread::yield();
+    PollContextOne(context_);
   } while (err == YOGI_OK);
 
   EXPECT_EQ(err, YOGI_ERR_TX_QUEUE_FULL);

@@ -180,6 +180,8 @@ struct CommandLine final {
 
 void SetupLogging(int verbosity);
 void* CreateContext();
+void PollContext(void* context);
+void PollContextOne(void* context);
 void RunContextInBackground(void* context);
 void RunContextUntilBranchesAreConnected(void* context,
                                          std::initializer_list<void*> branches);
