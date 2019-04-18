@@ -17,16 +17,20 @@
 
 #include "transport.h"
 
+#include <limits>
+
 namespace network {
 
 Transport::Transport(objects::ContextPtr context,
                      std::chrono::nanoseconds timeout,
                      bool created_from_incoming_conn_req,
-                     std::string peer_description)
+                     std::string peer_description,
+                     std::size_t transceive_byte_limit)
     : context_(context),
       timeout_(timeout),
       created_from_incoming_conn_req_(created_from_incoming_conn_req),
       peer_description_(peer_description),
+      transceive_byte_limit_(transceive_byte_limit),
       tx_timer_(context->IoContext()),
       rx_timer_(context->IoContext()),
       timed_out_(false) {}
@@ -36,6 +40,10 @@ Transport::~Transport() {}
 void Transport::SendSomeAsync(boost::asio::const_buffer data,
                               TransferSomeHandler handler) {
   YOGI_ASSERT(data.size() > 0);
+
+  if (data.size() > transceive_byte_limit_) {
+    data = boost::asio::buffer(data.data(), transceive_byte_limit_);
+  }
 
   auto weak_self = MakeWeakPtr();
   StartTimeout(&tx_timer_, weak_self);
@@ -81,6 +89,10 @@ void Transport::SendAllAsync(utils::SharedSmallByteVector data,
 void Transport::ReceiveSomeAsync(boost::asio::mutable_buffer data,
                                  TransferSomeHandler handler) {
   YOGI_ASSERT(data.size() > 0);
+
+  if (data.size() > transceive_byte_limit_) {
+    data = boost::asio::buffer(data.data(), transceive_byte_limit_);
+  }
 
   auto weak_self = MakeWeakPtr();
   StartTimeout(&rx_timer_, weak_self);

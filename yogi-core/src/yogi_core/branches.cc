@@ -81,10 +81,13 @@ YOGI_API int YOGI_BranchCreate(void** branch, void* context, const char* props,
     auto rx_queue_size = ExtractLimitedNumber<std::size_t>(
         properties, "rx_queue_size", api::kDefaultRxQueueSize,
         api::kMinRxQueueSize, api::kMaxRxQueueSize);
+    auto transceive_byte_limit =
+        ExtractSizeWithInfSupport(properties, "_transceive_byte_limit", -1, 0);
 
-    auto brn = objects::Branch::Create(
-        ctx, name, description, network, password, path, adv_if_strings, adv_ep,
-        adv_int, timeout, ghost, tx_queue_size, rx_queue_size);
+    auto brn = objects::Branch::Create(ctx, name, description, network,
+                                       password, path, adv_if_strings, adv_ep,
+                                       adv_int, timeout, ghost, tx_queue_size,
+                                       rx_queue_size, transceive_byte_limit);
     brn->Start();
 
     *branch = api::ObjectRegister::Register(brn);

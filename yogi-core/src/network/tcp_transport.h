@@ -62,11 +62,13 @@ class TcpTransport : public Transport {
   static AcceptGuardPtr AcceptAsync(objects::ContextPtr context,
                                     boost::asio::ip::tcp::acceptor* acceptor,
                                     std::chrono::nanoseconds timeout,
+                                    std::size_t transceive_byte_limit,
                                     AcceptHandler handler);
 
   static ConnectGuardPtr ConnectAsync(objects::ContextPtr context,
                                       const boost::asio::ip::tcp::endpoint& ep,
                                       std::chrono::nanoseconds timeout,
+                                      std::size_t transceive_byte_limit,
                                       ConnectHandler handler);
 
   boost::asio::ip::tcp::endpoint GetPeerEndpoint() const {
@@ -87,7 +89,8 @@ class TcpTransport : public Transport {
 
   TcpTransport(objects::ContextPtr context,
                boost::asio::ip::tcp::socket&& socket,
-               std::chrono::nanoseconds timeout, bool created_via_accept);
+               std::chrono::nanoseconds timeout,
+               std::size_t transceive_byte_limit, bool created_via_accept);
   void SetNoDelayOption();
 
   static const objects::LoggerPtr logger_;

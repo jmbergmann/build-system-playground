@@ -99,7 +99,8 @@ class LocalBranchInfo : public BranchInfo {
                   const boost::asio::ip::tcp::endpoint& tcp_ep,
                   const std::chrono::nanoseconds& timeout,
                   const std::chrono::nanoseconds& adv_interval, bool ghost_mode,
-                  std::size_t tx_queue_size, std::size_t rx_queue_size);
+                  std::size_t tx_queue_size, std::size_t rx_queue_size,
+                  std::size_t transceive_byte_limit);
 
   const std::vector<utils::NetworkInterfaceInfo>& GetAdvertisingInterfaces()
       const {
@@ -112,6 +113,7 @@ class LocalBranchInfo : public BranchInfo {
 
   std::size_t GetTxQueueSize() const { return tx_queue_size_; }
   std::size_t GetRxQueueSize() const { return rx_queue_size_; }
+  std::size_t GetTransceiveByteLimit() const { return transceive_byte_limit_; }
 
   utils::SharedByteVector MakeAdvertisingMessage() const {
     YOGI_ASSERT(adv_msg_);
@@ -131,6 +133,7 @@ class LocalBranchInfo : public BranchInfo {
   boost::asio::ip::udp::endpoint adv_ep_;
   std::size_t tx_queue_size_;
   std::size_t rx_queue_size_;
+  std::size_t transceive_byte_limit_;
   utils::SharedByteVector adv_msg_;
   utils::SharedByteVector info_msg_;
 };

@@ -73,7 +73,8 @@ LocalBranchInfo::LocalBranchInfo(
     const boost::asio::ip::tcp::endpoint& tcp_ep,
     const std::chrono::nanoseconds& timeout,
     const std::chrono::nanoseconds& adv_interval, bool ghost_mode,
-    std::size_t tx_queue_size, std::size_t rx_queue_size) {
+    std::size_t tx_queue_size, std::size_t rx_queue_size,
+    std::size_t transceive_byte_limit) {
   uuid_ = boost::uuids::random_generator()();
   name_ = name;
   description_ = description;
@@ -90,6 +91,7 @@ LocalBranchInfo::LocalBranchInfo(
   adv_ep_ = adv_ep;
   tx_queue_size_ = tx_queue_size;
   rx_queue_size_ = rx_queue_size;
+  transceive_byte_limit_ = transceive_byte_limit;
 
   PopulateMessages();
   PopulateJson();

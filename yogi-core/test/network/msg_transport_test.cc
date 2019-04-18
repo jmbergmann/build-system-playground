@@ -37,7 +37,8 @@ class FakeOutgoingMessage : public OutgoingMessage,
 class FakeTransport : public Transport {
  public:
   FakeTransport(objects::ContextPtr context)
-      : Transport(context, std::chrono::nanoseconds::max(), true, "") {}
+      : Transport(context, std::chrono::nanoseconds::max(), true, "",
+                  std::numeric_limits<std::size_t>::max()) {}
 
   utils::ByteVector tx_data;
   utils::ByteVector rx_data;

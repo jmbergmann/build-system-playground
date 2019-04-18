@@ -29,7 +29,8 @@ Branch::Branch(ContextPtr context, std::string name, std::string description,
                const boost::asio::ip::udp::endpoint& adv_ep,
                std::chrono::nanoseconds adv_interval,
                std::chrono::nanoseconds timeout, bool ghost_mode,
-               std::size_t tx_queue_size, std::size_t rx_queue_size)
+               std::size_t tx_queue_size, std::size_t rx_queue_size,
+               std::size_t transceive_byte_limit)
     : context_(context),
       connection_manager_(std::make_shared<detail::ConnectionManager>(
           context, password, adv_if_strings, adv_ep,
@@ -40,7 +41,7 @@ Branch::Branch(ContextPtr context, std::string name, std::string description,
           connection_manager_->GetAdvertisingInterfaces(),
           connection_manager_->GetAdvertisingEndpoint(),
           connection_manager_->GetTcpServerEndpoint(), timeout, adv_interval,
-          ghost_mode, tx_queue_size, rx_queue_size)),
+          ghost_mode, tx_queue_size, rx_queue_size, transceive_byte_limit)),
       broadcast_manager_(std::make_shared<detail::BroadcastManager>(
           context, *connection_manager_)) {
   if (name.empty() || net_name.empty() || path.empty() || path.front() != '/' ||

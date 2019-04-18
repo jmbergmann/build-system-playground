@@ -132,7 +132,7 @@ void ConnectionManager::StartAccept() {
   auto weak_self = MakeWeakPtr();
   accept_guard_ = network::TcpTransport::AcceptAsync(
       context_, &acceptor_, info_->GetTimeout(),
-      [=](auto& res, auto transport, auto) {
+      info_->GetTransceiveByteLimit(), [=](auto& res, auto transport, auto) {
         auto self = weak_self.lock();
         if (!self) return;
 
@@ -172,7 +172,7 @@ void ConnectionManager::OnAdvertisementReceived(
 
   auto weak_self = MakeWeakPtr();
   auto guard = network::TcpTransport::ConnectAsync(
-      context_, ep, info_->GetTimeout(),
+      context_, ep, info_->GetTimeout(), info_->GetTransceiveByteLimit(),
       [=](auto& res, auto transport, auto guard) {
         auto self = weak_self.lock();
         if (!self) return;

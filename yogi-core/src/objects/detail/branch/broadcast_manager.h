@@ -70,6 +70,7 @@ class BroadcastManager final
                                         SendBroadcastHandler handler,
                                         SendBroadcastOperationId oid);
 
+  void CreateAndIncrementCounter(SharedCounter* counter);
   bool RemoveActiveOid(SendBroadcastOperationId oid);
 
   static const LoggerPtr logger_;

@@ -12,13 +12,14 @@
       "args": [
         "--gtest_break_on_failure",
         "--gtest_catch_exceptions=0",
-        "--gtest_filter=Broadcast*"
+        "--gtest_filter=Broadcast*SendBlock"
       ],
       "stopAtEntry": false,
       "cwd": "${workspaceFolder}/build/yogi-core",
       "environment": [],
       "externalConsole": true,
-      "MIMode": "lldb"
+      "MIMode": "lldb",
+      "preLaunchTask": "Build yogi-core"
     },
     {
       "name": "Test: yogi-cpp",
@@ -30,7 +31,8 @@
       "cwd": "${workspaceFolder}/build/yogi-core",
       "environment": [],
       "externalConsole": true,
-      "MIMode": "lldb"
+      "MIMode": "lldb",
+      "preLaunchTask": "Build yogi-cpp"
     }
   ]
 }

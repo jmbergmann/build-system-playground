@@ -21,6 +21,7 @@
 #include <string.h>
 #include <boost/algorithm/string.hpp>
 #include <regex>
+#include <limits>
 
 std::chrono::nanoseconds ExtractDuration(const nlohmann::json& json,
                                          const char* key,
@@ -78,6 +79,23 @@ int ExtractLimitedInt(const nlohmann::json& json, const char* key,
   }
 
   return val;
+}
+
+std::size_t ExtractSizeWithInfSupport(const nlohmann::json& json,
+                                      const char* key, int default_val,
+                                      int min_val) {
+  auto val = json.value(key, default_val);
+  if (val == -1) {
+    return std::numeric_limits<std::size_t>::max();
+  } else {
+    if (val < min_val) {
+      throw api::DescriptiveError(YOGI_ERR_INVALID_PARAM)
+          << "Property \"" << key << "\" is out of range. Minimum value is "
+          << min_val << ". A value of -1 denotes infinity.";
+    }
+
+    return static_cast<std::size_t>(val);
+  }
 }
 
 bool IsExactlyOneBitSet(int bit_field) {

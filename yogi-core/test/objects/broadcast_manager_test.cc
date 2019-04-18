@@ -73,7 +73,8 @@ class BroadcastManagerTest : public TestFixture {
       : context_(CreateContext()),
         branch_a_(CreateBranch(context_, "a")),
         branch_b_(CreateBranch(context_, "b")),
-        branch_c_(CreateBranch(context_, "c")),
+        branch_c_(
+            CreateBranch(context_, "c", nullptr, nullptr, nullptr, nullptr, 5)),
         rcv_a_(branch_a_),
         rcv_b_(branch_b_),
         rcv_c_(branch_c_) {
@@ -84,6 +85,12 @@ class BroadcastManagerTest : public TestFixture {
   virtual void TearDown() {
     // To avoid potential seg faults from active receive broadcast operations
     EXPECT_EQ(YOGI_DestroyAll(), YOGI_OK);
+  }
+
+  static std::vector<char> MakeBigJsonData(std::size_t size = 10000) {
+    std::vector<char> data{'[', '"', '"', ']', '\0'};
+    data.insert(data.begin() + 2, size - data.size() + 1, '.');
+    return data;
   }
 
   void* context_;
@@ -98,7 +105,7 @@ class BroadcastManagerTest : public TestFixture {
   const char json_data_[8] = "[1,2,3]";
   const char msgpack_data_[4] = {static_cast<char>(0x93), 0x1, 0x2, 0x3};
 };
-#include <thread>
+
 TEST_F(BroadcastManagerTest, SendJson) {
   RunContextInBackground(context_);
 
@@ -126,9 +133,31 @@ TEST_F(BroadcastManagerTest, SendMessagePack) {
   EXPECT_FALSE(rcv_a_.BroadcastReceived());
 }
 
-TEST_F(BroadcastManagerTest, DISABLED_SendBlock) {}
+TEST_F(BroadcastManagerTest, SendBlock) {
+  RunContextInBackground(context_);
 
-TEST_F(BroadcastManagerTest, DISABLED_SendNoBlock) {}
+  auto data = MakeBigJsonData();
+
+  for (int i = 0; i < 10; ++i) {
+    int res =
+        YOGI_BranchSendBroadcast(branch_c_, YOGI_ENC_JSON, data.data(),
+                                 static_cast<int>(data.size()), YOGI_TRUE);
+    EXPECT_EQ(res, YOGI_OK);
+  }
+}
+
+TEST_F(BroadcastManagerTest, SendNoBlock) {
+  RunContextInBackground(context_);
+
+  auto data = MakeBigJsonData();
+  int res;
+  do {
+    res = YOGI_BranchSendBroadcast(branch_c_, YOGI_ENC_JSON, data.data(),
+                                   static_cast<int>(data.size()), YOGI_FALSE);
+  } while (res == YOGI_OK);
+
+  EXPECT_EQ(res, YOGI_ERR_TX_QUEUE_FULL);
+}
 
 TEST_F(BroadcastManagerTest, DISABLED_AsyncSendJson) {}
 

@@ -31,6 +31,7 @@ api::Result BroadcastManager::SendBroadcast(const network::UserData& user_data,
                                             bool block) {
   api::Result result;
   SendBroadcastAsync(user_data, block, [&](auto& res, auto) {
+    std::lock_guard<std::mutex> lock(this->tx_sync_mutex_);
     result = res;
     this->tx_sync_cv_.notify_all();
   });
@@ -50,6 +51,8 @@ BroadcastManager::SendBroadcastOperationId BroadcastManager::SendBroadcastAsync(
 
   if (retry) {
     std::shared_ptr<int> pending_handlers;
+
+    std::lock_guard<std::mutex> lock(tx_oids_mutex_);
     conn_manager_.ForeachRunningSession([&](auto& conn) {
       this->SendNowOrLater(&pending_handlers, &msg, conn, handler, oid);
     });
@@ -127,7 +130,7 @@ void BroadcastManager::OnBroadcastReceived(
     rx_handler_ = {};
     std::size_t n = 0;
     auto res = msg.GetUserData().SerializeToUserBuffer(rx_data_, rx_enc_, &n);
-    handler(res, n);  // TODO
+    handler(res, n);  // TODO (No idea why. Maybe not TODO any more?)
   }
 }
 
@@ -138,26 +141,30 @@ void BroadcastManager::SendNowOrLater(SharedCounter* pending_handlers,
                                       SendBroadcastOperationId oid) {
   try {
     if (!conn->TrySend(*msg)) {
-      if (!*pending_handlers) {
-        *pending_handlers = std::make_shared<int>(1);
-      } else {
-        ++**pending_handlers;
-      }
+      CreateAndIncrementCounter(pending_handlers);
 
       try {
+        auto& pending_handlers_ref = *pending_handlers;
         auto weak_self = std::weak_ptr<BroadcastManager>{shared_from_this()};
         conn->SendAsync(msg, [=](auto& res) {
-          if (--**pending_handlers == 0) {
-            auto self = weak_self.lock();
-            if (self) {
-              if (self->RemoveActiveOid(oid)) {
-                handler(api::kSuccess, oid);
-              } else {
-                handler(api::Error(YOGI_ERR_CANCELED), oid);
-              }
-            } else {
-              handler(api::Error(YOGI_ERR_CANCELED), oid);
+          bool success = false;
+
+          {
+            std::lock_guard<std::mutex> lock(tx_oids_mutex_);
+
+            YOGI_ASSERT(pending_handlers_ref);
+            bool is_last_handler = --*pending_handlers_ref == 0;
+            if (!is_last_handler) return;
+
+            if (auto self = weak_self.lock()) {
+              success = self->RemoveActiveOid(oid);
             }
+          }
+
+          if (success) {
+            handler(api::kSuccess, oid);
+          } else {
+            handler(api::Error(YOGI_ERR_CANCELED), oid);
           }
         });
       } catch (...) {
@@ -175,15 +182,21 @@ void BroadcastManager::StoreOidForLaterOrCallHandlerNow(
     SharedCounter pending_handlers, SendBroadcastHandler handler,
     SendBroadcastOperationId oid) {
   if (pending_handlers) {
-    std::lock_guard<std::mutex> lock(tx_oids_mutex_);
     tx_active_oids_.push_back(oid);
   } else {
     context_->Post([=] { handler(api::kSuccess, oid); });
   }
 }
 
+void BroadcastManager::CreateAndIncrementCounter(SharedCounter* counter) {
+  if (*counter) {
+    ++**counter;
+  } else {
+    *counter = std::make_shared<int>(1);
+  }
+}
+
 bool BroadcastManager::RemoveActiveOid(SendBroadcastOperationId oid) {
-  std::lock_guard<std::mutex> lock(tx_oids_mutex_);
   auto it = utils::find(tx_active_oids_, oid);
   if (it != tx_active_oids_.end()) {
     tx_active_oids_.erase(it);

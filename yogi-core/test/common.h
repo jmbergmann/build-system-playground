@@ -27,6 +27,7 @@
 #include <functional>
 #include <sstream>
 #include <initializer_list>
+#include <limits>
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/ip/udp.hpp>
 #include <boost/asio/ip/tcp.hpp>
@@ -185,7 +186,9 @@ void RunContextUntilBranchesAreConnected(void* context,
 void* CreateBranch(void* context, const char* name = nullptr,
                    const char* net_name = nullptr,
                    const char* password = nullptr, const char* path = nullptr,
-                   const char* adv_addr = nullptr);
+                   const char* adv_addr = nullptr,
+                   std::size_t transceive_byte_limit =
+                       std::numeric_limits<std::size_t>::max());
 boost::asio::ip::tcp::endpoint GetBranchTcpEndpoint(void* branch);
 boost::uuids::uuid GetBranchUuid(void* branch);
 nlohmann::json GetBranchInfo(void* branch);

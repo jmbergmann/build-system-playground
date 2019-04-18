@@ -42,7 +42,8 @@ class Transport : public std::enable_shared_from_this<Transport> {
   typedef std::function<void(const api::Result&)> TransferAllHandler;
 
   Transport(objects::ContextPtr context, std::chrono::nanoseconds timeout,
-            bool created_from_incoming_conn_req, std::string peer_description);
+            bool created_from_incoming_conn_req, std::string peer_description,
+            std::size_t transceive_byte_limit);
   virtual ~Transport();
 
   objects::ContextPtr GetContext() const { return context_; }
@@ -88,6 +89,7 @@ class Transport : public std::enable_shared_from_this<Transport> {
   const std::chrono::nanoseconds timeout_;
   const bool created_from_incoming_conn_req_;
   const std::string peer_description_;
+  const std::size_t transceive_byte_limit_;
   boost::asio::steady_timer tx_timer_;
   boost::asio::steady_timer rx_timer_;
   bool timed_out_;

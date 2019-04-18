@@ -19,49 +19,56 @@
 
 // MSVC-specific
 #ifdef _MSC_VER
-# pragma warning (disable: 4250 4503 4127)
+#pragma warning(disable : 4250 4503 4127)
 #endif
 
 // Include the main DLL header file for the error codes
 #ifndef YOGI_API
-# ifdef _MSC_VER
-#   define YOGI_API __declspec(dllexport)
-# else
-#   define YOGI_API __attribute__((visibility("default")))
-# endif
+#ifdef _MSC_VER
+#define YOGI_API __declspec(dllexport)
+#else
+#define YOGI_API __attribute__((visibility("default")))
+#endif
 #endif
 
 #include "../include/yogi_core.h"
 
 // Debug & development
 #ifdef _MSC_VER
-# define YOGI_DEBUG_BREAK __debugbreak();
+#define YOGI_DEBUG_BREAK __debugbreak();
 #else
-# include <assert.h>
-# define YOGI_DEBUG_BREAK assert(false);
+#include <assert.h>
+#define YOGI_DEBUG_BREAK assert(false);
 #endif
 
 #ifndef NDEBUG
-# include <iostream>
-# include <string>
+#include <iostream>
+#include <string>
 #define YOGI_TRACE                                                             \
   {                                                                            \
     std::string file(__FILE__);                                                \
     file = file.substr(file.find_last_of("\\/") + 1);                          \
     std::cerr << file << ":" << __LINE__ << ": " << __FUNCTION__ << std::endl; \
   }
-# define YOGI_ASSERT(x)                                                        \
-  {                                                                            \
-    if (!(x)) {                                                                \
-      std::cerr << "ASSERTION \"" #x "\" in " << __FILE__ << ":" << __LINE__   \
-                << " FAILED." << std::endl;                                    \
-      YOGI_DEBUG_BREAK;                                                        \
-    }                                                                          \
+#define YOGI_TRACE_VAL(val)                                      \
+  {                                                              \
+    std::string file(__FILE__);                                  \
+    file = file.substr(file.find_last_of("\\/") + 1);            \
+    std::cerr << file << ":" << __LINE__ << ": " << __FUNCTION__ \
+              << ": " #val " = " << (val) << std::endl;          \
   }
-# define YOGI_DEBUG_ONLY(...) __VA_ARGS__
+#define YOGI_ASSERT(x)                                                       \
+  {                                                                          \
+    if (!(x)) {                                                              \
+      std::cerr << "ASSERTION \"" #x "\" in " << __FILE__ << ":" << __LINE__ \
+                << " FAILED." << std::endl;                                  \
+      YOGI_DEBUG_BREAK;                                                      \
+    }                                                                        \
+  }
+#define YOGI_DEBUG_ONLY(...) __VA_ARGS__
 #else
-# define YOGI_ASSERT(x)
-# define YOGI_DEBUG_ONLY(...)
+#define YOGI_ASSERT(x)
+#define YOGI_DEBUG_ONLY(...)
 #endif
 
 #define YOGI_NEVER_REACHED YOGI_ASSERT(std::string("NEVER") == "REACHED")

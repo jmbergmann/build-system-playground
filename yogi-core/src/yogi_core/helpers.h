@@ -40,6 +40,10 @@ std::vector<std::string> ExtractArrayOfStrings(const nlohmann::json& json,
 int ExtractLimitedInt(const nlohmann::json& json, const char* key,
                       int default_val, int min_val, int max_val);
 
+std::size_t ExtractSizeWithInfSupport(const nlohmann::json& json,
+                                      const char* key, int default_val,
+                                      int min_val);
+
 template <typename T>
 T ExtractLimitedNumber(const nlohmann::json& json, const char* key,
                        int default_val, int min_val, int max_val) {

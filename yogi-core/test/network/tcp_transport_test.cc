@@ -35,7 +35,8 @@ class TcpTransportTest : public TestFixture {
   network::TcpTransportPtr Connect() {
     network::TcpTransportPtr transport;
     auto guard = network::TcpTransport::ConnectAsync(
-        context_, acceptor_ep_, 10s, [&](auto& res, auto tp, auto) {
+        context_, acceptor_ep_, 10s, std::numeric_limits<std::size_t>::max(),
+        [&](auto& res, auto tp, auto) {
           ASSERT_EQ(res, api::kSuccess);
           transport = tp;
         });
@@ -63,7 +64,8 @@ class TcpTransportTest : public TestFixture {
 TEST_F(TcpTransportTest, Accept) {
   bool called = false;
   auto guard = network::TcpTransport::AcceptAsync(
-      context_, &acceptor_, 10s, [&](auto& res, auto transport, auto) {
+      context_, &acceptor_, 10s, std::numeric_limits<std::size_t>::max(),
+      [&](auto& res, auto transport, auto) {
         EXPECT_EQ(res, api::kSuccess);
         ASSERT_TRUE(!!transport);
         EXPECT_TRUE(transport->CreatedFromIncomingConnectionRequest());
@@ -81,7 +83,8 @@ TEST_F(TcpTransportTest, Accept) {
 TEST_F(TcpTransportTest, CancelAccept) {
   bool called = false;
   auto guard = network::TcpTransport::AcceptAsync(
-      context_, &acceptor_, 10s, [&](auto& res, auto transport, auto guard) {
+      context_, &acceptor_, 10s, std::numeric_limits<std::size_t>::max(),
+      [&](auto& res, auto transport, auto guard) {
         EXPECT_EQ(res, api::Error(YOGI_ERR_CANCELED));
         ASSERT_FALSE(!!transport);
         ASSERT_FALSE(!!guard);
@@ -105,7 +108,8 @@ TEST_F(TcpTransportTest, CancelConnect) {
 
   bool called = false;
   auto guard = network::TcpTransport::ConnectAsync(
-      context_, acceptor_ep_, 10s, [&](auto& res, auto transport, auto guard) {
+      context_, acceptor_ep_, 10s, std::numeric_limits<std::size_t>::max(),
+      [&](auto& res, auto transport, auto guard) {
         EXPECT_EQ(res, api::Error(YOGI_ERR_CANCELED));
         ASSERT_FALSE(!!transport);
         ASSERT_FALSE(!!guard);
@@ -126,7 +130,8 @@ TEST_F(TcpTransportTest, ConnectTimeout) {
 
   bool called = false;
   auto guard = network::TcpTransport::ConnectAsync(
-      context_, acceptor_ep_, 1ms, [&](auto& res, auto transport, auto) {
+      context_, acceptor_ep_, 1ms, std::numeric_limits<std::size_t>::max(),
+      [&](auto& res, auto transport, auto) {
         EXPECT_TRUE(res == api::Error(YOGI_ERR_TIMEOUT) ||
                     res == api::Error(YOGI_ERR_CONNECT_SOCKET_FAILED));
         EXPECT_FALSE(!!transport);

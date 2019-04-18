@@ -32,7 +32,8 @@ class MockTransport : public network::Transport {
   MockTransport(objects::ContextPtr context, std::chrono::nanoseconds timeout,
                 bool created_from_incoming_conn_req)
       : network::Transport(context, timeout, created_from_incoming_conn_req,
-                           "Broccoli") {}
+                           "Broccoli",
+                           std::numeric_limits<std::size_t>::max()) {}
 
   MOCK_METHOD2(WriteSomeAsync, void(boost::asio::const_buffer data,
                                     TransferSomeHandler handler));

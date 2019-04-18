@@ -41,7 +41,8 @@ class Branch : public api::ExposedObjectT<Branch, api::ObjectType::kBranch> {
          const boost::asio::ip::udp::endpoint& adv_ep,
          std::chrono::nanoseconds adv_interval,
          std::chrono::nanoseconds timeout, bool ghost_mode,
-         std::size_t tx_queue_size, std::size_t rx_queue_size);
+         std::size_t tx_queue_size, std::size_t rx_queue_size,
+         std::size_t transceive_byte_limit);
 
   void Start();
 

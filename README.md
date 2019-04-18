@@ -25,6 +25,7 @@ YOGI_CORE_LIBRARY="/c/Documents and Settings/commu_000/Documents/Projects/build-
 - Whether or not a branch is actively receiving broadcasts must be conveyed when connecting to other branches in one of the initial messages to avoid missing broadcasts
 - Add connection statistics (msg/sec, bytes/sec, etc.)
 - Remote bytes_written/bytes_read from Transport::SendAll/ReceiveAll?
+- Need to check user data size. Right now, an assertion triggers when it's too large.
 
 Outgoing data queue design:
 

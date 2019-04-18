@@ -22,7 +22,8 @@ namespace network {
 
 TcpTransport::AcceptGuardPtr TcpTransport::AcceptAsync(
     objects::ContextPtr context, boost::asio::ip::tcp::acceptor* acceptor,
-    std::chrono::nanoseconds timeout, AcceptHandler handler) {
+    std::chrono::nanoseconds timeout, std::size_t transceive_byte_limit,
+    AcceptHandler handler) {
   auto guard = std::make_shared<AcceptGuard>(acceptor);
   auto weak_guard = AcceptGuardWeakPtr(guard);
   auto weak_context = context->MakeWeakPtr();
@@ -37,8 +38,8 @@ TcpTransport::AcceptGuardPtr TcpTransport::AcceptAsync(
     if (!context) return;
 
     if (!ec) {
-      auto transport = TcpTransportPtr(
-          new TcpTransport(context, std::move(*socket), timeout, true));
+      auto transport = TcpTransportPtr(new TcpTransport(
+          context, std::move(*socket), timeout, transceive_byte_limit, true));
       transport->SetNoDelayOption();
       handler(api::kSuccess, transport, guard);
     } else if (ec == boost::asio::error::operation_aborted) {
@@ -53,7 +54,8 @@ TcpTransport::AcceptGuardPtr TcpTransport::AcceptAsync(
 
 TcpTransport::ConnectGuardPtr TcpTransport::ConnectAsync(
     objects::ContextPtr context, const boost::asio::ip::tcp::endpoint& ep,
-    std::chrono::nanoseconds timeout, ConnectHandler handler) {
+    std::chrono::nanoseconds timeout, std::size_t transceive_byte_limit,
+    ConnectHandler handler) {
   struct ConnectData {
     ConnectData(boost::asio::io_context& ioc) : socket(ioc), timer(ioc) {}
 
@@ -83,7 +85,8 @@ TcpTransport::ConnectGuardPtr TcpTransport::ConnectAsync(
       handler(api::Error(YOGI_ERR_TIMEOUT), {}, guard);
     } else if (!ec) {
       auto transport = TcpTransportPtr(
-          new TcpTransport(context, std::move(condat->socket), timeout, false));
+          new TcpTransport(context, std::move(condat->socket), timeout,
+                           transceive_byte_limit, false));
       handler(api::kSuccess, transport, guard);
     } else if (ec == boost::asio::error::operation_aborted) {
       handler(api::Error(YOGI_ERR_CANCELED), {}, guard);
@@ -106,7 +109,7 @@ TcpTransport::ConnectGuardPtr TcpTransport::ConnectAsync(
 }
 
 void TcpTransport::WriteSomeAsync(boost::asio::const_buffer data,
-                             TransferSomeHandler handler) {
+                                  TransferSomeHandler handler) {
   socket_.async_write_some(data, [=](auto& ec, auto bytes_written) {
     if (!ec) {
       handler(api::kSuccess, bytes_written);
@@ -119,7 +122,7 @@ void TcpTransport::WriteSomeAsync(boost::asio::const_buffer data,
 }
 
 void TcpTransport::ReadSomeAsync(boost::asio::mutable_buffer data,
-                            TransferSomeHandler handler) {
+                                 TransferSomeHandler handler) {
   socket_.async_read_some(data, [=](auto& ec, auto bytes_read) {
     if (!ec) {
       handler(api::kSuccess, bytes_read);
@@ -149,9 +152,10 @@ void TcpTransport::CloseSocket(boost::asio::ip::tcp::socket* s) {
 TcpTransport::TcpTransport(objects::ContextPtr context,
                            boost::asio::ip::tcp::socket&& socket,
                            std::chrono::nanoseconds timeout,
+                           std::size_t transceive_byte_limit,
                            bool created_via_accept)
     : Transport(context, timeout, created_via_accept,
-                MakePeerDescription(socket)),
+                MakePeerDescription(socket), transceive_byte_limit),
       socket_(std::move(socket)) {}
 
 void TcpTransport::SetNoDelayOption() {

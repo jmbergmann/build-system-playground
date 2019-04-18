@@ -183,7 +183,7 @@ FakeBranch::FakeBranch()
   info_ = std::make_shared<objects::detail::LocalBranchInfo>(
       "Fake Branch", "", utils::GetHostname(), "/Fake Branch", ifs, adv_ep_,
       acceptor_.local_endpoint(), 1s, 1s, false, api::kMinTxQueueSize,
-      api::kMinRxQueueSize);
+      api::kMinRxQueueSize, std::numeric_limits<std::size_t>::max());
 }
 
 void FakeBranch::Connect(void* branch,
@@ -343,8 +343,8 @@ void RunContextInBackground(void* context) {
 }
 
 void* CreateBranch(void* context, const char* name, const char* net_name,
-                   const char* password, const char* path,
-                   const char* adv_addr) {
+                   const char* password, const char* path, const char* adv_addr,
+                   std::size_t transceive_byte_limit) {
   auto props = kBranchProps;
   props["description"] = "Description";
   if (name) props["name"] = name;
@@ -352,6 +352,10 @@ void* CreateBranch(void* context, const char* name, const char* net_name,
   if (password) props["network_password"] = password;
   if (path) props["path"] = path;
   if (adv_addr) props["advertising_address"] = adv_addr;
+
+  if (transceive_byte_limit != std::numeric_limits<std::size_t>::max()) {
+    props["_transceive_byte_limit"] = transceive_byte_limit;
+  }
 
   void* branch = nullptr;
   int res = YOGI_BranchCreate(&branch, context, props.dump().c_str(), nullptr,
