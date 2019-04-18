@@ -18,6 +18,8 @@
 #include "../common.h"
 
 #include <chrono>
+#include <atomic>
+#include <thread>
 
 class BroadcastReceiver {
  public:
@@ -109,8 +111,8 @@ class BroadcastManagerTest : public TestFixture {
 TEST_F(BroadcastManagerTest, SendJson) {
   RunContextInBackground(context_);
 
-  auto res = YOGI_BranchSendBroadcast(branch_a_, YOGI_ENC_JSON, json_data_,
-                                      sizeof(json_data_), YOGI_FALSE);
+  int res = YOGI_BranchSendBroadcast(branch_a_, YOGI_ENC_JSON, json_data_,
+                                     sizeof(json_data_), YOGI_FALSE);
   ASSERT_EQ(res, YOGI_OK);
 
   rcv_b_.WaitForBroadcast();
@@ -122,9 +124,8 @@ TEST_F(BroadcastManagerTest, SendJson) {
 TEST_F(BroadcastManagerTest, SendMessagePack) {
   RunContextInBackground(context_);
 
-  auto res =
-      YOGI_BranchSendBroadcast(branch_a_, YOGI_ENC_MSGPACK, msgpack_data_,
-                               sizeof(msgpack_data_), YOGI_FALSE);
+  int res = YOGI_BranchSendBroadcast(branch_a_, YOGI_ENC_MSGPACK, msgpack_data_,
+                                     sizeof(msgpack_data_), YOGI_FALSE);
   ASSERT_EQ(res, YOGI_OK);
 
   rcv_b_.WaitForBroadcast();
@@ -159,11 +160,94 @@ TEST_F(BroadcastManagerTest, SendNoBlock) {
   EXPECT_EQ(res, YOGI_ERR_TX_QUEUE_FULL);
 }
 
-TEST_F(BroadcastManagerTest, DISABLED_AsyncSendJson) {}
+TEST_F(BroadcastManagerTest, AsyncSendJson) {
+  RunContextInBackground(context_);
 
-TEST_F(BroadcastManagerTest, DISABLED_AsyncSendMessagePack) {}
+  int oid = -1;
+  auto res = YOGI_BranchSendBroadcastAsync(branch_a_, YOGI_ENC_JSON, json_data_,
+                                           sizeof(json_data_), YOGI_TRUE,
+                                           [](int res, int oid, void* userarg) {
+                                             EXPECT_EQ(res, YOGI_OK);
+                                             EXPECT_GT(oid, 0);
+                                             *static_cast<int*>(userarg) = oid;
+                                           },
+                                           &oid);
+  ASSERT_GT(res, 0);
 
-TEST_F(BroadcastManagerTest, DISABLED_AsyncSendRetry) {}
+  rcv_b_.WaitForBroadcast();
+  rcv_b_.CheckReceivedDataEquals(json_data_);
+  rcv_c_.WaitForBroadcast();
+  EXPECT_FALSE(rcv_a_.BroadcastReceived());
+
+  EXPECT_EQ(oid, res);
+}
+
+TEST_F(BroadcastManagerTest, DISABLED_AsyncSendMessagePack) {
+  RunContextInBackground(context_);
+
+  int oid = -1;
+  auto res =
+      YOGI_BranchSendBroadcastAsync(branch_a_, YOGI_ENC_MSGPACK, msgpack_data_,
+                                    sizeof(msgpack_data_), YOGI_TRUE,
+                                    [](int res, int oid, void* userarg) {
+                                      EXPECT_EQ(res, YOGI_OK);
+                                      EXPECT_GT(oid, 0);
+                                      *static_cast<int*>(userarg) = oid;
+                                    },
+                                    &oid);
+  ASSERT_GT(res, 0);
+
+  rcv_b_.WaitForBroadcast();
+  rcv_b_.CheckReceivedDataEquals(json_data_);
+  rcv_c_.WaitForBroadcast();
+  EXPECT_FALSE(rcv_a_.BroadcastReceived());
+
+  EXPECT_EQ(oid, res);
+}
+
+TEST_F(BroadcastManagerTest, AsyncSendRetry) {
+  RunContextInBackground(context_);
+
+  auto data = MakeBigJsonData();
+
+  for (int i = 0; i < 10; ++i) {
+    std::atomic<int> err{123};
+    int res = YOGI_BranchSendBroadcastAsync(
+        branch_c_, YOGI_ENC_JSON, data.data(), static_cast<int>(data.size()),
+        YOGI_TRUE,
+        [](int res, int oid, void* userarg) {
+          *static_cast<decltype(err)*>(userarg) = res;
+        },
+        &err);
+    EXPECT_GT(res, 0);
+
+    while (err == 123) std::this_thread::yield();
+    EXPECT_EQ(err, YOGI_OK);
+  }
+}
+
+TEST_F(BroadcastManagerTest, AsyncSendNoRetry) {
+  RunContextInBackground(context_);
+
+  auto data = MakeBigJsonData();
+
+  std::atomic<int> err;
+  do {
+    err = 123;
+    int res = YOGI_BranchSendBroadcastAsync(
+        branch_c_, YOGI_ENC_JSON, data.data(), static_cast<int>(data.size()),
+        YOGI_FALSE,
+        [](int res, int oid, void* userarg) {
+          *static_cast<decltype(err)*>(userarg) = res;
+        },
+        &err);
+    EXPECT_GT(res, 0);
+
+    while (err == 123) std::this_thread::yield();
+  } while (err == YOGI_OK);
+
+  EXPECT_EQ(err, YOGI_ERR_TX_QUEUE_FULL);
+}
 
 TEST_F(BroadcastManagerTest, DISABLED_CancelSend) {}
 
