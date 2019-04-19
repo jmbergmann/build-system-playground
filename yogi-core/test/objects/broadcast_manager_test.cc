@@ -36,7 +36,7 @@ class BroadcastReceiver {
           self->handler_called_ = true;
         },
         this);
-    EXPECT_EQ(res, YOGI_OK);
+    EXPECT_OK(res);
   }
 
   int GetBufferSize() const { return static_cast<int>(data_.size()); }
@@ -113,7 +113,7 @@ TEST_F(BroadcastManagerTest, SendJson) {
 
   int res = YOGI_BranchSendBroadcast(branch_a_, YOGI_ENC_JSON, json_data_,
                                      sizeof(json_data_), YOGI_FALSE);
-  ASSERT_EQ(res, YOGI_OK);
+  ASSERT_OK(res);
 
   rcv_b_.WaitForBroadcast();
   rcv_b_.CheckReceivedDataEquals(json_data_);
@@ -126,7 +126,7 @@ TEST_F(BroadcastManagerTest, SendMessagePack) {
 
   int res = YOGI_BranchSendBroadcast(branch_a_, YOGI_ENC_MSGPACK, msgpack_data_,
                                      sizeof(msgpack_data_), YOGI_FALSE);
-  ASSERT_EQ(res, YOGI_OK);
+  ASSERT_OK(res);
 
   rcv_b_.WaitForBroadcast();
   rcv_b_.CheckReceivedDataEquals(json_data_);
@@ -143,7 +143,7 @@ TEST_F(BroadcastManagerTest, SendBlock) {
     int res =
         YOGI_BranchSendBroadcast(branch_c_, YOGI_ENC_JSON, data.data(),
                                  static_cast<int>(data.size()), YOGI_TRUE);
-    EXPECT_EQ(res, YOGI_OK);
+    EXPECT_OK(res);
   }
 }
 
@@ -157,7 +157,7 @@ TEST_F(BroadcastManagerTest, SendNoBlock) {
                                    static_cast<int>(data.size()), YOGI_FALSE);
   } while (res == YOGI_OK);
 
-  EXPECT_EQ(res, YOGI_ERR_TX_QUEUE_FULL);
+  EXPECT_ERR(res, YOGI_ERR_TX_QUEUE_FULL);
 }
 
 TEST_F(BroadcastManagerTest, AsyncSendJson) {
@@ -165,7 +165,7 @@ TEST_F(BroadcastManagerTest, AsyncSendJson) {
   int res = YOGI_BranchSendBroadcastAsync(branch_a_, YOGI_ENC_JSON, json_data_,
                                           sizeof(json_data_), YOGI_TRUE,
                                           [](int res, int oid, void* userarg) {
-                                            EXPECT_EQ(res, YOGI_OK);
+                                            EXPECT_OK(res);
                                             EXPECT_GT(oid, 0);
                                             *static_cast<int*>(userarg) = oid;
                                           },
@@ -189,7 +189,7 @@ TEST_F(BroadcastManagerTest, AsyncSendMessagePack) {
       YOGI_BranchSendBroadcastAsync(branch_a_, YOGI_ENC_MSGPACK, msgpack_data_,
                                     sizeof(msgpack_data_), YOGI_TRUE,
                                     [](int res, int oid, void* userarg) {
-                                      EXPECT_EQ(res, YOGI_OK);
+                                      EXPECT_OK(res);
                                       EXPECT_GT(oid, 0);
                                       *static_cast<int*>(userarg) = oid;
                                     },
@@ -272,7 +272,7 @@ TEST_F(BroadcastManagerTest, CancelSend) {
     res = YOGI_BranchCancelSendBroadcast(branch_c_, oid);
   } while (res == YOGI_ERR_INVALID_OPERATION_ID);
 
-  ASSERT_EQ(res, YOGI_OK);
+  ASSERT_OK(res);
 }
 
 TEST_F(BroadcastManagerTest, ReceiveJson) {
@@ -305,7 +305,7 @@ TEST_F(BroadcastManagerTest, ReceiveMessagePack) {
 
 TEST_F(BroadcastManagerTest, CancelReceive) {
   int res = YOGI_BranchCancelReceiveBroadcast(branch_a_);
-  EXPECT_EQ(res, YOGI_OK);
+  EXPECT_OK(res);
 
   PollContext(context_);
   EXPECT_TRUE(rcv_a_.BroadcastReceived());

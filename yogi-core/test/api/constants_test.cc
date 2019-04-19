@@ -42,7 +42,7 @@ TEST(ConstantsTest, GetConstant) {
   EXPECT_NE(num, -1);
 
   int res = YOGI_GetConstant(nullptr, YOGI_CONST_VERSION_MAJOR);
-  EXPECT_EQ(res, YOGI_ERR_INVALID_PARAM);
+  EXPECT_ERR(res, YOGI_ERR_INVALID_PARAM);
 
   EXPECT_EQ(YOGI_GetConstant(&num, -9999), YOGI_ERR_INVALID_PARAM);
 }

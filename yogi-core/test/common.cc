@@ -56,7 +56,7 @@ nlohmann::json BranchEventRecorder::RunContextUntil(
     auto n = events_.size();
     while (n == events_.size()) {
       int res = YOGI_ContextRunOne(context_, nullptr, -1);
-      EXPECT_EQ(res, YOGI_OK);
+      EXPECT_OK(res);
     }
   }
 }
@@ -84,7 +84,7 @@ void RunContextUntilBranchesAreConnected(
 
   while (!uuids.empty()) {
     auto res = YOGI_ContextPoll(context, nullptr);
-    EXPECT_EQ(res, YOGI_OK);
+    EXPECT_OK(res);
 
     auto entry = uuids.begin();
     auto infos = GetConnectedBranches(entry->first);
@@ -107,7 +107,7 @@ void BranchEventRecorder::StartAwaitEvent() {
   int res = YOGI_BranchAwaitEventAsync(
       branch_, YOGI_BEV_ALL, &uuid_, json_str_.data(),
       static_cast<int>(json_str_.size()), &BranchEventRecorder::Callback, this);
-  EXPECT_EQ(res, YOGI_OK);
+  EXPECT_OK(res);
 }
 
 void BranchEventRecorder::Callback(int res, int event, int ev_res,
@@ -227,7 +227,7 @@ bool FakeBranch::IsConnectedTo(void* branch) const {
                                               }
                                             },
                                             &data);
-  EXPECT_EQ(res, YOGI_OK);
+  EXPECT_OK(res);
 
   return data.connected;
 }
@@ -330,26 +330,26 @@ void SetupLogging(int verbosity) {
 void* CreateContext() {
   void* context = nullptr;
   int res = YOGI_ContextCreate(&context);
-  EXPECT_EQ(res, YOGI_OK);
+  EXPECT_OK(res);
   EXPECT_NE(context, nullptr);
   return context;
 }
 
 void PollContext(void* context) {
   int res = YOGI_ContextPoll(context, nullptr);
-  EXPECT_EQ(res, YOGI_OK);
+  EXPECT_OK(res);
 }
 
 void PollContextOne(void* context) {
   int res = YOGI_ContextPollOne(context, nullptr);
-  EXPECT_EQ(res, YOGI_OK);
+  EXPECT_OK(res);
 }
 
 void RunContextInBackground(void* context) {
   int res = YOGI_ContextRunInBackground(context);
-  EXPECT_EQ(res, YOGI_OK);
+  EXPECT_OK(res);
   res = YOGI_ContextWaitForRunning(context, 1000000000);
-  EXPECT_EQ(res, YOGI_OK);
+  EXPECT_OK(res);
 }
 
 void* CreateBranch(void* context, const char* name, const char* net_name,
@@ -370,7 +370,7 @@ void* CreateBranch(void* context, const char* name, const char* net_name,
   void* branch = nullptr;
   int res = YOGI_BranchCreate(&branch, context, props.dump().c_str(), nullptr,
                               nullptr, 0);
-  EXPECT_EQ(res, YOGI_OK);
+  EXPECT_OK(res);
   return branch;
 }
 
@@ -387,7 +387,7 @@ boost::asio::ip::tcp::endpoint GetBranchTcpEndpoint(void* branch) {
 boost::uuids::uuid GetBranchUuid(void* branch) {
   boost::uuids::uuid uuid = {0};
   int res = YOGI_BranchGetInfo(branch, &uuid, nullptr, 0);
-  EXPECT_EQ(res, YOGI_OK);
+  EXPECT_OK(res);
   EXPECT_NE(uuid, boost::uuids::uuid{});
   return uuid;
 }
@@ -395,7 +395,7 @@ boost::uuids::uuid GetBranchUuid(void* branch) {
 nlohmann::json GetBranchInfo(void* branch) {
   char str[10000] = {0};
   int res = YOGI_BranchGetInfo(branch, nullptr, str, sizeof(str));
-  EXPECT_EQ(res, YOGI_OK);
+  EXPECT_OK(res);
   return nlohmann::json::parse(str);
 }
 
@@ -421,7 +421,7 @@ std::map<boost::uuids::uuid, nlohmann::json> GetConnectedBranches(
         data->branches[data->uuid] = nlohmann::json::parse(data->json_str);
       },
       &data);
-  EXPECT_EQ(res, YOGI_OK);
+  EXPECT_OK(res);
 
   return data.branches;
 }

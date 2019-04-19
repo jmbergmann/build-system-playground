@@ -24,7 +24,7 @@ class TimerTest : public TestFixture {
 
     timer_ = nullptr;
     int res = YOGI_TimerCreate(&timer_, context_);
-    ASSERT_EQ(res, YOGI_OK);
+    ASSERT_OK(res);
     ASSERT_NE(timer_, nullptr);
   }
 
@@ -40,7 +40,7 @@ TEST_F(TimerTest, StartAsync) {
                                    *static_cast<int*>(handler_res_) = res_;
                                  },
                                  &handler_res);
-  EXPECT_EQ(res, YOGI_OK);
+  EXPECT_OK(res);
 
   YOGI_ContextRunOne(context_, nullptr, 1000000000);
   auto dur = std::chrono::steady_clock::now() - start_time;
@@ -57,7 +57,7 @@ TEST_F(TimerTest, StartImmediateTimeout) {
                                    *static_cast<int*>(handler_res_) = res_;
                                  },
                                  &handler_res);
-  EXPECT_EQ(res, YOGI_OK);
+  EXPECT_OK(res);
 
   int cnt = -1;
   YOGI_ContextRunOne(context_, &cnt, 1000000000);
@@ -72,14 +72,14 @@ TEST_F(TimerTest, StartWhileRunning) {
                                    *static_cast<int*>(handler_res_) = res_;
                                  },
                                  &handler_res);
-  EXPECT_EQ(res, YOGI_OK);
+  EXPECT_OK(res);
 
   res = YOGI_TimerStartAsync(timer_, 0,  // Immediate timeout
                              [](int res_, void* handler_res_) {
                                *static_cast<int*>(handler_res_) = res_;
                              },
                              &handler_res);
-  EXPECT_EQ(res, YOGI_OK);
+  EXPECT_OK(res);
 
   int cnt = -1;
   YOGI_ContextRunOne(context_, &cnt, 1000000000);
@@ -94,7 +94,7 @@ TEST_F(TimerTest, StartWhileRunning) {
 
 TEST_F(TimerTest, Cancel) {
   int res = YOGI_TimerCancel(timer_);
-  EXPECT_EQ(res, YOGI_ERR_TIMER_EXPIRED);
+  EXPECT_ERR(res, YOGI_ERR_TIMER_EXPIRED);
 
   int handler_res = 1;
   res = YOGI_TimerStartAsync(timer_, -1,  // Infinite timeout
@@ -104,7 +104,7 @@ TEST_F(TimerTest, Cancel) {
                              &handler_res);
 
   res = YOGI_TimerCancel(timer_);
-  EXPECT_EQ(res, YOGI_OK);
+  EXPECT_OK(res);
 
   YOGI_ContextRunOne(context_, nullptr, -1);
 

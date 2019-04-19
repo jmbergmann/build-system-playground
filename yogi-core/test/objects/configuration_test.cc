@@ -26,12 +26,12 @@ class ConfigurationTest : public TestFixture {
   void* MakeConfiguration(int flags) {
     void* cfg = nullptr;
     int res = YOGI_ConfigurationCreate(&cfg, flags);
-    EXPECT_EQ(res, YOGI_OK);
+    EXPECT_OK(res);
     EXPECT_NE(cfg, nullptr);
 
     res = YOGI_ConfigurationUpdateFromJson(
         cfg, "{\"person\": {\"name\": \"Joe\", \"age\": 42}}", nullptr, 0);
-    EXPECT_EQ(res, YOGI_OK);
+    EXPECT_OK(res);
 
     return cfg;
   }
@@ -42,7 +42,7 @@ class ConfigurationTest : public TestFixture {
     if (res == YOGI_ERR_NO_VARIABLE_SUPPORT) {
       res = YOGI_ConfigurationDump(cfg, str, sizeof(str), YOGI_FALSE, -1);
     }
-    EXPECT_EQ(res, YOGI_OK);
+    EXPECT_OK(res);
 
     return nlohmann::json::parse(str);
   }
@@ -64,7 +64,7 @@ TEST_F(ConfigurationTest, UpdateFromJson) {
   char err_desc[1000];
   int res = YOGI_ConfigurationUpdateFromJson(
       cfg_, "{\"person\": {\"age\": 10}}", err_desc, sizeof(err_desc));
-  EXPECT_EQ(res, YOGI_OK) << err_desc;
+  EXPECT_OK(res) << err_desc;
   EXPECT_STREQ(err_desc, "");
 
   auto json = DumpConfiguration(cfg_);
@@ -77,7 +77,7 @@ TEST_F(ConfigurationTest, UpdateFromCorruptJson) {
   char err_desc[1000];
   int res = YOGI_ConfigurationUpdateFromJson(cfg_, "{\"person\": {\"age\": 10}",
                                              err_desc, sizeof(err_desc));
-  EXPECT_EQ(res, YOGI_ERR_PARSING_JSON_FAILED);
+  EXPECT_ERR(res, YOGI_ERR_PARSING_JSON_FAILED);
   EXPECT_STRNE(err_desc, "");
 
   CheckConfigurationIsOriginal();
@@ -101,7 +101,7 @@ TEST_F(ConfigurationTest, UpdateFromCommandLine) {
   int res = YOGI_ConfigurationUpdateFromCommandLine(cfg_, cmdline.argc,
                                                     cmdline.argv, YOGI_CLO_ALL,
                                                     err_desc, sizeof(err_desc));
-  ASSERT_EQ(res, YOGI_OK) << err_desc;
+  ASSERT_OK(res) << err_desc;
   EXPECT_STREQ(err_desc, "");
 
   auto json = DumpConfiguration(cfg_);
@@ -130,7 +130,7 @@ TEST_F(ConfigurationTest, UpdateFromCommandLineCorruptFile) {
   int res = YOGI_ConfigurationUpdateFromCommandLine(cfg_, cmdline.argc,
                                                     cmdline.argv, YOGI_CLO_ALL,
                                                     err_desc, sizeof(err_desc));
-  ASSERT_EQ(res, YOGI_ERR_PARSING_FILE_FAILED);
+  ASSERT_ERR(res, YOGI_ERR_PARSING_FILE_FAILED);
   EXPECT_STRNE(err_desc, "");
 
   CheckConfigurationIsOriginal();
@@ -146,7 +146,7 @@ TEST_F(ConfigurationTest, UpdateFromFile) {
   char err_desc[1000];
   int res = YOGI_ConfigurationUpdateFromFile(cfg_, "a.json", err_desc,
                                              sizeof(err_desc));
-  ASSERT_EQ(res, YOGI_OK) << err_desc;
+  ASSERT_OK(res) << err_desc;
   EXPECT_STREQ(err_desc, "");
 
   auto json = DumpConfiguration(cfg_);
@@ -165,7 +165,7 @@ TEST_F(ConfigurationTest, UpdateFromCorruptFile) {
   char err_desc[1000];
   int res = YOGI_ConfigurationUpdateFromFile(cfg_, "a.json", err_desc,
                                              sizeof(err_desc));
-  ASSERT_EQ(res, YOGI_ERR_PARSING_FILE_FAILED);
+  ASSERT_ERR(res, YOGI_ERR_PARSING_FILE_FAILED);
   EXPECT_STRNE(err_desc, "");
 
   CheckConfigurationIsOriginal();
@@ -177,28 +177,28 @@ TEST_F(ConfigurationTest, Dump) {
 
   char str[1000];
   int res = YOGI_ConfigurationDump(cfg1, str, sizeof(str), YOGI_TRUE, -1);
-  EXPECT_EQ(res, YOGI_OK);
+  EXPECT_OK(res);
   EXPECT_STRNE(str, "");
   EXPECT_EQ(std::string(str).find_first_of(" \n"), std::string::npos);
 
   res = YOGI_ConfigurationDump(cfg1, str, sizeof(str), YOGI_FALSE, -1);
-  EXPECT_EQ(res, YOGI_OK);
+  EXPECT_OK(res);
   EXPECT_STRNE(str, "");
   EXPECT_EQ(std::string(str).find_first_of(" \n"), std::string::npos);
 
   res = YOGI_ConfigurationDump(cfg1, str, sizeof(str), YOGI_TRUE, 2);
-  EXPECT_EQ(res, YOGI_OK);
+  EXPECT_OK(res);
   EXPECT_STRNE(str, "");
   EXPECT_NE(std::string(str).find('\n'), std::string::npos);
   EXPECT_NE(std::string(str).find("  "), std::string::npos);
 
   res = YOGI_ConfigurationDump(cfg2, str, sizeof(str), YOGI_FALSE, -1);
-  EXPECT_EQ(res, YOGI_OK);
+  EXPECT_OK(res);
   EXPECT_STRNE(str, "");
   EXPECT_EQ(std::string(str).find_first_of(" \n"), std::string::npos);
 
   res = YOGI_ConfigurationDump(cfg2, str, sizeof(str), YOGI_TRUE, -1);
-  EXPECT_EQ(res, YOGI_ERR_NO_VARIABLE_SUPPORT);
+  EXPECT_ERR(res, YOGI_ERR_NO_VARIABLE_SUPPORT);
 }
 
 TEST_F(ConfigurationTest, WriteToFile) {
@@ -207,32 +207,32 @@ TEST_F(ConfigurationTest, WriteToFile) {
   void* cfg2 = MakeConfiguration(YOGI_CFG_DISABLE_VARIABLES);
 
   int res = YOGI_ConfigurationWriteToFile(cfg1, "a.json", YOGI_TRUE, -1);
-  EXPECT_EQ(res, YOGI_OK);
+  EXPECT_OK(res);
   auto content = ReadFile("a.json");
   EXPECT_FALSE(content.empty());
   EXPECT_EQ(std::string(content).find_first_of(" \n"), std::string::npos);
 
   res = YOGI_ConfigurationWriteToFile(cfg1, "b.json", YOGI_FALSE, -1);
-  EXPECT_EQ(res, YOGI_OK);
+  EXPECT_OK(res);
   content = ReadFile("b.json");
   EXPECT_FALSE(content.empty());
   EXPECT_EQ(std::string(content).find_first_of(" \n"), std::string::npos);
 
   res = YOGI_ConfigurationWriteToFile(cfg1, "c.json", YOGI_TRUE, 2);
-  EXPECT_EQ(res, YOGI_OK);
+  EXPECT_OK(res);
   content = ReadFile("c.json");
   EXPECT_FALSE(content.empty());
   EXPECT_NE(std::string(content).find('\n'), std::string::npos);
   EXPECT_NE(std::string(content).find("  "), std::string::npos);
 
   res = YOGI_ConfigurationWriteToFile(cfg2, "d.json", YOGI_FALSE, -1);
-  EXPECT_EQ(res, YOGI_OK);
+  EXPECT_OK(res);
   content = ReadFile("d.json");
   EXPECT_FALSE(content.empty());
   EXPECT_EQ(std::string(content).find_first_of(" \n"), std::string::npos);
 
   res = YOGI_ConfigurationWriteToFile(cfg2, "e.json", YOGI_TRUE, -1);
-  EXPECT_EQ(res, YOGI_ERR_NO_VARIABLE_SUPPORT);
+  EXPECT_ERR(res, YOGI_ERR_NO_VARIABLE_SUPPORT);
 }
 
 TEST_F(ConfigurationTest, ImmutableCommandLine) {
@@ -263,7 +263,7 @@ TEST_F(ConfigurationTest, ImmutableCommandLine) {
   void* cfg1 = MakeConfiguration(YOGI_CFG_NONE);
   int res = YOGI_ConfigurationUpdateFromCommandLine(
       cfg1, cmdline.argc, cmdline.argv, YOGI_CLO_ALL, nullptr, 0);
-  EXPECT_EQ(res, YOGI_OK);
+  EXPECT_OK(res);
   auto json = DumpConfiguration(cfg1);
   ASSERT_TRUE(json.count("person")) << json;
   EXPECT_EQ(json["person"].value("age", -1), 55);
@@ -272,7 +272,7 @@ TEST_F(ConfigurationTest, ImmutableCommandLine) {
 
   res = YOGI_ConfigurationUpdateFromJson(cfg1, json_update.dump().c_str(),
                                          nullptr, 0);
-  EXPECT_EQ(res, YOGI_OK);
+  EXPECT_OK(res);
   json = DumpConfiguration(cfg1);
   ASSERT_TRUE(json.count("person")) << json;
   EXPECT_EQ(json["person"].value("age", -1), 55);
@@ -283,7 +283,7 @@ TEST_F(ConfigurationTest, ImmutableCommandLine) {
   void* cfg2 = MakeConfiguration(YOGI_CFG_MUTABLE_CMD_LINE);
   res = YOGI_ConfigurationUpdateFromCommandLine(
       cfg2, cmdline.argc, cmdline.argv, YOGI_CLO_ALL, nullptr, 0);
-  EXPECT_EQ(res, YOGI_OK);
+  EXPECT_OK(res);
   json = DumpConfiguration(cfg2);
   ASSERT_TRUE(json.count("person")) << json;
   EXPECT_EQ(json["person"].value("age", -1), 55);
@@ -292,7 +292,7 @@ TEST_F(ConfigurationTest, ImmutableCommandLine) {
 
   res = YOGI_ConfigurationUpdateFromJson(cfg2, json_update.dump().c_str(),
                                          nullptr, 0);
-  EXPECT_EQ(res, YOGI_OK);
+  EXPECT_OK(res);
   json = DumpConfiguration(cfg2);
   ASSERT_TRUE(json.count("person")) << json;
   EXPECT_EQ(json["person"].value("age", -1), 88);
@@ -325,12 +325,12 @@ TEST_F(ConfigurationTest, Variables) {
   int res = YOGI_ConfigurationUpdateFromCommandLine(cfg_, cmdline.argc,
                                                     cmdline.argv, YOGI_CLO_ALL,
                                                     err_desc, sizeof(err_desc));
-  ASSERT_EQ(res, YOGI_OK);
+  ASSERT_OK(res);
   EXPECT_STREQ(err_desc, "");
 
   res = YOGI_ConfigurationUpdateFromJson(cfg_, json_update.dump().c_str(),
                                          err_desc, sizeof(err_desc));
-  ASSERT_EQ(res, YOGI_OK) << err_desc;
+  ASSERT_OK(res) << err_desc;
   EXPECT_STREQ(err_desc, "");
 
   auto json = DumpConfiguration(cfg_);
@@ -354,7 +354,7 @@ TEST_F(ConfigurationTest, BadVariables) {
   char err_desc[1000];
   int res = YOGI_ConfigurationUpdateFromJson(cfg_, json.dump().c_str(),
                                              err_desc, sizeof(err_desc));
-  ASSERT_EQ(res, YOGI_ERR_UNDEFINED_VARIABLES) << err_desc;
+  ASSERT_ERR(res, YOGI_ERR_UNDEFINED_VARIABLES) << err_desc;
   EXPECT_NE(std::string(err_desc).find("NAME"), std::string::npos);
 
   // clang-format off
@@ -365,7 +365,7 @@ TEST_F(ConfigurationTest, BadVariables) {
 
   res = YOGI_ConfigurationUpdateFromJson(cfg_, json.dump().c_str(), err_desc,
                                          sizeof(err_desc));
-  ASSERT_EQ(res, YOGI_ERR_UNDEFINED_VARIABLES) << err_desc;
+  ASSERT_ERR(res, YOGI_ERR_UNDEFINED_VARIABLES) << err_desc;
   EXPECT_NE(std::string(err_desc).find("NAME is unterminated"),
             std::string::npos);
 
@@ -381,6 +381,6 @@ TEST_F(ConfigurationTest, BadVariables) {
 
   res = YOGI_ConfigurationUpdateFromJson(cfg_, json.dump().c_str(), err_desc,
                                          sizeof(err_desc));
-  ASSERT_EQ(res, YOGI_ERR_UNDEFINED_VARIABLES) << err_desc;
+  ASSERT_ERR(res, YOGI_ERR_UNDEFINED_VARIABLES) << err_desc;
   EXPECT_NE(std::string(err_desc).find("AB"), std::string::npos);
 }

@@ -29,7 +29,7 @@ class ConnectionManagerTest : public TestFixture {
 
   void ReCreateBranch(const char* adv_addr) {
     auto res = YOGI_Destroy(branch_);
-    ASSERT_EQ(res, YOGI_OK);
+    ASSERT_OK(res);
     branch_ =
         CreateBranch(context_, nullptr, nullptr, nullptr, nullptr, adv_addr);
   }
@@ -263,20 +263,20 @@ TEST_F(ConnectionManagerTest, CancelAwaitBranchEvent) {
   int res = YOGI_BranchAwaitEventAsync(
       branch_, 0, nullptr, nullptr, 0,
       [](int res, int event, int ev_res, void* userarg) {
-        EXPECT_EQ(res, YOGI_ERR_CANCELED);
+        EXPECT_ERR(res, YOGI_ERR_CANCELED);
         EXPECT_EQ(event, YOGI_BEV_NONE);
         EXPECT_EQ(ev_res, YOGI_OK);
         *static_cast<bool*>(userarg) = true;
       },
       &called);
-  ASSERT_EQ(res, YOGI_OK);
+  ASSERT_OK(res);
 
   res = YOGI_BranchCancelAwaitEvent(branch_);
-  ASSERT_EQ(res, YOGI_OK);
+  ASSERT_OK(res);
 
   while (!called) {
     res = YOGI_ContextRunOne(context_, nullptr, -1);
-    EXPECT_EQ(res, YOGI_OK);
+    EXPECT_OK(res);
   }
 }
 
@@ -285,19 +285,19 @@ TEST_F(ConnectionManagerTest, AwaitBranchEventOnDestruction) {
   int res = YOGI_BranchAwaitEventAsync(
       branch_, 0, nullptr, nullptr, 0,
       [](int res, int event, int ev_res, void* userarg) {
-        EXPECT_EQ(res, YOGI_ERR_CANCELED);
+        EXPECT_ERR(res, YOGI_ERR_CANCELED);
         EXPECT_EQ(event, YOGI_BEV_NONE);
         EXPECT_EQ(ev_res, YOGI_OK);
         *static_cast<bool*>(userarg) = true;
       },
       &called);
-  ASSERT_EQ(res, YOGI_OK);
+  ASSERT_OK(res);
 
   YOGI_Destroy(branch_);
 
   while (!called) {
     res = YOGI_ContextRunOne(context_, nullptr, -1);
-    EXPECT_EQ(res, YOGI_OK);
+    EXPECT_OK(res);
   }
 }
 
@@ -345,7 +345,7 @@ TEST_F(ConnectionManagerTest, GhostMode) {
   void* ghost_branch;
   int res = YOGI_BranchCreate(&ghost_branch, context_, props.dump().c_str(),
                               nullptr, nullptr, 0);
-  EXPECT_EQ(res, YOGI_OK);
+  EXPECT_OK(res);
 
   BranchEventRecorder rec(context_, ghost_branch);
   rec.RunContextUntil(YOGI_BEV_BRANCH_QUERIED, branch_, YOGI_OK);

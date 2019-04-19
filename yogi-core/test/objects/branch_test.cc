@@ -38,7 +38,7 @@ class BranchTest : public TestFixture {
 TEST_F(BranchTest, CreateWithDefaults) {
   void* branch;
   int res = YOGI_BranchCreate(&branch, context_, nullptr, nullptr, nullptr, 0);
-  EXPECT_EQ(res, YOGI_OK);
+  EXPECT_OK(res);
 }
 
 TEST_F(BranchTest, CreateWithJsonPointer) {
@@ -56,7 +56,7 @@ TEST_F(BranchTest, CreateWithJsonPointer) {
 
   res = YOGI_BranchCreate(&branch, context_, props.dump().c_str(), "/arr/1",
                           err, sizeof(err));
-  EXPECT_EQ(res, YOGI_OK);
+  EXPECT_OK(res);
   EXPECT_STREQ(err, "");
   auto info = GetBranchInfo(branch);
   EXPECT_EQ(info.value("name", "NOT FOUND"), "Samosa");
@@ -65,7 +65,7 @@ TEST_F(BranchTest, CreateWithJsonPointer) {
 TEST_F(BranchTest, DefaultQueueSizes) {
   void* branch;
   int res = YOGI_BranchCreate(&branch, context_, nullptr, nullptr, nullptr, 0);
-  ASSERT_EQ(res, YOGI_OK);
+  ASSERT_OK(res);
   auto info = GetBranchInfo(branch);
   EXPECT_EQ(info.value("tx_queue_size", -1), api::kDefaultTxQueueSize);
   EXPECT_EQ(info.value("rx_queue_size", -1), api::kDefaultRxQueueSize);
@@ -79,7 +79,7 @@ TEST_F(BranchTest, CustomQueueSizes) {
   void* branch;
   int res = YOGI_BranchCreate(&branch, context_, props.dump().c_str(), nullptr,
                               nullptr, 0);
-  ASSERT_EQ(res, YOGI_OK);
+  ASSERT_OK(res);
   auto info = GetBranchInfo(branch);
   EXPECT_EQ(info.value("tx_queue_size", -1), api::kMaxTxQueueSize);
   EXPECT_EQ(info.value("rx_queue_size", -1), api::kMaxRxQueueSize);
@@ -102,7 +102,7 @@ TEST_F(BranchTest, InvalidQueueSizes) {
     void* branch;
     int res = YOGI_BranchCreate(&branch, context_, props.dump().c_str(),
                                 nullptr, err, sizeof(err));
-    EXPECT_EQ(res, YOGI_ERR_INVALID_PARAM);
+    EXPECT_ERR(res, YOGI_ERR_INVALID_PARAM);
     EXPECT_NE(std::string(err).find(entry.first), std::string::npos);
   }
 }
@@ -110,7 +110,7 @@ TEST_F(BranchTest, InvalidQueueSizes) {
 TEST_F(BranchTest, GetInfoBufferTooSmall) {
   char json[3];
   int res = YOGI_BranchGetInfo(branch_, nullptr, json, sizeof(json));
-  EXPECT_EQ(res, YOGI_ERR_BUFFER_TOO_SMALL);
+  EXPECT_ERR(res, YOGI_ERR_BUFFER_TOO_SMALL);
   EXPECT_NE(json[sizeof(json) - 2], '\0');
   EXPECT_EQ(json[sizeof(json) - 1], '\0');
 }
@@ -121,7 +121,7 @@ TEST_F(BranchTest, GetInfoJson) {
   boost::uuids::uuid uuid;
   char json_str[1000] = {0};
   int res = YOGI_BranchGetInfo(branch_, &uuid, json_str, sizeof(json_str));
-  EXPECT_EQ(res, YOGI_OK);
+  EXPECT_OK(res);
   EXPECT_NE(std::count(json_str, json_str + sizeof(json_str), '\0'), 0);
   EXPECT_STRNE(json_str, "");
   auto json = nlohmann::json::parse(json_str);

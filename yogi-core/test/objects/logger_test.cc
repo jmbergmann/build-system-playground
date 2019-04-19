@@ -46,12 +46,12 @@ class LoggerTest : public TestFixture {
   virtual void SetUp() override {
     logger_ = nullptr;
     int res = YOGI_LoggerCreate(&logger_, "My.Component");
-    ASSERT_EQ(res, YOGI_OK);
+    ASSERT_OK(res);
     ASSERT_NE(logger_, nullptr);
 
     res =
         YOGI_ConfigureHookLogging(YOGI_VB_TRACE, &LoggerTest::Hook, &entries_);
-    ASSERT_EQ(res, YOGI_OK);
+    ASSERT_OK(res);
   }
 
   bool CheckLineMatchesCustomLogFormat(std::string line) {
@@ -100,14 +100,14 @@ TEST_F(LoggerTest, LogToConsole) {
   // Test stdout
   int res = YOGI_ConfigureConsoleLogging(
       YOGI_VB_TRACE, YOGI_ST_STDOUT, YOGI_FALSE, custom_time_fmt_, custom_fmt_);
-  ASSERT_EQ(res, YOGI_OK);
+  ASSERT_OK(res);
 
   YOGI_LoggerLog(logger_, YOGI_VB_ERROR, "myfile.cc", 123, "Hello");
 
   // Test stderr
   res = YOGI_ConfigureConsoleLogging(YOGI_VB_TRACE, YOGI_ST_STDERR, YOGI_FALSE,
                                      custom_time_fmt_, custom_fmt_);
-  ASSERT_EQ(res, YOGI_OK);
+  ASSERT_OK(res);
 
   YOGI_LoggerLog(logger_, YOGI_VB_ERROR, "myfile.cc", 123, "Hello");
 }
@@ -116,25 +116,25 @@ TEST_F(LoggerTest, FormatErrors) {
   for (auto time_fmt : {"%4", "%%", "", "%%T", "%", "bla%"}) {
     int res = YOGI_ConfigureConsoleLogging(YOGI_VB_TRACE, YOGI_ST_STDOUT,
                                            YOGI_FALSE, time_fmt, nullptr);
-    EXPECT_EQ(res, YOGI_ERR_INVALID_PARAM) << time_fmt;
+    EXPECT_ERR(res, YOGI_ERR_INVALID_PARAM) << time_fmt;
 
     res = YOGI_ConfigureFileLogging(YOGI_VB_TRACE, "logfile.txt", nullptr, 0,
                                     time_fmt, nullptr);
-    EXPECT_EQ(res, YOGI_ERR_INVALID_PARAM) << time_fmt;
+    EXPECT_ERR(res, YOGI_ERR_INVALID_PARAM) << time_fmt;
 
     res = YOGI_ConfigureFileLogging(YOGI_VB_TRACE, time_fmt, nullptr, 0,
                                     nullptr, nullptr);
-    EXPECT_EQ(res, YOGI_ERR_INVALID_PARAM) << time_fmt;
+    EXPECT_ERR(res, YOGI_ERR_INVALID_PARAM) << time_fmt;
   }
 
   for (auto fmt : {"$;", "", "$$$", "$", "bla$"}) {
     int res = YOGI_ConfigureConsoleLogging(YOGI_VB_TRACE, YOGI_ST_STDOUT,
                                            YOGI_FALSE, nullptr, fmt);
-    EXPECT_EQ(res, YOGI_ERR_INVALID_PARAM) << fmt;
+    EXPECT_ERR(res, YOGI_ERR_INVALID_PARAM) << fmt;
 
     res = YOGI_ConfigureFileLogging(YOGI_VB_TRACE, "logfile.txt", nullptr, 0,
                                     nullptr, fmt);
-    EXPECT_EQ(res, YOGI_ERR_INVALID_PARAM) << fmt;
+    EXPECT_ERR(res, YOGI_ERR_INVALID_PARAM) << fmt;
   }
 }
 
@@ -157,7 +157,7 @@ TEST_F(LoggerTest, LogToFile) {
   int res = YOGI_ConfigureFileLogging(YOGI_VB_TRACE, "%F_%H%M%S.log", filename,
                                       sizeof(filename), custom_time_fmt_,
                                       custom_fmt_);
-  ASSERT_EQ(res, YOGI_OK);
+  ASSERT_OK(res);
   ASSERT_TRUE(boost::filesystem::exists(filename));
 
   YOGI_LoggerLog(logger_, YOGI_VB_ERROR, "myfile.cc", 123, "Hello");
@@ -172,7 +172,7 @@ TEST_F(LoggerTest, LogToFile) {
   // Close the logfile
   res = YOGI_ConfigureFileLogging(YOGI_VB_NONE, nullptr, nullptr, 0, nullptr,
                                   nullptr);
-  EXPECT_EQ(res, YOGI_OK);
+  EXPECT_OK(res);
 
   boost::filesystem::remove(filename);
 }
@@ -180,14 +180,14 @@ TEST_F(LoggerTest, LogToFile) {
 TEST_F(LoggerTest, GetAndSetVerbosity) {
   int verbosity = -1;
   int res = YOGI_LoggerGetVerbosity(logger_, &verbosity);
-  EXPECT_EQ(res, YOGI_OK);
+  EXPECT_OK(res);
   EXPECT_NE(verbosity, YOGI_VB_ERROR);
 
   res = YOGI_LoggerSetVerbosity(logger_, YOGI_VB_ERROR);
-  EXPECT_EQ(res, YOGI_OK);
+  EXPECT_OK(res);
 
   res = YOGI_LoggerGetVerbosity(logger_, &verbosity);
-  EXPECT_EQ(res, YOGI_OK);
+  EXPECT_OK(res);
   EXPECT_EQ(verbosity, YOGI_VB_ERROR);
 
   YOGI_LoggerLog(logger_, YOGI_VB_FATAL, "myfile.cc", 123, "Hello");
@@ -205,14 +205,14 @@ TEST_F(LoggerTest, GetAndSetVerbosity) {
 TEST_F(LoggerTest, SetComponentsVerbosity) {
   void* logger2;
   int res = YOGI_LoggerCreate(&logger2, "Another Logger");
-  ASSERT_EQ(res, YOGI_OK);
+  ASSERT_OK(res);
 
   YOGI_LoggerSetVerbosity(logger_, YOGI_VB_INFO);
   YOGI_LoggerSetVerbosity(logger2, YOGI_VB_INFO);
 
   int count = -1;
   res = YOGI_LoggerSetComponentsVerbosity("My\\..*", YOGI_VB_ERROR, &count);
-  EXPECT_EQ(res, YOGI_OK);
+  EXPECT_OK(res);
   EXPECT_EQ(count, 1);
 
   YOGI_LoggerLog(logger_, YOGI_VB_INFO, "myfile.cc", 123, "Hello");
@@ -225,27 +225,27 @@ TEST_F(LoggerTest, SetComponentsVerbosity) {
 TEST_F(LoggerTest, SetComponentsVerbosityAppLogger) {
   int count = -1;
   int res = YOGI_LoggerSetComponentsVerbosity("App", YOGI_VB_ERROR, &count);
-  EXPECT_EQ(res, YOGI_OK);
+  EXPECT_OK(res);
   EXPECT_EQ(count, 1);
 }
 
 TEST_F(LoggerTest, SetComponentsVerbosityInternalLoggers) {
   void* context;
   int res = YOGI_ContextCreate(&context);
-  ASSERT_EQ(res, YOGI_OK);
+  ASSERT_OK(res);
 
   int count = -1;
   res = YOGI_LoggerSetComponentsVerbosity("Yogi\\..*", YOGI_VB_ERROR, &count);
-  EXPECT_EQ(res, YOGI_OK);
+  EXPECT_OK(res);
   EXPECT_GT(count, 0);
 }
 
 TEST_F(LoggerTest, Log) {
   int res = YOGI_LoggerLog(logger_, YOGI_VB_FATAL, "myfile.cc", 123, "Hello");
-  EXPECT_EQ(res, YOGI_OK);
+  EXPECT_OK(res);
 
   res = YOGI_LoggerLog(nullptr, YOGI_VB_TRACE, "myfile.cc", 123, "Hello");
-  EXPECT_EQ(res, YOGI_OK);
+  EXPECT_OK(res);
 }
 
 TEST_F(LoggerTest, DefaultLoggerVerbosity) {
