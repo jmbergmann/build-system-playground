@@ -12,14 +12,15 @@
       "args": [
         "--gtest_break_on_failure",
         "--gtest_catch_exceptions=0",
-        "--gtest_filter=Broadcast*SendBlock"
+        "--gtest_filter=Broadcast*Cancel*"
       ],
       "stopAtEntry": false,
       "cwd": "${workspaceFolder}/build/yogi-core",
       "environment": [],
       "externalConsole": true,
       "MIMode": "lldb",
-      "preLaunchTask": "Build yogi-core"
+      "preLaunchTask": "Build yogi-core",
+      "miDebuggerPath": "/Applications/Xcode.app/Contents/Developer/usr/bin/lldb-mi"
     },
     {
       "name": "Test: yogi-cpp",
@@ -32,7 +33,8 @@
       "environment": [],
       "externalConsole": true,
       "MIMode": "lldb",
-      "preLaunchTask": "Build yogi-cpp"
+      "preLaunchTask": "Build yogi-cpp",
+      "miDebuggerPath": "/Applications/Xcode.app/Contents/Developer/usr/bin/lldb-mi"
     }
   ]
 }

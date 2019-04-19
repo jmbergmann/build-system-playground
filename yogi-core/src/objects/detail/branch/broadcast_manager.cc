@@ -146,7 +146,7 @@ void BroadcastManager::SendNowOrLater(SharedCounter* pending_handlers,
       try {
         auto& pending_handlers_ref = *pending_handlers;
         auto weak_self = std::weak_ptr<BroadcastManager>{shared_from_this()};
-        conn->SendAsync(msg, [=](auto& res) {
+        conn->SendAsync(msg, oid, [=](auto& res) {
           bool success = false;
 
           {

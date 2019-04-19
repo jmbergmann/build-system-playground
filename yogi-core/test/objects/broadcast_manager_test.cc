@@ -77,7 +77,7 @@ class BroadcastManagerTest : public TestFixture {
         branch_b_(CreateBranch(context_, "b")),
         branch_c_(
             CreateBranch(context_, "c", nullptr, nullptr, nullptr, nullptr, 5)),
-        rcv_a_(branch_a_),
+        rcv_a_(branch_a_, YOGI_ENC_MSGPACK),
         rcv_b_(branch_b_),
         rcv_c_(branch_c_) {
     RunContextUntilBranchesAreConnected(context_,
@@ -161,18 +161,19 @@ TEST_F(BroadcastManagerTest, SendNoBlock) {
 }
 
 TEST_F(BroadcastManagerTest, AsyncSendJson) {
-  RunContextInBackground(context_);
-
   int oid = -1;
-  auto res = YOGI_BranchSendBroadcastAsync(branch_a_, YOGI_ENC_JSON, json_data_,
-                                           sizeof(json_data_), YOGI_TRUE,
-                                           [](int res, int oid, void* userarg) {
-                                             EXPECT_EQ(res, YOGI_OK);
-                                             EXPECT_GT(oid, 0);
-                                             *static_cast<int*>(userarg) = oid;
-                                           },
-                                           &oid);
+  int res = YOGI_BranchSendBroadcastAsync(branch_a_, YOGI_ENC_JSON, json_data_,
+                                          sizeof(json_data_), YOGI_TRUE,
+                                          [](int res, int oid, void* userarg) {
+                                            EXPECT_EQ(res, YOGI_OK);
+                                            EXPECT_GT(oid, 0);
+                                            *static_cast<int*>(userarg) = oid;
+                                          },
+                                          &oid);
   ASSERT_GT(res, 0);
+  EXPECT_EQ(oid, -1);
+
+  RunContextInBackground(context_);
 
   rcv_b_.WaitForBroadcast();
   rcv_b_.CheckReceivedDataEquals(json_data_);
@@ -182,11 +183,9 @@ TEST_F(BroadcastManagerTest, AsyncSendJson) {
   EXPECT_EQ(oid, res);
 }
 
-TEST_F(BroadcastManagerTest, DISABLED_AsyncSendMessagePack) {
-  RunContextInBackground(context_);
-
+TEST_F(BroadcastManagerTest, AsyncSendMessagePack) {
   int oid = -1;
-  auto res =
+  int res =
       YOGI_BranchSendBroadcastAsync(branch_a_, YOGI_ENC_MSGPACK, msgpack_data_,
                                     sizeof(msgpack_data_), YOGI_TRUE,
                                     [](int res, int oid, void* userarg) {
@@ -196,6 +195,9 @@ TEST_F(BroadcastManagerTest, DISABLED_AsyncSendMessagePack) {
                                     },
                                     &oid);
   ASSERT_GT(res, 0);
+  EXPECT_EQ(oid, -1);
+
+  RunContextInBackground(context_);
 
   rcv_b_.WaitForBroadcast();
   rcv_b_.CheckReceivedDataEquals(json_data_);
@@ -250,10 +252,62 @@ TEST_F(BroadcastManagerTest, AsyncSendNoRetry) {
   EXPECT_EQ(err, YOGI_ERR_TX_QUEUE_FULL);
 }
 
-TEST_F(BroadcastManagerTest, DISABLED_CancelSend) {}
+TEST_F(BroadcastManagerTest, CancelSend) {
+  auto data = MakeBigJsonData();
 
-TEST_F(BroadcastManagerTest, DISABLED_ReceiveJson) {}
+  int res;
+  std::map<int, int> oid_to_res;
+  do {
+    int oid = YOGI_BranchSendBroadcastAsync(
+        branch_c_, YOGI_ENC_JSON, data.data(), static_cast<int>(data.size()),
+        YOGI_TRUE,
+        [](int res, int oid, void* userarg) {
+          (*static_cast<decltype(oid_to_res)*>(userarg))[oid] = res;
+        },
+        &oid_to_res);
+    EXPECT_GT(oid, 0);
 
-TEST_F(BroadcastManagerTest, DISABLED_ReceiveMessagePack) {}
+    oid_to_res[oid] = YOGI_ERR_UNKNOWN;
 
-TEST_F(BroadcastManagerTest, DISABLED_CancelReceive) {}
+    res = YOGI_BranchCancelSendBroadcast(branch_c_, oid);
+  } while (res == YOGI_ERR_INVALID_OPERATION_ID);
+
+  ASSERT_EQ(res, YOGI_OK);
+}
+
+TEST_F(BroadcastManagerTest, ReceiveJson) {
+  int oid = YOGI_BranchSendBroadcastAsync(
+      branch_a_, YOGI_ENC_JSON, json_data_, sizeof(json_data_), YOGI_TRUE,
+      [](int res, int oid, void* userarg) {}, nullptr);
+  ASSERT_GT(oid, 0);
+
+  while (!rcv_b_.BroadcastReceived()) {
+    PollContext(context_);
+  }
+
+  EXPECT_EQ(rcv_b_.GetHandlerResult(), YOGI_OK);
+  rcv_b_.CheckReceivedDataEquals(json_data_);
+}
+
+TEST_F(BroadcastManagerTest, ReceiveMessagePack) {
+  int oid = YOGI_BranchSendBroadcastAsync(
+      branch_b_, YOGI_ENC_JSON, json_data_, sizeof(json_data_), YOGI_TRUE,
+      [](int res, int oid, void* userarg) {}, nullptr);
+  ASSERT_GT(oid, 0);
+
+  while (!rcv_a_.BroadcastReceived()) {
+    PollContext(context_);
+  }
+
+  EXPECT_EQ(rcv_a_.GetHandlerResult(), YOGI_OK);
+  rcv_a_.CheckReceivedDataEquals(msgpack_data_);  // rcv_a_ receives MsgPack
+}
+
+TEST_F(BroadcastManagerTest, CancelReceive) {
+  int res = YOGI_BranchCancelReceiveBroadcast(branch_a_);
+  EXPECT_EQ(res, YOGI_OK);
+
+  PollContext(context_);
+  EXPECT_TRUE(rcv_a_.BroadcastReceived());
+  EXPECT_EQ(rcv_a_.GetHandlerResult(), YOGI_ERR_CANCELED);
+}
