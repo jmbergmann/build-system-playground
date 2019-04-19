@@ -281,12 +281,25 @@ TEST_F(BroadcastManagerTest, ReceiveJson) {
       [](int res, int oid, void* userarg) {}, nullptr);
   ASSERT_GT(oid, 0);
 
-  while (!rcv_b_.BroadcastReceived()) {
-    PollContext(context_);
-  }
+  while (!rcv_b_.BroadcastReceived()) PollContext(context_);
 
   EXPECT_EQ(rcv_b_.GetHandlerResult(), YOGI_OK);
   rcv_b_.CheckReceivedDataEquals(json_data_);
+}
+
+TEST_F(BroadcastManagerTest, ReceiveJsonBufferTooSmall) {
+  auto data = MakeBigJsonData();
+  int oid = YOGI_BranchSendBroadcastAsync(
+      branch_a_, YOGI_ENC_JSON, data.data(), static_cast<int>(data.size()),
+      YOGI_TRUE, [](int res, int oid, void* userarg) {}, nullptr);
+  ASSERT_GT(oid, 0);
+
+  while (!rcv_b_.BroadcastReceived()) PollContext(context_);
+  EXPECT_ERR(rcv_b_.GetHandlerResult(), YOGI_ERR_BUFFER_TOO_SMALL);
+
+  auto rcv_data = rcv_b_.GetReceivedData();
+  EXPECT_EQ(static_cast<int>(rcv_data.size()), rcv_b_.GetBufferSize());
+  EXPECT_EQ(rcv_data.back(), '\0');
 }
 
 TEST_F(BroadcastManagerTest, ReceiveMessagePack) {
@@ -295,12 +308,25 @@ TEST_F(BroadcastManagerTest, ReceiveMessagePack) {
       [](int res, int oid, void* userarg) {}, nullptr);
   ASSERT_GT(oid, 0);
 
-  while (!rcv_a_.BroadcastReceived()) {
-    PollContext(context_);
-  }
+  while (!rcv_a_.BroadcastReceived()) PollContext(context_);
 
   EXPECT_EQ(rcv_a_.GetHandlerResult(), YOGI_OK);
   rcv_a_.CheckReceivedDataEquals(msgpack_data_);  // rcv_a_ receives MsgPack
+}
+
+TEST_F(BroadcastManagerTest, ReceiveMessagePackBufferTooSmall) {
+  auto data = MakeBigJsonData();
+  int oid = YOGI_BranchSendBroadcastAsync(
+      branch_b_, YOGI_ENC_JSON, data.data(), static_cast<int>(data.size()),
+      YOGI_TRUE, [](int res, int oid, void* userarg) {}, nullptr);
+  ASSERT_GT(oid, 0);
+
+  while (!rcv_a_.BroadcastReceived()) PollContext(context_);
+  EXPECT_ERR(rcv_a_.GetHandlerResult(), YOGI_ERR_BUFFER_TOO_SMALL);
+
+  auto rcv_data = rcv_a_.GetReceivedData();
+  EXPECT_EQ(static_cast<int>(rcv_data.size()), rcv_b_.GetBufferSize());
+  EXPECT_NE(rcv_data.back(), '\0');
 }
 
 TEST_F(BroadcastManagerTest, CancelReceive) {
