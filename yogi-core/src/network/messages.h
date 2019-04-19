@@ -69,9 +69,9 @@ class IncomingMessage : virtual public Message {
   IncomingMessage() = default;
 };
 
-class UserData {
+class Payload {
  public:
-  UserData(boost::asio::const_buffer data, api::Encoding enc)
+  Payload(boost::asio::const_buffer data, api::Encoding enc)
       : data_(data), enc_(enc) {}
 
   void SerializeTo(utils::SmallByteVector* buffer) const;
@@ -94,9 +94,9 @@ class MessageT : virtual public Message {
  protected:
   static utils::SmallByteVector MakeMsgBytes() { return {kMessageType}; }
 
-  static utils::SmallByteVector MakeMsgBytes(const UserData& user_data) {
+  static utils::SmallByteVector MakeMsgBytes(const Payload& payload) {
     utils::SmallByteVector bytes({kMessageType});
-    user_data.SerializeTo(&bytes);
+    payload.SerializeTo(&bytes);
     return bytes;
   }
 
@@ -111,11 +111,11 @@ class MessageT : virtual public Message {
 
   template <typename... Fields>
   static utils::SmallByteVector MakeMsgBytes(
-      const std::tuple<Fields...>& fields, const UserData& user_data) {
+      const std::tuple<Fields...>& fields, const Payload& payload) {
     utils::SmallByteVector bytes({kMessageType});
     internal::MsgPackBufferStream stream(&bytes);
     msgpack::pack(stream, fields);
-    user_data.SerializeTo(&bytes);
+    payload.SerializeTo(&bytes);
     return bytes;
   }
 };
@@ -167,15 +167,15 @@ class BroadcastIncoming : public IncomingMessage, public Broadcast {
 
   virtual std::string ToString() const override final;
 
-  const UserData& GetUserData() const { return user_data_; }
+  const Payload& GetPayload() const { return payload_; }
 
  private:
-  const UserData user_data_;
+  const Payload payload_;
 };
 
 class BroadcastOutgoing : public OutgoingMessage, public Broadcast {
  public:
-  BroadcastOutgoing(const UserData& user_data);
+  BroadcastOutgoing(const Payload& payload);
 
   virtual std::string ToString() const override final;
 };

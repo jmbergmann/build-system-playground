@@ -197,7 +197,7 @@ YOGI_API int YOGI_BranchSendBroadcast(void* branch, int enc, const void* data,
     auto buffer = boost::asio::buffer(data, static_cast<std::size_t>(datasize));
 
     return brn
-        ->SendBroadcast(network::UserData(buffer, encoding), block == YOGI_TRUE)
+        ->SendBroadcast(network::Payload(buffer, encoding), block == YOGI_TRUE)
         .GetErrorCode();
   }
   CATCH_AND_RETURN_ERRORS_ONLY;
@@ -219,7 +219,7 @@ YOGI_API int YOGI_BranchSendBroadcastAsync(
     auto buffer = boost::asio::buffer(data, static_cast<std::size_t>(datasize));
 
     return brn->SendBroadcastAsync(
-        network::UserData(buffer, encoding), retry == YOGI_TRUE,
+        network::Payload(buffer, encoding), retry == YOGI_TRUE,
         [=](auto& res, auto oid) { fn(res.GetErrorCode(), oid, userarg); });
   }
   CATCH_AND_RETURN_ERRORS_ONLY;

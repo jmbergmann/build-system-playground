@@ -43,11 +43,11 @@ class BroadcastManager final
   BroadcastManager(ContextPtr context, ConnectionManager& conn_manager);
   virtual ~BroadcastManager();
 
-  api::Result SendBroadcast(const network::UserData& user_data, bool retry);
+  api::Result SendBroadcast(const network::Payload& payload, bool retry);
 
-  SendBroadcastOperationId SendBroadcastAsync(
-      const network::UserData& user_data, bool retry,
-      SendBroadcastHandler handler);
+  SendBroadcastOperationId SendBroadcastAsync(const network::Payload& payload,
+                                              bool retry,
+                                              SendBroadcastHandler handler);
 
   bool CancelSendBroadcast(SendBroadcastOperationId oid);
 

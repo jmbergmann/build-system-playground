@@ -27,10 +27,10 @@ BroadcastManager::BroadcastManager(ContextPtr context,
 
 BroadcastManager::~BroadcastManager() {}
 
-api::Result BroadcastManager::SendBroadcast(const network::UserData& user_data,
+api::Result BroadcastManager::SendBroadcast(const network::Payload& payload,
                                             bool block) {
   api::Result result;
-  SendBroadcastAsync(user_data, block, [&](auto& res, auto) {
+  SendBroadcastAsync(payload, block, [&](auto& res, auto) {
     std::lock_guard<std::mutex> lock(this->tx_sync_mutex_);
     result = res;
     this->tx_sync_cv_.notify_all();
@@ -43,9 +43,8 @@ api::Result BroadcastManager::SendBroadcast(const network::UserData& user_data,
 }
 
 BroadcastManager::SendBroadcastOperationId BroadcastManager::SendBroadcastAsync(
-    const network::UserData& user_data, bool retry,
-    SendBroadcastHandler handler) {
-  network::messages::BroadcastOutgoing msg(user_data);
+    const network::Payload& payload, bool retry, SendBroadcastHandler handler) {
+  network::messages::BroadcastOutgoing msg(payload);
 
   auto oid = conn_manager_.MakeOperationId();
 
@@ -129,8 +128,8 @@ void BroadcastManager::OnBroadcastReceived(
     auto handler = rx_handler_;
     rx_handler_ = {};
     std::size_t n = 0;
-    auto res = msg.GetUserData().SerializeToUserBuffer(rx_data_, rx_enc_, &n);
-    handler(res, n);  // TODO (No idea why. Maybe not TODO any more?)
+    auto res = msg.GetPayload().SerializeToUserBuffer(rx_data_, rx_enc_, &n);
+    handler(res, n);
   }
 }
 

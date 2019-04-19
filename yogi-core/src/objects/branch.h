@@ -51,10 +51,10 @@ class Branch : public api::ExposedObjectT<Branch, api::ObjectType::kBranch> {
   BranchInfoStringsList MakeConnectedBranchesInfoStrings() const;
   void AwaitEventAsync(api::BranchEvents events, BranchEventHandler handler);
   void CancelAwaitEvent();
-  SendBroadcastOperationId SendBroadcastAsync(
-      const network::UserData& user_data, bool retry,
-      SendBroadcastHandler handler);
-  api::Result SendBroadcast(const network::UserData& user_data, bool block);
+  SendBroadcastOperationId SendBroadcastAsync(const network::Payload& payload,
+                                              bool retry,
+                                              SendBroadcastHandler handler);
+  api::Result SendBroadcast(const network::Payload& payload, bool block);
   bool CancelSendBroadcast(SendBroadcastOperationId oid);
   void ReceiveBroadcast(api::Encoding enc, boost::asio::mutable_buffer data,
                         ReceiveBroadcastHandler handler);

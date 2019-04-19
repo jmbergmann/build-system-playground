@@ -39,7 +39,7 @@ struct MsgPackCheckVisitor : public msgpack::null_visitor {
 
 namespace {
 
-void CheckUserDataIsValidMsgPack(const char* data, std::size_t size) {
+void CheckPayloadIsValidMsgPack(const char* data, std::size_t size) {
   MsgPackCheckVisitor visitor;
   bool ok = msgpack::parse(data, size, visitor);
   if (!ok) {
@@ -48,8 +48,8 @@ void CheckUserDataIsValidMsgPack(const char* data, std::size_t size) {
   }
 }
 
-utils::ByteVector CheckAndConvertUserDataFromJsonToMsgPack(const char* data,
-                                                           std::size_t size) {
+utils::ByteVector CheckAndConvertPayloadFromJsonToMsgPack(const char* data,
+                                                          std::size_t size) {
   YOGI_ASSERT(size > 0);
   if (data[size - 1] != '\0') {
     throw api::DescriptiveError(YOGI_ERR_PARSING_JSON_FAILED)
@@ -89,7 +89,7 @@ void IncomingMessage::Deserialize(const utils::ByteVector& serialized_msg,
   }
 }
 
-void UserData::SerializeTo(utils::SmallByteVector* buffer) const {
+void Payload::SerializeTo(utils::SmallByteVector* buffer) const {
   if (data_.size() == 0) return;
 
   auto raw = static_cast<const char*>(data_.data());
@@ -97,13 +97,13 @@ void UserData::SerializeTo(utils::SmallByteVector* buffer) const {
   switch (enc_) {
     case api::Encoding::kJson: {
       auto data =
-          internal::CheckAndConvertUserDataFromJsonToMsgPack(raw, data_.size());
+          internal::CheckAndConvertPayloadFromJsonToMsgPack(raw, data_.size());
       buffer->insert(buffer->end(), data.begin(), data.end());
       break;
     }
 
     case api::Encoding::kMsgPack: {
-      internal::CheckUserDataIsValidMsgPack(raw, data_.size());
+      internal::CheckPayloadIsValidMsgPack(raw, data_.size());
       buffer->insert(buffer->end(), raw, raw + data_.size());
 
       break;
@@ -114,9 +114,9 @@ void UserData::SerializeTo(utils::SmallByteVector* buffer) const {
   }
 }
 
-api::Result UserData::SerializeToUserBuffer(boost::asio::mutable_buffer buffer,
-                                            api::Encoding enc,
-                                            std::size_t* bytes_written) const {
+api::Result Payload::SerializeToUserBuffer(boost::asio::mutable_buffer buffer,
+                                           api::Encoding enc,
+                                           std::size_t* bytes_written) const {
   utils::ByteVector tmp_buf;
   std::string tmp_str;
   boost::asio::const_buffer src;
@@ -186,18 +186,18 @@ OutgoingMessage::OutgoingMessage(utils::SmallByteVector serialized_msg)
 namespace messages {
 
 BroadcastIncoming::BroadcastIncoming(const utils::ByteVector& serialized_msg)
-    : user_data_(boost::asio::buffer(serialized_msg) + 1,
-                 api::Encoding::kMsgPack) {}
+    : payload_(boost::asio::buffer(serialized_msg) + 1,
+               api::Encoding::kMsgPack) {}
 
 std::string BroadcastIncoming::ToString() const {
   std::stringstream ss;
-  ss << "Broadcast, " << BroadcastOutgoing(user_data_).Serialize().size() - 1
+  ss << "Broadcast, " << BroadcastOutgoing(payload_).Serialize().size() - 1
      << " bytes user data";
   return ss.str();
 }
 
-BroadcastOutgoing::BroadcastOutgoing(const UserData& user_data)
-    : OutgoingMessage(MakeMsgBytes(user_data)) {}
+BroadcastOutgoing::BroadcastOutgoing(const Payload& payload)
+    : OutgoingMessage(MakeMsgBytes(payload)) {}
 
 std::string BroadcastOutgoing::ToString() const {
   std::stringstream ss;

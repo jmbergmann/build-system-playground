@@ -68,14 +68,12 @@ void Branch::AwaitEventAsync(api::BranchEvents events,
 void Branch::CancelAwaitEvent() { connection_manager_->CancelAwaitEvent(); }
 
 Branch::SendBroadcastOperationId Branch::SendBroadcastAsync(
-    const network::UserData& user_data, bool retry,
-    SendBroadcastHandler handler) {
-  return broadcast_manager_->SendBroadcastAsync(user_data, retry, handler);
+    const network::Payload& payload, bool retry, SendBroadcastHandler handler) {
+  return broadcast_manager_->SendBroadcastAsync(payload, retry, handler);
 }
 
-api::Result Branch::SendBroadcast(const network::UserData& user_data,
-                                  bool block) {
-  return broadcast_manager_->SendBroadcast(user_data, block);
+api::Result Branch::SendBroadcast(const network::Payload& payload, bool block) {
+  return broadcast_manager_->SendBroadcast(payload, block);
 }
 
 bool Branch::CancelSendBroadcast(SendBroadcastOperationId oid) {
