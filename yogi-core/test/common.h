@@ -99,7 +99,7 @@ static const auto kLoopbackAddress =
         ? boost::asio::ip::make_address("127.0.0.1")
         : boost::asio::ip::make_address("::1");
 
-class TestFixture : public ::testing::Test {
+class TestFixture : public testing::Test {
  public:
   TestFixture();
   virtual ~TestFixture();

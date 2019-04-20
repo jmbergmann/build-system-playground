@@ -34,9 +34,11 @@
 namespace yogi {
 
 _YOGI_DEFINE_API_FN(int, YOGI_GetCurrentTime, (long long* timestamp))
+
 _YOGI_DEFINE_API_FN(int, YOGI_FormatTime,
                     (long long timestamp, char* str, int strsize,
                      const char* timefmt))
+
 _YOGI_DEFINE_API_FN(int, YOGI_ParseTime,
                     (long long* timestamp, const char* str,
                      const char* timefmt))
@@ -102,7 +104,8 @@ class Timestamp {
   /// \param timefmt Format of the time string.
   ///
   /// \returns The parsed timestamp.
-  static Timestamp Parse(StringView str, StringView timefmt = {}) {
+  static Timestamp Parse(const StringView& str,
+                         const StringView& timefmt = {}) {
     long long timestamp;
     int res = internal::YOGI_ParseTime(&timestamp, str, timefmt);
     internal::CheckErrorCode(res);
@@ -158,7 +161,7 @@ class Timestamp {
   /// \param timefmt Format of the time string.
   ///
   /// \returns The formatted time string.
-  std::string Format(StringView timefmt = {}) const {
+  std::string Format(const StringView& timefmt = {}) const {
     char str[128];
     int res = internal::YOGI_FormatTime(dur_since_epoch_.NanosecondsCount(),
                                         str, sizeof(str), timefmt);

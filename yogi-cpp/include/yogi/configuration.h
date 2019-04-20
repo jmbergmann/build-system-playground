@@ -36,17 +36,22 @@
 namespace yogi {
 
 _YOGI_DEFINE_API_FN(int, YOGI_ConfigurationCreate, (void** config, int flags))
+
 _YOGI_DEFINE_API_FN(int, YOGI_ConfigurationUpdateFromCommandLine,
                     (void* config, int argc, const char* const* argv,
                      int options, char* err, int errsize))
+
 _YOGI_DEFINE_API_FN(int, YOGI_ConfigurationUpdateFromJson,
                     (void* config, const char* json, char* err, int errsize))
+
 _YOGI_DEFINE_API_FN(int, YOGI_ConfigurationUpdateFromFile,
                     (void* config, const char* filename, char* err,
                      int errsize))
+
 _YOGI_DEFINE_API_FN(int, YOGI_ConfigurationDump,
                     (void* config, char* json, int jsonsize, int resvars,
                      int indent))
+
 _YOGI_DEFINE_API_FN(int, YOGI_ConfigurationWriteToFile,
                     (void* config, const char* filename, int resvars,
                      int indent))
@@ -265,7 +270,7 @@ class Configuration : public ObjectT<Configuration> {
   /// containing detailed information about the error.
   ///
   /// \param json JSON object or serialized JSON.
-  void UpdateFromJson(JsonView json) {
+  void UpdateFromJson(const JsonView& json) {
     internal::CheckDescriptiveErrorCode([&](auto err, auto size) {
       return internal::YOGI_ConfigurationUpdateFromJson(this->GetHandle(), json,
                                                         err, size);
@@ -278,7 +283,7 @@ class Configuration : public ObjectT<Configuration> {
   /// raised containing detailed information about the error.
   ///
   /// \param filename Path to the JSON file.
-  void UpdateFromFile(StringView filename) {
+  void UpdateFromFile(const StringView& filename) {
     internal::CheckDescriptiveErrorCode([&](auto err, auto size) {
       return internal::YOGI_ConfigurationUpdateFromFile(this->GetHandle(),
                                                         filename, err, size);
@@ -350,7 +355,7 @@ class Configuration : public ObjectT<Configuration> {
   /// \param resolve_variables Resolve all configuration variables.
   /// \param indentation       Number of space characters to use for
   ///                          indentation; must be >= 0.
-  void WriteToFile(StringView filename, bool resolve_variables,
+  void WriteToFile(const StringView& filename, bool resolve_variables,
                    int indentation) const {
     if (indentation < 0) {
       throw Failure(ErrorCode::kInvalidParam);
@@ -366,7 +371,7 @@ class Configuration : public ObjectT<Configuration> {
   ///
   /// \param filename          Path to the output file.
   /// \param resolve_variables Resolve all configuration variables.
-  void WriteToFile(StringView filename, bool resolve_variables) const {
+  void WriteToFile(const StringView& filename, bool resolve_variables) const {
     WriteToFileImpl(filename, resolve_variables, -1);
   }
 
@@ -377,7 +382,7 @@ class Configuration : public ObjectT<Configuration> {
   /// \param filename    Path to the output file.
   /// \param indentation Number of space characters to use for indentation; must
   ///                    be >= 0.
-  void WriteToFile(StringView filename, int indentation) const {
+  void WriteToFile(const StringView& filename, int indentation) const {
     if (indentation < 0) {
       throw Failure(ErrorCode::kInvalidParam);
     }
@@ -396,7 +401,7 @@ class Configuration : public ObjectT<Configuration> {
   /// will be as compact as possible.
   ///
   /// \param filename Path to the output file.
-  void WriteToFile(StringView filename) const {
+  void WriteToFile(const StringView& filename) const {
     WriteToFileImpl(filename,
                     (flags_ & ConfigurationFlags::kDisableVariables) ==
                         ConfigurationFlags::kNone,

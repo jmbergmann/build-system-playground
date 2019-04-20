@@ -351,7 +351,7 @@ class DescriptiveFailure : public Failure {
   ///
   /// \param ec          Error code.
   /// \param description Description of the error.
-  DescriptiveFailure(ErrorCode ec, StringView description)
+  DescriptiveFailure(ErrorCode ec, const StringView& description)
       : Failure(ec), description_(description) {}
 
   /// Returns a detailed description of the error.
@@ -427,7 +427,7 @@ class DescriptiveFailureException : public FailureException {
   ///
   /// \param ec          Error code.
   /// \param description Description of the error.
-  DescriptiveFailureException(ErrorCode ec, StringView description)
+  DescriptiveFailureException(ErrorCode ec, const StringView& description)
       : FailureException(ec), failure_(ec, description) {}
 
   virtual const Failure& GetFailure() const override { return failure_; }

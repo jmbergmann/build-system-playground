@@ -19,7 +19,7 @@
 #include "../../src/network/transport.h"
 
 #include <gmock/gmock.h>
-using namespace ::testing;
+using namespace testing;
 using namespace std::chrono_literals;
 
 MATCHER_P(BufferEq, other, std::string(negation ? "isn't" : "is")) {

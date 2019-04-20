@@ -19,7 +19,7 @@
 
 #include <yogi_core.h>
 
-class BranchTest : public ::testing::Test {
+class BranchTest : public testing::Test {
  protected:
   yogi::ContextPtr context_ = yogi::Context::Create();
 };

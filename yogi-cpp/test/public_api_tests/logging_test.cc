@@ -22,7 +22,7 @@
 #include <regex>
 #include <vector>
 
-class LoggingTest : public ::testing::Test {
+class LoggingTest : public testing::Test {
  protected:
   virtual void SetUp() override {
     temp_dir_ = boost::filesystem::unique_path();

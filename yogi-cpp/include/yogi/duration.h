@@ -525,7 +525,8 @@ class Duration {
   /// \param[in] inf_fmt Format to use for infinity
   ///
   /// \returns The formatted duration string
-  std::string Format(StringView dur_fmt = {}, StringView inf_fmt = {}) const {
+  std::string Format(const StringView& dur_fmt = {},
+                     const StringView& inf_fmt = {}) const {
     char str[128];
     int res = internal::YOGI_FormatDuration(IsFinite() ? ns_count_ : -1,
                                             ns_count_ < 0 ? 1 : 0, str,

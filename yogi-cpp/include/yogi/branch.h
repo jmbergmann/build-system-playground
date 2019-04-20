@@ -35,6 +35,7 @@
 #include "internal/query_string.h"
 #include "json_view.h"
 #include "string_view.h"
+#include "payload.h"
 
 #include <unordered_map>
 
@@ -43,17 +44,40 @@ namespace yogi {
 _YOGI_DEFINE_API_FN(int, YOGI_BranchCreate,
                     (void** branch, void* context, const char* props,
                      const char* section, char* err, int errsize))
+
 _YOGI_DEFINE_API_FN(int, YOGI_BranchGetInfo,
                     (void* branch, void* uuid, char* json, int jsonsize))
+
 _YOGI_DEFINE_API_FN(int, YOGI_BranchGetConnectedBranches,
                     (void* branch, void* uuid, char* json, int jsonsize,
                      void (*fn)(int res, void* userarg), void* userarg))
+
 _YOGI_DEFINE_API_FN(int, YOGI_BranchAwaitEventAsync,
                     (void* branch, int events, void* uuid, char* json,
                      int jsonsize,
                      void (*fn)(int res, int event, int ev_res, void* userarg),
                      void* userarg))
+
 _YOGI_DEFINE_API_FN(int, YOGI_BranchCancelAwaitEvent, (void* branch))
+
+_YOGI_DEFINE_API_FN(int, YOGI_BranchSendBroadcast,
+                    (void* branch, int enc, const void* data, int datasize,
+                     int block))
+
+_YOGI_DEFINE_API_FN(int, YOGI_BranchSendBroadcastAsync,
+                    (void* branch, int enc, const void* data, int datasize,
+                     int retry, void (*fn)(int res, int oid, void* userarg),
+                     void* userarg))
+
+_YOGI_DEFINE_API_FN(int, YOGI_BranchCancelSendBroadcast,
+                    (void* branch, int oid))
+
+_YOGI_DEFINE_API_FN(int, YOGI_BranchReceiveBroadcastAsync,
+                    (void* branch, int enc, void* data, int datasize,
+                     void (*fn)(int res, int size, void* userarg),
+                     void* userarg))
+
+_YOGI_DEFINE_API_FN(int, YOGI_BranchCancelReceiveBroadcast, (void* branch))
 
 /// \addtogroup enums
 /// @{
@@ -540,8 +564,8 @@ class Branch : public ObjectT<Branch> {
   ///                syntax is JSON pointer (RFC 6901)
   ///
   /// \returns The created branch.
-  static BranchPtr Create(ContextPtr context, JsonView props = {},
-                          StringView section = {}) {
+  static BranchPtr Create(ContextPtr context, const JsonView& props = {},
+                          const StringView& section = {}) {
     return BranchPtr(new Branch(context, props, section));
   }
 
@@ -762,8 +786,44 @@ class Branch : public ObjectT<Branch> {
     internal::CheckErrorCode(res);
   }
 
+  /// Sends a broadcast message to all connected branches.
+  ///
+  /// Broadcast messages contain arbitrary data encoded as JSON or MessagePack.
+  /// As opposed to sending messages via terminals, broadcast messages don't
+  /// have to comply with a defined schema for the payload; any data that can be
+  /// encoded is valid. This implies that validating the data is entirely up to
+  /// the user code.
+  ///
+  /// Setting the \p block parameter to _false_ will cause the function to
+  /// skip sending the message to branches that have a full send queue. If at
+  /// least one branch was skipped, the function will return _false_. If the
+  /// parameter is set to _true_ instead, the function will block until the
+  /// message has been put into the send queues of all connected branches.
+  ///
+  /// \attention
+  ///   Calling this function from within a handler function executed through
+  ///   the branch's _context_  with \p block set to _true_ will cause a
+  ///   dead-lock if any send queue is full!
+  ///
+  /// \param payload Payload to send.
+  /// \param block   Block until message has been put into all send buffers.
+  ///
+  /// \return _true_ if the message was successfully put into all send buffers.
+  bool SendBroadcast(const Payload& payload, bool block = true) {
+    int res = internal::YOGI_BranchSendBroadcast(
+        GetHandle(), static_cast<int>(payload.Encoding()), payload.Data(),
+        payload.Size(), block ? 1 : 0);
+
+    if (res == static_cast<int>(ErrorCode::kTxQueueFull)) {
+      return false;
+    } else {
+      internal::CheckErrorCode(res);
+      return true;
+    }
+  }
+
  private:
-  Branch(ContextPtr context, JsonView props, StringView section)
+  Branch(ContextPtr context, const JsonView& props, const StringView& section)
       : ObjectT(internal::CallApiCreateWithDescriptiveErrorCode(
                     internal::YOGI_BranchCreate, GetForeignHandle(context),
                     props, section),

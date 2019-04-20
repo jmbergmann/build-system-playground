@@ -22,7 +22,7 @@
 #include <chrono>
 using namespace std::chrono_literals;
 
-class ContextTest : public ::testing::Test {
+class ContextTest : public testing::Test {
  public:
   yogi::ContextPtr context_ = yogi::Context::Create();
 };

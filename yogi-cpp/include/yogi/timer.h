@@ -32,9 +32,11 @@
 namespace yogi {
 
 _YOGI_DEFINE_API_FN(int, YOGI_TimerCreate, (void** timer, void* context))
+
 _YOGI_DEFINE_API_FN(int, YOGI_TimerStartAsync,
                     (void* timer, long long duration,
                      void (*fn)(int res, void* userarg), void* userarg))
+
 _YOGI_DEFINE_API_FN(int, YOGI_TimerCancel, (void* timer))
 
 class Timer;

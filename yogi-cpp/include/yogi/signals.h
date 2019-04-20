@@ -35,12 +35,15 @@ namespace yogi {
 _YOGI_DEFINE_API_FN(int, YOGI_RaiseSignal,
                     (int signal, void* sigarg,
                      void (*fn)(void* sigarg, void* userarg), void* userarg))
+
 _YOGI_DEFINE_API_FN(int, YOGI_SignalSetCreate,
                     (void** sigset, void* context, int signals))
+
 _YOGI_DEFINE_API_FN(int, YOGI_SignalSetAwaitSignalAsync,
                     (void* sigset,
                      void (*fn)(int res, int sig, void* sigarg, void* userarg),
                      void* userarg))
+
 _YOGI_DEFINE_API_FN(int, YOGI_SignalSetCancelAwaitSignal, (void* sigset))
 
 /// \addtogroup enums

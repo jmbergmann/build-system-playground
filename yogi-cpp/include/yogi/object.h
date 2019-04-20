@@ -60,6 +60,7 @@ inline void* CallApiCreateWithDescriptiveErrorCode(Fn fn, Args&&... args) {
 _YOGI_DEFINE_API_FN(int, YOGI_FormatObject,
                     (void* object, char* str, int strsize, const char* objfmt,
                      const char* nullstr))
+
 _YOGI_DEFINE_API_FN(int, YOGI_Destroy, (void* object))
 
 class Object;
@@ -99,7 +100,8 @@ class Object : public std::enable_shared_from_this<Object> {
   /// \param nullstr String to use if the object's handle is NULL
   ///
   /// \returns Formatted string.
-  std::string Format(StringView fmt = {}, StringView nullstr = {}) const {
+  std::string Format(const StringView& fmt = {},
+                     const StringView& nullstr = {}) const {
     char str[128];
     int res =
         internal::YOGI_FormatObject(handle_, str, sizeof(str), fmt, nullstr);

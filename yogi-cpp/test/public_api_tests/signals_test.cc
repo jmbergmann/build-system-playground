@@ -19,7 +19,7 @@
 
 #include <yogi_core.h>
 
-class SignalsTest : public ::testing::Test {
+class SignalsTest : public testing::Test {
  protected:
   yogi::ContextPtr context_ = yogi::Context::Create();
 };
@@ -85,7 +85,8 @@ TEST_F(SignalsTest, RaiseSignalCleanupHandler) {
 }
 
 TEST_F(SignalsTest, AwaitSignal) {
-  auto sigset = yogi::SignalSet::Create(context_, yogi::Signals::kTerm | yogi::Signals::kUsr5);
+  auto sigset = yogi::SignalSet::Create(
+      context_, yogi::Signals::kTerm | yogi::Signals::kUsr5);
 
   bool called = false;
   sigset->AwaitSignal([&](auto& res, auto signal) {

@@ -39,22 +39,40 @@ namespace yogi {
 class JsonView {
  public:
   /// Constructs a view that evaluates to a nullptr.
-  JsonView() : s_(nullptr) {}
+  JsonView() : s_(nullptr), size_(0) {}
 
   /// Constructs a view from a standard string.
   ///
   /// \param s Referenced string.
-  JsonView(const std::string& s) : s_(s.c_str()) {}
+  JsonView(const std::string& s)
+      : s_(s.c_str()), size_(static_cast<int>(s.size())) {}
 
   /// Constructs a view from a NULL-terminated string.
   ///
   /// \param s Referenced NULL-terminated string.
-  JsonView(const char* s) : s_(s){};
+  JsonView(const char* s) : s_(s), size_(static_cast<int>(strlen(s))){};
 
   /// Constructs a view from a JSON object.
   ///
   /// \param json The JSON object to reference.
-  JsonView(const Json& json) : tmp_(json.dump()), s_(tmp_.c_str()){};
+  JsonView(const Json& json)
+      : tmp_(json.dump()),
+        s_(tmp_.c_str()),
+        size_(static_cast<int>(tmp_.size())){};
+
+  /// Returns a NULL-terminated string holding the serialized JSON data.
+  ///
+  /// \attention
+  ///   The returned value is only valid as long as both the view object and the
+  ///   parameter passed to any of its constructors are valid.
+  ///
+  /// \returns NULL-terminated string holding the serialized JSON data.
+  const char* Data() const { return s_; }
+
+  /// Returns the length of the serialized JSON data in bytes.
+  ///
+  /// \returns Length of the serialized JSON data, excluding the trailing '\0'.
+  int Size() const { return size_; }
 
   /// Returns a NULL-terminated string holding the serialized JSON data.
   ///
@@ -68,6 +86,7 @@ class JsonView {
  private:
   const std::string tmp_;
   const char* const s_;
+  const int size_;
 };
 
 }  // namespace yogi

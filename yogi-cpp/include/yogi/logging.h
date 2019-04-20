@@ -179,22 +179,29 @@ namespace yogi {
 _YOGI_DEFINE_API_FN(int, YOGI_ConfigureConsoleLogging,
                     (int verbosity, int stream, int color, const char* timefmt,
                      const char* fmt))
+
 _YOGI_DEFINE_API_FN(int, YOGI_ConfigureHookLogging,
                     (int verbosity,
                      void (*fn)(int severity, long long timestamp, int tid,
                                 const char* file, int line, const char* comp,
                                 const char* msg, void* userarg),
                      void* userarg))
+
 _YOGI_DEFINE_API_FN(int, YOGI_ConfigureFileLogging,
                     (int verbosity, const char* filename, char* genfn,
                      int genfnsize, const char* timefmt, const char* fmt))
+
 _YOGI_DEFINE_API_FN(int, YOGI_LoggerCreate,
                     (void** logger, const char* component))
+
 _YOGI_DEFINE_API_FN(int, YOGI_LoggerGetVerbosity,
                     (void* logger, int* verbosity))
+
 _YOGI_DEFINE_API_FN(int, YOGI_LoggerSetVerbosity, (void* logger, int verbosity))
+
 _YOGI_DEFINE_API_FN(int, YOGI_LoggerSetComponentsVerbosity,
                     (const char* components, int verbosity, int* count))
+
 _YOGI_DEFINE_API_FN(int, YOGI_LoggerLog,
                     (void* logger, int severity, const char* file, int line,
                      const char* msg))
@@ -323,8 +330,9 @@ inline std::string ToString<Stream>(const Stream& st) {
 /// \param fmt       Format of a log entry (see above for placeholders)
 inline void SetupConsoleLogging(Verbosity verbosity,
                                 Stream stream = Stream::kStderr,
-                                bool color = true, StringView timefmt = {},
-                                StringView fmt = {}) {
+                                bool color = true,
+                                const StringView& timefmt = {},
+                                const StringView& fmt = {}) {
   int res = internal::YOGI_ConfigureConsoleLogging(static_cast<int>(verbosity),
                                                    static_cast<int>(stream),
                                                    color ? 1 : 0, timefmt, fmt);
@@ -423,9 +431,10 @@ inline void DisableHookLogging() {
 /// \param fmt       Format of a log entry (see above for placeholders)
 ///
 /// \returns The generated filename with all placeholders resolved
-inline std::string SetupFileLogging(Verbosity verbosity, StringView filename,
-                                    StringView timefmt = {},
-                                    StringView fmt = {}) {
+inline std::string SetupFileLogging(Verbosity verbosity,
+                                    const StringView& filename,
+                                    const StringView& timefmt = {},
+                                    const StringView& fmt = {}) {
   char genfn[256];
   int res =
       internal::YOGI_ConfigureFileLogging(static_cast<int>(verbosity), filename,
@@ -476,7 +485,7 @@ class Logger : public ObjectT<Logger> {
   /// \param verbosity  Maximum verbosity entries to be logged
   ///
   /// \returns Number of matching loggers
-  static int SetComponentsVerbosity(StringView components,
+  static int SetComponentsVerbosity(const StringView& components,
                                     Verbosity verbosity) {
     int count;
     int res = internal::YOGI_LoggerSetComponentsVerbosity(
@@ -492,7 +501,7 @@ class Logger : public ObjectT<Logger> {
   /// \param component The component tag to use
   ///
   /// \returns Newly created logger
-  static LoggerPtr Create(StringView component) {
+  static LoggerPtr Create(const StringView& component) {
     return LoggerPtr(new Logger(component));
   }
 
@@ -521,7 +530,8 @@ class Logger : public ObjectT<Logger> {
   /// \param msg      Log message
   /// \param file     Source file name
   /// \param line     Source file line number
-  void Log(Verbosity severity, StringView msg, StringView file, int line) {
+  void Log(Verbosity severity, const StringView& msg, const StringView& file,
+           int line) {
     const char* short_file = file;
     if (short_file) {
       for (const char* ch = short_file; *ch; ++ch) {
@@ -540,7 +550,9 @@ class Logger : public ObjectT<Logger> {
   ///
   /// \param severity Severity (verbosity) of the entry
   /// \param msg      Log message
-  void Log(Verbosity severity, StringView msg) { Log(severity, msg, {}, 0); }
+  void Log(Verbosity severity, const StringView& msg) {
+    Log(severity, msg, {}, 0);
+  }
 
  protected:
   // For the AppLogger

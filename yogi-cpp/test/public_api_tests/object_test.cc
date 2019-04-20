@@ -24,7 +24,7 @@ class FakeObject : public yogi::Object {
   FakeObject() : yogi::Object(nullptr, {}) {}
 };
 
-class ObjectTest : public ::testing::Test {
+class ObjectTest : public testing::Test {
  protected:
   yogi::ContextPtr object_ = yogi::Context::Create();
 };

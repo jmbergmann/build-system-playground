@@ -19,7 +19,7 @@
 
 #include <yogi_core.h>
 
-class TimerTest : public ::testing::Test {
+class TimerTest : public testing::Test {
  protected:
   yogi::ContextPtr context_ = yogi::Context::Create();
   yogi::TimerPtr timer_ = yogi::Timer::Create(context_);
