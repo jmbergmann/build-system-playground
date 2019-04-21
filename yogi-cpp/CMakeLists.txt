@@ -48,6 +48,7 @@ add_executable (yogi-cpp-test
   test/compile_tests/json_compile_test.cc
   test/compile_tests/licenses_compile_test.cc
   test/compile_tests/logging_compile_test.cc
+  test/compile_tests/msg_pack_compile_test.cc
   test/compile_tests/object_compile_test.cc
   test/compile_tests/payload_compile_test.cc
   test/compile_tests/signals_compile_test.cc

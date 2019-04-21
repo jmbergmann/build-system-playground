@@ -47,6 +47,8 @@ class Payload final {
   Payload(const JsonView& json)
       : data_(json.Data()), size_(json.Size()), enc_(EncodingType::kJson) {}
 
+  // Payload(const MsgPackView& msg_pack) {} // TODO
+
   const void* Data() const { return data_; }
   int Size() const { return size_; };
   EncodingType Encoding() const { return enc_; }
