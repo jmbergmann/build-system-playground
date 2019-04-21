@@ -21,18 +21,21 @@ def fix_includes(dir, filename) -> None:
     with open(path, 'r') as file:
         content = file.read()
 
-    include_statements = re.findall(r'(# *include *["<](.*)[">])', content)
-    for inc_stat in include_statements:
+    for inc_stat in re.findall(r'(# *include *["<](msgpack/.*)[">])', content):
         orig_stat = inc_stat[0]
         orig_path = inc_stat[1]
-        new_path = os.path.relpath(os.path.join(
-            SOURCE_DIRECTORY, orig_path), dir).replace('\\', '/')
+        real_path = os.path.join(SOURCE_DIRECTORY, orig_path)
+        new_path = os.path.relpath(real_path, dir).replace('\\', '/')
         new_stat = orig_stat.replace(orig_path, new_path)
+        new_stat = new_stat.replace('<', '"')
+        new_stat = new_stat.replace('>', '"')
         content = content.replace(orig_stat, new_stat)
+
+    with open(path, 'w') as file:
+        file.write(content)
 
 
 if __name__ == "__main__":
     files = get_header_files()
-    files = [files[2]]
     for file in files:
         fix_includes(file[0], file[1])
