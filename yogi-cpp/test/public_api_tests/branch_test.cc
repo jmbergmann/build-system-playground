@@ -122,15 +122,15 @@ TEST_F(BranchTest, GetConnectedBranches) {
   EXPECT_EQ(branches.at(branch_b->GetUuid()).GetName(), branch_b->GetName());
 }
 
-TEST_F(BranchTest, AwaitEvent) {
+TEST_F(BranchTest, AwaitEventAsync) {
   auto branch = yogi::Branch::Create(context_, "{\"name\":\"My Branch\"}");
   auto branch_a = yogi::Branch::Create(context_, "{\"name\":\"A\"}");
 
   auto events =
       yogi::BranchEvents::kBranchQueried | yogi::BranchEvents::kConnectionLost;
   bool called = false;
-  branch->AwaitEvent(events, [&](auto& res, auto event, auto& evres,
-                                 auto& info) {
+  branch->AwaitEventAsync(events, [&](auto& res, auto event, auto& evres,
+                                      auto& info) {
     EXPECT_NO_THROW(dynamic_cast<const yogi::Success&>(res));
     EXPECT_EQ(res.GetErrorCode(), yogi::ErrorCode::kOk);
     EXPECT_EQ(event, yogi::BranchEvents::kBranchQueried);
@@ -158,7 +158,7 @@ TEST_F(BranchTest, CancelAwaitEvent) {
   auto branch = yogi::Branch::Create(context_, "{\"name\":\"My Branch\"}");
 
   bool called = false;
-  branch->AwaitEvent(
+  branch->AwaitEventAsync(
       yogi::BranchEvents::kAll, [&](auto& res, auto event, auto& evres, auto&) {
         EXPECT_NO_THROW(dynamic_cast<const yogi::Failure&>(res));
         EXPECT_EQ(res.GetErrorCode(), yogi::ErrorCode::kCanceled);
@@ -172,3 +172,13 @@ TEST_F(BranchTest, CancelAwaitEvent) {
   context_->Poll();
   EXPECT_TRUE(called);
 }
+
+TEST_F(BranchTest, DISABLED_SendBroadcast) {}
+
+TEST_F(BranchTest, DISABLED_SendBroadcastAsync) {}
+
+TEST_F(BranchTest, DISABLED_CancelSendBroadcast) {}
+
+TEST_F(BranchTest, DISABLED_ReceiveBroadcast) {}
+
+TEST_F(BranchTest, DISABLED_CancelReceiveBroadcast) {}

@@ -715,8 +715,8 @@ class Branch : public ObjectT<Branch> {
   /// \param fn          Handler function to call.
   /// \param buffer_size Size of the internal buffer for reading event
   ///                    information.
-  void AwaitEvent(BranchEvents events, AwaitEventFn fn,
-                  int buffer_size = 1024) {
+  void AwaitEventAsync(BranchEvents events, AwaitEventFn fn,
+                       int buffer_size = 1024) {
     struct CallbackData {
       AwaitEventFn fn;
       Uuid uuid;
@@ -778,8 +778,8 @@ class Branch : public ObjectT<Branch> {
 
   /// Cancels waiting for a branch event.
   ///
-  /// Calling this function will cause the handler registered via AwaitEvent()
-  /// to be called with a cancellation error.
+  /// Calling this function will cause the handler registered via
+  /// AwaitEventAsync() to be called with a cancellation error.
   void CancelAwaitEvent() {
     int res = internal::YOGI_BranchCancelAwaitEvent(GetHandle());
     internal::CheckErrorCode(res);
@@ -820,6 +820,36 @@ class Branch : public ObjectT<Branch> {
       return true;
     }
   }
+
+  /// Sends a broadcast message to all connected branches.
+  ///
+  /// Broadcast messages contain arbitrary data encoded as JSON or MessagePack.
+  /// As opposed to sending messages via terminals, broadcast messages don't
+  /// have to comply with a defined schema for the payload; any data that can be
+  /// encoded is valid. This implies that validating the data is entirely up to
+  /// the user code.
+  ///
+  /// The handler function \p fn will be called once the operation finishes. Its
+  /// parameters are:
+  ///  -# __res__: #YOGI_OK or error code associated with the operation
+  ///  -# __oid__: Operation ID as returned by this library function
+  ///  -# __userarg__: Value of the user-specified \p userarg parameter
+  ///
+  /// Setting the \p retry parameter to #YOGI_FALSE will cause the function to
+  /// skip sending the message to branches that have a full send queue. If at
+  /// least one branch was skipped, the handler \p fn will be called with the
+  /// #YOGI_ERR_TX_QUEUE_FULL error. If the parameter is set to #YOGI_TRUE
+  /// instead, \p fn will be called once the message has been put into the send
+  /// queues of all connected branches.
+  ///
+  /// The function returns an ID which uniquely identifies this send operation
+  /// until \p fn has been called. It can be used in a subsequent
+  /// YOGI_BranchCancelSendBroadcast() call to abort the operation.
+  ///
+  /// \note
+  ///   The memory pointed to via \p data will be copied if necessary, i.e. \p
+  ///   data only needs to remain valid until the function returns.
+  void SendBroadcastAsync();
 
  private:
   Branch(ContextPtr context, const JsonView& props, const StringView& section)
