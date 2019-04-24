@@ -24,8 +24,8 @@ TEST(MsgpackViewTest, Default) {
 }
 
 TEST(MsgpackViewTest, Buffer) {
-  const void* data = "Hello";
-  int size = static_cast<int>(strlen(static_cast<const char*>(data)));
+  const char* data = "Hello";
+  int size = static_cast<int>(strlen(data));
   auto view = yogi::MsgpackView(data, size);
   EXPECT_EQ(view.Data(), data);
   EXPECT_EQ(view.Size(), size);
@@ -37,7 +37,7 @@ TEST(MsgpackViewTest, Buffer) {
 TEST(MsgpackViewTest, StdString) {
   std::string s = "Hello";
   auto view = yogi::MsgpackView(s);
-  EXPECT_EQ(std::string(static_cast<const char*>(view.Data())), s);
+  EXPECT_EQ(std::string(view.Data()), s);
   EXPECT_EQ(view.Size(), static_cast<int>(s.size()));
 }
 
@@ -45,6 +45,6 @@ TEST(MsgpackViewTest, StringStream) {
   std::stringstream ss;
   ss << "Hello";
   auto view = yogi::MsgpackView(ss);
-  EXPECT_EQ(ss.str(), static_cast<const char*>(view.Data()));
+  EXPECT_EQ(ss.str(), view.Data());
   EXPECT_EQ(view.Size(), static_cast<int>(ss.str().size()));
 }

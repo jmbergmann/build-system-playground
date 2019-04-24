@@ -42,10 +42,10 @@ enum class EncodingType {
 
 class Payload final {
  public:
-  Payload(const void* data, int size, EncodingType enc)
+  Payload(const char* data, int size, EncodingType enc)
       : data_(data), size_(size), enc_(enc) {}
 
-  Payload(const void* data, std::size_t size, EncodingType enc)
+  Payload(const char* data, std::size_t size, EncodingType enc)
       : Payload(data, static_cast<int>(size), enc) {}
 
   Payload(const JsonView& json)
@@ -54,12 +54,12 @@ class Payload final {
   Payload(const MsgpackView& msgpack)
       : Payload(msgpack.Data(), msgpack.Size(), EncodingType::kMsgpack) {}
 
-  const void* Data() const { return data_; }
+  const char* Data() const { return data_; }
   int Size() const { return size_; };
   EncodingType Encoding() const { return enc_; }
 
  private:
-  const void* data_;
+  const char* data_;
   int size_;
   EncodingType enc_;
 };

@@ -46,13 +46,13 @@ class MsgpackView {
   ///
   /// \param data Buffer to use.
   /// \param size Size of the buffer in bytes.
-  MsgpackView(const void* data, int size) : data_(data), size_(size){};
+  MsgpackView(const char* data, int size) : data_(data), size_(size){};
 
   /// Constructs a view from a buffer.
   ///
   /// \param data Buffer to use.
   /// \param size Size of the buffer in bytes.
-  MsgpackView(const void* data, std::size_t size)
+  MsgpackView(const char* data, std::size_t size)
       : MsgpackView(data, static_cast<int>(size)){};
 
   /// Constructs a view from a standard string.
@@ -76,7 +76,7 @@ class MsgpackView {
   ///   parameter passed to any of its constructors are valid.
   ///
   /// \returns Buffer holding the serialized MessagePack data.
-  const void* Data() const { return data_; }
+  const char* Data() const { return data_; }
 
   /// Returns the length of the serialized MessagePack data in bytes.
   ///
@@ -85,7 +85,7 @@ class MsgpackView {
 
  private:
   const std::string tmp_;
-  const void* const data_;
+  const char* const data_;
   const int size_;
 };
 
