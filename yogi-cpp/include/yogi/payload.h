@@ -54,8 +54,6 @@ class Payload final {
   Payload(const MsgpackView& msgpack)
       : Payload(msgpack.Data(), msgpack.Size(), EncodingType::kMsgpack) {}
 
-  // Payload(const MsgPackView& msg_pack) {} // TODO
-
   const void* Data() const { return data_; }
   int Size() const { return size_; };
   EncodingType Encoding() const { return enc_; }
