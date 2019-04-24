@@ -23,6 +23,7 @@
 //! User payload.
 
 #include "json_view.h"
+#include "msgpack_view.h"
 
 namespace yogi {
 
@@ -36,7 +37,7 @@ enum class EncodingType {
   kJson = 0,
 
   /// Data is encoded as MessagePack
-  kMsgPack = 1,
+  kMsgpack = 1,
 };
 
 class Payload final {
@@ -44,8 +45,14 @@ class Payload final {
   Payload(const void* data, int size, EncodingType enc)
       : data_(data), size_(size), enc_(enc) {}
 
+  Payload(const void* data, std::size_t size, EncodingType enc)
+      : Payload(data, static_cast<int>(size), enc) {}
+
   Payload(const JsonView& json)
-      : data_(json.Data()), size_(json.Size()), enc_(EncodingType::kJson) {}
+      : Payload(json.Data(), json.Size(), EncodingType::kJson) {}
+
+  Payload(const MsgpackView& msgpack)
+      : Payload(msgpack.Data(), msgpack.Size(), EncodingType::kMsgpack) {}
 
   // Payload(const MsgPackView& msg_pack) {} // TODO
 

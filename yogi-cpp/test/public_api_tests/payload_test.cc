@@ -22,7 +22,7 @@
 class PayloadTest : public testing::Test {
  protected:
   PayloadTest()
-      : data_("Hello"), payload_(data_, 123, yogi::EncodingType::kMsgPack) {}
+      : data_("Hello"), payload_(data_, 123, yogi::EncodingType::kMsgpack) {}
 
   const void* data_;
   const yogi::Payload payload_;
@@ -31,7 +31,7 @@ class PayloadTest : public testing::Test {
 TEST_F(PayloadTest, Getters) {
   EXPECT_EQ(payload_.Data(), data_);
   EXPECT_EQ(payload_.Size(), 123);
-  EXPECT_EQ(payload_.Encoding(), yogi::EncodingType::kMsgPack);
+  EXPECT_EQ(payload_.Encoding(), yogi::EncodingType::kMsgpack);
 }
 
 TEST_F(PayloadTest, Copy) {
@@ -44,9 +44,20 @@ TEST_F(PayloadTest, Copy) {
 
 TEST_F(PayloadTest, ConstructFromJsonView) {
   yogi::Json json = {12345};
+  auto view = yogi::JsonView(json);
   auto pl = yogi::Payload(json);
 
   auto s = json.dump();
   EXPECT_EQ(s, static_cast<const char*>(pl.Data()));
   EXPECT_EQ(pl.Encoding(), yogi::EncodingType::kJson);
+}
+
+TEST_F(PayloadTest, ConstructFromMsgpackView) {
+  std::string msgpack = "Hello";
+  auto view = yogi::MsgpackView(msgpack);
+  auto pl = yogi::Payload(view);
+
+  EXPECT_EQ(msgpack, std::string(static_cast<const char*>(pl.Data()),
+                                 static_cast<std::size_t>(pl.Size())));
+  EXPECT_EQ(pl.Encoding(), yogi::EncodingType::kMsgpack);
 }
