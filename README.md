@@ -26,6 +26,7 @@ YOGI_CORE_LIBRARY="/c/Documents and Settings/commu_000/Documents/Projects/build-
 - Add connection statistics (msg/sec, bytes/sec, etc.)
 - Remote bytes_written/bytes_read from Transport::SendAll/ReceiveAll?
 - Need to check user data size. Right now, an assertion triggers when it's too large.
+- Is having JsonView, MsgpackView and Payload non-copyable via const members a good design decision? It would also prevent move semantics which could be benificial for the std::string members.
 
 Use those CMakeLists.txt defines for compilers:
 IF ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
