@@ -22,47 +22,30 @@
 //!
 //! User payload.
 
-#include "json_view.h"
-#include "msgpack_view.h"
+#include <memory>
+#include <vector>
 
 namespace yogi {
 
 ////////////////////////////////////////////////////////////////////////////////
-/// Encoding types.
-///
-/// Possible data/payload encoding types.
+/// Represents a buffer holding user-defined payload encoded in either JSON or
+/// MessagePack.
 ////////////////////////////////////////////////////////////////////////////////
-enum class EncodingType {
-  /// Data is encoded as JSON.
-  kJson = 0,
-
-  /// Data is encoded as MessagePack
-  kMsgpack = 1,
-};
-
-class Payload final {
+class Payload {
  public:
-  Payload(const char* data, int size, EncodingType enc)
-      : data_(data), size_(size), enc_(enc) {}
+  static constexpr int kDefaultCapacity = 1024;
 
-  Payload(const char* data, std::size_t size, EncodingType enc)
-      : Payload(data, static_cast<int>(size), enc) {}
+  Payload(int capacity = kDefaultCapacity)
+      : Payload(static_cast<std::size_t>(capacity)) {}
 
-  Payload(const JsonView& json)
-      : Payload(json.Data(), json.Size(), EncodingType::kJson) {}
-
-  Payload(const MsgpackView& msgpack)
-      : Payload(msgpack.Data(), msgpack.Size(), EncodingType::kMsgpack) {}
-
-  const char* Data() const { return data_; }
-  int Size() const { return size_; };
-  EncodingType Encoding() const { return enc_; }
+  Payload(std::size_t capacity) { data_.reserve(capacity); }
 
  private:
-  const char* data_;
-  int size_;
-  EncodingType enc_;
+  std::vector<char> data_;
 };
+
+/// Shared pointer to a user payload object.
+typedef std::shared_ptr<Payload> PayloadPtr;
 
 }  // namespace yogi
 

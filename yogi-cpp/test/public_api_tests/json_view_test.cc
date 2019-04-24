@@ -30,6 +30,14 @@ TEST(JsonViewTest, ConstCharString) {
   EXPECT_EQ(view.Size(), static_cast<int>(strlen(s)));
 }
 
+TEST(JsonViewTest, Vector) {
+  std::vector<char> data = {'h', 'i'};
+  int size = static_cast<int>(data.size());
+  auto view = yogi::JsonView(data);
+  EXPECT_EQ(view.Data(), data.data());
+  EXPECT_EQ(view.Size(), size);
+}
+
 TEST(JsonViewTest, StdString) {
   std::string s = "Hello";
   auto view = yogi::JsonView(s);

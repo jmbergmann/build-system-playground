@@ -34,6 +34,14 @@ TEST(MsgpackViewTest, Buffer) {
   EXPECT_EQ(view2.Size(), size);
 }
 
+TEST(MsgpackViewTest, Vector) {
+  std::vector<char> data = {'h', 'i'};
+  int size = static_cast<int>(data.size());
+  auto view = yogi::MsgpackView(data);
+  EXPECT_EQ(view.Data(), data.data());
+  EXPECT_EQ(view.Size(), size);
+}
+
 TEST(MsgpackViewTest, StdString) {
   std::string s = "Hello";
   auto view = yogi::MsgpackView(s);

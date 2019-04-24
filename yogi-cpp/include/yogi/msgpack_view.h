@@ -26,6 +26,7 @@
 
 #include <string>
 #include <sstream>
+#include <vector>
 
 namespace yogi {
 
@@ -34,13 +35,19 @@ namespace yogi {
 /// that internally require a buffer holding the serialized MessagePack data.
 ///
 /// \attention
-///   It is imperative that the value passed to any of the view's constructors
-///   outlives the view object!
+///   It is imperative that the objects passed to any of the view's constructors
+///   outlive the view object!
 ////////////////////////////////////////////////////////////////////////////////
 class MsgpackView {
  public:
   /// Constructs a view that evaluates to a nullptr.
-  MsgpackView() : data_(nullptr), size_(0) {}
+  MsgpackView() : MsgpackView(nullptr, 0) {}
+
+  /// Constructs a view from a vector.
+  ///
+  /// \param data Buffer to use.
+  MsgpackView(const std::vector<char>& data)
+      : MsgpackView(data.data(), data.size()) {}
 
   /// Constructs a view from a buffer.
   ///
@@ -73,7 +80,7 @@ class MsgpackView {
   ///
   /// \attention
   ///   The returned value is only valid as long as both the view object and the
-  ///   parameter passed to any of its constructors are valid.
+  ///   parameters passed to any of its constructors are valid.
   ///
   /// \returns Buffer holding the serialized MessagePack data.
   const char* Data() const { return data_; }

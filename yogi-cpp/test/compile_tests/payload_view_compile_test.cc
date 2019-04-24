@@ -15,10 +15,7 @@
  * along with this library. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "../common.h"
+#include <yogi/payload_view.h>
 
-#include <yogi/payload.h>
-
-class PayloadTest : public testing::Test {};
-
-TEST_F(PayloadTest, DISABLED_ImplementMe) {}
+// This test checks if the header file included above compiles; i.e. it checks
+// that all necessary dependencies are included.

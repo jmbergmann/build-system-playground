@@ -25,6 +25,7 @@
 #include "json.h"
 
 #include <string>
+#include <vector>
 
 namespace yogi {
 
@@ -33,13 +34,19 @@ namespace yogi {
 /// internally require a C string holding the serialized JSON data.
 ///
 /// \attention
-///   It is imperative that the value passed to any of the view's constructors
-///   outlives the view object!
+///   It is imperative that the objects passed to any of the view's constructors
+///   outlive the view object!
 ////////////////////////////////////////////////////////////////////////////////
 class JsonView {
  public:
   /// Constructs a view that evaluates to a nullptr.
   JsonView() : s_(nullptr), size_(0) {}
+
+  /// Constructs a view from a vector.
+  ///
+  /// \param data Buffer to use.
+  JsonView(const std::vector<char>& data)
+      : s_(data.data()), size_(static_cast<int>(data.size())) {}
 
   /// Constructs a view from a standard string.
   ///

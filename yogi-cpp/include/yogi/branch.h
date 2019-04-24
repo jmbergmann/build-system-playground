@@ -33,9 +33,8 @@
 #include "internal/library.h"
 #include "internal/flags.h"
 #include "internal/query_string.h"
-#include "json_view.h"
 #include "string_view.h"
-#include "payload.h"
+#include "payload_view.h"
 
 #include <unordered_map>
 
@@ -809,7 +808,7 @@ class Branch : public ObjectT<Branch> {
   /// \param block   Block until message has been put into all send buffers.
   ///
   /// \return _true_ if the message was successfully put into all send buffers.
-  bool SendBroadcast(const Payload& payload, bool block = true) {
+  bool SendBroadcast(const PayloadView& payload, bool block = true) {
     int res = internal::YOGI_BranchSendBroadcast(
         GetHandle(), static_cast<int>(payload.Encoding()), payload.Data(),
         payload.Size(), block ? 1 : 0);
