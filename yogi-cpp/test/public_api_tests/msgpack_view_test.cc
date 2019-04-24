@@ -17,39 +17,34 @@
 
 #include "../common.h"
 
-TEST(JsonViewTest, Default) {
-  auto view = yogi::JsonView();
+TEST(MsgpackViewTest, Default) {
+  auto view = yogi::MsgpackView();
   EXPECT_EQ(view.Data(), nullptr);
   EXPECT_EQ(view.Size(), 0);
 }
 
-TEST(JsonViewTest, ConstCharString) {
-  const char* s = "Hello";
-  auto view = yogi::JsonView(s);
-  EXPECT_EQ(view.Data(), s);
-  EXPECT_EQ(view.Size(), static_cast<int>(strlen(s)));
+TEST(MsgpackViewTest, Buffer) {
+  const void* data = "Hello";
+  int size = static_cast<int>(strlen(static_cast<const char*>(data)));
+  auto view = yogi::MsgpackView(data, size);
+  EXPECT_EQ(view.Data(), data);
+  EXPECT_EQ(view.Size(), size);
+
+  auto view2 = yogi::MsgpackView(data, static_cast<std::size_t>(size));
+  EXPECT_EQ(view2.Size(), size);
 }
 
-TEST(JsonViewTest, StdString) {
+TEST(MsgpackViewTest, StdString) {
   std::string s = "Hello";
-  auto view = yogi::JsonView(s);
-  EXPECT_EQ(std::string(view.Data()), s);
+  auto view = yogi::MsgpackView(s);
+  EXPECT_EQ(std::string(static_cast<const char*>(view.Data())), s);
   EXPECT_EQ(view.Size(), static_cast<int>(s.size()));
 }
 
-TEST(JsonViewTest, JsonObject) {
-  yogi::Json json = {12345};
-  auto view = yogi::JsonView(json);
-  EXPECT_EQ(json.dump(), view.Data());
-  EXPECT_EQ(view.Size(), static_cast<int>(json.dump().size()));
-}
-
-TEST(JsonViewTest, ConversionOperator) {
-  const char* s = "Hello";
-  auto view = yogi::JsonView(s);
-  EXPECT_EQ(static_cast<const char*>(view), view.Data());
-
-  yogi::Json json = {12345};
-  auto view2 = yogi::JsonView(json);
-  EXPECT_EQ(static_cast<const char*>(view), view.Data());
+TEST(MsgpackViewTest, StringStream) {
+  std::stringstream ss;
+  ss << "Hello";
+  auto view = yogi::MsgpackView(ss);
+  EXPECT_EQ(ss.str(), static_cast<const char*>(view.Data()));
+  EXPECT_EQ(view.Size(), static_cast<int>(ss.str().size()));
 }

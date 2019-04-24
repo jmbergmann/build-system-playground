@@ -20,7 +20,7 @@
 
 //! \file
 //!
-//! Helpers for passing JSON to functions.
+//! Helpers for passing JSON-encoded data to functions.
 
 #include "json.h"
 
