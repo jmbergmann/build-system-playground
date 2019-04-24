@@ -84,9 +84,9 @@ class MsgpackView {
   int Size() const { return size_; }
 
  private:
-  const std::string tmp_;
-  const char* const data_;
-  const int size_;
+  std::string tmp_;
+  const char* data_;
+  int size_;
 };
 
 }  // namespace yogi

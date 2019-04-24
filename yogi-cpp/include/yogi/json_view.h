@@ -84,9 +84,9 @@ class JsonView {
   operator const char*() const { return s_; }
 
  private:
-  const std::string tmp_;
-  const char* const s_;
-  const int size_;
+  std::string tmp_;
+  const char* s_;
+  int size_;
 };
 
 }  // namespace yogi

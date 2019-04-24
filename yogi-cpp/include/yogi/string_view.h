@@ -59,7 +59,7 @@ class StringView {
   operator const char*() const { return s_; }
 
  private:
-  const char* const s_;
+  const char* s_;
 };
 
 }  // namespace yogi

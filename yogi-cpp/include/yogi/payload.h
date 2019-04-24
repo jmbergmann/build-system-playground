@@ -59,9 +59,9 @@ class Payload final {
   EncodingType Encoding() const { return enc_; }
 
  private:
-  const char* const data_;
-  const int size_;
-  const EncodingType enc_;
+  const char* data_;
+  int size_;
+  EncodingType enc_;
 };
 
 }  // namespace yogi
