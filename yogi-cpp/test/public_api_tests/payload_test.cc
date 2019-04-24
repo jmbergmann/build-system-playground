@@ -34,14 +34,6 @@ TEST_F(PayloadTest, Getters) {
   EXPECT_EQ(payload_.Encoding(), yogi::EncodingType::kMsgpack);
 }
 
-TEST_F(PayloadTest, Copy) {
-  auto pl = yogi::Payload("Blabla", 555, yogi::EncodingType::kJson);
-  pl = payload_;
-  EXPECT_EQ(pl.Data(), payload_.Data());
-  EXPECT_EQ(pl.Size(), payload_.Size());
-  EXPECT_EQ(pl.Encoding(), payload_.Encoding());
-}
-
 TEST_F(PayloadTest, ConstructFromJsonView) {
   yogi::Json json = {12345};
   auto view = yogi::JsonView(json);
