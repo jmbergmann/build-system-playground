@@ -56,6 +56,7 @@ add_executable (yogi-cpp-test
   test/compile_tests/payload_view_compile_test.cc
   test/compile_tests/signals_compile_test.cc
   test/compile_tests/stream_io_compile_test.cc
+  test/compile_tests/string_view_compile_test.cc
   test/compile_tests/time_compile_test.cc
   test/compile_tests/timer_compile_test.cc
   test/compile_tests/timestamp_compile_test.cc
