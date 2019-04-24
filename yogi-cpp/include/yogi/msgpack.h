@@ -22,9 +22,9 @@
 //!
 //! Includes the msgpack-c MessagePack library.
 
-#ifdef BLABLABLA
-#if NLOHMANN_JSON_VERSION_MAJOR != 3
-#error "Incompatible version of Niels Lohmann's JSON library has been included"
+#ifdef MSGPACK_VERSION_MAJOR
+#if MSGPACK_VERSION_MAJOR != 3
+#error "Incompatible version of the msgpack-c library has been included"
 #endif
 #else
 #pragma GCC diagnostic push
@@ -50,7 +50,7 @@
 namespace yogi {
 
 /// Alias for the msgpack-c library.
-namespace MsgPack = ::msgpack;
+namespace msgpack = ::msgpack;
 
 }  // namespace yogi
 

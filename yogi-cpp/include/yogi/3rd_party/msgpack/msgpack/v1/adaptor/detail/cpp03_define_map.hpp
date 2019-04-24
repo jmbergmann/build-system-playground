@@ -10,10 +10,10 @@
 #ifndef MSGPACK_V1_CPP03_DEFINE_MAP_HPP
 #define MSGPACK_V1_CPP03_DEFINE_MAP_HPP
 
-#include "msgpack/v1/adaptor/detail/cpp03_define_map_decl.hpp"
-#include "msgpack/adaptor/msgpack_tuple.hpp"
-#include "msgpack/adaptor/adaptor_base.hpp"
-#include "msgpack/object_fwd.hpp"
+#include "cpp03_define_map_decl.hpp"
+#include "../../../adaptor/msgpack_tuple.hpp"
+#include "../../../adaptor/adaptor_base.hpp"
+#include "../../../object_fwd.hpp"
 
 #include <map>
 

@@ -10,7 +10,7 @@
 #ifndef MSGPACK_V3_PARSE_RETURN_HPP
 #define MSGPACK_V3_PARSE_RETURN_HPP
 
-#include "msgpack/v2/parse_return.hpp"
+#include "../v2/parse_return.hpp"
 
 namespace msgpack {
 

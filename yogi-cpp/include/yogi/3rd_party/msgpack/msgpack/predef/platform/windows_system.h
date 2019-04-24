@@ -8,10 +8,10 @@ http://www.boost.org/LICENSE_1_0.txt)
 #ifndef MSGPACK_PREDEF_PLAT_WINDOWS_SYSTEM_H
 #define MSGPACK_PREDEF_PLAT_WINDOWS_SYSTEM_H
 
-#include <msgpack/predef/make.h>
-#include <msgpack/predef/os/windows.h>
-#include <msgpack/predef/platform/windows_uwp.h>
-#include <msgpack/predef/version_number.h>
+#include "../make.h"
+#include "../os/windows.h"
+#include "windows_uwp.h"
+#include "../version_number.h"
 
 /*`
 [heading `MSGPACK_PLAT_WINDOWS_SYSTEM`]
@@ -36,12 +36,12 @@ for Windows System development.
  
 #if MSGPACK_PLAT_WINDOWS_SYSTEM
 #   define MSGPACK_PLAT_WINDOWS_SYSTEM_AVAILABLE
-#   include <msgpack/predef/detail/platform_detected.h>
+#   include "../detail/platform_detected.h"
 #endif
 
 #define MSGPACK_PLAT_WINDOWS_SYSTEM_NAME "Windows Drivers and Tools"
 
 #endif
 
-#include <msgpack/predef/detail/test.h>
+#include "../detail/test.h"
 MSGPACK_PREDEF_DECLARE_TEST(MSGPACK_PLAT_WINDOWS_SYSTEM,MSGPACK_PLAT_WINDOWS_SYSTEM_NAME)

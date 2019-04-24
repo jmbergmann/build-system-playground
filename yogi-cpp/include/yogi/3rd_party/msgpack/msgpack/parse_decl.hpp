@@ -10,7 +10,7 @@
 #ifndef MSGPACK_PARSE_DECL_HPP
 #define MSGPACK_PARSE_DECL_HPP
 
-#include "msgpack/v2/parse_decl.hpp"
-#include "msgpack/v3/parse_decl.hpp"
+#include "v2/parse_decl.hpp"
+#include "v3/parse_decl.hpp"
 
 #endif // MSGPACK_PARSE_DECL_HPP

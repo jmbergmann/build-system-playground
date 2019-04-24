@@ -10,7 +10,7 @@
 #ifndef MSGPACK_V3_NULL_VISITOR_DECL_HPP
 #define MSGPACK_V3_NULL_VISITOR_DECL_HPP
 
-#include "msgpack/v2/null_visitor_decl.hpp"
+#include "../v2/null_visitor_decl.hpp"
 
 namespace msgpack {
 

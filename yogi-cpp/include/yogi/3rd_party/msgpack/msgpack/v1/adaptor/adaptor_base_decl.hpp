@@ -10,9 +10,9 @@
 #ifndef MSGPACK_V1_ADAPTOR_BASE_DECL_HPP
 #define MSGPACK_V1_ADAPTOR_BASE_DECL_HPP
 
-#include "msgpack/versioning.hpp"
-#include "msgpack/object_fwd.hpp"
-#include "msgpack/pack.hpp"
+#include "../../versioning.hpp"
+#include "../../object_fwd.hpp"
+#include "../../pack.hpp"
 
 namespace msgpack {
 

@@ -10,9 +10,9 @@ http://www.boost.org/LICENSE_1_0.txt)
 #define MSGPACK_PREDEF_LANGUAGE_H
 #endif
 
-#include <msgpack/predef/language/stdc.h>
-#include <msgpack/predef/language/stdcpp.h>
-#include <msgpack/predef/language/objc.h>
-#include <msgpack/predef/language/cuda.h>
+#include "language/stdc.h"
+#include "language/stdcpp.h"
+#include "language/objc.h"
+#include "language/cuda.h"
 
 #endif

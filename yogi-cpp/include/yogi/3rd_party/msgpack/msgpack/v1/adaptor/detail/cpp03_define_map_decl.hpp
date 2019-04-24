@@ -10,7 +10,7 @@
 #ifndef MSGPACK_V1_CPP03_DEFINE_MAP_DECL_HPP
 #define MSGPACK_V1_CPP03_DEFINE_MAP_DECL_HPP
 
-#include "msgpack/versioning.hpp"
+#include "../../../versioning.hpp"
 
 namespace msgpack {
 /// @cond

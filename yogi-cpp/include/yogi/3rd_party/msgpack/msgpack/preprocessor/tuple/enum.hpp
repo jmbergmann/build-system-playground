@@ -13,7 +13,7 @@
 # ifndef MSGPACK_PREPROCESSOR_TUPLE_ENUM_HPP
 # define MSGPACK_PREPROCESSOR_TUPLE_ENUM_HPP
 #
-# include <msgpack/preprocessor/tuple/rem.hpp>
+# include "rem.hpp"
 #
 # /* MSGPACK_PP_TUPLE_ENUM */
 #

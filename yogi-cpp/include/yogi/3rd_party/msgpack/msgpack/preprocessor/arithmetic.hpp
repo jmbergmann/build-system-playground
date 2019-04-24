@@ -14,12 +14,12 @@
 # ifndef MSGPACK_PREPROCESSOR_ARITHMETIC_HPP
 # define MSGPACK_PREPROCESSOR_ARITHMETIC_HPP
 #
-# include <msgpack/preprocessor/arithmetic/add.hpp>
-# include <msgpack/preprocessor/arithmetic/dec.hpp>
-# include <msgpack/preprocessor/arithmetic/div.hpp>
-# include <msgpack/preprocessor/arithmetic/inc.hpp>
-# include <msgpack/preprocessor/arithmetic/mod.hpp>
-# include <msgpack/preprocessor/arithmetic/mul.hpp>
-# include <msgpack/preprocessor/arithmetic/sub.hpp>
+# include "arithmetic/add.hpp"
+# include "arithmetic/dec.hpp"
+# include "arithmetic/div.hpp"
+# include "arithmetic/inc.hpp"
+# include "arithmetic/mod.hpp"
+# include "arithmetic/mul.hpp"
+# include "arithmetic/sub.hpp"
 #
 # endif

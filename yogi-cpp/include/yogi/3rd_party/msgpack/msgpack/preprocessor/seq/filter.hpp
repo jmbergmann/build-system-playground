@@ -12,13 +12,13 @@
 # ifndef MSGPACK_PREPROCESSOR_SEQ_FILTER_HPP
 # define MSGPACK_PREPROCESSOR_SEQ_FILTER_HPP
 #
-# include <msgpack/preprocessor/config/config.hpp>
-# include <msgpack/preprocessor/control/expr_if.hpp>
-# include <msgpack/preprocessor/facilities/empty.hpp>
-# include <msgpack/preprocessor/seq/fold_left.hpp>
-# include <msgpack/preprocessor/seq/seq.hpp>
-# include <msgpack/preprocessor/tuple/elem.hpp>
-# include <msgpack/preprocessor/tuple/rem.hpp>
+# include "../config/config.hpp"
+# include "../control/expr_if.hpp"
+# include "../facilities/empty.hpp"
+# include "fold_left.hpp"
+# include "seq.hpp"
+# include "../tuple/elem.hpp"
+# include "../tuple/rem.hpp"
 #
 # /* MSGPACK_PP_SEQ_FILTER */
 #

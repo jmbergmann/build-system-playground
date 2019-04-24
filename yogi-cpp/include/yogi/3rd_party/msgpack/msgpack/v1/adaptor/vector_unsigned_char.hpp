@@ -10,9 +10,9 @@
 #ifndef MSGPACK_V1_TYPE_VECTOR_UNSIGNED_CHAR_HPP
 #define MSGPACK_V1_TYPE_VECTOR_UNSIGNED_CHAR_HPP
 
-#include "msgpack/versioning.hpp"
-#include "msgpack/adaptor/adaptor_base.hpp"
-#include "msgpack/adaptor/check_container_size.hpp"
+#include "../../versioning.hpp"
+#include "../../adaptor/adaptor_base.hpp"
+#include "../../adaptor/check_container_size.hpp"
 
 #include <vector>
 #include <cstring>

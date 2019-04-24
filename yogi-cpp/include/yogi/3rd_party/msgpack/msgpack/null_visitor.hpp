@@ -10,8 +10,8 @@
 #ifndef MSGPACK_NULL_VISITOR_HPP
 #define MSGPACK_NULL_VISITOR_HPP
 
-#include "msgpack/null_visitor_decl.hpp"
+#include "null_visitor_decl.hpp"
 
-#include "msgpack/v2/null_visitor.hpp"
+#include "v2/null_visitor.hpp"
 
 #endif // MSGPACK_NULL_VISITOR_HPP

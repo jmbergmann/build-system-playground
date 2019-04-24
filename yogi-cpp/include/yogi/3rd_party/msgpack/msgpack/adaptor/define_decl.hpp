@@ -18,12 +18,12 @@
 #define MSGPACK_PP_VARIADICS
 #endif
 
-#include <msgpack/preprocessor.hpp>
+#include "../preprocessor.hpp"
 
-#include "msgpack/versioning.hpp"
+#include "../versioning.hpp"
 
 // for MSGPACK_ADD_ENUM
-#include "msgpack/adaptor/int.hpp"
+#include "int.hpp"
 
 #define MSGPACK_DEFINE_ARRAY(...) \
     template <typename Packer> \
@@ -137,8 +137,8 @@
 #endif // defined(MSGPACK_USE_DEFINE_MAP)
 
 
-#include "msgpack/v1/adaptor/define_decl.hpp"
-#include "msgpack/v2/adaptor/define_decl.hpp"
-#include "msgpack/v3/adaptor/define_decl.hpp"
+#include "../v1/adaptor/define_decl.hpp"
+#include "../v2/adaptor/define_decl.hpp"
+#include "../v3/adaptor/define_decl.hpp"
 
 #endif // MSGPACK_DEFINE_DECL_HPP

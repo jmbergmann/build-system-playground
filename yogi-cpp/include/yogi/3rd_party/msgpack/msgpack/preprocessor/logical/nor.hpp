@@ -14,9 +14,9 @@
 # ifndef MSGPACK_PREPROCESSOR_LOGICAL_NOR_HPP
 # define MSGPACK_PREPROCESSOR_LOGICAL_NOR_HPP
 #
-# include <msgpack/preprocessor/config/config.hpp>
-# include <msgpack/preprocessor/logical/bool.hpp>
-# include <msgpack/preprocessor/logical/bitnor.hpp>
+# include "../config/config.hpp"
+# include "bool.hpp"
+# include "bitnor.hpp"
 #
 # /* MSGPACK_PP_NOR */
 #

@@ -12,13 +12,13 @@
 # ifndef MSGPACK_PREPROCESSOR_TUPLE_INSERT_HPP
 # define MSGPACK_PREPROCESSOR_TUPLE_INSERT_HPP
 #
-# include <msgpack/preprocessor/config/config.hpp>
+# include "../config/config.hpp"
 #
 # if MSGPACK_PP_VARIADICS
 #
-# include <msgpack/preprocessor/array/insert.hpp>
-# include <msgpack/preprocessor/array/to_tuple.hpp>
-# include <msgpack/preprocessor/tuple/to_array.hpp>
+# include "../array/insert.hpp"
+# include "../array/to_tuple.hpp"
+# include "to_array.hpp"
 #
 # /* MSGPACK_PP_TUPLE_INSERT */
 #

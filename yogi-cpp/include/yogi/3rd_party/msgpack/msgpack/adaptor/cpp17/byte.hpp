@@ -11,6 +11,6 @@
 #ifndef MSGPACK_TYPE_CPP17_BYTE_HPP
 #define MSGPACK_TYPE_CPP17_BYTE_HPP
 
-#include "msgpack/v1/adaptor/cpp17/byte.hpp"
+#include "../../v1/adaptor/cpp17/byte.hpp"
 
 #endif // MSGPACK_TYPE_CPP17_BYTE_HPP

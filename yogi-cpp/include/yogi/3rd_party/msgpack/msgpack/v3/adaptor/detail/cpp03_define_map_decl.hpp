@@ -10,7 +10,7 @@
 #ifndef MSGPACK_V3_CPP03_DEFINE_MAP_DECL_HPP
 #define MSGPACK_V3_CPP03_DEFINE_MAP_DECL_HPP
 
-#include "msgpack/v2/adaptor/detail/cpp03_define_map_decl.hpp"
+#include "../../../v2/adaptor/detail/cpp03_define_map_decl.hpp"
 
 namespace msgpack {
 /// @cond

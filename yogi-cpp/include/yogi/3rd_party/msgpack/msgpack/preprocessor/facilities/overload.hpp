@@ -13,8 +13,8 @@
 # ifndef MSGPACK_PREPROCESSOR_FACILITIES_OVERLOAD_HPP
 # define MSGPACK_PREPROCESSOR_FACILITIES_OVERLOAD_HPP
 #
-# include <msgpack/preprocessor/cat.hpp>
-# include <msgpack/preprocessor/variadic/size.hpp>
+# include "../cat.hpp"
+# include "../variadic/size.hpp"
 #
 # /* MSGPACK_PP_OVERLOAD */
 #

@@ -10,9 +10,9 @@
 #ifndef MSGPACK_V1_TYPE_FIXINT_DECL_HPP
 #define MSGPACK_V1_TYPE_FIXINT_DECL_HPP
 
-#include "msgpack/versioning.hpp"
-#include "msgpack/adaptor/adaptor_base.hpp"
-#include "msgpack/adaptor/int.hpp"
+#include "../../versioning.hpp"
+#include "../../adaptor/adaptor_base.hpp"
+#include "../../adaptor/int.hpp"
 
 namespace msgpack {
 

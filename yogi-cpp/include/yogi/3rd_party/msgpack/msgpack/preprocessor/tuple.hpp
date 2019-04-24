@@ -15,21 +15,21 @@
 # ifndef MSGPACK_PREPROCESSOR_TUPLE_HPP
 # define MSGPACK_PREPROCESSOR_TUPLE_HPP
 #
-# include <msgpack/preprocessor/tuple/eat.hpp>
-# include <msgpack/preprocessor/tuple/elem.hpp>
-# include <msgpack/preprocessor/tuple/enum.hpp>
-# include <msgpack/preprocessor/tuple/insert.hpp>
-# include <msgpack/preprocessor/tuple/pop_back.hpp>
-# include <msgpack/preprocessor/tuple/pop_front.hpp>
-# include <msgpack/preprocessor/tuple/push_back.hpp>
-# include <msgpack/preprocessor/tuple/push_front.hpp>
-# include <msgpack/preprocessor/tuple/rem.hpp>
-# include <msgpack/preprocessor/tuple/remove.hpp>
-# include <msgpack/preprocessor/tuple/replace.hpp>
-# include <msgpack/preprocessor/tuple/reverse.hpp>
-# include <msgpack/preprocessor/tuple/size.hpp>
-# include <msgpack/preprocessor/tuple/to_array.hpp>
-# include <msgpack/preprocessor/tuple/to_list.hpp>
-# include <msgpack/preprocessor/tuple/to_seq.hpp>
+# include "tuple/eat.hpp"
+# include "tuple/elem.hpp"
+# include "tuple/enum.hpp"
+# include "tuple/insert.hpp"
+# include "tuple/pop_back.hpp"
+# include "tuple/pop_front.hpp"
+# include "tuple/push_back.hpp"
+# include "tuple/push_front.hpp"
+# include "tuple/rem.hpp"
+# include "tuple/remove.hpp"
+# include "tuple/replace.hpp"
+# include "tuple/reverse.hpp"
+# include "tuple/size.hpp"
+# include "tuple/to_array.hpp"
+# include "tuple/to_list.hpp"
+# include "tuple/to_seq.hpp"
 #
 # endif

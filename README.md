@@ -27,6 +27,15 @@ YOGI_CORE_LIBRARY="/c/Documents and Settings/commu_000/Documents/Projects/build-
 - Remote bytes_written/bytes_read from Transport::SendAll/ReceiveAll?
 - Need to check user data size. Right now, an assertion triggers when it's too large.
 
+Use those CMakeLists.txt defines for compilers:
+IF ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+         SET (CMAKE_CXX_FLAGS "-std=c++17 ${CMAKE_CXX_FLAGS}")
+ELSEIF ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+         SET (CMAKE_CXX_FLAGS "-std=c++17 ${CMAKE_CXX_FLAGS}")
+ELSEIF ("\${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
+MESSAGE ( FATAL_ERROR "MSVC doesn't support C++17.")
+ENDIF ()
+
 Outgoing data queue design:
 
 - Needs size limit, otherwise it could potentially grow to GBs if the user does something dumb

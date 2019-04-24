@@ -10,8 +10,8 @@
 #ifndef MSGPACK_V1_CPP11_DEFINE_MAP_HPP
 #define MSGPACK_V1_CPP11_DEFINE_MAP_HPP
 
-#include "msgpack/v1/adaptor/detail/cpp11_define_map_decl.hpp"
-#include "msgpack/v1/adaptor/detail/cpp11_convert_helper.hpp"
+#include "cpp11_define_map_decl.hpp"
+#include "cpp11_convert_helper.hpp"
 
 #include <tuple>
 #include <map>

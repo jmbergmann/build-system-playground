@@ -10,8 +10,8 @@
 #ifndef MSGPACK_V1_OBJECT_HPP
 #define MSGPACK_V1_OBJECT_HPP
 
-#include "msgpack/object_decl.hpp"
-#include "msgpack/adaptor/check_container_size.hpp"
+#include "../object_decl.hpp"
+#include "../adaptor/check_container_size.hpp"
 
 #include <cstring>
 #include <stdexcept>

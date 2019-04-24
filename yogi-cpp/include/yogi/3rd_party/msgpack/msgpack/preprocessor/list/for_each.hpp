@@ -14,10 +14,10 @@
 # ifndef MSGPACK_PREPROCESSOR_LIST_FOR_EACH_HPP
 # define MSGPACK_PREPROCESSOR_LIST_FOR_EACH_HPP
 #
-# include <msgpack/preprocessor/config/config.hpp>
-# include <msgpack/preprocessor/list/for_each_i.hpp>
-# include <msgpack/preprocessor/tuple/elem.hpp>
-# include <msgpack/preprocessor/tuple/rem.hpp>
+# include "../config/config.hpp"
+# include "for_each_i.hpp"
+# include "../tuple/elem.hpp"
+# include "../tuple/rem.hpp"
 #
 # /* MSGPACK_PP_LIST_FOR_EACH */
 #

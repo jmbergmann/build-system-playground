@@ -15,7 +15,7 @@
  * along with this library. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <yogi/msg_pack.h>
+#include <yogi/msgpack.h>
 
 // This test checks if the header file included above compiles; i.e. it checks
 // that all necessary dependencies are included.

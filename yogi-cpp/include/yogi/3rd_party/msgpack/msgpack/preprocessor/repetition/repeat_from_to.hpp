@@ -14,16 +14,16 @@
 # ifndef MSGPACK_PREPROCESSOR_REPETITION_REPEAT_FROM_TO_HPP
 # define MSGPACK_PREPROCESSOR_REPETITION_REPEAT_FROM_TO_HPP
 #
-# include <msgpack/preprocessor/arithmetic/add.hpp>
-# include <msgpack/preprocessor/arithmetic/sub.hpp>
-# include <msgpack/preprocessor/cat.hpp>
-# include <msgpack/preprocessor/config/config.hpp>
-# include <msgpack/preprocessor/control/while.hpp>
-# include <msgpack/preprocessor/debug/error.hpp>
-# include <msgpack/preprocessor/detail/auto_rec.hpp>
-# include <msgpack/preprocessor/repetition/repeat.hpp>
-# include <msgpack/preprocessor/tuple/elem.hpp>
-# include <msgpack/preprocessor/tuple/rem.hpp>
+# include "../arithmetic/add.hpp"
+# include "../arithmetic/sub.hpp"
+# include "../cat.hpp"
+# include "../config/config.hpp"
+# include "../control/while.hpp"
+# include "../debug/error.hpp"
+# include "../detail/auto_rec.hpp"
+# include "repeat.hpp"
+# include "../tuple/elem.hpp"
+# include "../tuple/rem.hpp"
 #
 # /* MSGPACK_PP_REPEAT_FROM_TO */
 #

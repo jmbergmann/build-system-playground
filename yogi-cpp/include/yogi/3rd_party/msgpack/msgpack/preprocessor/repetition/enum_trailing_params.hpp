@@ -12,8 +12,8 @@
 # ifndef MSGPACK_PREPROCESSOR_REPETITION_ENUM_TRAILING_PARAMS_HPP
 # define MSGPACK_PREPROCESSOR_REPETITION_ENUM_TRAILING_PARAMS_HPP
 #
-# include <msgpack/preprocessor/config/config.hpp>
-# include <msgpack/preprocessor/repetition/repeat.hpp>
+# include "../config/config.hpp"
+# include "repeat.hpp"
 #
 # /* MSGPACK_PP_ENUM_TRAILING_PARAMS */
 #

@@ -14,16 +14,16 @@
 # ifndef MSGPACK_PREPROCESSOR_LOGICAL_HPP
 # define MSGPACK_PREPROCESSOR_LOGICAL_HPP
 #
-# include <msgpack/preprocessor/logical/and.hpp>
-# include <msgpack/preprocessor/logical/bitand.hpp>
-# include <msgpack/preprocessor/logical/bitnor.hpp>
-# include <msgpack/preprocessor/logical/bitor.hpp>
-# include <msgpack/preprocessor/logical/bitxor.hpp>
-# include <msgpack/preprocessor/logical/bool.hpp>
-# include <msgpack/preprocessor/logical/compl.hpp>
-# include <msgpack/preprocessor/logical/nor.hpp>
-# include <msgpack/preprocessor/logical/not.hpp>
-# include <msgpack/preprocessor/logical/or.hpp>
-# include <msgpack/preprocessor/logical/xor.hpp>
+# include "logical/and.hpp"
+# include "logical/bitand.hpp"
+# include "logical/bitnor.hpp"
+# include "logical/bitor.hpp"
+# include "logical/bitxor.hpp"
+# include "logical/bool.hpp"
+# include "logical/compl.hpp"
+# include "logical/nor.hpp"
+# include "logical/not.hpp"
+# include "logical/or.hpp"
+# include "logical/xor.hpp"
 #
 # endif

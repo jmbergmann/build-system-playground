@@ -8,7 +8,7 @@ http://www.boost.org/LICENSE_1_0.txt)
 #ifndef MSGPACK_PREDEF_OS_BSD_OPEN_H
 #define MSGPACK_PREDEF_OS_BSD_OPEN_H
 
-#include <msgpack/predef/os/bsd.h>
+#include "../bsd.h"
 
 /*`
 [heading `MSGPACK_OS_BSD_OPEN`]
@@ -240,12 +240,12 @@ http://www.boost.org/LICENSE_1_0.txt)
 
 #if MSGPACK_OS_BSD_OPEN
 #   define MSGPACK_OS_BSD_OPEN_AVAILABLE
-#   include <msgpack/predef/detail/os_detected.h>
+#   include "../../detail/os_detected.h"
 #endif
 
 #define MSGPACK_OS_BSD_OPEN_NAME "OpenBSD"
 
 #endif
 
-#include <msgpack/predef/detail/test.h>
+#include "../../detail/test.h"
 MSGPACK_PREDEF_DECLARE_TEST(MSGPACK_OS_BSD_OPEN,MSGPACK_OS_BSD_OPEN_NAME)

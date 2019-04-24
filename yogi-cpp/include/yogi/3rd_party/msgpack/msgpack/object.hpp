@@ -10,9 +10,9 @@
 #ifndef MSGPACK_OBJECT_HPP
 #define MSGPACK_OBJECT_HPP
 
-#include "msgpack/object_decl.hpp"
+#include "object_decl.hpp"
 
-#include "msgpack/v1/object.hpp"
-#include "msgpack/v2/object.hpp"
+#include "v1/object.hpp"
+#include "v2/object.hpp"
 
 #endif // MSGPACK_OBJECT_HPP

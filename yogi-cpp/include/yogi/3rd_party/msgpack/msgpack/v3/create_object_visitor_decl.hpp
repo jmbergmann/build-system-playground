@@ -10,7 +10,7 @@
 #ifndef MSGPACK_V3_CREATE_OBJECT_VISITOR_DECL_HPP
 #define MSGPACK_V3_CREATE_OBJECT_VISITOR_DECL_HPP
 
-#include "msgpack/v2/create_object_visitor_decl.hpp"
+#include "../v2/create_object_visitor_decl.hpp"
 
 namespace msgpack {
 

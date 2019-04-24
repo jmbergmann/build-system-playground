@@ -13,20 +13,20 @@
 # ifndef MSGPACK_PREPROCESSOR_FACILITIES_IS_EMPTY_HPP
 # define MSGPACK_PREPROCESSOR_FACILITIES_IS_EMPTY_HPP
 #
-# include <msgpack/preprocessor/config/config.hpp>
+# include "../config/config.hpp"
 #
 # if MSGPACK_PP_VARIADICS
 #
-# include <msgpack/preprocessor/facilities/is_empty_variadic.hpp>
+# include "is_empty_variadic.hpp"
 #
 # else
 #
 # if ~MSGPACK_PP_CONFIG_FLAGS() & MSGPACK_PP_CONFIG_MSVC() && ~MSGPACK_PP_CONFIG_FLAGS() & MSGPACK_PP_CONFIG_MWCC()
-# include <msgpack/preprocessor/tuple/elem.hpp>
-# include <msgpack/preprocessor/facilities/identity.hpp>
+# include "../tuple/elem.hpp"
+# include "identity.hpp"
 # else
-# include <msgpack/preprocessor/cat.hpp>
-# include <msgpack/preprocessor/detail/split.hpp>
+# include "../cat.hpp"
+# include "../detail/split.hpp"
 # endif
 #
 # /* MSGPACK_PP_IS_EMPTY */

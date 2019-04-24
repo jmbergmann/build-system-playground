@@ -46,6 +46,7 @@
 #include "yogi/json.h"
 #include "yogi/licenses.h"
 #include "yogi/logging.h"
+#include "yogi/msgpack.h"
 #include "yogi/object.h"
 #include "yogi/signals.h"
 #include "yogi/stream_io.h"

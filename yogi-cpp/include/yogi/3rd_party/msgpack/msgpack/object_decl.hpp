@@ -11,8 +11,8 @@
 #ifndef MSGPACK_OBJECT_DECL_HPP
 #define MSGPACK_OBJECT_DECL_HPP
 
-#include "msgpack/v1/object_decl.hpp"
-#include "msgpack/v2/object_decl.hpp"
-#include "msgpack/v3/object_decl.hpp"
+#include "v1/object_decl.hpp"
+#include "v2/object_decl.hpp"
+#include "v3/object_decl.hpp"
 
 #endif // MSGPACK_OBJECT_DECL_HPP

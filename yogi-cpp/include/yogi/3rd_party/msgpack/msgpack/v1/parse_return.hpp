@@ -10,7 +10,7 @@
 #ifndef MSGPACK_V1_PARSE_RETURN_HPP
 #define MSGPACK_V1_PARSE_RETURN_HPP
 
-#include "msgpack/versioning.hpp"
+#include "../versioning.hpp"
 
 namespace msgpack {
 

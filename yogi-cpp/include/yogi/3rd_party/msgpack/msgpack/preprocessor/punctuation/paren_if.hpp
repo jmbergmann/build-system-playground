@@ -12,10 +12,10 @@
 # ifndef MSGPACK_PREPROCESSOR_PUNCTUATION_PAREN_IF_HPP
 # define MSGPACK_PREPROCESSOR_PUNCTUATION_PAREN_IF_HPP
 #
-# include <msgpack/preprocessor/config/config.hpp>
-# include <msgpack/preprocessor/control/if.hpp>
-# include <msgpack/preprocessor/facilities/empty.hpp>
-# include <msgpack/preprocessor/punctuation/paren.hpp>
+# include "../config/config.hpp"
+# include "../control/if.hpp"
+# include "../facilities/empty.hpp"
+# include "paren.hpp"
 #
 # /* MSGPACK_PP_LPAREN_IF */
 #

@@ -12,9 +12,9 @@
 
 #if MSGPACK_DEFAULT_API_VERSION >= 2
 
-#include "msgpack/unpack_decl.hpp"
-#include "msgpack/parse.hpp"
-#include "msgpack/create_object_visitor.hpp"
+#include "../unpack_decl.hpp"
+#include "../parse.hpp"
+#include "../create_object_visitor.hpp"
 
 namespace msgpack {
 

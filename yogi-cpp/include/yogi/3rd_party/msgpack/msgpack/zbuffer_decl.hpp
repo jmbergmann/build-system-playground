@@ -10,8 +10,8 @@
 #ifndef MSGPACK_ZBUFFER_DECL_HPP
 #define MSGPACK_ZBUFFER_DECL_HPP
 
-#include "msgpack/v1/zbuffer_decl.hpp"
-#include "msgpack/v2/zbuffer_decl.hpp"
-#include "msgpack/v3/zbuffer_decl.hpp"
+#include "v1/zbuffer_decl.hpp"
+#include "v2/zbuffer_decl.hpp"
+#include "v3/zbuffer_decl.hpp"
 
 #endif // MSGPACK_ZBUFFER_DECL_HPP

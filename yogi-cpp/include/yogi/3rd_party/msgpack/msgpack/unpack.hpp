@@ -10,10 +10,10 @@
 #ifndef MSGPACK_UNPACK_HPP
 #define MSGPACK_UNPACK_HPP
 
-#include "msgpack/unpack_decl.hpp"
+#include "unpack_decl.hpp"
 
-#include "msgpack/v1/unpack.hpp"
-#include "msgpack/v2/unpack.hpp"
-#include "msgpack/v3/unpack.hpp"
+#include "v1/unpack.hpp"
+#include "v2/unpack.hpp"
+#include "v3/unpack.hpp"
 
 #endif // MSGPACK_UNPACK_HPP

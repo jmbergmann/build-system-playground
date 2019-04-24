@@ -8,8 +8,8 @@ http://www.boost.org/LICENSE_1_0.txt)
 #ifndef MSGPACK_PREDEF_LANGUAGE_CUDA_H
 #define MSGPACK_PREDEF_LANGUAGE_CUDA_H
 
-#include <msgpack/predef/version_number.h>
-#include <msgpack/predef/make.h>
+#include "../version_number.h"
+#include "../make.h"
 
 /*`
 [heading `MSGPACK_LANG_CUDA`]
@@ -48,5 +48,5 @@ If available, the version is detected as VV.RR.P.
 
 #endif
 
-#include <msgpack/predef/detail/test.h>
+#include "../detail/test.h"
 MSGPACK_PREDEF_DECLARE_TEST(MSGPACK_LANG_CUDA,MSGPACK_LANG_CUDA_NAME)

@@ -12,10 +12,10 @@
 # ifndef MSGPACK_PREPROCESSOR_SEQ_POP_BACK_HPP
 # define MSGPACK_PREPROCESSOR_SEQ_POP_BACK_HPP
 #
-# include <msgpack/preprocessor/arithmetic/dec.hpp>
-# include <msgpack/preprocessor/config/config.hpp>
-# include <msgpack/preprocessor/seq/first_n.hpp>
-# include <msgpack/preprocessor/seq/size.hpp>
+# include "../arithmetic/dec.hpp"
+# include "../config/config.hpp"
+# include "first_n.hpp"
+# include "size.hpp"
 #
 # /* MSGPACK_PP_SEQ_POP_BACK */
 #

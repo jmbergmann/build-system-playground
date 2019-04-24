@@ -10,7 +10,7 @@
 #ifndef MSGPACK_V3_CPP11_MSGPACK_TUPLE_DECL_HPP
 #define MSGPACK_V3_CPP11_MSGPACK_TUPLE_DECL_HPP
 
-#include "msgpack/v2/adaptor/detail/cpp11_msgpack_tuple_decl.hpp"
+#include "../../../v2/adaptor/detail/cpp11_msgpack_tuple_decl.hpp"
 
 namespace msgpack {
 

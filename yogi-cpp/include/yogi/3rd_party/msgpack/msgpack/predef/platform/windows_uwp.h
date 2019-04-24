@@ -8,9 +8,9 @@ http://www.boost.org/LICENSE_1_0.txt)
 #ifndef MSGPACK_PREDEF_PLAT_WINDOWS_UWP_H
 #define MSGPACK_PREDEF_PLAT_WINDOWS_UWP_H
 
-#include <msgpack/predef/make.h>
-#include <msgpack/predef/os/windows.h>
-#include <msgpack/predef/version_number.h>
+#include "../make.h"
+#include "../os/windows.h"
+#include "../version_number.h"
 
 /*`
 [heading `MSGPACK_PLAT_WINDOWS_UWP`]
@@ -48,7 +48,7 @@ UWP development.
 
 #if MSGPACK_PLAT_WINDOWS_UWP
 #   define MSGPACK_PLAT_WINDOWS_UWP_AVAILABLE
-#   include <msgpack/predef/detail/platform_detected.h>
+#   include "../detail/platform_detected.h"
 #   include <winapifamily.h>    // Windows SDK
 #endif
 
@@ -56,5 +56,5 @@ UWP development.
 
 #endif
 
-#include <msgpack/predef/detail/test.h>
+#include "../detail/test.h"
 MSGPACK_PREDEF_DECLARE_TEST(MSGPACK_PLAT_WINDOWS_UWP, MSGPACK_PLAT_WINDOWS_UWP_NAME)

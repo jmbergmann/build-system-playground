@@ -10,7 +10,7 @@
 #ifndef MSGPACK_V3_PACK_DECL_HPP
 #define MSGPACK_V3_PACK_DECL_HPP
 
-#include "msgpack/v2/pack_decl.hpp"
+#include "../v2/pack_decl.hpp"
 
 namespace msgpack {
 

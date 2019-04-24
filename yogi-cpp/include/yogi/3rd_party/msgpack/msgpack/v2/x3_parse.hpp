@@ -16,8 +16,8 @@
 
 #if BOOST_VERSION >= 106100
 
-#include "msgpack/versioning.hpp"
-#include "msgpack/x3_parse_decl.hpp"
+#include "../versioning.hpp"
+#include "../x3_parse_decl.hpp"
 
 #if __GNUC__ >= 4
 #pragma GCC diagnostic push

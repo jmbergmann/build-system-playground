@@ -12,14 +12,14 @@
 # ifndef MSGPACK_PREPROCESSOR_SEQ_DETAIL_TO_LIST_MSVC_HPP
 # define MSGPACK_PREPROCESSOR_SEQ_DETAIL_TO_LIST_MSVC_HPP
 #
-# include <msgpack/preprocessor/config/config.hpp>
+# include "../../config/config.hpp"
 #
 # if MSGPACK_PP_CONFIG_FLAGS() & MSGPACK_PP_CONFIG_MSVC()
 #
-# include <msgpack/preprocessor/cat.hpp>
-# include <msgpack/preprocessor/arithmetic/dec.hpp>
-# include <msgpack/preprocessor/control/while.hpp>
-# include <msgpack/preprocessor/tuple/elem.hpp>
+# include "../../cat.hpp"
+# include "../../arithmetic/dec.hpp"
+# include "../../control/while.hpp"
+# include "../../tuple/elem.hpp"
 #
 # define MSGPACK_PP_SEQ_DETAIL_TO_LIST_MSVC_STATE_RESULT(state) \
     MSGPACK_PP_TUPLE_ELEM(2, 0, state) \

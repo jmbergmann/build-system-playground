@@ -10,10 +10,10 @@
 #ifndef MSGPACK_V1_TYPE_CPP11_TUPLE_HPP
 #define MSGPACK_V1_TYPE_CPP11_TUPLE_HPP
 
-#include "msgpack/versioning.hpp"
-#include "msgpack/adaptor/adaptor_base.hpp"
-#include "msgpack/adaptor/check_container_size.hpp"
-#include "msgpack/meta.hpp"
+#include "../../../versioning.hpp"
+#include "../../../adaptor/adaptor_base.hpp"
+#include "../../../adaptor/check_container_size.hpp"
+#include "../../../meta.hpp"
 
 #include <tuple>
 

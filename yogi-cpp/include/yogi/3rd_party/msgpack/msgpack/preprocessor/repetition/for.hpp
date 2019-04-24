@@ -14,11 +14,11 @@
 # ifndef MSGPACK_PREPROCESSOR_REPETITION_FOR_HPP
 # define MSGPACK_PREPROCESSOR_REPETITION_FOR_HPP
 #
-# include <msgpack/preprocessor/cat.hpp>
-# include <msgpack/preprocessor/debug/error.hpp>
-# include <msgpack/preprocessor/facilities/empty.hpp>
-# include <msgpack/preprocessor/logical/bool.hpp>
-# include <msgpack/preprocessor/detail/auto_rec.hpp>
+# include "../cat.hpp"
+# include "../debug/error.hpp"
+# include "../facilities/empty.hpp"
+# include "../logical/bool.hpp"
+# include "../detail/auto_rec.hpp"
 #
 # /* MSGPACK_PP_FOR */
 #
@@ -35,13 +35,13 @@
 # define MSGPACK_PP_FOR_SR_M(r, s) MSGPACK_PP_NIL
 #
 # if MSGPACK_PP_CONFIG_FLAGS() & MSGPACK_PP_CONFIG_EDG()
-#    include <msgpack/preprocessor/repetition/detail/edg/for.hpp>
+#    include "detail/edg/for.hpp"
 # elif MSGPACK_PP_CONFIG_FLAGS() & MSGPACK_PP_CONFIG_MSVC()
-#    include <msgpack/preprocessor/repetition/detail/msvc/for.hpp>
+#    include "detail/msvc/for.hpp"
 # elif MSGPACK_PP_CONFIG_FLAGS() & MSGPACK_PP_CONFIG_DMC()
-#    include <msgpack/preprocessor/repetition/detail/dmc/for.hpp>
+#    include "detail/dmc/for.hpp"
 # else
-#    include <msgpack/preprocessor/repetition/detail/for.hpp>
+#    include "detail/for.hpp"
 # endif
 #
 # if MSGPACK_PP_CONFIG_FLAGS() & MSGPACK_PP_CONFIG_DMC()

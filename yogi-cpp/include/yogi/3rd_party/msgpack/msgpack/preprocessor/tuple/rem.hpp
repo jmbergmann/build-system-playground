@@ -13,11 +13,11 @@
 # ifndef MSGPACK_PREPROCESSOR_TUPLE_REM_HPP
 # define MSGPACK_PREPROCESSOR_TUPLE_REM_HPP
 #
-# include <msgpack/preprocessor/cat.hpp>
-# include <msgpack/preprocessor/config/config.hpp>
-# include <msgpack/preprocessor/facilities/expand.hpp>
-# include <msgpack/preprocessor/facilities/overload.hpp>
-# include <msgpack/preprocessor/tuple/detail/is_single_return.hpp>
+# include "../cat.hpp"
+# include "../config/config.hpp"
+# include "../facilities/expand.hpp"
+# include "../facilities/overload.hpp"
+# include "detail/is_single_return.hpp"
 #
 # /* MSGPACK_PP_REM */
 #

@@ -14,13 +14,13 @@
 # ifndef MSGPACK_PREPROCESSOR_LIST_FIRST_N_HPP
 # define MSGPACK_PREPROCESSOR_LIST_FIRST_N_HPP
 #
-# include <msgpack/preprocessor/arithmetic/dec.hpp>
-# include <msgpack/preprocessor/config/config.hpp>
-# include <msgpack/preprocessor/control/while.hpp>
-# include <msgpack/preprocessor/list/adt.hpp>
-# include <msgpack/preprocessor/list/reverse.hpp>
-# include <msgpack/preprocessor/tuple/elem.hpp>
-# include <msgpack/preprocessor/tuple/rem.hpp>
+# include "../arithmetic/dec.hpp"
+# include "../config/config.hpp"
+# include "../control/while.hpp"
+# include "adt.hpp"
+# include "reverse.hpp"
+# include "../tuple/elem.hpp"
+# include "../tuple/rem.hpp"
 #
 # /* MSGPACK_PP_LIST_FIRST_N */
 #

@@ -12,10 +12,10 @@
 # ifndef MSGPACK_PREPROCESSOR_DEBUG_LINE_HPP
 # define MSGPACK_PREPROCESSOR_DEBUG_LINE_HPP
 #
-# include <msgpack/preprocessor/cat.hpp>
-# include <msgpack/preprocessor/config/config.hpp>
-# include <msgpack/preprocessor/iteration/iterate.hpp>
-# include <msgpack/preprocessor/stringize.hpp>
+# include "../cat.hpp"
+# include "../config/config.hpp"
+# include "../iteration/iterate.hpp"
+# include "../stringize.hpp"
 #
 # /* MSGPACK_PP_LINE */
 #

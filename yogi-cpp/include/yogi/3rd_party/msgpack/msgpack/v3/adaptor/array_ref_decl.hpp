@@ -10,7 +10,7 @@
 #ifndef MSGPACK_V3_TYPE_ARRAY_REF_DECL_HPP
 #define MSGPACK_V3_TYPE_ARRAY_REF_DECL_HPP
 
-#include "msgpack/v2/adaptor/array_ref_decl.hpp"
+#include "../../v2/adaptor/array_ref_decl.hpp"
 
 namespace msgpack {
 

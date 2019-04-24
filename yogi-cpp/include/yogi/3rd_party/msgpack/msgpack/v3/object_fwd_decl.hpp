@@ -11,7 +11,7 @@
 #ifndef MSGPACK_V3_OBJECT_FWD_DECL_HPP
 #define MSGPACK_V3_OBJECT_FWD_DECL_HPP
 
-#include "msgpack/v2/object_fwd_decl.hpp"
+#include "../v2/object_fwd_decl.hpp"
 
 namespace msgpack {
 

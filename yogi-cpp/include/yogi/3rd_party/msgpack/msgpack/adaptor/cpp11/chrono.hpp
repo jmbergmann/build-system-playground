@@ -11,6 +11,6 @@
 #ifndef MSGPACK_TYPE_CPP11_CHRONO_HPP
 #define MSGPACK_TYPE_CPP11_CHRONO_HPP
 
-#include "msgpack/v1/adaptor/cpp11/chrono.hpp"
+#include "../../v1/adaptor/cpp11/chrono.hpp"
 
 #endif // MSGPACK_TYPE_CPP11_CHRONO_HPP

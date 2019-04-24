@@ -8,8 +8,8 @@ http://www.boost.org/LICENSE_1_0.txt)
 #ifndef MSGPACK_PREDEF_PLAT_MINGW32_H
 #define MSGPACK_PREDEF_PLAT_MINGW32_H
 
-#include <msgpack/predef/version_number.h>
-#include <msgpack/predef/make.h>
+#include "../version_number.h"
+#include "../make.h"
 
 /*`
 [heading `MSGPACK_PLAT_MINGW32`]
@@ -47,17 +47,17 @@ Version number available as major, minor, and patch.
 #       undef MSGPACK_PLAT_MINGW32
 #       define MSGPACK_PLAT_MINGW32 MSGPACK_PLAT_MINGW32_DETECTION
 #   endif
-#   include <msgpack/predef/detail/platform_detected.h>
+#   include "../detail/platform_detected.h"
 #endif
 
 #define MSGPACK_PLAT_MINGW32_NAME "MinGW"
 
 #endif
 
-#include <msgpack/predef/detail/test.h>
+#include "../detail/test.h"
 MSGPACK_PREDEF_DECLARE_TEST(MSGPACK_PLAT_MINGW32,MSGPACK_PLAT_MINGW32_NAME)
 
 #ifdef MSGPACK_PLAT_MINGW32_EMULATED
-#include <msgpack/predef/detail/test.h>
+#include "../detail/test.h"
 MSGPACK_PREDEF_DECLARE_TEST(MSGPACK_PLAT_MINGW32_EMULATED,MSGPACK_PLAT_MINGW32_NAME)
 #endif

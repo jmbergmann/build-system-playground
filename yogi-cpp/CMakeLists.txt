@@ -48,7 +48,7 @@ add_executable (yogi-cpp-test
   test/compile_tests/json_compile_test.cc
   test/compile_tests/licenses_compile_test.cc
   test/compile_tests/logging_compile_test.cc
-  test/compile_tests/msg_pack_compile_test.cc
+  test/compile_tests/msgpack_compile_test.cc
   test/compile_tests/object_compile_test.cc
   test/compile_tests/payload_compile_test.cc
   test/compile_tests/signals_compile_test.cc
@@ -70,6 +70,7 @@ add_executable (yogi-cpp-test
   test/public_api_tests/json_view_test.cc
   test/public_api_tests/licenses_test.cc
   test/public_api_tests/logging_test.cc
+  test/public_api_tests/msgpack_test.cc
   test/public_api_tests/object_test.cc
   test/public_api_tests/payload_test.cc
   test/public_api_tests/signals_test.cc

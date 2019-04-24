@@ -10,7 +10,7 @@
 #ifndef MSGPACK_V3_TYPE_INT_DECL_HPP
 #define MSGPACK_V3_TYPE_INT_DECL_HPP
 
-#include "msgpack/v2/adaptor/int_decl.hpp"
+#include "../../v2/adaptor/int_decl.hpp"
 
 namespace msgpack {
 

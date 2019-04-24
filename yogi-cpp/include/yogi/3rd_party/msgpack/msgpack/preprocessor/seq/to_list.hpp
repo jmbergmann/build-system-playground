@@ -13,15 +13,15 @@
 # ifndef MSGPACK_PREPROCESSOR_SEQ_TO_LIST_HPP
 # define MSGPACK_PREPROCESSOR_SEQ_TO_LIST_HPP
 #
-# include <msgpack/preprocessor/punctuation/comma.hpp>
-# include <msgpack/preprocessor/punctuation/paren.hpp>
-# include <msgpack/preprocessor/seq/detail/binary_transform.hpp>
+# include "../punctuation/comma.hpp"
+# include "../punctuation/paren.hpp"
+# include "detail/binary_transform.hpp"
 #
 # /* MSGPACK_PP_SEQ_TO_LIST */
 #
 # if MSGPACK_PP_CONFIG_FLAGS() & MSGPACK_PP_CONFIG_MSVC()
-# include <msgpack/preprocessor/seq/size.hpp>
-# include <msgpack/preprocessor/seq/detail/to_list_msvc.hpp>
+# include "size.hpp"
+# include "detail/to_list_msvc.hpp"
 # define MSGPACK_PP_SEQ_TO_LIST(seq) \
     MSGPACK_PP_SEQ_DETAIL_TO_LIST_MSVC \
         ( \

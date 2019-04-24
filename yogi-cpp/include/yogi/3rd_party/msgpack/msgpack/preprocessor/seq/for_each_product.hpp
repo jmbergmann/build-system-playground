@@ -12,14 +12,14 @@
 # ifndef MSGPACK_PREPROCESSOR_SEQ_FOR_EACH_PRODUCT_HPP
 # define MSGPACK_PREPROCESSOR_SEQ_FOR_EACH_PRODUCT_HPP
 #
-# include <msgpack/preprocessor/arithmetic/dec.hpp>
-# include <msgpack/preprocessor/config/config.hpp>
-# include <msgpack/preprocessor/control/if.hpp>
-# include <msgpack/preprocessor/repetition/for.hpp>
-# include <msgpack/preprocessor/seq/seq.hpp>
-# include <msgpack/preprocessor/seq/size.hpp>
-# include <msgpack/preprocessor/tuple/elem.hpp>
-# include <msgpack/preprocessor/tuple/rem.hpp>
+# include "../arithmetic/dec.hpp"
+# include "../config/config.hpp"
+# include "../control/if.hpp"
+# include "../repetition/for.hpp"
+# include "seq.hpp"
+# include "size.hpp"
+# include "../tuple/elem.hpp"
+# include "../tuple/rem.hpp"
 #
 # /* MSGPACK_PP_SEQ_FOR_EACH_PRODUCT */
 #

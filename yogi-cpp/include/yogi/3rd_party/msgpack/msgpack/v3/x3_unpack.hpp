@@ -16,10 +16,10 @@
 
 #if BOOST_VERSION >= 106100
 
-#include "msgpack/versioning.hpp"
-#include "msgpack/create_object_visitor.hpp"
-#include "msgpack/x3_unpack_decl.hpp"
-#include "msgpack/x3_parse.hpp"
+#include "../versioning.hpp"
+#include "../create_object_visitor.hpp"
+#include "../x3_unpack_decl.hpp"
+#include "../x3_parse.hpp"
 
 namespace msgpack {
 

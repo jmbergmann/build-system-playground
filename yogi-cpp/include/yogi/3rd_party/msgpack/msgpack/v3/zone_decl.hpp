@@ -10,12 +10,12 @@
 #ifndef MSGPACK_V3_ZONE_DECL_HPP
 #define MSGPACK_V3_ZONE_DECL_HPP
 
-#include "msgpack/cpp_config.hpp"
+#include "../cpp_config.hpp"
 
 #if defined(MSGPACK_USE_CPP03)
-#include "msgpack/v3/detail/cpp03_zone_decl.hpp"
+#include "detail/cpp03_zone_decl.hpp"
 #else  // MSGPACK_USE_CPP03
-#include "msgpack/v3/detail/cpp11_zone_decl.hpp"
+#include "detail/cpp11_zone_decl.hpp"
 #endif // MSGPACK_USE_CPP03
 
 #endif // MSGPACK_V3_ZONE_DECL_HPP

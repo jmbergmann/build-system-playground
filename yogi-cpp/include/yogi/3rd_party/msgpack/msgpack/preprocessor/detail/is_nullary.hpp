@@ -12,8 +12,8 @@
 # ifndef MSGPACK_PREPROCESSOR_DETAIL_IS_NULLARY_HPP
 # define MSGPACK_PREPROCESSOR_DETAIL_IS_NULLARY_HPP
 #
-# include <msgpack/preprocessor/config/config.hpp>
-# include <msgpack/preprocessor/detail/check.hpp>
+# include "../config/config.hpp"
+# include "check.hpp"
 #
 # /* MSGPACK_PP_IS_NULLARY */
 #

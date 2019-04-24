@@ -10,8 +10,8 @@
 #ifndef MSGPACK_VREFBUFFER_DECL_HPP
 #define MSGPACK_VREFBUFFER_DECL_HPP
 
-#include "msgpack/v1/vrefbuffer_decl.hpp"
-#include "msgpack/v2/vrefbuffer_decl.hpp"
-#include "msgpack/v3/vrefbuffer_decl.hpp"
+#include "v1/vrefbuffer_decl.hpp"
+#include "v2/vrefbuffer_decl.hpp"
+#include "v3/vrefbuffer_decl.hpp"
 
 #endif // MSGPACK_VREFBUFFER_DECL_HPP

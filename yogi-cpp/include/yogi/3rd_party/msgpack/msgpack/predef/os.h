@@ -11,23 +11,23 @@ http://www.boost.org/LICENSE_1_0.txt)
 #define MSGPACK_PREDEF_OS_H
 #endif
 
-#include <msgpack/predef/os/aix.h>
-#include <msgpack/predef/os/amigaos.h>
-#include <msgpack/predef/os/android.h>
-#include <msgpack/predef/os/beos.h>
-#include <msgpack/predef/os/bsd.h>
-#include <msgpack/predef/os/cygwin.h>
-#include <msgpack/predef/os/haiku.h>
-#include <msgpack/predef/os/hpux.h>
-#include <msgpack/predef/os/irix.h>
-#include <msgpack/predef/os/ios.h>
-#include <msgpack/predef/os/linux.h>
-#include <msgpack/predef/os/macos.h>
-#include <msgpack/predef/os/os400.h>
-#include <msgpack/predef/os/qnxnto.h>
-#include <msgpack/predef/os/solaris.h>
-#include <msgpack/predef/os/unix.h>
-#include <msgpack/predef/os/vms.h>
-#include <msgpack/predef/os/windows.h>
+#include "os/aix.h"
+#include "os/amigaos.h"
+#include "os/android.h"
+#include "os/beos.h"
+#include "os/bsd.h"
+#include "os/cygwin.h"
+#include "os/haiku.h"
+#include "os/hpux.h"
+#include "os/irix.h"
+#include "os/ios.h"
+#include "os/linux.h"
+#include "os/macos.h"
+#include "os/os400.h"
+#include "os/qnxnto.h"
+#include "os/solaris.h"
+#include "os/unix.h"
+#include "os/vms.h"
+#include "os/windows.h"
 
 #endif

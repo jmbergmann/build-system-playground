@@ -10,8 +10,8 @@
 #ifndef MSGPACK_V3_OBJECT_DECL_HPP
 #define MSGPACK_V3_OBJECT_DECL_HPP
 
-#include "msgpack/v2/object_decl.hpp"
-#include "msgpack/adaptor/adaptor_base.hpp"
+#include "../v2/object_decl.hpp"
+#include "../adaptor/adaptor_base.hpp"
 
 namespace msgpack {
 

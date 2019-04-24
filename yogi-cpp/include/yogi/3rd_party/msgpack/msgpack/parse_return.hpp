@@ -10,8 +10,8 @@
 #ifndef MSGPACK_PARSE_RETURN_HPP
 #define MSGPACK_PARSE_RETURN_HPP
 
-#include "msgpack/v1/parse_return.hpp"
-#include "msgpack/v2/parse_return.hpp"
-#include "msgpack/v3/parse_return.hpp"
+#include "v1/parse_return.hpp"
+#include "v2/parse_return.hpp"
+#include "v3/parse_return.hpp"
 
 #endif // MSGPACK_PARSE_RETURN_HPP

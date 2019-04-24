@@ -12,9 +12,9 @@
 # ifndef MSGPACK_PREPROCESSOR_SEQ_INSERT_HPP
 # define MSGPACK_PREPROCESSOR_SEQ_INSERT_HPP
 #
-# include <msgpack/preprocessor/config/config.hpp>
-# include <msgpack/preprocessor/seq/first_n.hpp>
-# include <msgpack/preprocessor/seq/rest_n.hpp>
+# include "../config/config.hpp"
+# include "first_n.hpp"
+# include "rest_n.hpp"
 #
 # /* MSGPACK_PP_SEQ_INSERT */
 #

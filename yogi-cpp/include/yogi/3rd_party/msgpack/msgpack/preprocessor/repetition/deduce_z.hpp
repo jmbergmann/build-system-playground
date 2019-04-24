@@ -12,8 +12,8 @@
 # ifndef MSGPACK_PREPROCESSOR_REPETITION_DEDUCE_Z_HPP
 # define MSGPACK_PREPROCESSOR_REPETITION_DEDUCE_Z_HPP
 #
-# include <msgpack/preprocessor/detail/auto_rec.hpp>
-# include <msgpack/preprocessor/repetition/repeat.hpp>
+# include "../detail/auto_rec.hpp"
+# include "repeat.hpp"
 #
 # /* MSGPACK_PP_DEDUCE_Z */
 #

@@ -12,13 +12,13 @@
 # ifndef MSGPACK_PREPROCESSOR_TUPLE_PUSH_BACK_HPP
 # define MSGPACK_PREPROCESSOR_TUPLE_PUSH_BACK_HPP
 #
-# include <msgpack/preprocessor/config/config.hpp>
+# include "../config/config.hpp"
 #
 # if MSGPACK_PP_VARIADICS
 #
-# include <msgpack/preprocessor/array/push_back.hpp>
-# include <msgpack/preprocessor/array/to_tuple.hpp>
-# include <msgpack/preprocessor/tuple/to_array.hpp>
+# include "../array/push_back.hpp"
+# include "../array/to_tuple.hpp"
+# include "to_array.hpp"
 #
 # /* MSGPACK_PP_TUPLE_PUSH_BACK */
 #

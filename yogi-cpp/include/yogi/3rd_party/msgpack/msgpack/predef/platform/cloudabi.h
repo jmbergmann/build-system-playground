@@ -8,8 +8,8 @@
 #ifndef MSGPACK_PREDEF_PLAT_CLOUDABI_H
 #define MSGPACK_PREDEF_PLAT_CLOUDABI_H
 
-#include <msgpack/predef/version_number.h>
-#include <msgpack/predef/make.h>
+#include "../version_number.h"
+#include "../make.h"
 
 /*`
 [heading `MSGPACK_PLAT_CLOUDABI`]
@@ -32,12 +32,12 @@
 
 #if MSGPACK_PLAT_CLOUDABI
 #   define MSGPACK_PLAT_CLOUDABI_AVAILABLE
-#   include <msgpack/predef/detail/platform_detected.h>
+#   include "../detail/platform_detected.h"
 #endif
 
 #define MSGPACK_PLAT_CLOUDABI_NAME "CloudABI"
 
 #endif
 
-#include <msgpack/predef/detail/test.h>
+#include "../detail/test.h"
 MSGPACK_PREDEF_DECLARE_TEST(MSGPACK_PLAT_CLOUDABI,MSGPACK_PLAT_CLOUDABI_NAME)

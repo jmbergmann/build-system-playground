@@ -10,7 +10,7 @@
 #ifndef MSGPACK_X3_PARSE_DECL_HPP
 #define MSGPACK_X3_PARSE_DECL_HPP
 
-#include "msgpack/v2/x3_parse_decl.hpp"
-#include "msgpack/v3/x3_parse_decl.hpp"
+#include "v2/x3_parse_decl.hpp"
+#include "v3/x3_parse_decl.hpp"
 
 #endif // MSGPACK_X3_PARSE_DECL_HPP

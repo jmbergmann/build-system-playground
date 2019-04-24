@@ -10,7 +10,7 @@
 #ifndef MSGPACK_V3_TYPE_SIZE_EQUAL_ONLY_DECL_HPP
 #define MSGPACK_V3_TYPE_SIZE_EQUAL_ONLY_DECL_HPP
 
-#include "msgpack/v2/adaptor/size_equal_only_decl.hpp"
+#include "../../v2/adaptor/size_equal_only_decl.hpp"
 
 namespace msgpack {
 

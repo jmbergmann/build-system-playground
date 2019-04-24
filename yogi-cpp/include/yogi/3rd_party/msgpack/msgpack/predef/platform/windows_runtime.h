@@ -9,11 +9,11 @@ http://www.boost.org/LICENSE_1_0.txt)
 #ifndef MSGPACK_PREDEF_PLAT_WINDOWS_RUNTIME_H
 #define MSGPACK_PREDEF_PLAT_WINDOWS_RUNTIME_H
 
-#include <msgpack/predef/make.h>
-#include <msgpack/predef/os/windows.h>
-#include <msgpack/predef/platform/windows_phone.h>
-#include <msgpack/predef/platform/windows_store.h>
-#include <msgpack/predef/version_number.h>
+#include "../make.h"
+#include "../os/windows.h"
+#include "windows_phone.h"
+#include "windows_store.h"
+#include "../version_number.h"
 
 /*`
 [heading `MSGPACK_PLAT_WINDOWS_RUNTIME`]
@@ -42,12 +42,12 @@ UWP and is deprecated.  Use one of the other `MSGPACK_PLAT_WINDOWS_*`definitions
  
 #if MSGPACK_PLAT_WINDOWS_RUNTIME
 #   define MSGPACK_PLAT_WINDOWS_RUNTIME_AVAILABLE
-#   include <msgpack/predef/detail/platform_detected.h>
+#   include "../detail/platform_detected.h"
 #endif
 
 #define MSGPACK_PLAT_WINDOWS_RUNTIME_NAME "Windows Runtime"
 
 #endif
 
-#include <msgpack/predef/detail/test.h>
+#include "../detail/test.h"
 MSGPACK_PREDEF_DECLARE_TEST(MSGPACK_PLAT_WINDOWS_RUNTIME,MSGPACK_PLAT_WINDOWS_RUNTIME_NAME)

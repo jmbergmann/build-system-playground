@@ -13,7 +13,7 @@
 
 #if !defined(MSGPACK_USE_CPP03)
 
-#include "msgpack/versioning.hpp"
+#include "../versioning.hpp"
 #include <type_traits>
 
 namespace msgpack {
