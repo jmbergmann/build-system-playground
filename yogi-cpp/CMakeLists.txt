@@ -39,6 +39,7 @@ find_package (Boost 1.66
 
 add_executable (yogi-cpp-test
   test/compile_tests/branch_compile_test.cc
+  test/compile_tests/buffer_compile_test.cc
   test/compile_tests/configuration_compile_test.cc
   test/compile_tests/constants_compile_test.cc
   test/compile_tests/context_compile_test.cc
@@ -52,7 +53,7 @@ add_executable (yogi-cpp-test
   test/compile_tests/msgpack_compile_test.cc
   test/compile_tests/msgpack_view_compile_test.cc
   test/compile_tests/object_compile_test.cc
-  test/compile_tests/payload_compile_test.cc
+  test/compile_tests/operation_id_compile_test.cc
   test/compile_tests/payload_view_compile_test.cc
   test/compile_tests/signals_compile_test.cc
   test/compile_tests/stream_io_compile_test.cc
@@ -77,7 +78,7 @@ add_executable (yogi-cpp-test
   test/public_api_tests/msgpack_test.cc
   test/public_api_tests/msgpack_view_test.cc
   test/public_api_tests/object_test.cc
-  test/public_api_tests/payload_test.cc
+  test/public_api_tests/operation_id_test.cc
   test/public_api_tests/payload_view_test.cc
   test/public_api_tests/signals_test.cc
   test/public_api_tests/stream_io_test.cc

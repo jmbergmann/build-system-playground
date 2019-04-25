@@ -15,7 +15,24 @@
  * along with this library. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <yogi/payload.h>
+#ifndef YOGI_BUFFER_H
+#define YOGI_BUFFER_H
 
-// This test checks if the header file included above compiles; i.e. it checks
-// that all necessary dependencies are included.
+//! \file
+//!
+//! Buffers for binary data.
+
+#include <memory>
+#include <vector>
+
+namespace yogi {
+
+/// Buffer for binary data.
+typedef std::vector<char> Buffer;
+
+/// Shared pointer to a buffer object.
+typedef std::unique_ptr<Buffer> BufferPtr;
+
+}  // namespace yogi
+
+#endif  // YOGI_BUFFER_H

@@ -56,7 +56,7 @@ class PayloadView {
   ///
   /// \param data Buffer to use.
   PayloadView(const std::vector<char>& data, EncodingType enc)
-    : PayloadView(data.data(), data.size(), enc) {}
+      : PayloadView(data.data(), data.size(), enc) {}
 
   /// Constructs a view from a buffer.
   ///

@@ -1992,7 +1992,7 @@ YOGI_API int YOGI_BranchCancelSendBroadcast(void* branch, int oid);
  * error.
  *
  * \attention
- *   Broadcast messages do not get queued, i.e. if a branches is not actively
+ *   Broadcast messages do not get queued, i.e. if a branch is not actively
  *   receiving broadcast messages then they will be discarded. To ensure that
  *   no messages get missed, call YOGI_BranchReceiveBroadcastAsync() again from
  *   within the handler \p fn.

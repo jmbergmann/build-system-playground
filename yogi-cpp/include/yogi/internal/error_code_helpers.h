@@ -49,12 +49,12 @@ inline void CheckDescriptiveErrorCode(Fn fn) {
   }
 }
 
-template <typename Fn>
-inline void WithErrorCodeToResult(int res, Fn fn) {
+template <typename Fn, typename... Args>
+inline void WithErrorCodeToResult(int res, Fn fn, Args&&... args) {
   if (res < 0) {
-    fn(yogi::Failure(static_cast<ErrorCode>(res)));
+    fn(yogi::Failure(static_cast<ErrorCode>(res)), std::forward<Args>(args)...);
   } else {
-    fn(yogi::Success(res));
+    fn(yogi::Success(res), std::forward<Args>(args)...);
   }
 }
 

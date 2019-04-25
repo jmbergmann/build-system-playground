@@ -36,6 +36,7 @@
 //! Macros for creating log entries.
 
 #include "yogi/branch.h"
+#include "yogi/buffer.h"
 #include "yogi/configuration.h"
 #include "yogi/constants.h"
 #include "yogi/context.h"
@@ -46,9 +47,11 @@
 #include "yogi/json.h"
 #include "yogi/licenses.h"
 #include "yogi/logging.h"
-#include "yogi/msgpack.h"
 #include "yogi/msgpack_view.h"
+#include "yogi/msgpack.h"
 #include "yogi/object.h"
+#include "yogi/operation_id.h"
+#include "yogi/payload_view.h"
 #include "yogi/signals.h"
 #include "yogi/stream_io.h"
 #include "yogi/string_view.h"

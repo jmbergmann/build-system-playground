@@ -15,38 +15,54 @@
  * along with this library. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef YOGI_PAYLOAD_H
-#define YOGI_PAYLOAD_H
+#ifndef YOGI_OPERATION_ID_H
+#define YOGI_OPERATION_ID_H
 
 //! \file
 //!
-//! User payload.
-
-#include <memory>
-#include <vector>
+//! Classes for handling IDs for asynchronous operations.
 
 namespace yogi {
 
+class OperationId;
+
+namespace internal {
+
+inline OperationId MakeOperationId(int val);
+
+}  // namespace internal
+
 ////////////////////////////////////////////////////////////////////////////////
-/// Represents a buffer holding user-defined payload encoded in either JSON or
-/// MessagePack.
+/// Represents the ID of an asynchronous operation.
 ////////////////////////////////////////////////////////////////////////////////
-class Payload {
+class OperationId {
+  friend OperationId internal::MakeOperationId(int);
+
  public:
-  static constexpr int kDefaultCapacity = 1024;
+  /// Constructs an invalid operation ID.
+  OperationId() : id_(0) {}
 
-  Payload(int capacity = kDefaultCapacity)
-      : Payload(static_cast<std::size_t>(capacity)) {}
+  /// Returns the numerical value of the ID.
+  ///
+  /// \returns Numerical value of the ID.
+  int Value() const { return id_; }
 
-  Payload(std::size_t capacity) { data_.reserve(capacity); }
+  /// Returns true if the operation ID is valid.
+  ///
+  /// \returns True if the operation ID is valid.
+  bool IsValid() const { return id_ > 0; }
 
  private:
-  std::vector<char> data_;
+  OperationId(int val) : id_(val) {}
+
+  int id_;
 };
 
-/// Shared pointer to a user payload object.
-typedef std::shared_ptr<Payload> PayloadPtr;
+namespace internal {
 
+inline OperationId MakeOperationId(int val) { return OperationId(val); }
+
+}  // namespace internal
 }  // namespace yogi
 
-#endif  // YOGI_PAYLOAD_H
+#endif  // YOGI_OPERATION_ID_H
