@@ -499,9 +499,10 @@ class Branch : public ObjectT<Branch> {
   /// Callback function used in ReceiveBroadcastAsync().
   ///
   /// \param res     %Result of the receive operation.
-  /// \param payload Received payload.
-  using ReceiveBroadcastFn =
-      std::function<void(const Result& res, const PayloadView& payload)>;
+  /// \param payload View on the received payload.
+  /// \param buffer  Buffer holding the payload.
+  using ReceiveBroadcastFn = std::function<void(
+      const Result& res, const PayloadView& payload, BufferPtr&& buffer)>;
 
   /// Creates a branch.
   ///
@@ -1080,7 +1081,8 @@ class Branch : public ObjectT<Branch> {
             payload = PayloadView(data->buffer->data(), size, data->enc);
           }
 
-          internal::WithErrorCodeToResult(res, data->fn, payload);
+          internal::WithErrorCodeToResult(res, data->fn, payload,
+                                          std::move(data->buffer));
         },
         data.get());
 
