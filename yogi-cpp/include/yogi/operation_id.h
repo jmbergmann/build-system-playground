@@ -52,6 +52,13 @@ class OperationId {
   /// \returns True if the operation ID is valid.
   bool IsValid() const { return id_ > 0; }
 
+  bool operator==(const OperationId& rhs) const { return id_ == rhs.id_; }
+  bool operator!=(const OperationId& rhs) const { return id_ != rhs.id_; }
+  bool operator<(const OperationId& rhs) const { return id_ < rhs.id_; }
+  bool operator<=(const OperationId& rhs) const { return id_ <= rhs.id_; }
+  bool operator>(const OperationId& rhs) const { return id_ > rhs.id_; }
+  bool operator>=(const OperationId& rhs) const { return id_ >= rhs.id_; }
+
  private:
   OperationId(int val) : id_(val) {}
 

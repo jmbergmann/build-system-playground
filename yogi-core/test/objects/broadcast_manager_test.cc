@@ -139,7 +139,7 @@ TEST_F(BroadcastManagerTest, SendBlock) {
 
   auto data = MakeBigJsonData();
 
-  for (int i = 0; i < 10; ++i) {
+  for (int i = 0; i < 3; ++i) {
     int res =
         YOGI_BranchSendBroadcast(branch_c_, YOGI_ENC_JSON, data.data(),
                                  static_cast<int>(data.size()), YOGI_TRUE);
@@ -210,7 +210,7 @@ TEST_F(BroadcastManagerTest, AsyncSendMessagePack) {
 TEST_F(BroadcastManagerTest, AsyncSendRetry) {
   auto data = MakeBigJsonData();
 
-  const int n = 10;
+  const int n = 3;
   std::vector<int> errs;
   for (int i = 0; i < n; ++i) {
     int oid = YOGI_BranchSendBroadcastAsync(
@@ -255,10 +255,11 @@ TEST_F(BroadcastManagerTest, AsyncSendNoRetry) {
 TEST_F(BroadcastManagerTest, CancelSend) {
   auto data = MakeBigJsonData();
 
+  int oid;
   int res;
   std::map<int, int> oid_to_res;
   do {
-    int oid = YOGI_BranchSendBroadcastAsync(
+    oid = YOGI_BranchSendBroadcastAsync(
         branch_c_, YOGI_ENC_JSON, data.data(), static_cast<int>(data.size()),
         YOGI_TRUE,
         [](int res, int oid, void* userarg) {
@@ -273,6 +274,9 @@ TEST_F(BroadcastManagerTest, CancelSend) {
   } while (res == YOGI_ERR_INVALID_OPERATION_ID);
 
   ASSERT_OK(res);
+
+  PollContext(context_);
+  EXPECT_EQ(oid_to_res[oid], YOGI_ERR_CANCELED);
 }
 
 TEST_F(BroadcastManagerTest, ReceiveJson) {

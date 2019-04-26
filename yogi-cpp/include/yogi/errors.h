@@ -304,7 +304,7 @@ class Result {
   bool operator>=(const Result& rhs) const { return value_ >= rhs.value_; }
 
  private:
-  const int value_;
+  int value_;
 };
 
 ////////////////////////////////////////////////////////////////////////////////

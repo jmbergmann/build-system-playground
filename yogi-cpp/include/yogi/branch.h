@@ -918,13 +918,17 @@ class Branch : public ObjectT<Branch> {
   /// \note
   ///   If the send operation has already been carried out but the handler
   ///   function has not been called yet, then cancelling the operation will
-  ///   fail and the #kInvalidOperationId error will be returned.
+  ///   fail and _false_ will be returned.
   ///
   /// \param oid ID of the send operation.
-  void CancelSendBroadcast(OperationId oid) {
+  ///
+  /// \returns True if the operation has been canceled successfully.
+  bool CancelSendBroadcast(OperationId oid) {
     int res =
         internal::YOGI_BranchCancelSendBroadcast(GetHandle(), oid.Value());
+    if (Result(res) == Failure(ErrorCode::kInvalidOperationId)) return false;
     internal::CheckErrorCode(res);
+    return true;
   }
 
   /// Receives a broadcast message from any of the connected branches.

@@ -21,7 +21,26 @@
 
 class BranchTest : public testing::Test {
  protected:
-  yogi::ContextPtr context_ = yogi::Context::Create();
+  BranchTest()
+      : context_(yogi::Context::Create()),
+        json_view_(json_data_),
+        big_json_data_(MakeBigJsonData()),
+        big_json_view_(big_json_data_),
+        msgpack_view_(msgpack_data_, sizeof(msgpack_data_)) {}
+
+  static std::vector<char> MakeBigJsonData(std::size_t size = 10000) {
+    std::vector<char> data{'[', '"', '"', ']', '\0'};
+    data.insert(data.begin() + 2, size - data.size() + 1, '.');
+    return data;
+  }
+
+  yogi::ContextPtr context_;
+  const char json_data_[8] = "[1,2,3]";
+  const yogi::JsonView json_view_;
+  const std::vector<char> big_json_data_;
+  const yogi::JsonView big_json_view_;
+  const char msgpack_data_[4] = {static_cast<char>(0x93), 0x1, 0x2, 0x3};
+  const yogi::MsgpackView msgpack_view_;
 };
 
 TEST_F(BranchTest, CreateWithSubSection) {
@@ -174,14 +193,82 @@ TEST_F(BranchTest, CancelAwaitEvent) {
 }
 
 TEST_F(BranchTest, SendBroadcast) {
-  auto branch_a = yogi::Branch::Create(context_, "{\"name\":\"a\"}");
+  auto branch_a = yogi::Branch::Create(
+      context_, "{\"name\":\"a\", \"_transceive_byte_limit\": 5}");
   auto branch_b = yogi::Branch::Create(context_, "{\"name\":\"b\"}");
   RunContextUntilBranchesAreConnected(context_, {branch_a, branch_b});
+  context_->RunInBackground();
+
+  // Blocking
+  for (int i = 0; i < 3; ++i) {
+    EXPECT_TRUE(branch_a->SendBroadcast(big_json_view_, true));
+  }
+
+  // Not blocking
+  while (branch_a->SendBroadcast(big_json_view_, false))
+    ;
+
+  context_->Stop();
+  context_->WaitForStopped();
 }
 
-TEST_F(BranchTest, DISABLED_SendBroadcastAsync) {}
+TEST_F(BranchTest, SendBroadcastAsync) {
+  auto branch_a = yogi::Branch::Create(
+      context_, "{\"name\":\"a\", \"_transceive_byte_limit\": 5}");
+  auto branch_b = yogi::Branch::Create(context_, "{\"name\":\"b\"}");
+  RunContextUntilBranchesAreConnected(context_, {branch_a, branch_b});
 
-TEST_F(BranchTest, DISABLED_CancelSendBroadcast) {}
+  // Send with retry = true
+  const int n = 3;
+  std::vector<yogi::Result> results;
+  for (int i = 0; i < n; ++i) {
+    auto oid = branch_a->SendBroadcastAsync(big_json_view_, true,
+                                            [&](auto& res, auto oid) {
+                                              EXPECT_EQ(res, yogi::Success());
+                                              EXPECT_TRUE(oid.IsValid());
+                                              results.push_back(res);
+                                            });
+    EXPECT_TRUE(oid.IsValid());
+  }
+
+  while (results.size() != n) {
+    context_->Poll();
+  }
+
+  // Send with retry = false
+  do {
+    branch_a->SendBroadcastAsync(
+        big_json_view_, false,
+        [&](auto& res, auto oid) { results.push_back(res); });
+
+    context_->PollOne();
+  } while (results.back() == yogi::Success());
+
+  EXPECT_EQ(results.back(), yogi::Failure(yogi::ErrorCode::kTxQueueFull));
+}
+
+TEST_F(BranchTest, CancelSendBroadcast) {
+  auto branch_a = yogi::Branch::Create(
+      context_, "{\"name\":\"a\", \"_transceive_byte_limit\": 5}");
+  auto branch_b = yogi::Branch::Create(context_, "{\"name\":\"b\"}");
+  RunContextUntilBranchesAreConnected(context_, {branch_a, branch_b});
+
+  std::map<yogi::OperationId, yogi::ErrorCode> oid_to_ec;
+  while (true) {
+    auto oid = branch_a->SendBroadcastAsync(
+        big_json_view_,
+        [&](auto& res, auto oid) { oid_to_ec[oid] = res.GetErrorCode(); });
+    EXPECT_TRUE(oid.IsValid());
+
+    oid_to_ec[oid] = yogi::ErrorCode::kUnknown;
+
+    if (branch_a->CancelSendBroadcast(oid)) {
+      context_->Poll();
+      EXPECT_EQ(oid_to_ec[oid], yogi::ErrorCode::kCanceled);
+      break;
+    }
+  }
+}
 
 TEST_F(BranchTest, DISABLED_ReceiveBroadcast) {}
 

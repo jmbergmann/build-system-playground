@@ -49,3 +49,29 @@ TEST_F(OperationIdTest, Copy) {
   EXPECT_EQ(oid.Value(), 123);
   EXPECT_TRUE(oid.IsValid());
 }
+
+TEST_F(OperationIdTest, Operators) {
+  auto fn = [](int val) { return yogi::internal::MakeOperationId(val); };
+
+  EXPECT_TRUE(fn(5) == fn(5));
+  EXPECT_FALSE(fn(5) == fn(10));
+
+  EXPECT_TRUE(fn(5) != fn(10));
+  EXPECT_FALSE(fn(5) != fn(5));
+
+  EXPECT_TRUE(fn(5) < fn(10));
+  EXPECT_FALSE(fn(5) < fn(5));
+  EXPECT_FALSE(fn(5) < fn(1));
+
+  EXPECT_TRUE(fn(5) <= fn(10));
+  EXPECT_TRUE(fn(5) <= fn(5));
+  EXPECT_FALSE(fn(5) <= fn(1));
+
+  EXPECT_FALSE(fn(5) > fn(10));
+  EXPECT_FALSE(fn(5) > fn(5));
+  EXPECT_TRUE(fn(5) > fn(1));
+
+  EXPECT_FALSE(fn(5) >= fn(10));
+  EXPECT_TRUE(fn(5) >= fn(5));
+  EXPECT_TRUE(fn(5) >= fn(1));
+}
