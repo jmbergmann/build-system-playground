@@ -89,6 +89,7 @@ add_executable (yogi-cpp-test
   test/public_api_tests/uuid_test.cc
   test/public_api_tests/version_test.cc
   test/public_api_tests/yogi_header_test.cc
+  test/common.cc
 )
 
 target_link_libraries (yogi-cpp-test

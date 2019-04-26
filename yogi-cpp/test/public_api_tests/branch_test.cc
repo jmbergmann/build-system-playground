@@ -173,7 +173,11 @@ TEST_F(BranchTest, CancelAwaitEvent) {
   EXPECT_TRUE(called);
 }
 
-TEST_F(BranchTest, DISABLED_SendBroadcast) {}
+TEST_F(BranchTest, SendBroadcast) {
+  auto branch_a = yogi::Branch::Create(context_, "{\"name\":\"a\"}");
+  auto branch_b = yogi::Branch::Create(context_, "{\"name\":\"b\"}");
+  RunContextUntilBranchesAreConnected(context_, {branch_a, branch_b});
+}
 
 TEST_F(BranchTest, DISABLED_SendBroadcastAsync) {}
 
