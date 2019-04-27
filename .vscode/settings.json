@@ -17,9 +17,9 @@
     "**/__pycache__/": true,
     "**/*.dll": true
   },
-  "python.unitTest.cwd": "yogi-python",
-  "python.unitTest.unittestArgs": ["-v", "-s", ".", "-p", "test_*.py"],
-  "python.unitTest.unittestEnabled": true,
+  "python.testing.cwd": "yogi-python",
+  "python.testing.unittestArgs": ["-v", "-s", ".", "-p", "test_*.py"],
+  "python.testing.unittestEnabled": true,
   "python.formatting.provider": "autopep8",
   "python.formatting.autopep8Args": ["--max-line-length", "80"],
   "[python]": {
@@ -161,8 +161,6 @@
       }
     ]
   },
-  "gtest-adapter.debugConfig": [
-    "Test: yogi-core"
-  ],
+  "gtest-adapter.debugConfig": ["Test: yogi-core"],
   "gtest-adapter.supportLocation": true
 }

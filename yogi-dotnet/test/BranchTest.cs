@@ -109,7 +109,7 @@ namespace test
         public void GetConnectedBranches()
         {
             var branch = new Yogi.Branch(context, "{\"name\":\"My Branch\"}");
-            var branch_a = new Yogi.Branch(context,"{\"name\":\"A\"}");
+            var branch_a = new Yogi.Branch(context, "{\"name\":\"A\"}");
             var branch_b = new Yogi.Branch(context, "{\"name\":\"B\"}");
 
             while (!branch.GetConnectedBranches().ContainsKey(branch_a.Uuid)
@@ -129,14 +129,15 @@ namespace test
         }
 
         [Fact]
-        public void AwaitEvent()
+        public void AwaitEventAsync()
         {
             var branch = new Yogi.Branch(context, "{\"name\":\"My Branch\"}");
             var branch_a = new Yogi.Branch(context, "{\"name\":\"A\"}");
 
             var events = Yogi.BranchEvents.BranchQueried | Yogi.BranchEvents.ConnectionLost;
             bool called = false;
-            branch.AwaitEventAsync(events, (res, ev, evres, info) => {
+            branch.AwaitEventAsync(events, (res, ev, evres, info) =>
+            {
                 Assert.IsType<Yogi.Success>(res);
                 Assert.Equal(Yogi.ErrorCode.Ok, res.ErrorCode);
                 Assert.IsType<Yogi.BranchEvents>(ev);
@@ -170,7 +171,8 @@ namespace test
             var branch = new Yogi.Branch(context, "{\"name\":\"My Branch\"}");
 
             bool called = false;
-            branch.AwaitEventAsync(Yogi.BranchEvents.All, (res, ev, evres, info) => {
+            branch.AwaitEventAsync(Yogi.BranchEvents.All, (res, ev, evres, info) =>
+            {
                 Assert.IsType<Yogi.Failure>(res);
                 Assert.Equal(Yogi.ErrorCode.Canceled, res.ErrorCode);
                 Assert.IsType<Yogi.BranchEvents>(ev);

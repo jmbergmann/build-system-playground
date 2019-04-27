@@ -63,16 +63,16 @@ public static partial class Yogi
 
         // === YOGI_BranchAwaitEventAsync ===
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        public delegate void BranchAwaitEventFnDelegate(int res, BranchEvents ev, int evres,
-                                                        IntPtr userarg);
+        public delegate void BranchAwaitEventAsyncFnDelegate(int res, BranchEvents ev, int evres,
+                                                             IntPtr userarg);
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        public delegate int BranchAwaitEventDelegate(SafeObjectHandle branch,
+        public delegate int BranchAwaitEventAsyncDelegate(SafeObjectHandle branch,
             BranchEvents events, IntPtr uuid, IntPtr json, int jsonsize,
-            BranchAwaitEventFnDelegate fn, IntPtr userarg);
+            BranchAwaitEventAsyncFnDelegate fn, IntPtr userarg);
 
-        public static BranchAwaitEventDelegate YOGI_BranchAwaitEventAsync
-            = Library.GetDelegateForFunction<BranchAwaitEventDelegate>(
+        public static BranchAwaitEventAsyncDelegate YOGI_BranchAwaitEventAsync
+            = Library.GetDelegateForFunction<BranchAwaitEventAsyncDelegate>(
                 "YOGI_BranchAwaitEventAsync");
 
         // === YOGI_BranchCancelAwaitEvent ===
@@ -82,6 +82,57 @@ public static partial class Yogi
         public static BranchCancelAwaitEventDelegate YOGI_BranchCancelAwaitEvent
             = Library.GetDelegateForFunction<BranchCancelAwaitEventDelegate>(
                 "YOGI_BranchCancelAwaitEvent");
+
+        // === YOGI_BranchSendBroadcast ===
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        public delegate int BranchSendBroadcastDelegate(SafeObjectHandle branch, int enc,
+            IntPtr data, int datasize, int block);
+
+        public static BranchSendBroadcastDelegate YOGI_BranchSendBroadcast
+            = Library.GetDelegateForFunction<BranchSendBroadcastDelegate>(
+                "YOGI_BranchSendBroadcast");
+
+        // === YOGI_BranchSendBroadcastAsync ===
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        public delegate void BranchSendBroadcastAsyncFnDelegate(int res, int oid, IntPtr userarg);
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        public delegate int BranchSendBroadcastAsyncDelegate(SafeObjectHandle branch, int enc,
+            IntPtr data, int datasize, int retry, BranchSendBroadcastAsyncFnDelegate fn,
+            IntPtr userarg);
+
+        public static BranchSendBroadcastAsyncDelegate YOGI_BranchSendBroadcastAsync
+            = Library.GetDelegateForFunction<BranchSendBroadcastAsyncDelegate>(
+                "YOGI_BranchSendBroadcastAsync");
+
+        // === YOGI_BranchCancelSendBroadcast ===
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        public delegate int BranchCancelSendBroadcastDelegate(SafeObjectHandle branch, int oid);
+
+        public static BranchCancelSendBroadcastDelegate YOGI_BranchCancelSendBroadcast
+            = Library.GetDelegateForFunction<BranchCancelSendBroadcastDelegate>(
+                "YOGI_BranchCancelSendBroadcast");
+
+        // === YOGI_BranchReceiveBroadcastAsync ===
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        public delegate void BranchReceiveBroadcastAsyncFnDelegate(int res, int size,
+                                                                   IntPtr userarg);
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        public delegate int BranchReceiveBroadcastAsyncDelegate(SafeObjectHandle branch, int enc,
+            IntPtr data, int datasize, BranchReceiveBroadcastAsyncFnDelegate fn, IntPtr userarg);
+
+        public static BranchSendBroadcastAsyncDelegate YOGI_BranchReceiveBroadcastAsync
+            = Library.GetDelegateForFunction<BranchSendBroadcastAsyncDelegate>(
+                "YOGI_BranchReceiveBroadcastAsync");
+
+        // === YOGI_BranchCancelReceiveBroadcast ===
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        public delegate int BranchCancelReceiveBroadcastDelegate(SafeObjectHandle branch);
+
+        public static BranchCancelReceiveBroadcastDelegate YOGI_BranchCancelReceiveBroadcast
+            = Library.GetDelegateForFunction<BranchCancelReceiveBroadcastDelegate>(
+                "YOGI_BranchCancelReceiveBroadcast");
     }
 
     /// <summary>
@@ -662,7 +713,7 @@ public static partial class Yogi
         {
             var json = Marshal.AllocHGlobal(bufferSize);
 
-            Api.BranchAwaitEventFnDelegate wrapper = (res, ev, evres, userarg) =>
+            Api.BranchAwaitEventAsyncFnDelegate wrapper = (res, ev, evres, userarg) =>
             {
                 var result = ErrorCodeToResult(res);
                 BranchEventInfo info = null;
