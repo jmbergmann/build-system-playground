@@ -30,7 +30,7 @@ class BranchTest : public testing::Test {
 
   static std::vector<char> MakeBigJsonData(std::size_t size = 10000) {
     std::vector<char> data{'[', '"', '"', ']', '\0'};
-    data.insert(data.begin() + 2, size - data.size() + 1, '.');
+    data.insert(data.begin() + 2, size - data.size(), '.');
     return data;
   }
 
@@ -199,6 +199,15 @@ TEST_F(BranchTest, SendBroadcast) {
   RunContextUntilBranchesAreConnected(context_, {branch_a, branch_b});
   context_->RunInBackground();
 
+  // Receive a broadcast to verify that it has actually been sent
+  bool broadcast_received = false;
+  branch_b->ReceiveBroadcastAsync(yogi::EncodingType::kJson,
+                                  [&](auto& res, auto& payload) {
+                                    EXPECT_EQ(res, yogi::Success());
+                                    EXPECT_EQ(payload, big_json_view_);
+                                    broadcast_received = true;
+                                  });
+
   // Blocking
   for (int i = 0; i < 3; ++i) {
     EXPECT_TRUE(branch_a->SendBroadcast(big_json_view_, true));
@@ -210,6 +219,11 @@ TEST_F(BranchTest, SendBroadcast) {
 
   context_->Stop();
   context_->WaitForStopped();
+
+  // Verify that a broadcast has actually been sent
+  while (!broadcast_received) {
+    context_->RunOne();
+  }
 }
 
 TEST_F(BranchTest, SendBroadcastAsync) {
@@ -217,6 +231,15 @@ TEST_F(BranchTest, SendBroadcastAsync) {
       context_, "{\"name\":\"a\", \"_transceive_byte_limit\": 5}");
   auto branch_b = yogi::Branch::Create(context_, "{\"name\":\"b\"}");
   RunContextUntilBranchesAreConnected(context_, {branch_a, branch_b});
+
+  // Receive a broadcast to verify that it has actually been sent
+  bool broadcast_received = false;
+  branch_b->ReceiveBroadcastAsync(yogi::EncodingType::kJson,
+                                  [&](auto& res, auto& payload) {
+                                    EXPECT_EQ(res, yogi::Success());
+                                    EXPECT_EQ(payload, big_json_view_);
+                                    broadcast_received = true;
+                                  });
 
   // Send with retry = true
   const int n = 3;
@@ -245,6 +268,11 @@ TEST_F(BranchTest, SendBroadcastAsync) {
   } while (results.back() == yogi::Success());
 
   EXPECT_EQ(results.back(), yogi::Failure(yogi::ErrorCode::kTxQueueFull));
+
+  // Verify that a broadcast has actually been sent
+  while (!broadcast_received) {
+    context_->RunOne();
+  }
 }
 
 TEST_F(BranchTest, CancelSendBroadcast) {
@@ -272,4 +300,18 @@ TEST_F(BranchTest, CancelSendBroadcast) {
 
 TEST_F(BranchTest, DISABLED_ReceiveBroadcast) {}
 
-TEST_F(BranchTest, DISABLED_CancelReceiveBroadcast) {}
+TEST_F(BranchTest, CancelReceiveBroadcast) {
+  auto branch_a = yogi::Branch::Create(context_, "{\"name\":\"a\"}");
+
+  EXPECT_FALSE(branch_a->CancelReceiveBroadcast());
+
+  bool called = false;
+  branch_a->ReceiveBroadcastAsync([&](auto& res, auto&, auto&&) {
+    EXPECT_EQ(res, yogi::Failure(yogi::ErrorCode::kCanceled));
+    called = true;
+  });
+
+  EXPECT_TRUE(branch_a->CancelReceiveBroadcast());
+  context_->Poll();
+  EXPECT_TRUE(called);
+}

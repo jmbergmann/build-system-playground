@@ -43,7 +43,7 @@ TEST_F(PayloadViewTest, DefaultConstruct) {
 
 TEST_F(PayloadViewTest, ConstructFromBuffer) {
   const char* data = "hello";
-  int size = static_cast<int>(strlen(data));
+  int size = static_cast<int>(std::strlen(data));
   auto view = yogi::PayloadView(data, size, yogi::EncodingType::kMsgpack);
   EXPECT_EQ(view.Data(), data);
   EXPECT_EQ(view.Size(), size);
@@ -77,4 +77,51 @@ TEST_F(PayloadViewTest, ConstructFromMsgpackView) {
   EXPECT_EQ(msgpack,
             std::string(view.Data(), static_cast<std::size_t>(view.Size())));
   EXPECT_EQ(view.Encoding(), yogi::EncodingType::kMsgpack);
+}
+
+TEST_F(PayloadViewTest, ClassComparisonOperators) {
+  const char* ab = "Hello";
+  yogi::PayloadView a_view(ab, std::strlen(ab), yogi::EncodingType::kJson);
+  yogi::PayloadView b_view(ab, std::strlen(ab), yogi::EncodingType::kMsgpack);
+
+  std::string c = ab;
+  yogi::PayloadView c_view(c.c_str(), c.size(), yogi::EncodingType::kJson);
+
+  std::string d = c + " you";
+  yogi::PayloadView d_view(d.c_str(), d.size(), yogi::EncodingType::kJson);
+
+  std::string e = "olleH";
+  yogi::PayloadView e_view(e.c_str(), e.size(), yogi::EncodingType::kJson);
+
+  EXPECT_TRUE(a_view == a_view);
+  EXPECT_FALSE(a_view == b_view);
+  EXPECT_TRUE(a_view == c_view);
+  EXPECT_FALSE(a_view == d_view);
+  EXPECT_FALSE(a_view == e_view);
+
+  EXPECT_FALSE(a_view != a_view);
+  EXPECT_TRUE(a_view != b_view);
+  EXPECT_FALSE(a_view != c_view);
+  EXPECT_TRUE(a_view != d_view);
+  EXPECT_TRUE(a_view != e_view);
+}
+
+TEST_F(PayloadViewTest, FreeComparisonOperators) {
+  const char* json = "json";
+  yogi::JsonView json_view(json);
+  yogi::PayloadView json_payload(json_view);
+
+  EXPECT_TRUE(json_payload == json_view);
+  EXPECT_TRUE(json_view == json_payload);
+  EXPECT_FALSE(json_payload != json_view);
+  EXPECT_FALSE(json_view != json_payload);
+
+  const char* msgpack = "msgpack";
+  yogi::MsgpackView msgpack_view(msgpack, std::strlen(msgpack));
+  yogi::PayloadView msgpack_payload(msgpack_view);
+
+  EXPECT_TRUE(msgpack_payload == msgpack_view);
+  EXPECT_TRUE(msgpack_view == msgpack_payload);
+  EXPECT_FALSE(msgpack_payload != msgpack_view);
+  EXPECT_FALSE(msgpack_view != msgpack_payload);
 }

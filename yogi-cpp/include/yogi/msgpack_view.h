@@ -25,6 +25,7 @@
 #include "msgpack.h"
 
 #include <string>
+#include <cstring>
 #include <sstream>
 #include <vector>
 
@@ -89,6 +90,14 @@ class MsgpackView {
   ///
   /// \returns Size of the serialized MessagePack data in bytes.
   int Size() const { return size_; }
+
+  bool operator==(const MsgpackView& rhs) const {
+    if (Size() != rhs.Size()) return false;
+    return std::memcmp(Data(), rhs.Data(), static_cast<std::size_t>(Size())) ==
+           0;
+  }
+
+  bool operator!=(const MsgpackView& rhs) const { return !(*this == rhs); }
 
  private:
   std::string tmp_;

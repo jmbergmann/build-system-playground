@@ -23,6 +23,7 @@
 //! Helpers for passing strings to functions.
 
 #include <string>
+#include <cstring>
 
 namespace yogi {
 
@@ -57,6 +58,12 @@ class StringView {
   ///
   /// \returns NULL-terminated string holding the referenced string data.
   operator const char*() const { return s_; }
+
+  bool operator==(const StringView& rhs) const {
+    return std::strcmp(s_, rhs.s_) == 0;
+  }
+
+  bool operator!=(const StringView& rhs) const { return !(*this == rhs); }
 
  private:
   const char* s_;

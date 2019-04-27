@@ -105,11 +105,52 @@ class PayloadView {
   /// \returns Encoding of the payload data.
   EncodingType Encoding() const { return enc_; }
 
+  bool operator==(const PayloadView& rhs) const {
+    if ((Encoding() != rhs.Encoding())) return false;
+    if (Size() != rhs.Size()) return false;
+    return std::memcmp(Data(), rhs.Data(), static_cast<std::size_t>(Size())) ==
+           0;
+  }
+
+  bool operator!=(const PayloadView& rhs) const { return !(*this == rhs); }
+
  private:
   const char* data_;
   int size_;
   EncodingType enc_;
 };
+
+inline bool operator==(const PayloadView& lhs, const JsonView& rhs) {
+  return lhs == PayloadView(rhs);
+}
+
+inline bool operator!=(const PayloadView& lhs, const JsonView& rhs) {
+  return !(lhs == rhs);
+}
+
+inline bool operator==(const JsonView& lhs, const PayloadView& rhs) {
+  return rhs == lhs;
+}
+
+inline bool operator!=(const JsonView& lhs, const PayloadView& rhs) {
+  return rhs != lhs;
+}
+
+inline bool operator==(const PayloadView& lhs, const MsgpackView& rhs) {
+  return lhs == PayloadView(rhs);
+}
+
+inline bool operator!=(const PayloadView& lhs, const MsgpackView& rhs) {
+  return !(lhs == rhs);
+}
+
+inline bool operator==(const MsgpackView& lhs, const PayloadView& rhs) {
+  return rhs == lhs;
+}
+
+inline bool operator!=(const MsgpackView& lhs, const PayloadView& rhs) {
+  return rhs != lhs;
+}
 
 }  // namespace yogi
 

@@ -91,7 +91,7 @@ class BroadcastManagerTest : public TestFixture {
 
   static std::vector<char> MakeBigJsonData(std::size_t size = 10000) {
     std::vector<char> data{'[', '"', '"', ']', '\0'};
-    data.insert(data.begin() + 2, size - data.size() + 1, '.');
+    data.insert(data.begin() + 2, size - data.size(), '.');
     return data;
   }
 

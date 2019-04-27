@@ -30,3 +30,20 @@ TEST(StringViewTest, StdString) {
   std::string s = "Hello";
   EXPECT_EQ(static_cast<const char*>(yogi::StringView(s)), s.c_str());
 }
+
+TEST(StringViewTest, ComparisonOperators) {
+  const char* a = "Hello";
+  std::string b = a;
+  std::string c = b + " you";
+  std::string d = "olleH";
+
+  EXPECT_TRUE(yogi::StringView(a) == yogi::StringView(a));
+  EXPECT_TRUE(yogi::StringView(a) == yogi::StringView(b));
+  EXPECT_FALSE(yogi::StringView(a) == yogi::StringView(c));
+  EXPECT_FALSE(yogi::StringView(a) == yogi::StringView(d));
+
+  EXPECT_FALSE(yogi::StringView(a) != yogi::StringView(a));
+  EXPECT_FALSE(yogi::StringView(a) != yogi::StringView(b));
+  EXPECT_TRUE(yogi::StringView(a) != yogi::StringView(c));
+  EXPECT_TRUE(yogi::StringView(a) != yogi::StringView(d));
+}

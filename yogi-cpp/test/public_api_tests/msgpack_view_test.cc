@@ -56,3 +56,20 @@ TEST(MsgpackViewTest, StringStream) {
   EXPECT_EQ(ss.str(), view.Data());
   EXPECT_EQ(view.Size(), static_cast<int>(ss.str().size()));
 }
+
+TEST(MsgpackViewTest, ComparisonOperators) {
+  const char* a = "Hello";
+  std::string b = a;
+  std::string c = b + " you";
+  std::string d = "olleH";
+
+  EXPECT_TRUE(yogi::MsgpackView(a) == yogi::MsgpackView(a));
+  EXPECT_TRUE(yogi::MsgpackView(a) == yogi::MsgpackView(b));
+  EXPECT_FALSE(yogi::MsgpackView(a) == yogi::MsgpackView(c));
+  EXPECT_FALSE(yogi::MsgpackView(a) == yogi::MsgpackView(d));
+
+  EXPECT_FALSE(yogi::MsgpackView(a) != yogi::MsgpackView(a));
+  EXPECT_FALSE(yogi::MsgpackView(a) != yogi::MsgpackView(b));
+  EXPECT_TRUE(yogi::MsgpackView(a) != yogi::MsgpackView(c));
+  EXPECT_TRUE(yogi::MsgpackView(a) != yogi::MsgpackView(d));
+}

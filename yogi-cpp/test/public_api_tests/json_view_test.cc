@@ -61,3 +61,20 @@ TEST(JsonViewTest, ConversionOperator) {
   auto view2 = yogi::JsonView(json);
   EXPECT_EQ(static_cast<const char*>(view), view.Data());
 }
+
+TEST(JsonViewTest, ComparisonOperators) {
+  const char* a = "Hello";
+  std::string b = a;
+  std::string c = b + " you";
+  std::string d = "olleH";
+
+  EXPECT_TRUE(yogi::JsonView(a) == yogi::JsonView(a));
+  EXPECT_TRUE(yogi::JsonView(a) == yogi::JsonView(b));
+  EXPECT_FALSE(yogi::JsonView(a) == yogi::JsonView(c));
+  EXPECT_FALSE(yogi::JsonView(a) == yogi::JsonView(d));
+
+  EXPECT_FALSE(yogi::JsonView(a) != yogi::JsonView(a));
+  EXPECT_FALSE(yogi::JsonView(a) != yogi::JsonView(b));
+  EXPECT_TRUE(yogi::JsonView(a) != yogi::JsonView(c));
+  EXPECT_TRUE(yogi::JsonView(a) != yogi::JsonView(d));
+}

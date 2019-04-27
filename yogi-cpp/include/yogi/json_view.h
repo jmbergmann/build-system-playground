@@ -25,6 +25,7 @@
 #include "json.h"
 
 #include <string>
+#include <cstring>
 #include <vector>
 
 namespace yogi {
@@ -89,6 +90,14 @@ class JsonView {
   ///
   /// \returns NULL-terminated string holding the serialized JSON data.
   operator const char*() const { return s_; }
+
+  bool operator==(const JsonView& rhs) const {
+    if (Size() != rhs.Size()) return false;
+    return std::memcmp(Data(), rhs.Data(), static_cast<std::size_t>(Size())) ==
+           0;
+  }
+
+  bool operator!=(const JsonView& rhs) const { return !(*this == rhs); }
 
  private:
   std::string tmp_;

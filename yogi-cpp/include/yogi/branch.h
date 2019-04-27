@@ -504,6 +504,16 @@ class Branch : public ObjectT<Branch> {
   using ReceiveBroadcastFn = std::function<void(
       const Result& res, const PayloadView& payload, BufferPtr&& buffer)>;
 
+  /// Callback function used in ReceiveBroadcastAsync().
+  ///
+  /// As opposed to ReceiveBroadcastFn, this function does not include the
+  /// buffer parameter.
+  ///
+  /// \param res     %Result of the receive operation.
+  /// \param payload View on the received payload.
+  using ReceiveBroadcastSimpleFn =
+      std::function<void(const Result& res, const PayloadView& payload)>;
+
   /// Creates a branch.
   ///
   /// The branch is configured via the \p props parameter. The supplied JSON
@@ -926,9 +936,13 @@ class Branch : public ObjectT<Branch> {
   bool CancelSendBroadcast(OperationId oid) {
     int res =
         internal::YOGI_BranchCancelSendBroadcast(GetHandle(), oid.Value());
-    if (Result(res) == Failure(ErrorCode::kInvalidOperationId)) return false;
-    internal::CheckErrorCode(res);
-    return true;
+
+    if (Result(res) == Failure(ErrorCode::kInvalidOperationId)) {
+      return false;
+    } else {
+      internal::CheckErrorCode(res);
+      return true;
+    }
   }
 
   /// Receives a broadcast message from any of the connected branches.
@@ -1094,6 +1108,141 @@ class Branch : public ObjectT<Branch> {
     data.release();
   }
 
+  /// Receives a broadcast message from any of the connected branches.
+  ///
+  /// Broadcast messages contain arbitrary data encoded as JSON or MessagePack.
+  /// As opposed to sending messages via terminals, broadcast messages don't
+  /// have to comply with a defined schema for the payload; any data that can be
+  /// encoded is valid. This implies that validating the data is entirely up to
+  /// the user code.
+  ///
+  /// This function will register \p fn to be called once a broadcast message
+  /// has been received. The payload will be encoded as MessagePack.
+  ///
+  /// \note
+  ///   This function internally allocates a buffer large enough to hold the
+  ///   largest allowed payload. Use a different overload if you need to
+  ///   fine-tune the behaviour.
+  ///
+  /// If this function is called while a previous receive operation is still
+  /// active then the previous operation will be canceled with the
+  /// #kCanceled error.
+  ///
+  /// \attention
+  ///   Broadcast messages do not get queued, i.e. if a branch is not actively
+  ///   receiving broadcast messages then they will be discarded. To ensure that
+  ///   no messages get missed, call ReceiveBroadcastAsync() again from within
+  ///   the handler \p fn.
+  ///
+  /// \param fn Handler to call for the received broadcast message.
+  void ReceiveBroadcastAsync(ReceiveBroadcastSimpleFn fn) {
+    auto buffer = std::make_unique<Buffer>(constants::kMaxMessagePayloadSize);
+    ReceiveBroadcastAsync(std::move(buffer), fn);
+  }
+
+  /// Receives a broadcast message from any of the connected branches.
+  ///
+  /// Broadcast messages contain arbitrary data encoded as JSON or MessagePack.
+  /// As opposed to sending messages via terminals, broadcast messages don't
+  /// have to comply with a defined schema for the payload; any data that can be
+  /// encoded is valid. This implies that validating the data is entirely up to
+  /// the user code.
+  ///
+  /// This function will register \p fn to be called once a broadcast message
+  /// has been received. The payload will be encoded as per \p enc.
+  ///
+  /// \note
+  ///   This function internally allocates a buffer large enough to hold the
+  ///   largest allowed payload. Use a different overload if you need to
+  ///   fine-tune the behaviour.
+  ///
+  /// If this function is called while a previous receive operation is still
+  /// active then the previous operation will be canceled with the
+  /// #kCanceled error.
+  ///
+  /// \attention
+  ///   Broadcast messages do not get queued, i.e. if a branch is not actively
+  ///   receiving broadcast messages then they will be discarded. To ensure that
+  ///   no messages get missed, call ReceiveBroadcastAsync() again from within
+  ///   the handler \p fn.
+  ///
+  /// \param enc Encoding to use for the received payload.
+  /// \param fn  Handler to call for the received broadcast message.
+  void ReceiveBroadcastAsync(EncodingType enc, ReceiveBroadcastSimpleFn fn) {
+    auto buffer = std::make_unique<Buffer>(constants::kMaxMessagePayloadSize);
+    ReceiveBroadcastAsync(enc, std::move(buffer), fn);
+  }
+
+  /// Receives a broadcast message from any of the connected branches.
+  ///
+  /// Broadcast messages contain arbitrary data encoded as JSON or MessagePack.
+  /// As opposed to sending messages via terminals, broadcast messages don't
+  /// have to comply with a defined schema for the payload; any data that can be
+  /// encoded is valid. This implies that validating the data is entirely up to
+  /// the user code.
+  ///
+  /// This function will register \p fn to be called once a broadcast message
+  /// has been received. The payload will be encoded as MessagePack.
+  ///
+  /// \attention
+  ///   If the received payload does not fit into \p buffer then \p fn will be
+  ///   called with the #kBufferTooSmall error and \p buffer containing as much
+  ///   received data as possible. In this case, the payload view passed to
+  ///   \p fn will be invalid.
+  ///
+  /// If this function is called while a previous receive operation is still
+  /// active then the previous operation will be canceled with the
+  /// #kCanceled error.
+  ///
+  /// \attention
+  ///   Broadcast messages do not get queued, i.e. if a branch is not actively
+  ///   receiving broadcast messages then they will be discarded. To ensure that
+  ///   no messages get missed, call ReceiveBroadcastAsync() again from within
+  ///   the handler \p fn.
+  ///
+  /// \param buffer Buffer to use for receiving the payload.
+  /// \param fn     Handler to call for the received broadcast message.
+  void ReceiveBroadcastAsync(BufferPtr&& buffer, ReceiveBroadcastSimpleFn fn) {
+    ReceiveBroadcastAsync(EncodingType::kMsgpack, std::move(buffer), fn);
+  }
+
+  /// Receives a broadcast message from any of the connected branches.
+  ///
+  /// Broadcast messages contain arbitrary data encoded as JSON or MessagePack.
+  /// As opposed to sending messages via terminals, broadcast messages don't
+  /// have to comply with a defined schema for the payload; any data that can be
+  /// encoded is valid. This implies that validating the data is entirely up to
+  /// the user code.
+  ///
+  /// This function will register \p fn to be called once a broadcast message
+  /// has been received. The payload will be encoded as MessagePack.
+  ///
+  /// \attention
+  ///   If the received payload does not fit into \p buffer then \p fn will be
+  ///   called with the #kBufferTooSmall error and \p buffer containing as much
+  ///   received data as possible. In this case, the payload view passed to
+  ///   \p fn will be invalid.
+  ///
+  /// If this function is called while a previous receive operation is still
+  /// active then the previous operation will be canceled with the
+  /// #kCanceled error.
+  ///
+  /// \attention
+  ///   Broadcast messages do not get queued, i.e. if a branch is not actively
+  ///   receiving broadcast messages then they will be discarded. To ensure that
+  ///   no messages get missed, call ReceiveBroadcastAsync() again from within
+  ///   the handler \p fn.
+  ///
+  /// \param enc    Encoding to use for the received payload.
+  /// \param buffer Buffer to use for receiving the payload.
+  /// \param fn     Handler to call for the received broadcast message.
+  void ReceiveBroadcastAsync(EncodingType enc, BufferPtr&& buffer,
+                             ReceiveBroadcastSimpleFn fn) {
+    ReceiveBroadcastAsync(
+        enc, std::move(buffer),
+        [=](auto& res, auto& payload, auto&&) { fn(res, payload); });
+  }
+
   /// Cancels receiving a broadcast message.
   ///
   /// Calling this function will cause the handler registered via
@@ -1101,10 +1250,18 @@ class Branch : public ObjectT<Branch> {
   ///
   /// \note
   ///   If the receive handler has already been scheduled for execution,
-  ///   this function will fail with the #kOperationNotRunning error.
-  void CancelReceiveBroadcast() {
+  ///   this function will return _false_.
+  ///
+  /// \returns True if the operation was canceled successfully.
+  bool CancelReceiveBroadcast() {
     int res = internal::YOGI_BranchCancelReceiveBroadcast(GetHandle());
-    internal::CheckErrorCode(res);
+
+    if (Result(res) == Failure(ErrorCode::kOperationNotRunning)) {
+      return false;
+    } else {
+      internal::CheckErrorCode(res);
+      return true;
+    }
   }
 
  private:
