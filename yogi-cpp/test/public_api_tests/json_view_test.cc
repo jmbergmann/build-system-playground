@@ -27,7 +27,7 @@ TEST(JsonViewTest, ConstCharString) {
   const char* s = "Hello";
   auto view = yogi::JsonView(s);
   EXPECT_EQ(view.Data(), s);
-  EXPECT_EQ(view.Size(), static_cast<int>(strlen(s)));
+  EXPECT_EQ(view.Size(), static_cast<int>(strlen(s)) + 1);
 }
 
 TEST(JsonViewTest, Vector) {
@@ -42,14 +42,14 @@ TEST(JsonViewTest, StdString) {
   std::string s = "Hello";
   auto view = yogi::JsonView(s);
   EXPECT_EQ(std::string(view.Data()), s);
-  EXPECT_EQ(view.Size(), static_cast<int>(s.size()));
+  EXPECT_EQ(view.Size(), static_cast<int>(s.size()) + 1);
 }
 
 TEST(JsonViewTest, JsonObject) {
   yogi::Json json = {12345};
   auto view = yogi::JsonView(json);
   EXPECT_EQ(json.dump(), view.Data());
-  EXPECT_EQ(view.Size(), static_cast<int>(json.dump().size()));
+  EXPECT_EQ(view.Size(), static_cast<int>(json.dump().size()) + 1);
 }
 
 TEST(JsonViewTest, ConversionOperator) {

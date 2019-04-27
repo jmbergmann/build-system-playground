@@ -166,9 +166,7 @@ TEST_F(BranchTest, AwaitEventAsync) {
     called = true;
   });
 
-  while (!called) {
-    context_->RunOne();
-  }
+  while (!called) context_->RunOne();
 
   EXPECT_TRUE(called);
 }
@@ -221,9 +219,7 @@ TEST_F(BranchTest, SendBroadcast) {
   context_->WaitForStopped();
 
   // Verify that a broadcast has actually been sent
-  while (!broadcast_received) {
-    context_->RunOne();
-  }
+  while (!broadcast_received) context_->RunOne();
 }
 
 TEST_F(BranchTest, SendBroadcastAsync) {
@@ -254,9 +250,7 @@ TEST_F(BranchTest, SendBroadcastAsync) {
     EXPECT_TRUE(oid.IsValid());
   }
 
-  while (results.size() != n) {
-    context_->Poll();
-  }
+  while (results.size() != n) context_->Poll();
 
   // Send with retry = false
   do {
@@ -270,9 +264,7 @@ TEST_F(BranchTest, SendBroadcastAsync) {
   EXPECT_EQ(results.back(), yogi::Failure(yogi::ErrorCode::kTxQueueFull));
 
   // Verify that a broadcast has actually been sent
-  while (!broadcast_received) {
-    context_->RunOne();
-  }
+  while (!broadcast_received) context_->RunOne();
 }
 
 TEST_F(BranchTest, CancelSendBroadcast) {
@@ -298,7 +290,115 @@ TEST_F(BranchTest, CancelSendBroadcast) {
   }
 }
 
-TEST_F(BranchTest, DISABLED_ReceiveBroadcast) {}
+TEST_F(BranchTest, ReceiveBroadcast) {
+  auto branch_a = yogi::Branch::Create(context_, "{\"name\":\"a\"}");
+  auto branch_b = yogi::Branch::Create(context_, "{\"name\":\"b\"}");
+  RunContextUntilBranchesAreConnected(context_, {branch_a, branch_b});
+
+  // Simplest form
+  bool called = false;
+  branch_a->ReceiveBroadcastAsync([&](auto& res, auto& payload) {
+    EXPECT_EQ(res, yogi::Success());
+    EXPECT_EQ(payload, msgpack_view_);
+    called = true;
+  });
+
+  branch_b->SendBroadcastAsync(msgpack_view_, {});
+  while (!called) context_->RunOne();
+
+  // With buffer in handler function
+  called = false;
+  branch_a->ReceiveBroadcastAsync([&](auto& res, auto& payload, auto&& buffer) {
+    EXPECT_EQ(res, yogi::Success());
+    EXPECT_EQ(payload, msgpack_view_);
+    EXPECT_GE(buffer->size(), static_cast<std::size_t>(
+                                  yogi::constants::kMaxMessagePayloadSize));
+    called = true;
+  });
+
+  branch_b->SendBroadcastAsync(msgpack_view_, {});
+  while (!called) context_->RunOne();
+
+  // With encoding
+  called = false;
+  branch_a->ReceiveBroadcastAsync(yogi::EncodingType::kJson,
+                                  [&](auto& res, auto& payload) {
+                                    EXPECT_EQ(res, yogi::Success());
+                                    EXPECT_EQ(payload, json_view_);
+                                    called = true;
+                                  });
+
+  branch_b->SendBroadcastAsync(json_view_, {});
+  while (!called) context_->RunOne();
+
+  // With encoding and with buffer in handler function
+  called = false;
+  branch_a->ReceiveBroadcastAsync(
+      yogi::EncodingType::kJson, [&](auto& res, auto& payload, auto&& buffer) {
+        EXPECT_EQ(res, yogi::Success());
+        EXPECT_EQ(payload, json_view_);
+        EXPECT_GE(buffer->size(), static_cast<std::size_t>(
+                                      yogi::constants::kMaxMessagePayloadSize));
+        called = true;
+      });
+
+  branch_b->SendBroadcastAsync(json_view_, {});
+  while (!called) context_->RunOne();
+
+  // With custom buffer
+  auto buffer = std::make_unique<yogi::Buffer>(123);
+  called = false;
+  branch_a->ReceiveBroadcastAsync(std::move(buffer),
+                                  [&](auto& res, auto& payload) {
+                                    EXPECT_EQ(res, yogi::Success());
+                                    EXPECT_EQ(payload, msgpack_view_);
+                                    called = true;
+                                  });
+
+  branch_b->SendBroadcastAsync(msgpack_view_, {});
+  while (!called) context_->RunOne();
+
+  // With custom buffer and with buffer in handler function
+  buffer = std::make_unique<yogi::Buffer>(123);
+  called = false;
+  branch_a->ReceiveBroadcastAsync(std::move(buffer),
+                                  [&](auto& res, auto& payload, auto&& buffer) {
+                                    EXPECT_EQ(res, yogi::Success());
+                                    EXPECT_EQ(payload, msgpack_view_);
+                                    EXPECT_EQ(buffer->size(), 123u);
+                                    called = true;
+                                  });
+
+  branch_b->SendBroadcastAsync(msgpack_view_, {});
+  while (!called) context_->RunOne();
+
+  // With custom buffer and encoding
+  buffer = std::make_unique<yogi::Buffer>(123);
+  called = false;
+  branch_a->ReceiveBroadcastAsync(yogi::EncodingType::kJson, std::move(buffer),
+                                  [&](auto& res, auto& payload) {
+                                    EXPECT_EQ(res, yogi::Success());
+                                    EXPECT_EQ(payload, json_view_);
+                                    called = true;
+                                  });
+
+  branch_b->SendBroadcastAsync(json_view_, {});
+  while (!called) context_->RunOne();
+
+  // With custom buffer and encoding and buffer in handler function
+  buffer = std::make_unique<yogi::Buffer>(123);
+  called = false;
+  branch_a->ReceiveBroadcastAsync(yogi::EncodingType::kJson, std::move(buffer),
+                                  [&](auto& res, auto& payload, auto&& buffer) {
+                                    EXPECT_EQ(res, yogi::Success());
+                                    EXPECT_EQ(payload, json_view_);
+                                    EXPECT_GE(buffer->size(), 123u);
+                                    called = true;
+                                  });
+
+  branch_b->SendBroadcastAsync(json_view_, {});
+  while (!called) context_->RunOne();
+}
 
 TEST_F(BranchTest, CancelReceiveBroadcast) {
   auto branch_a = yogi::Branch::Create(context_, "{\"name\":\"a\"}");
