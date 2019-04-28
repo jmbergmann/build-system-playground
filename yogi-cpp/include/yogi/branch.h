@@ -74,8 +74,8 @@ _YOGI_DEFINE_API_FN(int, YOGI_BranchCancelSendBroadcast,
                     (void* branch, int oid))
 
 _YOGI_DEFINE_API_FN(int, YOGI_BranchReceiveBroadcastAsync,
-                    (void* branch, int enc, void* data, int datasize,
-                     void (*fn)(int res, int size, void* userarg),
+                    (void* branch, void* uuid, int enc, void* data,
+                     int datasize, void (*fn)(int res, int size, void* userarg),
                      void* userarg))
 
 _YOGI_DEFINE_API_FN(int, YOGI_BranchCancelReceiveBroadcast, (void* branch))
@@ -499,10 +499,12 @@ class Branch : public ObjectT<Branch> {
   /// Callback function used in ReceiveBroadcastAsync().
   ///
   /// \param res     %Result of the receive operation.
+  /// \param source  UUID of the sending branch.
   /// \param payload View on the received payload.
   /// \param buffer  Buffer holding the payload.
-  using ReceiveBroadcastFn = std::function<void(
-      const Result& res, const PayloadView& payload, BufferPtr&& buffer)>;
+  using ReceiveBroadcastFn =
+      std::function<void(const Result& res, const Uuid& source,
+                         const PayloadView& payload, BufferPtr&& buffer)>;
 
   /// Callback function used in ReceiveBroadcastAsync().
   ///
@@ -510,9 +512,10 @@ class Branch : public ObjectT<Branch> {
   /// buffer parameter.
   ///
   /// \param res     %Result of the receive operation.
+  /// \param source  UUID of the sending branch.
   /// \param payload View on the received payload.
-  using ReceiveBroadcastSimpleFn =
-      std::function<void(const Result& res, const PayloadView& payload)>;
+  using ReceiveBroadcastSimpleFn = std::function<void(
+      const Result& res, const Uuid& source, const PayloadView& payload)>;
 
   /// Creates a branch.
   ///
@@ -1077,6 +1080,7 @@ class Branch : public ObjectT<Branch> {
                              ReceiveBroadcastFn fn) {
     struct CallbackData {
       ReceiveBroadcastFn fn;
+      Uuid uuid;
       BufferPtr buffer;
       EncodingType enc;
     };
@@ -1087,7 +1091,7 @@ class Branch : public ObjectT<Branch> {
     data->enc = enc;
 
     int res = internal::YOGI_BranchReceiveBroadcastAsync(
-        GetHandle(), static_cast<int>(enc), data->buffer->data(),
+        GetHandle(), &data->uuid, static_cast<int>(enc), data->buffer->data(),
         static_cast<int>(data->buffer->size()),
         [](int res, int size, void* userarg) {
           auto data = std::unique_ptr<CallbackData>(
@@ -1099,7 +1103,7 @@ class Branch : public ObjectT<Branch> {
             payload = PayloadView(data->buffer->data(), size, data->enc);
           }
 
-          internal::WithErrorCodeToResult(res, data->fn, payload,
+          internal::WithErrorCodeToResult(res, data->fn, data->uuid, payload,
                                           std::move(data->buffer));
         },
         data.get());
@@ -1238,9 +1242,10 @@ class Branch : public ObjectT<Branch> {
   /// \param fn     Handler to call for the received broadcast message.
   void ReceiveBroadcastAsync(EncodingType enc, BufferPtr&& buffer,
                              ReceiveBroadcastSimpleFn fn) {
-    ReceiveBroadcastAsync(
-        enc, std::move(buffer),
-        [=](auto& res, auto& payload, auto&&) { fn(res, payload); });
+    ReceiveBroadcastAsync(enc, std::move(buffer),
+                          [=](auto& res, auto& source, auto& payload, auto&&) {
+                            fn(res, source, payload);
+                          });
   }
 
   /// Cancels receiving a broadcast message.

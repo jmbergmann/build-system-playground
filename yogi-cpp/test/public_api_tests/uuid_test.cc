@@ -28,7 +28,10 @@ yogi::Uuid MakeUuid(std::vector<yogi::Uuid::value_type> v) {
   return uuid;
 }
 
-TEST(UuidTest, Pod) { EXPECT_TRUE(std::is_pod<yogi::Uuid>::value); }
+TEST(UuidTest, Pod) {
+  EXPECT_TRUE(std::is_pod<yogi::Uuid>::value);
+  EXPECT_EQ(sizeof(yogi::Uuid), 16u);
+}
 
 TEST(UuidTest, Size) {
   EXPECT_EQ(sizeof(yogi::Uuid), 16);
