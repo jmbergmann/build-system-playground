@@ -181,6 +181,7 @@ void ConnectionManager::OnAdvertisementReceived(
         self->OnConnectFinished(res, adv_uuid, transport);
       });
 
+  pending_connects_.insert(adv_uuid);
   connect_guards_.insert(guard);
 
   EmitBranchEvent(api::kBranchDiscoveredEvent, api::kSuccess, adv_uuid, [&] {
