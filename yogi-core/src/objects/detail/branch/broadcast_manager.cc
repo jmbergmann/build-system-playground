@@ -99,7 +99,7 @@ void BroadcastManager::ReceiveBroadcast(api::Encoding enc,
 
   if (rx_handler_) {
     auto old_handler = rx_handler_;
-    context_->Post([=] { old_handler(api::Error(YOGI_ERR_CANCELED), 0); });
+    context_->Post([=] { old_handler(api::Error(YOGI_ERR_CANCELED), {}, 0); });
   }
 
   rx_enc_ = enc;
@@ -113,7 +113,7 @@ bool BroadcastManager::CancelReceiveBroadcast() {
   if (rx_handler_) {
     auto handler = rx_handler_;
     rx_handler_ = {};
-    context_->Post([=] { handler(api::Error(YOGI_ERR_CANCELED), 0); });
+    context_->Post([=] { handler(api::Error(YOGI_ERR_CANCELED), {}, 0); });
     return true;
   }
 
@@ -121,7 +121,8 @@ bool BroadcastManager::CancelReceiveBroadcast() {
 }
 
 void BroadcastManager::OnBroadcastReceived(
-    const network::messages::BroadcastIncoming& msg) {
+    const network::messages::BroadcastIncoming& msg,
+    const detail::BranchConnectionPtr& conn) {
   std::lock_guard<std::recursive_mutex> lock(rx_mutex_);
 
   if (rx_handler_) {
@@ -129,7 +130,7 @@ void BroadcastManager::OnBroadcastReceived(
     rx_handler_ = {};
     std::size_t n = 0;
     auto res = msg.GetPayload().SerializeToUserBuffer(rx_data_, rx_enc_, &n);
-    handler(res, n);
+    handler(res, conn->GetRemoteBranchInfo()->GetUuid(), n);
   }
 }
 

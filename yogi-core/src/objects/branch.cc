@@ -110,7 +110,7 @@ void Branch::OnMessageReceived(const network::IncomingMessage& msg,
 
     case MessageType::kBroadcast:
       broadcast_manager_->OnBroadcastReceived(
-          static_cast<const messages::BroadcastIncoming&>(msg));
+          static_cast<const messages::BroadcastIncoming&>(msg), conn);
       break;
 
     default:

@@ -1718,7 +1718,7 @@ YOGI_API int YOGI_BranchCreate(void** branch, void* context, const char* props,
  * \endcode
  *
  * \param[in]  branch   The branch handle
- * \param[out] uuid     Pointer to 16 byte array for storing the UUID (can be
+ * \param[out] uuid     Pointer to a 16 byte array for storing the UUID (can be
  *                      set to NULL)
  * \param[out] json     Pointer to a char array for storing the information (can
  *                      be set to NULL)
@@ -1998,6 +1998,8 @@ YOGI_API int YOGI_BranchCancelSendBroadcast(void* branch, int oid);
  *   within the handler \p fn.
  *
  * \param[in]  branch   The branch handle
+ * \param[out] uuid     Pointer to a 16 byte array for storing the UUID of the
+ *                      sending branch (can be set to NULL)
  * \param[in]  enc      Encoding type to use for \p data (see \ref ENC)
  * \param[out] data     Pointer to a buffer to store the received payload in
  * \param[in]  datasize Maximum number of bytes to write to \p data
@@ -2008,7 +2010,7 @@ YOGI_API int YOGI_BranchCancelSendBroadcast(void* branch, int oid);
  * \returns [<0] An error code in case of a failure (see \ref EC)
  */
 YOGI_API int YOGI_BranchReceiveBroadcastAsync(
-    void* branch, int enc, void* data, int datasize,
+    void* branch, void* uuid, int enc, void* data, int datasize,
     void (*fn)(int res, int size, void* userarg), void* userarg);
 
 /*!

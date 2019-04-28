@@ -28,7 +28,7 @@ class BroadcastReceiver {
     handler_called_ = false;
 
     auto res = YOGI_BranchReceiveBroadcastAsync(
-        branch_, enc, data_.data(), GetBufferSize(),
+        branch_, &src_uuid_, enc, data_.data(), GetBufferSize(),
         [](int res, int size, void* userarg) {
           auto self = static_cast<BroadcastReceiver*>(userarg);
           self->handler_result_ = res;
@@ -39,6 +39,7 @@ class BroadcastReceiver {
     EXPECT_OK(res);
   }
 
+  boost::uuids::uuid GetSourceUuid() const { return src_uuid_; }
   int GetBufferSize() const { return static_cast<int>(data_.size()); }
   int GetHandlerResult() const { return handler_result_; }
   bool BroadcastReceived() const { return handler_called_; }
@@ -64,6 +65,7 @@ class BroadcastReceiver {
 
  private:
   void* branch_;
+  boost::uuids::uuid src_uuid_;
   std::vector<char> data_;
   int handler_result_;
   std::atomic<bool> handler_called_;
@@ -277,6 +279,17 @@ TEST_F(BroadcastManagerTest, CancelSend) {
 
   PollContext(context_);
   EXPECT_EQ(oid_to_res[oid], YOGI_ERR_CANCELED);
+}
+
+TEST_F(BroadcastManagerTest, ReceiveSourceUuid) {
+  int oid = YOGI_BranchSendBroadcastAsync(
+      branch_a_, YOGI_ENC_JSON, json_data_, sizeof(json_data_), YOGI_TRUE,
+      [](int res, int oid, void* userarg) {}, nullptr);
+  ASSERT_GT(oid, 0);
+
+  while (!rcv_b_.BroadcastReceived()) PollContext(context_);
+
+  EXPECT_EQ(rcv_b_.GetSourceUuid(), GetBranchUuid(branch_a_));
 }
 
 TEST_F(BroadcastManagerTest, ReceiveJson) {

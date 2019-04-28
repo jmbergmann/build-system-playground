@@ -37,7 +37,9 @@ class BroadcastManager final
   typedef std::function<void(const api::Result& res,
                              SendBroadcastOperationId oid)>
       SendBroadcastHandler;
-  typedef std::function<void(const api::Result& res, std::size_t size)>
+  typedef std::function<void(const api::Result& res,
+                             const boost::uuids::uuid& src_uuid,
+                             std::size_t size)>
       ReceiveBroadcastHandler;
 
   BroadcastManager(ContextPtr context, ConnectionManager& conn_manager);
@@ -56,7 +58,8 @@ class BroadcastManager final
 
   bool CancelReceiveBroadcast();
 
-  void OnBroadcastReceived(const network::messages::BroadcastIncoming& msg);
+  void OnBroadcastReceived(const network::messages::BroadcastIncoming& msg,
+                           const detail::BranchConnectionPtr& conn);
 
  private:
   typedef std::shared_ptr<int> SharedCounter;

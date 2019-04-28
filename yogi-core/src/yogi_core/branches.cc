@@ -239,7 +239,7 @@ YOGI_API int YOGI_BranchCancelSendBroadcast(void* branch, int oid) {
 }
 
 YOGI_API int YOGI_BranchReceiveBroadcastAsync(
-    void* branch, int enc, void* data, int datasize,
+    void* branch, void* uuid, int enc, void* data, int datasize,
     void (*fn)(int res, int size, void* userarg), void* userarg) {
   CHECK_PARAM(branch != nullptr);
   CHECK_PARAM(enc == api::Encoding::kJson || enc == api::Encoding::kMsgPack);
@@ -251,7 +251,11 @@ YOGI_API int YOGI_BranchReceiveBroadcastAsync(
     brn->ReceiveBroadcast(
         static_cast<api::Encoding>(enc),
         boost::asio::buffer(data, static_cast<std::size_t>(datasize)),
-        [=](auto& res, auto size) {
+        [=](auto& res, auto& src_uuid, auto size) {
+          if (uuid) {
+            CopyUuidToUserBuffer(src_uuid, uuid);
+          }
+
           fn(res.GetValue(), static_cast<int>(size), userarg);
         });
   }
