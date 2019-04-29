@@ -23,6 +23,7 @@ using System.IO;
 using System.Collections.Generic;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using MessagePack;
 
 public static partial class Yogi
 {

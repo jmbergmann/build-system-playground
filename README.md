@@ -22,6 +22,8 @@ YOGI_CORE_LIBRARY=../build-x64/yogi-core/yogi-core-x64.dll python -m unittest
 cd ../yogi-dotnet
 YOGI_CORE_LIBRARY="/c/Documents and Settings/commu_000/Documents/Projects/build-system-playground/build-x64/yogi-core/yogi-core-x64.dll" dotnet test
 
+YOGI_CORE_LIBRARY="/Users/yohummus/Projects/build-system-playground/build/yogi-core/libyogi-core.dylib" dotnet test
+
 ## TODO:
 
 - Checkout asio timer problem (see code below)
