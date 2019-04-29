@@ -32,11 +32,13 @@ namespace test
             Directory.CreateDirectory(tempDir);
         }
 
+#pragma warning disable xUnit1013
         public new void Dispose()
         {
             Directory.Delete(tempDir, true);
             base.Dispose();
         }
+#pragma warning restore xUnit1013
 
         string tempDir;
 
@@ -87,11 +89,11 @@ namespace test
         {
             var cfg = new Yogi.Configuration();
 
-            cfg.UpdateFromCommandLine(new[] {"exe", "-o", "{\"age\": 25}"},
+            cfg.UpdateFromCommandLine(new[] { "exe", "-o", "{\"age\": 25}" },
                 Yogi.CommandLineOptions.Overrides);
             Assert.Equal(25, (int)cfg.ToJson()["age"]);
 
-            cfg.UpdateFromCommandLine(new List<string>{"exe", "-o", "{\"age\": 18}"},
+            cfg.UpdateFromCommandLine(new List<string> { "exe", "-o", "{\"age\": 18}" },
                 Yogi.CommandLineOptions.Overrides);
             Assert.Equal(18, (int)cfg.ToJson()["age"]);
         }

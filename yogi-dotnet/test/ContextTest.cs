@@ -25,6 +25,7 @@ namespace test
     {
         Yogi.Context context = new Yogi.Context();
 
+#pragma warning disable xUnit1013
         public new void Dispose()
         {
             context.Stop();
@@ -32,13 +33,14 @@ namespace test
             context.Poll();
             base.Dispose();
         }
+#pragma warning restore xUnit1013
 
         [Fact]
         public void Poll()
         {
             Assert.Equal(0, context.Poll());
-            context.Post(() => {});
-            context.Post(() => {});
+            context.Post(() => { });
+            context.Post(() => { });
             Assert.Equal(2, context.Poll());
         }
 
@@ -46,8 +48,8 @@ namespace test
         public void PollOne()
         {
             Assert.Equal(0, context.PollOne());
-            context.Post(() => {});
-            context.Post(() => {});
+            context.Post(() => { });
+            context.Post(() => { });
             Assert.Equal(1, context.PollOne());
         }
 
@@ -55,8 +57,8 @@ namespace test
         public void Run()
         {
             Assert.Equal(0, context.Run(TimeSpan.FromMilliseconds(1)));
-            context.Post(() => {});
-            context.Post(() => {});
+            context.Post(() => { });
+            context.Post(() => { });
             Assert.Equal(2, context.Run(TimeSpan.FromMilliseconds(1)));
         }
 
@@ -64,8 +66,8 @@ namespace test
         public void RunOne()
         {
             Assert.Equal(0, context.RunOne(TimeSpan.FromMilliseconds(1)));
-            context.Post(() => {});
-            context.Post(() => {});
+            context.Post(() => { });
+            context.Post(() => { });
             Assert.Equal(1, context.RunOne(TimeSpan.FromMilliseconds(1)));
         }
 
@@ -74,7 +76,8 @@ namespace test
         {
             var ev = new AutoResetEvent(false);
             context.RunInBackground();
-            context.Post(() => {
+            context.Post(() =>
+            {
                 ev.Set();
             });
             ev.WaitOne();
@@ -83,7 +86,8 @@ namespace test
         [Fact]
         public void Stop()
         {
-            var th = new Thread(() => {
+            var th = new Thread(() =>
+            {
                 context.WaitForRunning();
                 context.Stop();
             });

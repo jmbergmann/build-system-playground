@@ -30,11 +30,13 @@ namespace test
             Directory.CreateDirectory(tempDir);
         }
 
+#pragma warning disable xUnit1013
         public new void Dispose()
         {
             Directory.Delete(tempDir, true);
             base.Dispose();
         }
+#pragma warning restore xUnit1013
 
         string GetMyFilename([CallerFilePath] string filename = null)
         {
