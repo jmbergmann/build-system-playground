@@ -119,8 +119,9 @@ public static partial class Yogi
                                                                    IntPtr userarg);
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        public delegate int BranchReceiveBroadcastAsyncDelegate(SafeObjectHandle branch, int enc,
-            IntPtr data, int datasize, BranchReceiveBroadcastAsyncFnDelegate fn, IntPtr userarg);
+        public delegate int BranchReceiveBroadcastAsyncDelegate(SafeObjectHandle branch,
+            IntPtr uuid, int enc, IntPtr data, int datasize,
+            BranchReceiveBroadcastAsyncFnDelegate fn, IntPtr userarg);
 
         public static BranchSendBroadcastAsyncDelegate YOGI_BranchReceiveBroadcastAsync
             = Library.GetDelegateForFunction<BranchSendBroadcastAsyncDelegate>(
