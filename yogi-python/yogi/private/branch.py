@@ -246,6 +246,26 @@ yogi.YOGI_BranchAwaitEventAsync.argtypes = [
 yogi.YOGI_BranchCancelAwaitEvent.restype = api_result_handler
 yogi.YOGI_BranchCancelAwaitEvent.argtypes = [c_void_p]
 
+yogi.YOGI_BranchSendBroadcast.restype = api_result_handler
+yogi.YOGI_BranchSendBroadcast.argtypes = [
+    c_void_p, c_int, c_void_p, c_int, c_int]
+
+yogi.YOGI_BranchSendBroadcastAsync.restype = api_result_handler
+yogi.YOGI_BranchSendBroadcastAsync.argtypes = [
+    c_void_p, c_int, c_void_p, c_int, c_int,
+    CFUNCTYPE(None, c_int, c_int, c_void_p), c_void_p]
+
+yogi.YOGI_BranchCancelSendBroadcast.restype = api_result_handler
+yogi.YOGI_BranchCancelSendBroadcast.argtypes = [c_void_p, c_int]
+
+yogi.YOGI_BranchReceiveBroadcastAsync.restype = api_result_handler
+yogi.YOGI_BranchReceiveBroadcastAsync.argtypes = [
+    c_void_p, c_void_p, c_int, c_void_p, c_int,
+    CFUNCTYPE(None, c_int, c_int, c_void_p), c_void_p]
+
+yogi.YOGI_BranchCancelReceiveBroadcast.restype = api_result_handler
+yogi.YOGI_BranchCancelReceiveBroadcast.argtypes = [c_void_p]
+
 
 class Branch(Object):
     """Entry point into a Yogi network.
