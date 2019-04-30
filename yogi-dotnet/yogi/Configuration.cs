@@ -49,7 +49,7 @@ public static partial class Yogi
         // === YOGI_ConfigurationUpdateFromJson ===
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public delegate int ConfigurationUpdateFromJsonDelegate(SafeObjectHandle config,
-            string json, [MarshalAs(UnmanagedType.LPStr)] StringBuilder err, int errsize);
+            byte[] json, [MarshalAs(UnmanagedType.LPStr)] StringBuilder err, int errsize);
 
         public static ConfigurationUpdateFromJsonDelegate YOGI_ConfigurationUpdateFromJson
             = Library.GetDelegateForFunction<ConfigurationUpdateFromJsonDelegate>(
@@ -216,25 +216,13 @@ public static partial class Yogi
         /// If parsing fails then a DescriptiveFailure exception will be raised
         /// containing detailed information about the error.
         /// </summary>
-        /// <param name="json">Serialized JSON object.</param>
-        public void UpdateFromJson(string json)
+        /// <param name="json">JSON object.</param>
+        public void UpdateFromJson(JsonView json)
         {
             CheckDescriptiveErrorCode((err) =>
             {
-                return Api.YOGI_ConfigurationUpdateFromJson(Handle, json, err, err.Capacity);
+                return Api.YOGI_ConfigurationUpdateFromJson(Handle, json.Data, err, err.Capacity);
             });
-        }
-
-        /// <summary>
-        /// Updates the configuration from a JSON object.
-        ///
-        /// If parsing fails then a DescriptiveFailure exception will be raised
-        /// containing detailed information about the error.
-        /// </summary>
-        /// <param name="json">JSON object.</param>
-        public void UpdateFromJson(JObject json)
-        {
-            UpdateFromJson(JsonConvert.SerializeObject(json));
         }
 
         /// <summary>

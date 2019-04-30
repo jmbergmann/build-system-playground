@@ -32,7 +32,7 @@ namespace test
             var view = new Yogi.PayloadView(data, Yogi.EncodingType.Msgpack);
             Assert.Equal(view.Data, data);
             Assert.Equal(view.Size, data.Length);
-            Assert.Equal(view.Encoding, Yogi.EncodingType.Msgpack);
+            Assert.Equal(Yogi.EncodingType.Msgpack, view.Encoding);
         }
 
         [Fact]
@@ -43,7 +43,7 @@ namespace test
             var view = new Yogi.PayloadView(json_view);
             Assert.Equal(view.Data, json_view.Data);
             Assert.Equal(view.Size, json_view.Size);
-            Assert.Equal(view.Encoding, Yogi.EncodingType.Json);
+            Assert.Equal(Yogi.EncodingType.Json, view.Encoding);
         }
 
         [Fact]
@@ -54,7 +54,7 @@ namespace test
             var view = new Yogi.PayloadView(msgpack_view);
             Assert.Equal(view.Data, msgpack_view.Data);
             Assert.Equal(view.Size, msgpack_view.Size);
-            Assert.Equal(view.Encoding, Yogi.EncodingType.Msgpack);
+            Assert.Equal(Yogi.EncodingType.Msgpack, view.Encoding);
         }
 
         [Fact]
