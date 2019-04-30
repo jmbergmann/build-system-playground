@@ -28,8 +28,6 @@
 namespace yogi {
 
 ////////////////////////////////////////////////////////////////////////////////
-/// Encoding types.
-///
 /// Possible data/payload encoding types.
 ////////////////////////////////////////////////////////////////////////////////
 enum class EncodingType {
@@ -95,7 +93,7 @@ class PayloadView {
   /// \returns Buffer holding the payload data.
   const char* Data() const { return data_; }
 
-  /// Returns the length of the payload data in bytes.
+  /// Returns the size of the payload data in bytes.
   ///
   /// \returns Size of the payload data in bytes.
   int Size() const { return size_; };
