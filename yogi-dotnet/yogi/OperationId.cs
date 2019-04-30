@@ -69,6 +69,26 @@ public static partial class Yogi
             return Value == ((OperationId)obj).Value;
         }
 
+        public static bool operator <(OperationId lhs, OperationId rhs)
+        {
+            return lhs.Value < rhs.Value;
+        }
+
+        public static bool operator >(OperationId lhs, OperationId rhs)
+        {
+            return lhs.Value > rhs.Value;
+        }
+
+        public static bool operator <=(OperationId lhs, OperationId rhs)
+        {
+            return !(lhs > rhs);
+        }
+
+        public static bool operator >=(OperationId lhs, OperationId rhs)
+        {
+            return !(lhs < rhs);
+        }
+
         public override int GetHashCode()
         {
             return Value.GetHashCode();

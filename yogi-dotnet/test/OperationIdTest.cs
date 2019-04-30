@@ -46,7 +46,7 @@ namespace test
         }
 
         [Fact]
-        public void Comparison()
+        public void EqualityComparison()
         {
             var id1 = new Yogi.OperationId(11);
             var id2 = new Yogi.OperationId(11);
@@ -64,6 +64,31 @@ namespace test
             Assert.False(id1.Equals(null));
             Assert.True(id1.Equals(id2));
             Assert.False(id1.Equals(id3));
+        }
+
+        [Fact]
+        public void GreaterSmallerComparison()
+        {
+            var id1 = new Yogi.OperationId(1);
+            var id5 = new Yogi.OperationId(5);
+            var id5_ = new Yogi.OperationId(5);
+            var id8 = new Yogi.OperationId(8);
+
+            Assert.True(id5 < id8);
+            Assert.False(id5 < id5_);
+            Assert.False(id5 < id1);
+
+            Assert.True(id5 <= id8);
+            Assert.True(id5 <= id5_);
+            Assert.False(id5 <= id1);
+
+            Assert.False(id5 > id8);
+            Assert.False(id5 > id5_);
+            Assert.True(id5 > id1);
+
+            Assert.False(id5 >= id8);
+            Assert.True(id5 >= id5_);
+            Assert.True(id5 >= id1);
         }
     }
 }
