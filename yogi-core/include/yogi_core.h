@@ -1928,8 +1928,7 @@ YOGI_API int YOGI_BranchSendBroadcast(void* branch, int enc, const void* data,
  * \param[in] data     Payload encoded according to \p datafmt
  * \param[in] datasize Number of bytes in \p data
  * \param[in] retry    Retry sending the message (#YOGI_TRUE or #YOGI_FALSE)
- * \param[in] fn       Handler to call once the operation finishes (set to NULL
- *                     for blocking mode; see description above for details)
+ * \param[in] fn       Handler to call once the operation finishes
  * \param[in] userarg  User-specified argument to be passed to \p fn
  *
  * \returns [>0] Operation ID if successful

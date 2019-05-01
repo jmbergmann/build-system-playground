@@ -86,7 +86,7 @@ public static partial class Yogi
         // === YOGI_BranchSendBroadcast ===
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public delegate int BranchSendBroadcastDelegate(SafeObjectHandle branch, int enc,
-            IntPtr data, int datasize, int block);
+            byte[] data, int datasize, int block);
 
         public static BranchSendBroadcastDelegate YOGI_BranchSendBroadcast
             = Library.GetDelegateForFunction<BranchSendBroadcastDelegate>(
@@ -98,7 +98,7 @@ public static partial class Yogi
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public delegate int BranchSendBroadcastAsyncDelegate(SafeObjectHandle branch, int enc,
-            IntPtr data, int datasize, int retry, BranchSendBroadcastAsyncFnDelegate fn,
+            byte[] data, int datasize, int retry, BranchSendBroadcastAsyncFnDelegate fn,
             IntPtr userarg);
 
         public static BranchSendBroadcastAsyncDelegate YOGI_BranchSendBroadcastAsync
@@ -120,11 +120,11 @@ public static partial class Yogi
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public delegate int BranchReceiveBroadcastAsyncDelegate(SafeObjectHandle branch,
-            IntPtr uuid, int enc, IntPtr data, int datasize,
+            IntPtr uuid, int enc, byte[] data, int datasize,
             BranchReceiveBroadcastAsyncFnDelegate fn, IntPtr userarg);
 
-        public static BranchSendBroadcastAsyncDelegate YOGI_BranchReceiveBroadcastAsync
-            = Library.GetDelegateForFunction<BranchSendBroadcastAsyncDelegate>(
+        public static BranchReceiveBroadcastAsyncDelegate YOGI_BranchReceiveBroadcastAsync
+            = Library.GetDelegateForFunction<BranchReceiveBroadcastAsyncDelegate>(
                 "YOGI_BranchReceiveBroadcastAsync");
 
         // === YOGI_BranchCancelReceiveBroadcast ===
@@ -706,13 +706,466 @@ public static partial class Yogi
         /// <summary>
         /// Cancels waiting for a branch event.
         ///
-        /// Calling this function will cause the handler registered via AwaitEventAsync() to be
-        /// called with a cancellation error.
+        /// Calling this function will cause the handler registered via AwaitEventAsync()
+        /// to be called with a cancellation error.
         /// </summary>
         public void CancelAwaitEvent()
         {
             int res = Api.YOGI_BranchCancelAwaitEvent(Handle);
             CheckErrorCode(res);
+        }
+
+        /// <summary>
+        /// Sends a broadcast message to all connected branches.
+        ///
+        /// Broadcast messages contain arbitrary data encoded as JSON or MessagePack.
+        /// As opposed to sending messages via terminals, broadcast messages don't
+        /// have to comply with a defined schema for the payload; any data that can be
+        /// encoded is valid. This implies that validating the data is entirely up to
+        /// the user code.
+        ///
+        /// Setting the block parameter to false will cause the function to skip sending
+        /// the message to branches that have a full send queue. If at least one branch
+        /// was skipped, the function will return false. If the parameter is set to true
+        /// instead, the function will block until the message has been put into the send
+        /// queues of all connected branches.
+        ///
+        /// Attention: Calling this function from within a handler function executed
+        ///            through the branch's context with block set to true will cause a
+        ///            dead-lock if any send queue is full!
+        /// </summary>
+        /// <param name="payload">Payload to send.</param>
+        /// <param name="block">Block until message has been put into all send buffers.</param>
+        /// <returns>True if the message was successfully put into all send buffers.</returns>
+        public bool SendBroadcast(PayloadView payload, bool block)
+        {
+            int res = Api.YOGI_BranchSendBroadcast(Handle, (int)payload.Encoding, payload.Data,
+                                                   payload.Size, block ? 1 : 0);
+
+            if (res == (int)ErrorCode.TxQueueFull) return false;
+            CheckErrorCode(res);
+            return true;
+        }
+
+        /// <summary>
+        /// Delegate for the send broadcast handler function.
+        /// </summary>
+        /// <param name="res">Result of the send operation.</param>
+        /// <param name="oid">ID of the send operation.</param>
+        public delegate void SendBroadcastFnDelegate(Result res, OperationId oid);
+
+        /// <summary>
+        /// Sends a broadcast message to all connected branches.
+        ///
+        /// Broadcast messages contain arbitrary data encoded as JSON or MessagePack.
+        /// As opposed to sending messages via terminals, broadcast messages don't
+        /// have to comply with a defined schema for the payload; any data that can be
+        /// encoded is valid. This implies that validating the data is entirely up to
+        /// the user code.
+        ///
+        /// Setting the retry parameter to false will cause the function to skip sending
+        /// the message to branches that have a full send queue. If at least one branch
+        /// was skipped, the handler fn will be called with the TxQueueFull error. If the
+        /// parameter is set to true instead, fn will be called once the message has been
+        /// put into the send queues of all connected branches.
+        ///
+        /// The function returns an ID which uniquely identifies this send operation
+        /// until fn has been called. It can be used in a subsequent CancelSendBroadcast()
+        /// call to abort the operation.
+        /// </summary>
+        /// <param name="payload">Payload to send.</param>
+        /// <param name="block">Block until message has been put into all send buffers.</param>
+        /// <returns>True if the message was successfully put into all send buffers.</returns>
+        public OperationId SendBroadcastAsync(PayloadView payload, bool retry,
+                                              SendBroadcastFnDelegate fn)
+        {
+            Api.BranchSendBroadcastAsyncFnDelegate wrapper = (res, oid, userarg) =>
+            {
+                try
+                {
+                    fn(ErrorCodeToResult(res), new OperationId(oid));
+                }
+                finally
+                {
+                    GCHandle.FromIntPtr(userarg).Free();
+                }
+            };
+            var wrapperHandle = GCHandle.Alloc(wrapper);
+
+            try
+            {
+                var wrapperPtr = GCHandle.ToIntPtr(wrapperHandle);
+                int res = Api.YOGI_BranchSendBroadcastAsync(Handle, (int)payload.Encoding,
+                                                            payload.Data, payload.Size,
+                                                            retry ? 1 : 0, wrapper, wrapperPtr);
+                CheckErrorCode(res);
+                return new OperationId(res);
+            }
+            catch
+            {
+                wrapperHandle.Free();
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Sends a broadcast message to all connected branches.
+        ///
+        /// Broadcast messages contain arbitrary data encoded as JSON or MessagePack.
+        /// As opposed to sending messages via terminals, broadcast messages don't
+        /// have to comply with a defined schema for the payload; any data that can be
+        /// encoded is valid. This implies that validating the data is entirely up to
+        /// the user code.
+        ///
+        /// The handler function fn will be called once the message has been put into the
+        /// send queues of all connected branches.
+        ///
+        /// The function returns an ID which uniquely identifies this send operation
+        /// until fn has been called. It can be used in a subsequent CancelSendBroadcast()
+        /// call to abort the operation.
+        /// </summary>
+        /// <param name="payload">Payload to send.</param>
+        /// <returns>True if the message was successfully put into all send buffers.</returns>
+        public OperationId SendBroadcastAsync(PayloadView payload, SendBroadcastFnDelegate fn)
+        {
+            return SendBroadcastAsync(payload, true, fn);
+        }
+
+        /// <summary>
+        /// Cancels a send broadcast operation.
+        ///
+        /// Calling this function will cause the send operation with the specified
+        /// operation ID to be canceled, resulting in the handler function registered
+        /// via the SendBroadcastAsync() call that returned the same operation ID
+        /// to be called with the Canceled error.
+        ///
+        /// Note: If the send operation has already been carried out but the handler
+        ///       function has not been called yet, then cancelling the operation will
+        ///       fail and false will be returned.
+        /// </summary>
+        /// <param name="oid">ID of the send operation.</param>
+        /// <returns>True if the operation has been canceled successfully.</returns>
+        public bool CancelSendBroadcast(OperationId oid)
+        {
+            int res = Api.YOGI_BranchCancelSendBroadcast(Handle, oid.Value);
+            if (res == (int)ErrorCode.OperationNotRunning) return false;
+            CheckErrorCode(res);
+            return true;
+        }
+
+        /// <summary>
+        /// Delegate for the send broadcast handler function.
+        /// </summary>
+        /// <param name="res">Result of the receive operation.</param>
+        /// <param name="source">UUID of the sending branch.</param>
+        /// <param name="payload">View on the received payload.</param>
+        /// <param name="buffer">Buffer holding the payload.</param>
+        public delegate void ReceiveBroadcastFnDelegate(Result res, Guid source,
+                                                        PayloadView payload, byte[] buffer);
+
+        /// <summary>
+        /// Receives a broadcast message from any of the connected branches.
+        ///
+        /// Broadcast messages contain arbitrary data encoded as JSON or MessagePack.
+        /// As opposed to sending messages via terminals, broadcast messages don't
+        /// have to comply with a defined schema for the payload; any data that can be
+        /// encoded is valid. This implies that validating the data is entirely up to
+        /// the user code.
+        ///
+        /// This function will register fn to be called once a broadcast message
+        /// has been received. The payload will be encoded as MessagePack.
+        ///
+        /// If this function is called while a previous receive operation is still
+        /// active then the previous operation will be canceled with the Canceled error.
+        ///
+        /// Attention: Broadcast messages do not get queued, i.e. if a branch is not
+        ///            actively receiving broadcast messages then they will be discarded.
+        ///            To ensure that no messages get missed, call ReceiveBroadcastAsync()
+        ///            again from within the handler fn.
+        /// </summary>
+        /// <param name="fn">Handler to call for the received broadcast message.</param>
+        public void ReceiveBroadcastAsync(ReceiveBroadcastFnDelegate fn)
+        {
+            var buffer = new byte[Constants.MaxMessagePayloadSize];
+            ReceiveBroadcastAsync(buffer, fn);
+        }
+
+        /// <summary>
+        /// Receives a broadcast message from any of the connected branches.
+        ///
+        /// Broadcast messages contain arbitrary data encoded as JSON or MessagePack.
+        /// As opposed to sending messages via terminals, broadcast messages don't
+        /// have to comply with a defined schema for the payload; any data that can be
+        /// encoded is valid. This implies that validating the data is entirely up to
+        /// the user code.
+        ///
+        /// This function will register fn to be called once a broadcast message
+        /// has been received. The payload will be encoded as per enc.
+        ///
+        /// If this function is called while a previous receive operation is still
+        /// active then the previous operation will be canceled with the Canceled error.
+        ///
+        /// Attention: Broadcast messages do not get queued, i.e. if a branch is not
+        ///            actively receiving broadcast messages then they will be discarded.
+        ///            To ensure that no messages get missed, call ReceiveBroadcastAsync()
+        ///            again from within the handler fn.
+        /// </summary>
+        /// <param name="enc">Encoding to use for the received payload.</param>
+        /// <param name="fn">Handler to call for the received broadcast message.</param>
+        public void ReceiveBroadcastAsync(EncodingType enc, ReceiveBroadcastFnDelegate fn)
+        {
+            var buffer = new byte[Constants.MaxMessagePayloadSize];
+            ReceiveBroadcastAsync(enc, buffer, fn);
+        }
+
+        /// <summary>
+        /// Receives a broadcast message from any of the connected branches.
+        ///
+        /// Broadcast messages contain arbitrary data encoded as JSON or MessagePack.
+        /// As opposed to sending messages via terminals, broadcast messages don't
+        /// have to comply with a defined schema for the payload; any data that can be
+        /// encoded is valid. This implies that validating the data is entirely up to
+        /// the user code.
+        ///
+        /// This function will register fn to be called once a broadcast message
+        /// has been received. The payload will be encoded as MessagePack.
+        ///
+        /// Attention: If the received payload does not fit into buffer then fn will be
+        ///            called with the BufferTooSmall error and buffer containing as
+        ///            much received data as possible. In this case, the payload view
+        ///            passed to fn will be invalid.
+        ///
+        /// If this function is called while a previous receive operation is still
+        /// active then the previous operation will be canceled with the Canceled error.
+        ///
+        /// Attention: Broadcast messages do not get queued, i.e. if a branch is not
+        ///            actively receiving broadcast messages then they will be discarded.
+        ///            To ensure that no messages get missed, call ReceiveBroadcastAsync()
+        ///            again from within the handler fn.
+        /// </summary>
+        /// <param name="buffer">Buffer to use for receiving the payload.</param>
+        /// <param name="fn">Handler to call for the received broadcast message.</param>
+        public void ReceiveBroadcastAsync(byte[] buffer, ReceiveBroadcastFnDelegate fn)
+        {
+            ReceiveBroadcastAsync(EncodingType.Msgpack, buffer, fn);
+        }
+
+        /// <summary>
+        /// Receives a broadcast message from any of the connected branches.
+        ///
+        /// Broadcast messages contain arbitrary data encoded as JSON or MessagePack.
+        /// As opposed to sending messages via terminals, broadcast messages don't
+        /// have to comply with a defined schema for the payload; any data that can be
+        /// encoded is valid. This implies that validating the data is entirely up to
+        /// the user code.
+        ///
+        /// This function will register fn to be called once a broadcast message
+        /// has been received. The payload will be encoded as per enc.
+        ///
+        /// Attention: If the received payload does not fit into buffer then fn will be
+        ///            called with the BufferTooSmall error and buffer containing as
+        ///            much received data as possible. In this case, the payload view
+        ///            passed to fn will be invalid.
+        ///
+        /// If this function is called while a previous receive operation is still
+        /// active then the previous operation will be canceled with the Canceled error.
+        ///
+        /// Attention: Broadcast messages do not get queued, i.e. if a branch is not
+        ///            actively receiving broadcast messages then they will be discarded.
+        ///            To ensure that no messages get missed, call ReceiveBroadcastAsync()
+        ///            again from within the handler fn.
+        /// </summary>
+        /// <param name="enc">Encoding to use for the received payload.</param>
+        /// <param name="buffer">Buffer to use for receiving the payload.</param>
+        /// <param name="fn">Handler to call for the received broadcast message.</param>
+        public void ReceiveBroadcastAsync(EncodingType enc, byte[] buffer,
+                                          ReceiveBroadcastFnDelegate fn)
+        {
+            var uuid = Marshal.AllocHGlobal(16);
+
+            Api.BranchReceiveBroadcastAsyncFnDelegate wrapper = (res, size, userarg) =>
+            {
+                try
+                {
+                    var sourceBytes = new byte[16];
+                    Marshal.Copy(uuid, sourceBytes, 0, 16);
+                    var source = new Guid(sourceBytes);
+                    var payload = new PayloadView(buffer, size, enc);
+                    fn(ErrorCodeToResult(res), source, payload, buffer);
+                }
+                finally
+                {
+                    Marshal.FreeHGlobal(uuid);
+                    GCHandle.FromIntPtr(userarg).Free();
+                }
+            };
+            var wrapperHandle = GCHandle.Alloc(wrapper);
+
+            try
+            {
+                var wrapperPtr = GCHandle.ToIntPtr(wrapperHandle);
+                int res = Api.YOGI_BranchReceiveBroadcastAsync(Handle, uuid, (int)enc, buffer,
+                                                               buffer.Length, wrapper, wrapperPtr);
+                CheckErrorCode(res);
+            }
+            catch
+            {
+                wrapperHandle.Free();
+                Marshal.FreeHGlobal(uuid);
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Delegate for the send broadcast handler function.
+        ///
+        /// As opposed to ReceiveBroadcastFnDelegate, this function does not include the buffer
+        /// parameter.
+        /// </summary>
+        /// <param name="res">Result of the receive operation.</param>
+        /// <param name="source">UUID of the sending branch.</param>
+        /// <param name="payload">View on the received payload.</param>
+        public delegate void ReceiveBroadcastSimpleFnDelegate(Result res, Guid source,
+                                                              PayloadView payload);
+
+        /// <summary>
+        /// Receives a broadcast message from any of the connected branches.
+        ///
+        /// Broadcast messages contain arbitrary data encoded as JSON or MessagePack.
+        /// As opposed to sending messages via terminals, broadcast messages don't
+        /// have to comply with a defined schema for the payload; any data that can be
+        /// encoded is valid. This implies that validating the data is entirely up to
+        /// the user code.
+        ///
+        /// This function will register fn to be called once a broadcast message
+        /// has been received. The payload will be encoded as MessagePack.
+        ///
+        /// If this function is called while a previous receive operation is still
+        /// active then the previous operation will be canceled with the Canceled error.
+        ///
+        /// Attention: Broadcast messages do not get queued, i.e. if a branch is not
+        ///            actively receiving broadcast messages then they will be discarded.
+        ///            To ensure that no messages get missed, call ReceiveBroadcastAsync()
+        ///            again from within the handler fn.
+        /// </summary>
+        /// <param name="fn">Handler to call for the received broadcast message.</param>
+        public void ReceiveBroadcastAsync(ReceiveBroadcastSimpleFnDelegate fn)
+        {
+            var buffer = new byte[Constants.MaxMessagePayloadSize];
+            ReceiveBroadcastAsync(buffer, fn);
+        }
+
+        /// <summary>
+        /// Receives a broadcast message from any of the connected branches.
+        ///
+        /// Broadcast messages contain arbitrary data encoded as JSON or MessagePack.
+        /// As opposed to sending messages via terminals, broadcast messages don't
+        /// have to comply with a defined schema for the payload; any data that can be
+        /// encoded is valid. This implies that validating the data is entirely up to
+        /// the user code.
+        ///
+        /// This function will register fn to be called once a broadcast message
+        /// has been received. The payload will be encoded as per enc.
+        ///
+        /// If this function is called while a previous receive operation is still
+        /// active then the previous operation will be canceled with the Canceled error.
+        ///
+        /// Attention: Broadcast messages do not get queued, i.e. if a branch is not
+        ///            actively receiving broadcast messages then they will be discarded.
+        ///            To ensure that no messages get missed, call ReceiveBroadcastAsync()
+        ///            again from within the handler fn.
+        /// </summary>
+        /// <param name="enc">Encoding to use for the received payload.</param>
+        /// <param name="fn">Handler to call for the received broadcast message.</param>
+        public void ReceiveBroadcastAsync(EncodingType enc, ReceiveBroadcastSimpleFnDelegate fn)
+        {
+            var buffer = new byte[Constants.MaxMessagePayloadSize];
+            ReceiveBroadcastAsync(enc, buffer, fn);
+        }
+
+        /// <summary>
+        /// Receives a broadcast message from any of the connected branches.
+        ///
+        /// Broadcast messages contain arbitrary data encoded as JSON or MessagePack.
+        /// As opposed to sending messages via terminals, broadcast messages don't
+        /// have to comply with a defined schema for the payload; any data that can be
+        /// encoded is valid. This implies that validating the data is entirely up to
+        /// the user code.
+        ///
+        /// This function will register fn to be called once a broadcast message
+        /// has been received. The payload will be encoded as MessagePack.
+        ///
+        /// Attention: If the received payload does not fit into buffer then fn will be
+        ///            called with the BufferTooSmall error and buffer containing as
+        ///            much received data as possible. In this case, the payload view
+        ///            passed to fn will be invalid.
+        ///
+        /// If this function is called while a previous receive operation is still
+        /// active then the previous operation will be canceled with the Canceled error.
+        ///
+        /// Attention: Broadcast messages do not get queued, i.e. if a branch is not
+        ///            actively receiving broadcast messages then they will be discarded.
+        ///            To ensure that no messages get missed, call ReceiveBroadcastAsync()
+        ///            again from within the handler fn.
+        /// </summary>
+        /// <param name="buffer">Buffer to use for receiving the payload.</param>
+        /// <param name="fn">Handler to call for the received broadcast message.</param>
+        public void ReceiveBroadcastAsync(byte[] buffer, ReceiveBroadcastSimpleFnDelegate fn)
+        {
+            ReceiveBroadcastAsync(EncodingType.Msgpack, buffer, fn);
+        }
+
+        /// <summary>
+        /// Receives a broadcast message from any of the connected branches.
+        ///
+        /// Broadcast messages contain arbitrary data encoded as JSON or MessagePack.
+        /// As opposed to sending messages via terminals, broadcast messages don't
+        /// have to comply with a defined schema for the payload; any data that can be
+        /// encoded is valid. This implies that validating the data is entirely up to
+        /// the user code.
+        ///
+        /// This function will register fn to be called once a broadcast message
+        /// has been received. The payload will be encoded as per enc.
+        ///
+        /// Attention: If the received payload does not fit into buffer then fn will be
+        ///            called with the BufferTooSmall error and buffer containing as
+        ///            much received data as possible. In this case, the payload view
+        ///            passed to fn will be invalid.
+        ///
+        /// If this function is called while a previous receive operation is still
+        /// active then the previous operation will be canceled with the Canceled error.
+        ///
+        /// Attention: Broadcast messages do not get queued, i.e. if a branch is not
+        ///            actively receiving broadcast messages then they will be discarded.
+        ///            To ensure that no messages get missed, call ReceiveBroadcastAsync()
+        ///            again from within the handler fn.
+        /// </summary>
+        /// <param name="enc">Encoding to use for the received payload.</param>
+        /// <param name="buffer">Buffer to use for receiving the payload.</param>
+        /// <param name="fn">Handler to call for the received broadcast message.</param>
+        public void ReceiveBroadcastAsync(EncodingType enc, byte[] buffer,
+                                          ReceiveBroadcastSimpleFnDelegate fn)
+        {
+            ReceiveBroadcastAsync(enc, buffer, (Result res, Guid source, PayloadView payload,
+                                                byte[] _) => fn(res, source, payload));
+        }
+
+        /// <summary>
+        /// Cancels a receive broadcast operation.
+        ///
+        /// Calling this function will cause the handler registered via
+        /// ReceiveBroadcastAsync() to be called with the Canceled error.
+        ///
+        /// Note: If the receive handler has already been scheduled for execution
+        ///       this function will return false.
+        /// </summary>
+        /// <returns>True if the operation has been canceled successfully.</returns>
+        public bool CancelReceiveBroadcast()
+        {
+            int res = Api.YOGI_BranchCancelReceiveBroadcast(Handle);
+            if (res == (int)ErrorCode.OperationNotRunning) return false;
+            CheckErrorCode(res);
+            return true;
         }
 
         static IntPtr Create(Context context, [Optional] JsonView props, [Optional] string section)

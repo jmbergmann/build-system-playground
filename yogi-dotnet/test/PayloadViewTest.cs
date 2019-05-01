@@ -27,12 +27,17 @@ namespace test
         [Fact]
         public void FromBuffer()
         {
-            var data = new byte[] { 1, 2, 3 };
+            var data = new byte[] { 1, 2, 3, 4, 0 };
 
-            var view = new Yogi.PayloadView(data, Yogi.EncodingType.Msgpack);
+            var view = new Yogi.PayloadView(data, 3, Yogi.EncodingType.Msgpack);
+            Assert.Equal(view.Data, data);
+            Assert.Equal(view.Size, 3);
+            Assert.Equal(Yogi.EncodingType.Msgpack, view.Encoding);
+
+            view = new Yogi.PayloadView(data, Yogi.EncodingType.Json);
             Assert.Equal(view.Data, data);
             Assert.Equal(view.Size, data.Length);
-            Assert.Equal(Yogi.EncodingType.Msgpack, view.Encoding);
+            Assert.Equal(Yogi.EncodingType.Json, view.Encoding);
         }
 
         [Fact]
@@ -78,6 +83,10 @@ namespace test
             Assert.True(view1.Equals(view2));
             Assert.False(view1.Equals(view3));
             Assert.False(view1.Equals(view4));
+
+            var view5 = new Yogi.PayloadView(new byte[] { 1, 2, 0 }, Yogi.EncodingType.Json);
+            var view6 = new Yogi.PayloadView(new byte[] { 1, 2, 0, 9 }, 3, Yogi.EncodingType.Json);
+            Assert.True(view5.Equals(view6));
         }
 
         [Fact]

@@ -870,6 +870,12 @@ class Branch : public ObjectT<Branch> {
   /// \note
   ///   The payload will be copied if necessary, i.e. \p payload only needs to
   ///   remain valid until the function returns.
+  ///
+  /// \param payload Payload to send.
+  /// \param retry   Retry sending the message.
+  /// \param fn      Handler to call once the operation finishes.
+  ///
+  /// \return ID of the send operation.
   OperationId SendBroadcastAsync(const PayloadView& payload, bool retry,
                                  SendBroadcastFn fn) {
     struct CallbackData {
@@ -916,6 +922,11 @@ class Branch : public ObjectT<Branch> {
   /// \note
   ///   The payload will be copied if necessary, i.e. \p payload only needs to
   ///   remain valid until the function returns.
+  ///
+  /// \param payload Payload to send.
+  /// \param fn      Handler to call once the operation finishes.
+  ///
+  /// \return ID of the send operation.
   OperationId SendBroadcastAsync(const PayloadView& payload,
                                  SendBroadcastFn fn) {
     return SendBroadcastAsync(payload, true, fn);
@@ -1055,7 +1066,7 @@ class Branch : public ObjectT<Branch> {
   /// the user code.
   ///
   /// This function will register \p fn to be called once a broadcast message
-  /// has been received. The payload will be encoded as MessagePack.
+  /// has been received. The payload will be encoded as per \p enc.
   ///
   /// \attention
   ///   If the received payload does not fit into \p buffer then \p fn will be

@@ -44,12 +44,27 @@ public static partial class Yogi
         /// Constructs a view from a buffer.
         /// </summary>
         /// <param name="data">Buffer to use.</param>
-        public PayloadView(byte[] data, EncodingType enc)
+        /// <param name="size">Number of bytes in the buffer.</param>
+        /// <param name="enc">Encoding of the data in buffer.</param>
+        public PayloadView(byte[] data, int size, EncodingType enc)
         {
             Data = data;
+            Size = size;
             Encoding = enc;
 
-            Debug.Assert(enc != EncodingType.Json || data[data.Length - 1] == 0);
+            Debug.Assert(size >= 0);
+            Debug.Assert(data.Length >= size);
+            Debug.Assert(enc != EncodingType.Json || data[size - 1] == 0);
+        }
+
+        /// <summary>
+        /// Constructs a view from a buffer.
+        /// </summary>
+        /// <param name="data">Buffer to use.</param>
+        /// <param name="enc">Encoding of the data in buffer.</param>
+        public PayloadView(byte[] data, EncodingType enc)
+        : this(data, data.Length, enc)
+        {
         }
 
         /// <summary>
@@ -97,13 +112,18 @@ public static partial class Yogi
 
         public override bool Equals(object obj)
         {
-            if (!(obj is PayloadView))
-            {
-                return false;
-            }
+            if (!(obj is PayloadView)) return false;
 
             var other = (PayloadView)obj;
-            return Encoding == other.Encoding && Data.SequenceEqual(other.Data);
+            if (Encoding != other.Encoding) return false;
+            if (Size != other.Size) return false;
+
+            for (int i = 0; i < Size; ++i)
+            {
+                if (Data[i] != other.Data[i]) return false;
+            }
+
+            return true;
         }
 
         public override int GetHashCode()
@@ -119,10 +139,7 @@ public static partial class Yogi
         /// <summary>
         /// Size of the payload data in bytes.
         /// </summary>
-        public int Size
-        {
-            get { return Data == null ? 0 : Data.Length; }
-        }
+        public int Size { get; }
 
         /// <summary>
         /// Encoding of the payload data.
