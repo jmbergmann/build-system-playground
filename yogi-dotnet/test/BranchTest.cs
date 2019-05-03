@@ -26,6 +26,16 @@ namespace test
     public class BranchTest : TestCase
     {
         Yogi.Context context = new Yogi.Context();
+        Yogi.JsonView jsonView = new Yogi.JsonView("[1,2,3]");
+        Yogi.JsonView bigJsonView = new Yogi.JsonView(MakeBigJsonData());
+        Yogi.MsgpackView msgpackView = new Yogi.MsgpackView(new byte[] { 0x93, 0x1, 0x2, 0x3 });
+
+        static string MakeBigJsonData(int size = 10000)
+        {
+            var data = new string('.', size - 5);
+            data = "[\"" + data + "\"]";
+            return data;
+        }
 
         [Fact]
         public void BranchEventsEnum()
@@ -188,6 +198,63 @@ namespace test
             Assert.True(called);
 
             GC.KeepAlive(branch);
+        }
+
+        [Fact]
+        public void SendBroadcast()
+        {
+            var branchA = new Yogi.Branch(context,
+                                          "{\"name\":\"a\", \"_transceive_byte_limit\": 5}");
+            var branchB = new Yogi.Branch(context, "{\"name\":\"b\"}");
+            RunContextUntilBranchesAreConnected(context, branchA, branchB);
+            context.RunInBackground();
+
+            // Receive a broadcast to verify that it has actually been sent
+            bool broadcastReceived = false;
+            branchB.ReceiveBroadcastAsync(Yogi.EncodingType.Json, (res, _, payload) =>
+            {
+                Assert.Equal(Yogi.ErrorCode.Ok, res.ErrorCode);
+                Assert.Equal(bigJsonView, payload);
+                broadcastReceived = true;
+            });
+
+            // Blocking
+            for (int i = 0; i < 3; ++i)
+            {
+                Assert.True(branchA.SendBroadcast(bigJsonView, true));
+            }
+
+            // Non-blocking
+            while (branchA.SendBroadcast(bigJsonView, false))
+                ;
+
+            context.Stop();
+            context.WaitForStopped();
+
+            while (!broadcastReceived)
+            {
+                context.RunOne();
+            }
+        }
+
+        [Fact]
+        public void SendBroadcastAsync()
+        {
+        }
+
+        [Fact]
+        public void CancelSendBroadcast()
+        {
+        }
+
+        [Fact]
+        public void ReceiveBroadcast()
+        {
+        }
+
+        [Fact]
+        public void CancelReceiveBroadcast()
+        {
         }
     }
 }

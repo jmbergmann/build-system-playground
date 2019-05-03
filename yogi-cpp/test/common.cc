@@ -38,6 +38,7 @@ void RunContextUntilBranchesAreConnected(
   for (auto branch : branches) {
     uuids[branch] = {};
   }
+
   for (auto& entry : uuids) {
     for (auto branch : branches) {
       if (branch != entry.first) {

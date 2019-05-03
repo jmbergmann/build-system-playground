@@ -131,6 +131,52 @@ namespace test
             Assert.Equal(expected, (int)(object)enumElement);
         }
 
+        public static void RunContextUntilBranchesAreConnected(Yogi.Context context,
+                                                               params Yogi.Branch[] branches)
+        {
+            var uuids = new Dictionary<Yogi.Branch, List<Guid>>();
+            foreach (var branch in branches)
+            {
+                uuids[branch] = new List<Guid>();
+            }
+
+            foreach (var entry in uuids)
+            {
+                foreach (var branch in branches)
+                {
+                    if (branch != entry.Key)
+                    {
+                        entry.Value.Add(branch.Uuid);
+                    }
+                }
+            }
+
+            var start = DateTime.Now;
+
+            while (uuids.Count > 0)
+            {
+                context.Poll();
+
+                var entry = uuids.First();
+                var infos = entry.Key.GetConnectedBranches();
+                foreach (var info in infos)
+                {
+                    var uuid = info.Key;
+                    entry.Value.Remove(uuid);
+                }
+
+                if (entry.Value.Count == 0)
+                {
+                    uuids.Remove(entry.Key);
+                }
+
+                if (DateTime.Now - start > TimeSpan.FromSeconds(3))
+                {
+                    throw new Exception("Branches did not connect");
+                }
+            }
+        }
+
         public void Dispose()
         {
             Yogi.DisableConsoleLogging();

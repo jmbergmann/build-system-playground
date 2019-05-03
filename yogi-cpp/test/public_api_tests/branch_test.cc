@@ -211,7 +211,7 @@ TEST_F(BranchTest, SendBroadcast) {
     EXPECT_TRUE(branch_a->SendBroadcast(big_json_view_, true));
   }
 
-  // Not blocking
+  // Non-blocking
   while (branch_a->SendBroadcast(big_json_view_, false))
     ;
 

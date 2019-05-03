@@ -31,7 +31,7 @@ namespace test
 
             var view = new Yogi.PayloadView(data, 3, Yogi.EncodingType.Msgpack);
             Assert.Equal(view.Data, data);
-            Assert.Equal(view.Size, 3);
+            Assert.Equal(3, view.Size);
             Assert.Equal(Yogi.EncodingType.Msgpack, view.Encoding);
 
             view = new Yogi.PayloadView(data, Yogi.EncodingType.Json);
