@@ -982,6 +982,7 @@ public static partial class Yogi
                                           ReceiveBroadcastFnDelegate fn)
         {
             var uuid = Marshal.AllocHGlobal(16);
+            var bufferHandle = GCHandle.Alloc(buffer, GCHandleType.Pinned);
 
             Api.BranchReceiveBroadcastAsyncFnDelegate wrapper = (res, size, userarg) =>
             {
@@ -994,6 +995,7 @@ public static partial class Yogi
                 finally
                 {
                     Marshal.FreeHGlobal(uuid);
+                    bufferHandle.Free();
                     GCHandle.FromIntPtr(userarg).Free();
                 }
             };
@@ -1009,6 +1011,7 @@ public static partial class Yogi
             catch
             {
                 wrapperHandle.Free();
+                bufferHandle.Free();
                 Marshal.FreeHGlobal(uuid);
                 throw;
             }

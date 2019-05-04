@@ -216,6 +216,8 @@ namespace test
                 broadcastReceived = true;
             });
 
+            GC.Collect();
+
             // Blocking
             for (int i = 0; i < 3; ++i)
             {
@@ -231,6 +233,9 @@ namespace test
 
             // Verify that a broadcast has actually been sent
             while (!broadcastReceived) context.RunOne();
+
+            GC.KeepAlive(branchA);
+            GC.KeepAlive(branchB);
         }
 
         [Fact]
@@ -249,6 +254,8 @@ namespace test
                 Assert.Equal(bigJsonView, payload);
                 broadcastReceived = true;
             });
+
+            GC.Collect();
 
             // Send with retry = true
             int n = 3;
@@ -281,6 +288,9 @@ namespace test
 
             // Verify that a broadcast has actually been sent
             while (!broadcastReceived) context.RunOne();
+
+            GC.KeepAlive(branchA);
+            GC.KeepAlive(branchB);
         }
 
         [Fact]
@@ -300,6 +310,8 @@ namespace test
                 });
                 Assert.True(oid.IsValid);
 
+                GC.Collect();
+
                 oidToEc[oid] = Yogi.ErrorCode.Unknown;
 
                 if (branchA.CancelSendBroadcast(oid))
@@ -309,6 +321,9 @@ namespace test
                     break;
                 }
             }
+
+            GC.KeepAlive(branchA);
+            GC.KeepAlive(branchB);
         }
 
         [Fact]
@@ -330,6 +345,7 @@ namespace test
             });
 
             branchB.SendBroadcastAsync(msgpackView, (_1, _2) => { });
+            GC.Collect();
             while (!called) context.RunOne();
 
             // With buffer in handler function
@@ -343,6 +359,7 @@ namespace test
             });
 
             branchB.SendBroadcastAsync(msgpackView, (_1, _2) => { });
+            GC.Collect();
             while (!called) context.RunOne();
 
             // With encoding
@@ -355,6 +372,7 @@ namespace test
             });
 
             branchB.SendBroadcastAsync(msgpackView, (_1, _2) => { });
+            GC.Collect();
             while (!called) context.RunOne();
 
             // With encoding and with buffer in handler function
@@ -368,6 +386,7 @@ namespace test
             });
 
             branchB.SendBroadcastAsync(msgpackView, (_1, _2) => { });
+            GC.Collect();
             while (!called) context.RunOne();
 
             // With custom buffer
@@ -381,6 +400,7 @@ namespace test
             });
 
             branchB.SendBroadcastAsync(msgpackView, (_1, _2) => { });
+            GC.Collect();
             while (!called) context.RunOne();
 
             // With custom buffer and with buffer in handler function
@@ -395,6 +415,7 @@ namespace test
             });
 
             branchB.SendBroadcastAsync(msgpackView, (_1, _2) => { });
+            GC.Collect();
             while (!called) context.RunOne();
 
             // With custom buffer and encoding
@@ -408,6 +429,7 @@ namespace test
             });
 
             branchB.SendBroadcastAsync(msgpackView, (_1, _2) => { });
+            GC.Collect();
             while (!called) context.RunOne();
 
             // With custom buffer and encoding and buffer in handler function
@@ -422,26 +444,34 @@ namespace test
             });
 
             branchB.SendBroadcastAsync(msgpackView, (_1, _2) => { });
+            GC.Collect();
             while (!called) context.RunOne();
+
+            GC.KeepAlive(branchA);
+            GC.KeepAlive(branchB);
         }
 
         [Fact]
         public void CancelReceiveBroadcast()
         {
-            var branchA = new Yogi.Branch(context, "{\"name\":\"a\"}");
+            var branch = new Yogi.Branch(context, "{\"name\":\"a\"}");
 
-            Assert.False(branchA.CancelReceiveBroadcast());
+            Assert.False(branch.CancelReceiveBroadcast());
 
             bool called = false;
-            branchA.ReceiveBroadcastAsync((res, _2, _3, _4) =>
+            branch.ReceiveBroadcastAsync((res, _2, _3, _4) =>
             {
                 Assert.Equal(Yogi.ErrorCode.Canceled, res.ErrorCode);
                 called = true;
             });
 
-            Assert.True(branchA.CancelReceiveBroadcast());
+            GC.Collect();
+
+            Assert.True(branch.CancelReceiveBroadcast());
             context.Poll();
             Assert.True(called);
+
+            GC.KeepAlive(branch);
         }
     }
 }
