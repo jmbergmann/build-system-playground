@@ -21,6 +21,7 @@ package-lock.json
 # Python
 __pycache__/
 *.egg-info/
+yogi-python/dist/
 
 # .NET
 yogi-dotnet/**/bin/

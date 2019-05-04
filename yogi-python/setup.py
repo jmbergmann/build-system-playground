@@ -3,9 +3,15 @@ import os
 import re
 import setuptools
 
-core_header_file = os.path.realpath(os.path.dirname(
-    __file__) + '/../yogi-core/include/yogi_core.h')
-for _, line in enumerate(open(core_header_file)):
+pkg_dir = os.path.dirname(os.path.realpath(__file__))
+req_file = pkg_dir + '/requirements.txt'
+core_hdr_file = pkg_dir + '/../yogi-core/include/yogi_core.h'
+
+requirements = []
+with open(req_file) as f:
+    requirements = f.read().splitlines()
+
+for _, line in enumerate(open(core_hdr_file)):
     if line.startswith('#define YOGI_HDR_VERSION '):
         version = re.search('"(.*)"', line).group(1)
 
@@ -22,6 +28,7 @@ config = {
     'keywords': 'yogi decoupling networking',
     'test_suite': 'test',
     'python_requires': '>=3.5',
+    'install_requires': requirements,
     'classifiers': [
         'Development Status :: 3 - Alpha',
         'License :: OSI Approved :: GPLv3',
