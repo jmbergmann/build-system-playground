@@ -331,7 +331,7 @@ TEST_F(BranchTest, ReceiveBroadcast) {
                                     called = true;
                                   });
 
-  branch_b->SendBroadcastAsync(json_view_, {});
+  branch_b->SendBroadcastAsync(msgpack_view_, {});
   while (!called) context_->RunOne();
 
   // With encoding and with buffer in handler function
@@ -346,7 +346,7 @@ TEST_F(BranchTest, ReceiveBroadcast) {
         called = true;
       });
 
-  branch_b->SendBroadcastAsync(json_view_, {});
+  branch_b->SendBroadcastAsync(msgpack_view_, {});
   while (!called) context_->RunOne();
 
   // With custom buffer
@@ -386,7 +386,7 @@ TEST_F(BranchTest, ReceiveBroadcast) {
                                     called = true;
                                   });
 
-  branch_b->SendBroadcastAsync(json_view_, {});
+  branch_b->SendBroadcastAsync(msgpack_view_, {});
   while (!called) context_->RunOne();
 
   // With custom buffer and encoding and buffer in handler function
@@ -401,7 +401,7 @@ TEST_F(BranchTest, ReceiveBroadcast) {
         called = true;
       });
 
-  branch_b->SendBroadcastAsync(json_view_, {});
+  branch_b->SendBroadcastAsync(msgpack_view_, {});
   while (!called) context_->RunOne();
 }
 

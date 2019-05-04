@@ -987,9 +987,7 @@ public static partial class Yogi
             {
                 try
                 {
-                    var sourceBytes = new byte[16];
-                    Marshal.Copy(uuid, sourceBytes, 0, 16);
-                    var source = new Guid(sourceBytes);
+                    var source = MakeGuidFromVoidPtr(uuid);
                     var payload = new PayloadView(buffer, size, enc);
                     fn(ErrorCodeToResult(res), source, payload, buffer);
                 }
@@ -1193,6 +1191,16 @@ public static partial class Yogi
             while (res == (int)ErrorCode.BufferTooSmall);
             CheckErrorCode(res);
             return new LocalBranchInfo(json.ToString());
+        }
+
+        Guid MakeGuidFromVoidPtr(IntPtr uuid)
+        {
+            var bytes = new byte[16];
+            Marshal.Copy(uuid, bytes, 0, 16);
+            Array.Reverse(bytes, 0, 4);
+            Array.Reverse(bytes, 4, 2);
+            Array.Reverse(bytes, 6, 2);
+            return new Guid(bytes);
         }
     }
 }

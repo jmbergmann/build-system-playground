@@ -165,10 +165,7 @@ namespace test
 
             GC.Collect();
 
-            while (!called)
-            {
-                context.RunOne();
-            }
+            while (!called) context.RunOne();
 
             Assert.True(called);
 
@@ -233,10 +230,7 @@ namespace test
             context.WaitForStopped();
 
             // Verify that a broadcast has actually been sent
-            while (!broadcastReceived)
-            {
-                context.RunOne();
-            }
+            while (!broadcastReceived) context.RunOne();
         }
 
         [Fact]
@@ -270,10 +264,7 @@ namespace test
                 Assert.True(oid.IsValid);
             }
 
-            while (results.Count != n)
-            {
-                context.Poll();
-            }
+            while (results.Count != n) context.Poll();
 
             // Send with retry = false
             do
@@ -289,10 +280,7 @@ namespace test
             Assert.Equal(Yogi.ErrorCode.TxQueueFull, results[results.Count - 1].ErrorCode);
 
             // Verify that a broadcast has actually been sent
-            while (!broadcastReceived)
-            {
-                context.RunOne();
-            }
+            while (!broadcastReceived) context.RunOne();
         }
 
         [Fact]
@@ -326,11 +314,134 @@ namespace test
         [Fact]
         public void ReceiveBroadcast()
         {
+            var branchA = new Yogi.Branch(context, "{\"name\":\"a\"}");
+            var branchB = new Yogi.Branch(context, "{\"name\":\"b\"}");
+            RunContextUntilBranchesAreConnected(context, branchA, branchB);
+
+            // Simplest form
+            var uuidB = branchB.Uuid;
+            bool called = false;
+            branchA.ReceiveBroadcastAsync((res, source, payload) =>
+            {
+                Assert.Equal(Yogi.ErrorCode.Ok, res.ErrorCode);
+                Assert.Equal(uuidB, source);
+                Assert.Equal(msgpackView, payload);
+                called = true;
+            });
+
+            branchB.SendBroadcastAsync(msgpackView, (_1, _2) => { });
+            while (!called) context.RunOne();
+
+            // With buffer in handler function
+            called = false;
+            branchA.ReceiveBroadcastAsync((res, _, payload, buf) =>
+            {
+                Assert.Equal(Yogi.ErrorCode.Ok, res.ErrorCode);
+                Assert.Equal(msgpackView, payload);
+                Assert.True(buf.Length >= Yogi.Constants.MaxMessagePayloadSize);
+                called = true;
+            });
+
+            branchB.SendBroadcastAsync(msgpackView, (_1, _2) => { });
+            while (!called) context.RunOne();
+
+            // With encoding
+            called = false;
+            branchA.ReceiveBroadcastAsync(Yogi.EncodingType.Json, (res, _, payload) =>
+            {
+                Assert.Equal(Yogi.ErrorCode.Ok, res.ErrorCode);
+                Assert.Equal(jsonView, payload);
+                called = true;
+            });
+
+            branchB.SendBroadcastAsync(msgpackView, (_1, _2) => { });
+            while (!called) context.RunOne();
+
+            // With encoding and with buffer in handler function
+            called = false;
+            branchA.ReceiveBroadcastAsync(Yogi.EncodingType.Json, (res, _, payload, buf) =>
+            {
+                Assert.Equal(Yogi.ErrorCode.Ok, res.ErrorCode);
+                Assert.Equal(jsonView, payload);
+                Assert.True(buf.Length >= Yogi.Constants.MaxMessagePayloadSize);
+                called = true;
+            });
+
+            branchB.SendBroadcastAsync(msgpackView, (_1, _2) => { });
+            while (!called) context.RunOne();
+
+            // With custom buffer
+            var buffer = new byte[123];
+            called = false;
+            branchA.ReceiveBroadcastAsync(buffer, (res, _, payload) =>
+            {
+                Assert.Equal(Yogi.ErrorCode.Ok, res.ErrorCode);
+                Assert.Equal(msgpackView, payload);
+                called = true;
+            });
+
+            branchB.SendBroadcastAsync(msgpackView, (_1, _2) => { });
+            while (!called) context.RunOne();
+
+            // With custom buffer and with buffer in handler function
+            buffer = new byte[123];
+            called = false;
+            branchA.ReceiveBroadcastAsync(buffer, (res, _, payload, buf) =>
+            {
+                Assert.Equal(Yogi.ErrorCode.Ok, res.ErrorCode);
+                Assert.Equal(msgpackView, payload);
+                Assert.Equal(buffer, buf);
+                called = true;
+            });
+
+            branchB.SendBroadcastAsync(msgpackView, (_1, _2) => { });
+            while (!called) context.RunOne();
+
+            // With custom buffer and encoding
+            buffer = new byte[123];
+            called = false;
+            branchA.ReceiveBroadcastAsync(Yogi.EncodingType.Json, buffer, (res, _, payload) =>
+            {
+                Assert.Equal(Yogi.ErrorCode.Ok, res.ErrorCode);
+                Assert.Equal(jsonView, payload);
+                called = true;
+            });
+
+            branchB.SendBroadcastAsync(msgpackView, (_1, _2) => { });
+            while (!called) context.RunOne();
+
+            // With custom buffer and encoding and buffer in handler function
+            buffer = new byte[123];
+            called = false;
+            branchA.ReceiveBroadcastAsync(Yogi.EncodingType.Json, buffer, (res, _, payload, buf) =>
+            {
+                Assert.Equal(Yogi.ErrorCode.Ok, res.ErrorCode);
+                Assert.Equal(jsonView, payload);
+                Assert.Equal(buffer, buf);
+                called = true;
+            });
+
+            branchB.SendBroadcastAsync(msgpackView, (_1, _2) => { });
+            while (!called) context.RunOne();
         }
 
         [Fact]
         public void CancelReceiveBroadcast()
         {
+            var branchA = new Yogi.Branch(context, "{\"name\":\"a\"}");
+
+            Assert.False(branchA.CancelReceiveBroadcast());
+
+            bool called = false;
+            branchA.ReceiveBroadcastAsync((res, _2, _3, _4) =>
+            {
+                Assert.Equal(Yogi.ErrorCode.Canceled, res.ErrorCode);
+                called = true;
+            });
+
+            Assert.True(branchA.CancelReceiveBroadcast());
+            context.Poll();
+            Assert.True(called);
         }
     }
 }
