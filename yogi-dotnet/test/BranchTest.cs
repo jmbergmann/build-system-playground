@@ -17,6 +17,7 @@
 
 using System;
 using System.Net;
+using System.Collections.Generic;
 using Xunit;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -231,6 +232,7 @@ namespace test
             context.Stop();
             context.WaitForStopped();
 
+            // Verify that a broadcast has actually been sent
             while (!broadcastReceived)
             {
                 context.RunOne();
@@ -240,11 +242,85 @@ namespace test
         [Fact]
         public void SendBroadcastAsync()
         {
+            var branchA = new Yogi.Branch(context,
+                                          "{\"name\":\"a\", \"_transceive_byte_limit\": 5}");
+            var branchB = new Yogi.Branch(context, "{\"name\":\"b\"}");
+            RunContextUntilBranchesAreConnected(context, branchA, branchB);
+
+            // Receive a broadcast to verify that it has actually been sent
+            bool broadcastReceived = false;
+            branchB.ReceiveBroadcastAsync(Yogi.EncodingType.Json, (res, _, payload) =>
+            {
+                Assert.Equal(Yogi.ErrorCode.Ok, res.ErrorCode);
+                Assert.Equal(bigJsonView, payload);
+                broadcastReceived = true;
+            });
+
+            // Send with retry = true
+            int n = 3;
+            var results = new List<Yogi.Result>();
+            for (int i = 0; i < n; ++i)
+            {
+                var oid = branchA.SendBroadcastAsync(bigJsonView, true, (res, opid) =>
+                {
+                    Assert.Equal(Yogi.ErrorCode.Ok, res.ErrorCode);
+                    Assert.True(opid.IsValid);
+                    results.Add(res);
+                });
+                Assert.True(oid.IsValid);
+            }
+
+            while (results.Count != n)
+            {
+                context.Poll();
+            }
+
+            // Send with retry = false
+            do
+            {
+                branchA.SendBroadcastAsync(bigJsonView, false, (res, _) =>
+                {
+                    results.Add(res);
+                });
+
+                context.PollOne();
+            } while (results[results.Count - 1].ErrorCode == Yogi.ErrorCode.Ok);
+
+            Assert.Equal(Yogi.ErrorCode.TxQueueFull, results[results.Count - 1].ErrorCode);
+
+            // Verify that a broadcast has actually been sent
+            while (!broadcastReceived)
+            {
+                context.RunOne();
+            }
         }
 
         [Fact]
         public void CancelSendBroadcast()
         {
+            var branchA = new Yogi.Branch(context,
+                                          "{\"name\":\"a\", \"_transceive_byte_limit\": 5}");
+            var branchB = new Yogi.Branch(context, "{\"name\":\"b\"}");
+            RunContextUntilBranchesAreConnected(context, branchA, branchB);
+
+            var oidToEc = new Dictionary<Yogi.OperationId, Yogi.ErrorCode>();
+            while (true)
+            {
+                var oid = branchA.SendBroadcastAsync(bigJsonView, (res, opid) =>
+                {
+                    oidToEc[opid] = res.ErrorCode;
+                });
+                Assert.True(oid.IsValid);
+
+                oidToEc[oid] = Yogi.ErrorCode.Unknown;
+
+                if (branchA.CancelSendBroadcast(oid))
+                {
+                    context.Poll();
+                    Assert.Equal(Yogi.ErrorCode.Canceled, oidToEc[oid]);
+                    break;
+                }
+            }
         }
 
         [Fact]

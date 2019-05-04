@@ -848,7 +848,7 @@ public static partial class Yogi
         public bool CancelSendBroadcast(OperationId oid)
         {
             int res = Api.YOGI_BranchCancelSendBroadcast(Handle, oid.Value);
-            if (res == (int)ErrorCode.OperationNotRunning) return false;
+            if (res == (int)ErrorCode.InvalidOperationId) return false;
             CheckErrorCode(res);
             return true;
         }
