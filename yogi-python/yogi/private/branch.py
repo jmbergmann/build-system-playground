@@ -21,6 +21,10 @@ from .library import yogi
 from .handler import Handler
 from .context import Context
 from .timestamp import Timestamp
+from .json_view import JsonView
+from .msgpack_view import MsgpackView
+from .payload_view import PayloadView
+from .operation_id import OperationId
 
 import json
 from enum import IntEnum
@@ -284,7 +288,8 @@ class Branch(Object):
           secure manner, any further communication is done in plain text.
     """
 
-    def __init__(self, context: Context, props: Union[str, object] = None,
+    def __init__(self, context: Context,
+                 props: Union[JsonView, str, object] = None,
                  section: str = None):
         """Creates the branch.
 
@@ -356,22 +361,22 @@ class Branch(Object):
 
         Args:
             context: The context to use.
-            props:   Branch properties as serializable object or JSON object.
+            props:   Branch properties as JSON.
             section: Section in props to use instead of the root section.
                      Syntax is JSON pointer (RFC 6901).
         """
-        if not isinstance(props, str):
-            props = json.dumps(props)
+        if not isinstance(props, JsonView):
+            props = JsonView(props)
 
-        def conv_string(s):
-            return None if s is None else s.encode()
+        if section:
+            section = section.encode()
 
         handle = c_void_p()
         run_with_discriptive_failure_awareness(
             lambda err: yogi.YOGI_BranchCreate(byref(handle),
                                                context._handle,
-                                               conv_string(props),
-                                               conv_string(section),
+                                               props.data.obj,
+                                               section,
                                                err, sizeof(err)))
 
         Object.__init__(self, handle, [context])
