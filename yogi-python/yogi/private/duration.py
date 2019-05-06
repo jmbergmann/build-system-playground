@@ -401,8 +401,8 @@ class Duration(metaclass=MetaDuration):
         """
         dur = c_longlong(self._ns_count) if self.is_finite else -1
         is_neg = 1 if (dur == -1 and self._inf_type < 0) else 0
-        dur_fmt = None if dur_fmt is None else dur_fmt.encode("utf-8")
-        inf_fmt = None if inf_fmt is None else inf_fmt.encode("utf-8")
+        dur_fmt = None if dur_fmt is None else dur_fmt.encode()
+        inf_fmt = None if inf_fmt is None else inf_fmt.encode()
         s = create_string_buffer(128)
         yogi.YOGI_FormatDuration(dur, is_neg, s, sizeof(s), dur_fmt, inf_fmt)
         return s.value.decode("utf-8")

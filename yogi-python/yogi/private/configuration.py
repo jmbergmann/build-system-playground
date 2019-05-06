@@ -156,7 +156,7 @@ class Configuration(Object):
         """
         args = (POINTER(c_char) * (len(argv)))()
         for i, arg in enumerate(argv):
-            args[i] = create_string_buffer(arg.encode("utf-8"))
+            args[i] = create_string_buffer(arg.encode())
 
         run_with_discriptive_failure_awareness(
             lambda err: yogi.YOGI_ConfigurationUpdateFromCommandLine(
@@ -177,7 +177,7 @@ class Configuration(Object):
 
         run_with_discriptive_failure_awareness(
             lambda err: yogi.YOGI_ConfigurationUpdateFromJson(
-                self._handle, jsn.encode("utf-8"), err, sizeof(err)))
+                self._handle, jsn.encode(), err, sizeof(err)))
 
     def update_from_file(self, filename: str) -> None:
         """Updates the configuration from a JSON file.
@@ -190,7 +190,7 @@ class Configuration(Object):
         """
         run_with_discriptive_failure_awareness(
             lambda err: yogi.YOGI_ConfigurationUpdateFromFile(
-                self._handle, filename.encode("utf-8"), err, sizeof(err)))
+                self._handle, filename.encode(), err, sizeof(err)))
 
     def dump(self, resolve_variables: Optional[bool] = None,
              indentation: Optional[int] = None) -> str:
@@ -270,5 +270,5 @@ class Configuration(Object):
             indentation = -1
 
         yogi.YOGI_ConfigurationWriteToFile(
-            self._handle, filename.encode("utf-8"), resolve_variables,
+            self._handle, filename.encode(), resolve_variables,
             indentation)

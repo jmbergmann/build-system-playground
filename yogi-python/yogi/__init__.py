@@ -24,12 +24,16 @@ from .private.configuration import ConfigurationFlags, CommandLineOptions, \
 from .private.constants import Constants
 from .private.errors import ErrorCode, Result, Failure, DescriptiveFailure, \
     Success, Exception, FailureException, DescriptiveFailureException
+from .private.json_view import JsonView
 from .private.licenses import get_license, get_3rd_party_licenses
 from .private.logging import Verbosity, Stream, Logger, AppLogger, \
     app_logger, setup_console_logging, disable_console_logging, \
     setup_hook_logging, disable_hook_logging, setup_file_logging, \
     disable_file_logging
+from .private.msgpack_view import MsgpackView
 from .private.object import Object
+from .private.operation_id import OperationId
+from .private.payload_view import EncodingType, PayloadView
 from .private.signals import Signals, raise_signal, SignalSet
 from .private.time import get_current_time
 from .private.timer import Timer

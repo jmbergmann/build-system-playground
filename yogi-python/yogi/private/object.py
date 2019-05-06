@@ -71,8 +71,8 @@ class Object:
         Returns:
             Formatted string.
         """
-        fmt = None if fmt is None else fmt.encode("utf-8")
-        nullstr = None if nullstr is None else nullstr.encode("utf-8")
+        fmt = None if fmt is None else fmt.encode()
+        nullstr = None if nullstr is None else nullstr.encode()
         s = create_string_buffer(128)
         yogi.YOGI_FormatObject(self._handle, s, sizeof(s), fmt, nullstr)
         return s.value.decode("utf-8")

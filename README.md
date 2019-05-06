@@ -15,7 +15,7 @@ cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_TOOLCHAIN_FILE=~/Projects/vcpkg/script
 # Run Python tests manually
 
 cd "/c/Documents and Settings/commu_000/Documents/Projects/build-system-playground/yogi-python"
-YOGI_CORE_LIBRARY=../build-x64/yogi-core/yogi-core-x64.dll python -m unittest
+YOGI_CORE_LIBRARY=../build-x64/yogi-core/yogi-core-x64.dll python3 -m unittest
 
 # Run .NET tests manually
 

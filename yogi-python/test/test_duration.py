@@ -396,8 +396,9 @@ class TestDuration(TestCase):
         self.assertFalse(yogi.Duration.negative_infinity >= yogi.Duration.zero)
 
     def test_hash(self):
-        self.assertNotEqual(hash(yogi.Duration.from_days(1)),
-                            hash(yogi.Duration.from_days(2)))
+        dur1 = yogi.Duration.from_days(1)
+        dur2 = yogi.Duration.from_days(2)
+        self.assertNotEqual(hash(dur1), hash(dur2))
 
 
 if __name__ == '__main__':

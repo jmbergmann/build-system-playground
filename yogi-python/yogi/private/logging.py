@@ -113,10 +113,10 @@ def setup_console_logging(verbosity: Verbosity, stream: Stream = Stream.STDERR,
         fmt:       Format of a log entry (see above for placeholders).
     """
     if timefmt is not None:
-        timefmt = timefmt.encode("utf-8")
+        timefmt = timefmt.encode()
 
     if fmt is not None:
-        fmt = fmt.encode("utf-8")
+        fmt = fmt.encode()
 
     yogi.YOGI_ConfigureConsoleLogging(verbosity, stream, color, timefmt, fmt)
 
@@ -230,13 +230,13 @@ def setup_file_logging(verbosity: Verbosity, filename: str,
         The generated filename with all placeholders resolved.
     """
     assert filename is not None
-    filename = filename.encode("utf-8")
+    filename = filename.encode()
 
     if timefmt is not None:
-        timefmt = timefmt.encode("utf-8")
+        timefmt = timefmt.encode()
 
     if fmt is not None:
-        fmt = fmt.encode("utf-8")
+        fmt = fmt.encode()
 
     gen_filename = create_string_buffer(256)
     yogi.YOGI_ConfigureFileLogging(verbosity, filename, gen_filename,
@@ -298,7 +298,7 @@ class Logger(Object):
             Number of matching loggers.
         """
         n = c_int()
-        yogi.YOGI_LoggerSetComponentsVerbosity(components.encode("utf-8"),
+        yogi.YOGI_LoggerSetComponentsVerbosity(components.encode(),
                                                verbosity, byref(n))
         return n.value
 
@@ -311,7 +311,7 @@ class Logger(Object):
             component: The component tag to use.
         """
         handle = c_void_p()
-        yogi.YOGI_LoggerCreate(byref(handle), component.encode("utf-8"))
+        yogi.YOGI_LoggerCreate(byref(handle), component.encode())
         Object.__init__(self, handle)
 
     @property
@@ -347,8 +347,8 @@ class Logger(Object):
             assert (file is not None and line is not None), \
                 "File and line must both be set or both be None"
 
-        yogi.YOGI_LoggerLog(self._handle, severity, file.encode("utf-8"),
-                            line, msg.encode("utf-8"))
+        yogi.YOGI_LoggerLog(self._handle, severity, file.encode(),
+                            line, msg.encode())
 
 
 class AppLogger(Logger):

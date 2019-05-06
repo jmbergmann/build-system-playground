@@ -26,12 +26,12 @@ public static partial class Yogi
     {
         /// <summary>
         /// Constructs the operation ID from a value.
-        ///
-        /// <param name="val">Numerical value of the operation ID.</param>
+
         /// </summary>
-        public OperationId(int val = 0)
+        /// <param name="value">Numerical value of the operation ID.</param>
+        public OperationId(int value = 0)
         {
-            Value = val;
+            Value = value;
         }
 
         /// <summary>
@@ -39,6 +39,9 @@ public static partial class Yogi
         /// </summary>
         public int Value { get; }
 
+        /// <summary>
+        /// True if the operation ID has a valid numerical value.
+        /// </summary>
         public bool IsValid
         {
             get { return Value > 0; }

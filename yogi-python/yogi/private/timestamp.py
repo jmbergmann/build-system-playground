@@ -97,8 +97,8 @@ class Timestamp:
             The parsed timestamp.
         """
         timestamp = c_longlong()
-        s = s.encode("utf-8")
-        fmt = None if fmt is None else fmt.encode("utf-8")
+        s = s.encode()
+        fmt = None if fmt is None else fmt.encode()
         yogi.YOGI_ParseTime(byref(timestamp), s, fmt)
         dur = Duration.from_nanoseconds(timestamp.value)
         return cls.from_duration_since_epoch(dur)
@@ -164,7 +164,7 @@ class Timestamp:
             The timestamp as a string.
         """
         timestamp = c_longlong(self._dur_since_epoch.nanoseconds_count)
-        fmt = None if fmt is None else fmt.encode("utf-8")
+        fmt = None if fmt is None else fmt.encode()
         s = create_string_buffer(128)
         yogi.YOGI_FormatTime(timestamp, s, sizeof(s), fmt)
         return s.value.decode("utf-8")

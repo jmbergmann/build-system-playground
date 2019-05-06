@@ -306,6 +306,7 @@ class Branch(Object):
               "tx_queue_size":          1000000,
               "rx_queue_size":          100000
             }
+
         All of the properties are optional and if unspecified (or set to
         null), their respective default values will be used. The properties
         have the following meaning:
@@ -363,10 +364,7 @@ class Branch(Object):
             props = json.dumps(props)
 
         def conv_string(s):
-            if s is None:
-                return None
-            else:
-                return s.encode("utf-8")
+            return None if s is None else s.encode()
 
         handle = c_void_p()
         run_with_discriptive_failure_awareness(
