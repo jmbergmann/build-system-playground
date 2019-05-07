@@ -16,9 +16,11 @@
 import sys
 import os.path
 import re
+import time
 import unittest
+import yogi
 
-from typing import Union
+from typing import Union, List
 
 sys.stderr = sys.stdout
 
@@ -45,6 +47,30 @@ class TestCase(unittest.TestCase):
                     "Cannot parse macro {} in yogi_core.h".format(macro_name))
 
         return eval(m.group(1))
+
+    def run_context_until_branches_are_connected(self, context: yogi.Context,
+                                                 branches: List[yogi.Branch]
+                                                 ) -> None:
+        uuids = {}
+        for branch in branches:
+            uuids[branch] = [x.uuid for x in branches if x is not branch]
+
+        start = time.time()
+
+        while uuids:
+            context.poll()
+
+            branch = next(iter(uuids))
+            for uuid in branch.get_connected_branches():
+                if uuid in uuids[branch]:
+                    uuids[branch].remove(uuid)
+
+            if not uuids[branch]:
+                del uuids[branch]
+
+            if time.time() - start > 3:
+                print(uuids)
+                raise TimeoutError("Branches did not connect")
 
     def assertEnumElementMatches(self, macro_prefix, elem):
         macro_name = macro_prefix + elem.name

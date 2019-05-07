@@ -16,21 +16,23 @@
 from .object import Object
 from .errors import Result, FailureException, Success, ErrorCode, \
     api_result_handler, error_code_to_result, \
-    run_with_discriptive_failure_awareness
+    run_with_discriptive_failure_awareness, false_if_specific_ec_else_raise
 from .library import yogi
 from .handler import Handler
 from .context import Context
 from .timestamp import Timestamp
 from .json_view import JsonView
 from .msgpack_view import MsgpackView
-from .payload_view import PayloadView
+from .payload_view import PayloadView, EncodingType
 from .operation_id import OperationId
+from .constants import Constants
 
 import json
+import inspect
 from enum import IntEnum
 from uuid import UUID
 from typing import Callable, Any, Optional, Dict, Union
-from ctypes import c_int, c_longlong, c_void_p, c_char_p, CFUNCTYPE, \
+from ctypes import c_char, c_int, c_longlong, c_void_p, c_char_p, CFUNCTYPE, \
     POINTER, byref, create_string_buffer, sizeof
 
 
@@ -250,7 +252,7 @@ yogi.YOGI_BranchAwaitEventAsync.argtypes = [
 yogi.YOGI_BranchCancelAwaitEvent.restype = api_result_handler
 yogi.YOGI_BranchCancelAwaitEvent.argtypes = [c_void_p]
 
-yogi.YOGI_BranchSendBroadcast.restype = api_result_handler
+yogi.YOGI_BranchSendBroadcast.restype = int
 yogi.YOGI_BranchSendBroadcast.argtypes = [
     c_void_p, c_int, c_void_p, c_int, c_int]
 
@@ -259,7 +261,7 @@ yogi.YOGI_BranchSendBroadcastAsync.argtypes = [
     c_void_p, c_int, c_void_p, c_int, c_int,
     CFUNCTYPE(None, c_int, c_int, c_void_p), c_void_p]
 
-yogi.YOGI_BranchCancelSendBroadcast.restype = api_result_handler
+yogi.YOGI_BranchCancelSendBroadcast.restype = int
 yogi.YOGI_BranchCancelSendBroadcast.argtypes = [c_void_p, c_int]
 
 yogi.YOGI_BranchReceiveBroadcastAsync.restype = api_result_handler
@@ -267,7 +269,7 @@ yogi.YOGI_BranchReceiveBroadcastAsync.argtypes = [
     c_void_p, c_void_p, c_int, c_void_p, c_int,
     CFUNCTYPE(None, c_int, c_int, c_void_p), c_void_p]
 
-yogi.YOGI_BranchCancelReceiveBroadcast.restype = api_result_handler
+yogi.YOGI_BranchCancelReceiveBroadcast.restype = int
 yogi.YOGI_BranchCancelReceiveBroadcast.argtypes = [c_void_p]
 
 
@@ -559,7 +561,13 @@ class Branch(Object):
                 else:
                     info = BranchEventInfo(string)
 
-            fn(res, BranchEvents(event), error_code_to_result(evres), info)
+            branch_events = BranchEvents(event)
+            ev_res = error_code_to_result(evres)
+
+            if len(inspect.signature(fn).parameters) == 3:
+                fn(res, branch_events, ev_res)
+            else:
+                fn(res, branch_events, ev_res, info)
 
         with Handler(yogi.YOGI_BranchAwaitEventAsync.argtypes[5], wrapped_fn
                      ) as handler:
@@ -573,6 +581,182 @@ class Branch(Object):
         await_event_async() to be called with a cancellation error.
         """
         yogi.YOGI_BranchCancelAwaitEvent(self._handle)
+
+    def send_broadcast(self, payload: Union[PayloadView, JsonView,
+                                            MsgpackView],
+                       *, block: bool = True) -> bool:
+        """Sends a broadcast message to all connected branches.
+
+        Broadcast messages contain arbitrary data encoded as JSON or
+        MessagePack. As opposed to sending messages via terminals, broadcast
+        messages don't have to comply with a defined schema for the payload;
+        any data that can be encoded is valid. This implies that validating the
+        data is entirely up to the user code.
+
+        Setting the block parameter to False will cause the function to skip
+        sending the message to branches that have a full send queue. If at
+        least one branch was skipped, the function will return False. If the
+        parameter is set to True instead, the function will block until the
+        message has been put into the send queues of all connected branches.
+
+        Attention: Calling this function from within a handler function
+                   executed through the branch's context with block set to True
+                   will cause a dead-lock if any send queue is full!
+
+        Args:
+            payload: Payload to send.
+            block:   Block until message has been put into all send buffers.
+
+        Returns:
+            True if the message was successfully put into all send buffers.
+        """
+        if not isinstance(payload, PayloadView):
+            payload = PayloadView(payload)
+
+        res = yogi.YOGI_BranchSendBroadcast(self._handle, payload.encoding,
+                                            payload.data.obj, payload.size,
+                                            1 if block else 0)
+        return false_if_specific_ec_else_raise(res, ErrorCode.TX_QUEUE_FULL)
+
+    def send_broadcast_async(self, payload: Union[PayloadView, JsonView,
+                                                  MsgpackView],
+                             fn: Callable[[Result, OperationId], Any],
+                             *, retry: bool = True) -> OperationId:
+        """Sends a broadcast message to all connected branches.
+
+        Broadcast messages contain arbitrary data encoded as JSON or
+        MessagePack. As opposed to sending messages via terminals, broadcast
+        messages don't have to comply with a defined schema for the payload;
+        any data that can be encoded is valid. This implies that validating the
+        data is entirely up to the user code.
+
+        The handler function fn will be called once the message has been put
+        into the send queues of all connected branches.
+
+        The function returns an ID which uniquely identifies this send
+        operation until fn has been called. It can be used in a subsequent
+        cancel_send_broadcast() call to abort the operation.
+
+        Args:
+            payload: Payload to send.
+            fn:      Handler to call once the operation finishes.
+            retry:   Retry sending the message if a send queue is full.
+
+        Returns:
+            ID of the send operation.
+        """
+        if not isinstance(payload, PayloadView):
+            payload = PayloadView(payload)
+
+        def wrapped_fn(res, oid):
+            fn(res, OperationId(oid))
+
+        with Handler(yogi.YOGI_BranchSendBroadcastAsync.argtypes[5], wrapped_fn
+                     ) as handler:
+            res = yogi.YOGI_BranchSendBroadcastAsync(self._handle,
+                                                     payload.encoding,
+                                                     payload.data.obj,
+                                                     payload.size,
+                                                     1 if retry else 0,
+                                                     handler, None)
+
+        return OperationId(res.value)
+
+    def cancel_send_broadcast(self, oid: OperationId) -> bool:
+        """Cancels a send broadcast operation.
+
+        Calling this function will cause the send operation with the specified
+        operation ID to be canceled, resulting in the handler function
+        registered via the send_broadcast_async() call that returned the same
+        operation ID to be called with the Canceled error.
+
+        Note: If the send operation has already been carried out but the
+              handler function has not been called yet, then cancelling the
+              operation will fail and False will be returned.
+
+        Args:
+            oid: ID of the send operation.
+
+        Returns:
+            True if the operation has been canceled successfully.
+        """
+        res = yogi.YOGI_BranchCancelSendBroadcast(self._handle, oid.value)
+        return false_if_specific_ec_else_raise(res,
+                                               ErrorCode.INVALID_OPERATION_ID)
+
+    def receive_broadcast_async(self, fn: Callable[[Result, UUID, PayloadView,
+                                                    Optional[bytearray]], Any],
+                                *,
+                                encoding: EncodingType = EncodingType.MSGPACK,
+                                buffer: Optional[bytearray] = None
+                                ) -> None:
+        """Receives a broadcast message from any of the connected branches.
+
+        Broadcast messages contain arbitrary data encoded as JSON or
+        MessagePack. As opposed to sending messages via terminals, broadcast
+        messages don't have to comply with a defined schema for the payload;
+        any data that can be encoded is valid. This implies that validating the
+        data is entirely up to the user code.
+
+        This function will register fn to be called once a broadcast message
+        has been received. The payload will be encoded as per encoding.
+
+        Attention: If a custom buffer is specified and the received payload
+                   does not fit into it then fn will be called with the
+                   BUFFER_TOO_SMALL error and the buffer will contain as
+                   much received data as possible. In this case, the payload
+                   view passed to fn will be invalid.
+
+        If this function is called while a previous receive operation is still
+        active then the previous operation will be canceled with the CANCELED
+        error.
+
+        Attention: Broadcast messages do not get queued, i.e. if a branch is
+                   not actively receiving broadcast messages then they will be
+                   discarded. To ensure that no messages get missed, call
+                   receive_broadcast_async() again from within the handler fn.
+
+        Args:
+            fn:       Handler to call for the received broadcast message.
+            encoding: Encoding to use for the received payload.
+            buffer:   Custom buffer to use for receiving the payload.
+        """
+        if buffer is None:
+            buffer = bytearray(Constants.MAX_MESSAGE_PAYLOAD_SIZE)
+
+        uuid_buffer = create_string_buffer(16)
+        buffer_ptr = (c_char * len(buffer)).from_buffer(buffer)
+
+        def wrapped_fn(res, size):
+            uuid = UUID(bytes=uuid_buffer.raw)
+            payload = PayloadView(buffer, size, encoding)
+
+            if len(inspect.signature(fn).parameters) == 3:
+                fn(res, uuid, payload)
+            else:
+                fn(res, uuid, payload, buffer)
+
+        with Handler(yogi.YOGI_BranchReceiveBroadcastAsync.argtypes[5],
+                     wrapped_fn) as handler:
+            yogi.YOGI_BranchReceiveBroadcastAsync(self._handle, uuid_buffer,
+                                                  encoding, buffer_ptr,
+                                                  len(buffer), handler, None)
+
+    def cancel_receive_broadcast(self) -> bool:
+        """Cancels a receive broadcast operation.
+
+        Calling this function will cause the handler registered via
+        receive_broadcast_async() to be called with the CANCELED error.
+
+        Note: If the receive handler has already been scheduled for execution
+              this function will return False.
+
+        Returns:
+            True if the operation has been canceled successfully.
+        """
+        res = yogi.YOGI_BranchCancelReceiveBroadcast(self._handle)
+        return false_if_specific_ec_else_raise(res,
+                                               ErrorCode.OPERATION_NOT_RUNNING)
 
     def __get_info(self) -> LocalBranchInfo:
         s = create_string_buffer(1024)

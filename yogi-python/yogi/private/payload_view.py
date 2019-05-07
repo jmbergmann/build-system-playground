@@ -49,16 +49,18 @@ class PayloadView:
             assert size is None
             assert encoding is None
             self._memview = buf_or_view.data
+            self._size = buf_or_view.size
             self._encoding = EncodingType.JSON
         elif isinstance(buf_or_view, MsgpackView):
             assert size is None
             assert encoding is None
             self._memview = buf_or_view.data
+            self._size = buf_or_view.size
             self._encoding = EncodingType.MSGPACK
         elif isinstance(buf_or_view, bytearray):
             assert size is not None
             assert encoding is not None
-            self._memview = memoryview(buf_or_view)
+            self._memview = memoryview(buf_or_view)[:size]
             self._size = size
             self._encoding = encoding
         else:
@@ -74,7 +76,7 @@ class PayloadView:
     @property
     def size(self) -> int:
         """Size of the payload data in bytes."""
-        return self._memview.nbytes
+        return self._size
 
     @property
     def encoding(self) -> EncodingType:

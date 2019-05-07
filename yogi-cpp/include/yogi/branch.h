@@ -872,7 +872,7 @@ class Branch : public ObjectT<Branch> {
   ///   remain valid until the function returns.
   ///
   /// \param payload Payload to send.
-  /// \param retry   Retry sending the message.
+  /// \param retry   Retry sending the message if a send queue is full.
   /// \param fn      Handler to call once the operation finishes.
   ///
   /// \return ID of the send operation.

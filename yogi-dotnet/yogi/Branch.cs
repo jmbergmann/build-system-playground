@@ -737,7 +737,7 @@ public static partial class Yogi
         /// <param name="payload">Payload to send.</param>
         /// <param name="block">Block until message has been put into all send buffers.</param>
         /// <returns>True if the message was successfully put into all send buffers.</returns>
-        public bool SendBroadcast(PayloadView payload, bool block)
+        public bool SendBroadcast(PayloadView payload, bool block = true)
         {
             int res = Api.YOGI_BranchSendBroadcast(Handle, (int)payload.Encoding, payload.Data,
                                                    payload.Size, block ? 1 : 0);
@@ -774,8 +774,9 @@ public static partial class Yogi
         /// call to abort the operation.
         /// </summary>
         /// <param name="payload">Payload to send.</param>
-        /// <param name="block">Block until message has been put into all send buffers.</param>
-        /// <returns>True if the message was successfully put into all send buffers.</returns>
+        /// <param name="retry">Retry sending the message if a send queue is full.</param>
+        /// <param name="fn">Handler to call once the operation finished.</param>
+        /// <returns>ID of the send operation..</returns>
         public OperationId SendBroadcastAsync(PayloadView payload, bool retry,
                                               SendBroadcastFnDelegate fn)
         {
@@ -825,7 +826,8 @@ public static partial class Yogi
         /// call to abort the operation.
         /// </summary>
         /// <param name="payload">Payload to send.</param>
-        /// <returns>True if the message was successfully put into all send buffers.</returns>
+        /// <param name="fn">Handler to call once the operation finished.</param>
+        /// <returns>ID of the send operation..</returns>
         public OperationId SendBroadcastAsync(PayloadView payload, SendBroadcastFnDelegate fn)
         {
             return SendBroadcastAsync(payload, true, fn);

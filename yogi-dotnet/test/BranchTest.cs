@@ -327,7 +327,7 @@ namespace test
         }
 
         [Fact]
-        public void ReceiveBroadcast()
+        public void ReceiveBroadcastAsync()
         {
             var branchA = new Yogi.Branch(context, "{\"name\":\"a\"}");
             var branchB = new Yogi.Branch(context, "{\"name\":\"b\"}");

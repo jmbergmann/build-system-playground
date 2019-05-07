@@ -25,6 +25,12 @@ from .common import TestCase
 class TestBranches(TestCase):
     def setUp(self):
         self.context = yogi.Context()
+        self.json_view = yogi.JsonView("[1,2,3]")
+        self.big_json_view = yogi.JsonView(self.make_big_json_data())
+        self.msgpack_view = yogi.MsgpackView(bytes([0x93, 0x1, 0x2, 0x3]))
+
+    def make_big_json_data(self, size=10000):
+        return '["' + '.' * (size - 5) + '"]'
 
     def test_branch_events_enum(self):
         for ev in yogi.BranchEvents:
@@ -156,6 +162,208 @@ class TestBranches(TestCase):
         self.assertIsInstance(fn_evres, yogi.Success)
         self.assertEqual(fn_evres.error_code, yogi.ErrorCode.OK)
         self.assertEqual(fn_info, None)
+
+    def test_send_broadcast(self):
+        branch_a = yogi.Branch(
+            self.context, '{"name": "a", "_transceive_byte_limit": 5}')
+        branch_b = yogi.Branch(self.context, '{"name": "b"}')
+        self.run_context_until_branches_are_connected(
+            self.context, [branch_a, branch_b])
+        self.context.run_in_background()
+
+        # Receive a broadcast to verify that it has actually been sent
+        broadcast_received = False
+
+        def rcv_handler(res, source, payload):
+            self.assertEqual(res.error_code, yogi.ErrorCode.OK)
+            self.assertEqual(payload, self.big_json_view)
+            nonlocal broadcast_received
+            broadcast_received = True
+
+        branch_b.receive_broadcast_async(rcv_handler,
+                                         encoding=yogi.EncodingType.JSON)
+
+        # Blocking
+        for _ in range(3):
+            self.assertTrue(branch_a.send_broadcast(
+                self.big_json_view, block=True))
+
+        # Non-blocking:
+        while branch_a.send_broadcast(self.big_json_view, block=False):
+            pass
+
+        self.context.stop()
+        self.context.wait_for_stopped()
+
+        # Verify that a broadcast has actually been sent
+        while not broadcast_received:
+            self.context.run_one()
+
+    def test_send_broadcast_async(self):
+        branch_a = yogi.Branch(
+            self.context, '{"name": "a", "_transceive_byte_limit": 5}')
+        branch_b = yogi.Branch(self.context, '{"name": "b"}')
+        self.run_context_until_branches_are_connected(
+            self.context, [branch_a, branch_b])
+
+        # Receive a broadcast to verify that it has actually been sent
+        broadcast_received = False
+
+        def rcv_handler(res, source, payload):
+            self.assertEqual(res.error_code, yogi.ErrorCode.OK)
+            self.assertEqual(payload, self.big_json_view)
+            nonlocal broadcast_received
+            broadcast_received = True
+
+        branch_b.receive_broadcast_async(rcv_handler,
+                                         encoding=yogi.EncodingType.JSON)
+
+        # Send with retry = True
+        results = []
+
+        def snd_retry_handler(res, oid):
+            self.assertEqual(res.error_code, yogi.ErrorCode.OK)
+            self.assertTrue(oid.is_valid)
+            results.append(res)
+
+        n = 3
+        for _ in range(n):
+            oid = branch_a.send_broadcast_async(self.big_json_view,
+                                                snd_retry_handler, retry=True)
+            self.assertTrue(oid.is_valid)
+
+        while len(results) != n:
+            self.context.poll()
+
+        # Send with retry = false
+        def snd_no_retry_handler(res, _):
+            results.append(res)
+
+        while results[-1].error_code == yogi.ErrorCode.OK:
+            branch_a.send_broadcast_async(self.big_json_view,
+                                          snd_no_retry_handler, retry=False)
+            self.context.poll_one()
+
+        self.assertEqual(results[-1].error_code, yogi.ErrorCode.TX_QUEUE_FULL)
+
+        # Verify that a broadcast has actually been sent
+        while not broadcast_received:
+            self.context.run_one()
+
+    def test_cancel_send_broadcast(self):
+        branch_a = yogi.Branch(
+            self.context, '{"name": "a", "_transceive_byte_limit": 5}')
+        branch_b = yogi.Branch(self.context, '{"name": "b"}')
+        self.run_context_until_branches_are_connected(
+            self.context, [branch_a, branch_b])
+
+        oid_to_ec = {}
+
+        def handler(res, oid):
+            oid_to_ec[oid] = res.error_code
+
+        while True:
+            oid = branch_a.send_broadcast_async(self.big_json_view, handler)
+            self.assertTrue(oid.is_valid)
+
+            oid_to_ec[oid] = yogi.ErrorCode.UNKNOWN
+
+            if branch_a.cancel_send_broadcast(oid):
+                self.context.poll()
+                self.assertEqual(oid_to_ec[oid], yogi.ErrorCode.CANCELED)
+                break
+
+    def test_receive_broadcast(self):
+        branch_a = yogi.Branch(self.context, '{"name": "a"}')
+        branch_b = yogi.Branch(self.context, '{"name": "b"}')
+        self.run_context_until_branches_are_connected(
+            self.context, [branch_a, branch_b])
+
+        # Simplest form
+        uuid_b = branch_b.uuid
+        called = False
+
+        def handler_1(res, source, payload):
+            self.assertEqual(res.error_code, yogi.ErrorCode.OK)
+            self.assertEqual(source, uuid_b)
+            self.assertEqual(payload, self.msgpack_view)
+            nonlocal called
+            called = True
+
+        branch_a.receive_broadcast_async(handler_1)
+
+        branch_b.send_broadcast_async(self.msgpack_view, lambda x, y: None)
+        while not called:
+            self.context.run_one()
+
+        # With buffer in handler function
+        called = False
+
+        def handler_2(res, source, payload, buffer):
+            self.assertEqual(res.error_code, yogi.ErrorCode.OK)
+            self.assertEqual(source, uuid_b)
+            self.assertEqual(payload, self.msgpack_view)
+            self.assertGreaterEqual(len(buffer),
+                                    yogi.Constants.MAX_MESSAGE_PAYLOAD_SIZE)
+            nonlocal called
+            called = True
+
+        branch_a.receive_broadcast_async(handler_2)
+
+        branch_b.send_broadcast_async(self.msgpack_view, lambda x, y: None)
+        while not called:
+            self.context.run_one()
+
+        # With encoding
+        called = False
+
+        def handler_3(res, _, payload):
+            self.assertEqual(res.error_code, yogi.ErrorCode.OK)
+            self.assertEqual(payload, self.json_view)
+            nonlocal called
+            called = True
+
+        branch_a.receive_broadcast_async(handler_3,
+                                         encoding=yogi.EncodingType.JSON)
+
+        branch_b.send_broadcast_async(self.msgpack_view, lambda x, y: None)
+        while not called:
+            self.context.run_one()
+
+        # With custom buffer
+        buffer = bytearray(123)
+        called = False
+
+        def handler_4(res, _, payload, buf):
+            self.assertEqual(res.error_code, yogi.ErrorCode.OK)
+            self.assertEqual(payload, self.msgpack_view)
+            self.assertIs(buf, buffer)
+            nonlocal called
+            called = True
+
+        branch_a.receive_broadcast_async(handler_4, buffer=buffer)
+
+        branch_b.send_broadcast_async(self.msgpack_view, lambda x, y: None)
+        while not called:
+            self.context.run_one()
+
+    def test_cancel_receive_broadcast(self):
+        branch = yogi.Branch(self.context, '{"name": "a"}')
+
+        self.assertFalse(branch.cancel_receive_broadcast())
+
+        called = False
+
+        def handler(res, source, payload):
+            self.assertEqual(res.error_code, yogi.ErrorCode.CANCELED)
+            nonlocal called
+            called = True
+
+        branch.receive_broadcast_async(handler)
+
+        self.assertTrue(branch.cancel_receive_broadcast())
+        self.context.poll()
+        self.assertTrue(called)
 
 
 if __name__ == '__main__':
