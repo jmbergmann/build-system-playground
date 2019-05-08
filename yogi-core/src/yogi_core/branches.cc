@@ -178,7 +178,9 @@ YOGI_API int YOGI_BranchCancelAwaitEvent(void* branch) {
 
   try {
     auto brn = api::ObjectRegister::Get<objects::Branch>(branch);
-    brn->CancelAwaitEvent();
+    if (!brn->CancelAwaitEvent()) {
+      return YOGI_ERR_OPERATION_NOT_RUNNING;
+    }
   }
   CATCH_AND_RETURN;
 }

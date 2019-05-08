@@ -174,6 +174,8 @@ TEST_F(BranchTest, AwaitEventAsync) {
 TEST_F(BranchTest, CancelAwaitEvent) {
   auto branch = yogi::Branch::Create(context_, "{\"name\":\"My Branch\"}");
 
+  EXPECT_FALSE(branch->CancelAwaitEvent());
+
   bool called = false;
   branch->AwaitEventAsync(
       yogi::BranchEvents::kAll, [&](auto& res, auto event, auto& evres, auto&) {
@@ -185,7 +187,7 @@ TEST_F(BranchTest, CancelAwaitEvent) {
         called = true;
       });
 
-  branch->CancelAwaitEvent();
+  EXPECT_TRUE(branch->CancelAwaitEvent());
   context_->Poll();
   EXPECT_TRUE(called);
 }

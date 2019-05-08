@@ -35,6 +35,12 @@ inline void CheckErrorCode(int res) {
   }
 }
 
+inline bool FalseIfSpecificErrorElseThrow(int res, ErrorCode ec) {
+  if (res == static_cast<int>(ec)) return false;
+  CheckErrorCode(res);
+  return true;
+}
+
 template <typename Fn>
 inline void CheckDescriptiveErrorCode(Fn fn) {
   std::array<char, 256> description;

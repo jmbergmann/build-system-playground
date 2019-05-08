@@ -14,7 +14,8 @@
 # along with this library. If not, see <http://www.gnu.org/licenses/>.
 
 from .object import Object
-from .errors import Result, api_result_handler
+from .errors import Result, ErrorCode, api_result_handler, \
+    false_if_specific_ec_else_raise
 from .library import yogi
 from .handler import Handler, inc_ref_cnt, dec_ref_cnt
 from .context import Context
@@ -129,7 +130,7 @@ yogi.YOGI_SignalSetAwaitSignalAsync.restype = api_result_handler
 yogi.YOGI_SignalSetAwaitSignalAsync.argtypes = [c_void_p, CFUNCTYPE(
     None, c_int, c_int, PyObjectWrapper, c_void_p), c_void_p]
 
-yogi.YOGI_SignalSetCancelAwaitSignal.restype = api_result_handler
+yogi.YOGI_SignalSetCancelAwaitSignal.restype = int
 yogi.YOGI_SignalSetCancelAwaitSignal.argtypes = [c_void_p]
 
 
@@ -175,10 +176,15 @@ class SignalSet(Object):
                      wrapped_fn) as handler:
             yogi.YOGI_SignalSetAwaitSignalAsync(self._handle, handler, None)
 
-    def cancel_await_signal(self) -> None:
+    def cancel_await_signal(self) -> bool:
         """Cancels waiting for a signal.
 
         This causes the handler function registered via await_signal_async() to
         be called with a cancellation error.
+
+        Returns:
+            True if the wait operation was cancelled successfully.
         """
-        yogi.YOGI_SignalSetCancelAwaitSignal(self._handle)
+        res = yogi.YOGI_SignalSetCancelAwaitSignal(self._handle)
+        return false_if_specific_ec_else_raise(res,
+                                               ErrorCode.OPERATION_NOT_RUNNING)

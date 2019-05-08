@@ -65,7 +65,9 @@ void Branch::AwaitEventAsync(api::BranchEvents events,
   connection_manager_->AwaitEventAsync(events, handler);
 }
 
-void Branch::CancelAwaitEvent() { connection_manager_->CancelAwaitEvent(); }
+bool Branch::CancelAwaitEvent() {
+  return connection_manager_->CancelAwaitEvent();
+}
 
 Branch::SendBroadcastOperationId Branch::SendBroadcastAsync(
     const network::Payload& payload, bool retry, SendBroadcastHandler handler) {

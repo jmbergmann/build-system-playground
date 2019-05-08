@@ -211,6 +211,9 @@ TEST_F(SignalSetTest, Queueing) {
 TEST_F(SignalSetTest, CancelAwait) {
   void* sigset = CreateSignalSet(YOGI_SIG_INT);
 
+  int res = YOGI_SignalSetCancelAwaitSignal(sigset);
+  EXPECT_ERR(res, YOGI_ERR_OPERATION_NOT_RUNNING);
+
   bool called = false;
   YOGI_SignalSetAwaitSignalAsync(
       sigset,
@@ -222,7 +225,7 @@ TEST_F(SignalSetTest, CancelAwait) {
       },
       &called);
 
-  int res = YOGI_SignalSetCancelAwaitSignal(sigset);
+  res = YOGI_SignalSetCancelAwaitSignal(sigset);
   EXPECT_OK(res);
 
   YOGI_ContextRunOne(context_, nullptr, -1);

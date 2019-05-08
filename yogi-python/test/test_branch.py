@@ -136,6 +136,8 @@ class TestBranches(TestCase):
     def test_cancel_await_event(self):
         branch = yogi.Branch(self.context, '{"name":"My Branch"}')
 
+        self.assertFalse(branch.cancel_await_event())
+
         fn_res = None
         fn_event = None
         fn_evres = None
@@ -151,7 +153,7 @@ class TestBranches(TestCase):
             fn_called = True
 
         branch.await_event_async(yogi.BranchEvents.ALL, fn)
-        branch.cancel_await_event()
+        self.assertTrue(branch.cancel_await_event())
 
         self.context.poll()
 

@@ -121,8 +121,11 @@ class TestSignals(TestCase):
             fn_called = True
 
         sigset = yogi.SignalSet(self.context, yogi.Signals.TERM)
+
+        self.assertFalse(sigset.cancel_await_signal())
+
         sigset.await_signal_async(fn)
-        sigset.cancel_await_signal()
+        self.assertTrue(sigset.cancel_await_signal())
         self.context.poll()
 
         self.assertTrue(fn_called)

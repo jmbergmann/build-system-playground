@@ -131,6 +131,8 @@ TEST_F(SignalsTest, AwaitSignal) {
 TEST_F(SignalsTest, CancelAwaitSignal) {
   auto sigset = yogi::SignalSet::Create(context_, yogi::Signals::kTerm);
 
+  EXPECT_FALSE(sigset->CancelAwaitSignal());
+
   bool called = false;
   sigset->AwaitSignal<std::string>([&](auto& res, auto signal, auto* sigarg) {
     EXPECT_NO_THROW(dynamic_cast<const yogi::Failure&>(res));
@@ -140,7 +142,7 @@ TEST_F(SignalsTest, CancelAwaitSignal) {
     called = true;
   });
 
-  sigset->CancelAwaitSignal();
+  EXPECT_TRUE(sigset->CancelAwaitSignal());
   context_->Poll();
   EXPECT_TRUE(called);
 

@@ -84,11 +84,13 @@ ConnectionManager::MakeConnectedBranchesInfoStrings() const {
   return branches;
 }
 
-void ConnectionManager::AwaitEventAsync(api::BranchEvents events,
+bool ConnectionManager::AwaitEventAsync(api::BranchEvents events,
                                         BranchEventHandler handler) {
   std::lock_guard<std::recursive_mutex> lock(event_mutex_);
 
+  bool canceled = false;
   if (event_handler_) {
+    canceled = true;
     auto old_handler = event_handler_;
     context_->Post([old_handler] {
       old_handler(api::Error(YOGI_ERR_CANCELED), api::kNoEvent, api::kSuccess,
@@ -98,10 +100,12 @@ void ConnectionManager::AwaitEventAsync(api::BranchEvents events,
 
   observed_events_ = events;
   event_handler_ = handler;
+
+  return canceled;
 }
 
-void ConnectionManager::CancelAwaitEvent() {
-  AwaitEventAsync(api::kNoEvent, {});
+bool ConnectionManager::CancelAwaitEvent() {
+  return AwaitEventAsync(api::kNoEvent, {});
 }
 
 ConnectionManager::OperationTag ConnectionManager::MakeOperationId() {

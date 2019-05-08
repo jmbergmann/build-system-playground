@@ -113,7 +113,7 @@ public static partial class Yogi
     /// </summary>
     /// <param name="sigarg">Value of the sigarg parameter passed to RaiseSignal().</param>
     /// <typeparam name="T">Type of the sigarg parameter.</typeparam>
-    public delegate void RaiseSignalFnDelegate<T>([Optional] T sigarg) where T: class;
+    public delegate void RaiseSignalFnDelegate<T>([Optional] T sigarg) where T : class;
 
     /// <summary>
     /// Raises a signal.
@@ -138,7 +138,7 @@ public static partial class Yogi
     /// <param name="sigarg">Object to pass to the signal sets.</param>
     /// <param name="fn">Function call after all signal sets have been notified.</param>
     public static void RaiseSignal<T>(Signals signal, T sigarg,
-        [Optional] RaiseSignalFnDelegate<T> fn) where T: class
+        [Optional] RaiseSignalFnDelegate<T> fn) where T : class
     {
         Api.RaiseSignalFnDelegate wrapper = (sigargPtr, userarg) =>
         {
@@ -197,7 +197,8 @@ public static partial class Yogi
     /// <param name="fn">Function to call after all signal sets have been notified.</param>
     public static void RaiseSignal(Signals signal, [Optional] Action fn)
     {
-        RaiseSignal<object>(signal, null, (sigarg) => {
+        RaiseSignal<object>(signal, null, (sigarg) =>
+        {
             if (fn != null)
             {
                 fn();
@@ -219,7 +220,7 @@ public static partial class Yogi
         /// <param name="context">The context to use.</param>
         /// <param name="signals">Signals to listen for.</param>
         public SignalSet(Context context, Signals signals)
-        : base(Create(context, signals), new Object[] {context})
+        : base(Create(context, signals), new Object[] { context })
         {
         }
 
@@ -231,7 +232,7 @@ public static partial class Yogi
         /// <param name="signal">The raised signal.</param>
         /// <param name="sigarg">Value of the sigarg parameter passed to RaiseSignal().</param>
         public delegate void AwaitSignalFnDelegate<T>(Result res, Signals signal,
-            [Optional] T sigarg) where T: class;
+            [Optional] T sigarg) where T : class;
 
         /// <summary>
         /// Waits for a signal to be raised.
@@ -241,7 +242,7 @@ public static partial class Yogi
         /// </summary>
         /// <typeparam name="T">Type of the sigarg parameter passed to RaiseSignal().</typeparam>
         /// <param name="fn">Handler function to call.</param>
-        public void AwaitSignalAsync<T>(AwaitSignalFnDelegate<T> fn) where T: class
+        public void AwaitSignalAsync<T>(AwaitSignalFnDelegate<T> fn) where T : class
         {
             Api.SignalSetAwaitSignalFnDelegate wrapper = (ec, signal, sigargPtr, userarg) =>
             {
@@ -300,10 +301,11 @@ public static partial class Yogi
         /// This causes the handler function registered via AwaitSignalAsync() to be
         /// called with a cancellation error.
         /// </summary>
-        public void CancelAwaitSignal()
+        /// <returns>True if the wait operation was cancelled successfully.</returns>
+        public bool CancelAwaitSignal()
         {
             int res = Api.YOGI_SignalSetCancelAwaitSignal(Handle);
-            CheckErrorCode(res);
+            return FalseIfSpecificErrorElseThrow(res, ErrorCode.OperationNotRunning);
         }
 
         static IntPtr Create(Context context, Signals signals)

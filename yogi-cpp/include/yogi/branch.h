@@ -807,9 +807,12 @@ class Branch : public ObjectT<Branch> {
   ///
   /// Calling this function will cause the handler registered via
   /// AwaitEventAsync() to be called with a cancellation error.
-  void CancelAwaitEvent() {
+  ///
+  /// \return True if the wait operation was cancelled successfully.
+  bool CancelAwaitEvent() {
     int res = internal::YOGI_BranchCancelAwaitEvent(GetHandle());
-    internal::CheckErrorCode(res);
+    return internal::FalseIfSpecificErrorElseThrow(
+        res, ErrorCode::kOperationNotRunning);
   }
 
   /// Sends a broadcast message to all connected branches.
@@ -950,13 +953,8 @@ class Branch : public ObjectT<Branch> {
   bool CancelSendBroadcast(OperationId oid) {
     int res =
         internal::YOGI_BranchCancelSendBroadcast(GetHandle(), oid.Value());
-
-    if (Result(res) == Failure(ErrorCode::kInvalidOperationId)) {
-      return false;
-    } else {
-      internal::CheckErrorCode(res);
-      return true;
-    }
+    return internal::FalseIfSpecificErrorElseThrow(
+        res, ErrorCode::kInvalidOperationId);
   }
 
   /// Receives a broadcast message from any of the connected branches.
@@ -1271,13 +1269,8 @@ class Branch : public ObjectT<Branch> {
   /// \returns True if the operation was canceled successfully.
   bool CancelReceiveBroadcast() {
     int res = internal::YOGI_BranchCancelReceiveBroadcast(GetHandle());
-
-    if (Result(res) == Failure(ErrorCode::kOperationNotRunning)) {
-      return false;
-    } else {
-      internal::CheckErrorCode(res);
-      return true;
-    }
+    return internal::FalseIfSpecificErrorElseThrow(
+        res, ErrorCode::kOperationNotRunning);
   }
 
  private:

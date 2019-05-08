@@ -405,9 +405,12 @@ class SignalSet : public ObjectT<SignalSet> {
   ///
   /// This causes the handler function registered via AwaitSignal() to be
   /// called with a cancellation error.
-  void CancelAwaitSignal() {
+  ///
+  /// \return True if the wait operation was cancelled successfully.
+  bool CancelAwaitSignal() {
     int res = internal::YOGI_SignalSetCancelAwaitSignal(GetHandle());
-    internal::CheckErrorCode(res);
+    return internal::FalseIfSpecificErrorElseThrow(
+        res, ErrorCode::kOperationNotRunning);
   }
 
  private:

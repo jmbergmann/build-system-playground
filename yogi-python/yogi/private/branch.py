@@ -249,7 +249,7 @@ yogi.YOGI_BranchAwaitEventAsync.argtypes = [
     c_void_p, c_int, c_void_p, c_char_p, c_int,
     CFUNCTYPE(None, c_int, c_int, c_int, c_void_p), c_void_p]
 
-yogi.YOGI_BranchCancelAwaitEvent.restype = api_result_handler
+yogi.YOGI_BranchCancelAwaitEvent.restype = int
 yogi.YOGI_BranchCancelAwaitEvent.argtypes = [c_void_p]
 
 yogi.YOGI_BranchSendBroadcast.restype = int
@@ -574,13 +574,18 @@ class Branch(Object):
             yogi.YOGI_BranchAwaitEventAsync(self._handle, events, None, s,
                                             sizeof(s), handler, None)
 
-    def cancel_await_event(self) -> None:
+    def cancel_await_event(self) -> bool:
         """Cancels waiting for a branch event.
 
         Calling this function will cause the handler registerd via
         await_event_async() to be called with a cancellation error.
+
+        Returns:
+            True if the wait operation was cancelled successfully.
         """
-        yogi.YOGI_BranchCancelAwaitEvent(self._handle)
+        res = yogi.YOGI_BranchCancelAwaitEvent(self._handle)
+        return false_if_specific_ec_else_raise(res,
+                                               ErrorCode.OPERATION_NOT_RUNNING)
 
     def send_broadcast(self, payload: Union[PayloadView, JsonView,
                                             MsgpackView],

@@ -433,6 +433,19 @@ public static partial class Yogi
         }
     }
 
+    static bool FalseIfSpecificErrorElseThrow(int res, ErrorCode ec)
+    {
+        if (res == (int)ec)
+        {
+            return false;
+        }
+        else
+        {
+            CheckErrorCode(res);
+            return true;
+        }
+    }
+
     static void CheckDescriptiveErrorCode(Func<StringBuilder, int> fn)
     {
         var err = new StringBuilder(256);

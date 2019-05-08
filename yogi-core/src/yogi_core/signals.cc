@@ -77,7 +77,9 @@ YOGI_API int YOGI_SignalSetCancelAwaitSignal(void* sigset) {
 
   try {
     auto set = api::ObjectRegister::Get<objects::SignalSet>(sigset);
-    set->CancelAwait();
+    if (!set->CancelAwait()) {
+      return YOGI_ERR_OPERATION_NOT_RUNNING;
+    }
   }
   CATCH_AND_RETURN;
 }

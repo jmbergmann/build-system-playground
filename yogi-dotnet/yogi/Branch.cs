@@ -709,10 +709,11 @@ public static partial class Yogi
         /// Calling this function will cause the handler registered via AwaitEventAsync()
         /// to be called with a cancellation error.
         /// </summary>
-        public void CancelAwaitEvent()
+        /// <returns>True if the wait operation was cancelled successfully.</returns>
+        public bool CancelAwaitEvent()
         {
             int res = Api.YOGI_BranchCancelAwaitEvent(Handle);
-            CheckErrorCode(res);
+            return FalseIfSpecificErrorElseThrow(res, ErrorCode.OperationNotRunning);
         }
 
         /// <summary>
@@ -850,9 +851,7 @@ public static partial class Yogi
         public bool CancelSendBroadcast(OperationId oid)
         {
             int res = Api.YOGI_BranchCancelSendBroadcast(Handle, oid.Value);
-            if (res == (int)ErrorCode.InvalidOperationId) return false;
-            CheckErrorCode(res);
-            return true;
+            return FalseIfSpecificErrorElseThrow(res, ErrorCode.InvalidOperationId);
         }
 
         /// <summary>

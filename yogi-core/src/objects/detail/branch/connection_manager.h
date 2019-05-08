@@ -81,8 +81,8 @@ class ConnectionManager
 
   BranchInfoStringsList MakeConnectedBranchesInfoStrings() const;
 
-  void AwaitEventAsync(api::BranchEvents events, BranchEventHandler handler);
-  void CancelAwaitEvent();
+  bool AwaitEventAsync(api::BranchEvents events, BranchEventHandler handler);
+  bool CancelAwaitEvent();
 
   template <typename Fn>
   void ForeachRunningSession(Fn fn) {

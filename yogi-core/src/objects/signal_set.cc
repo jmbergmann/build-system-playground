@@ -47,10 +47,12 @@ void SignalSet::RaiseSignal(api::Signals signal, void* sigarg,
 SignalSet::SignalSet(ContextPtr context, api::Signals signals)
     : context_(context), signals_(signals) {}
 
-void SignalSet::AwaitAsync(AwaitHandler handler) {
+bool SignalSet::AwaitAsync(AwaitHandler handler) {
   std::lock_guard<std::mutex> lock(mutex_);
 
+  bool canceled = false;
   if (handler_) {
+    canceled = true;
     auto old_handler = handler_;
     context_->Post([old_handler] {
       old_handler(api::Error(YOGI_ERR_CANCELED), api::kNoSignal, nullptr);
@@ -62,6 +64,8 @@ void SignalSet::AwaitAsync(AwaitHandler handler) {
   if (!queue_.empty()) {
     DeliverNextSignal();
   }
+
+  return canceled;
 }
 
 SignalSet::~SignalSet() {
@@ -78,7 +82,7 @@ SignalSet::~SignalSet() {
   CancelAwait();
 }
 
-void SignalSet::CancelAwait() { AwaitAsync({}); }
+bool SignalSet::CancelAwait() { return AwaitAsync({}); }
 
 void SignalSet::OnSignalRaised(const SignalDataPtr& data) {
   YOGI_ASSERT(signals_ & data->signal);

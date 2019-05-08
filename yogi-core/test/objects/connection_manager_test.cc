@@ -259,8 +259,11 @@ TEST_F(ConnectionManagerTest, BranchEvents) {
 }
 
 TEST_F(ConnectionManagerTest, CancelAwaitBranchEvent) {
+  int res = YOGI_BranchCancelAwaitEvent(branch_);
+  ASSERT_ERR(res, YOGI_ERR_OPERATION_NOT_RUNNING);
+
   bool called = false;
-  int res = YOGI_BranchAwaitEventAsync(
+  res = YOGI_BranchAwaitEventAsync(
       branch_, 0, nullptr, nullptr, 0,
       [](int res, int event, int ev_res, void* userarg) {
         EXPECT_ERR(res, YOGI_ERR_CANCELED);

@@ -50,7 +50,7 @@ class Branch : public api::ExposedObjectT<Branch, api::ObjectType::kBranch> {
   std::string MakeInfoString() const;
   BranchInfoStringsList MakeConnectedBranchesInfoStrings() const;
   void AwaitEventAsync(api::BranchEvents events, BranchEventHandler handler);
-  void CancelAwaitEvent();
+  bool CancelAwaitEvent();
   SendBroadcastOperationId SendBroadcastAsync(const network::Payload& payload,
                                               bool retry,
                                               SendBroadcastHandler handler);

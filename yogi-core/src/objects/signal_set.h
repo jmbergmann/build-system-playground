@@ -43,8 +43,8 @@ class SignalSet
   virtual ~SignalSet();
 
   api::Signals GetSignals() const { return signals_; }
-  void AwaitAsync(AwaitHandler handler);
-  void CancelAwait();
+  bool AwaitAsync(AwaitHandler handler);
+  bool CancelAwait();
 
  private:
   struct SignalData {

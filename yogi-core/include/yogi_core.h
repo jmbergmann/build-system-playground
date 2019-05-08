@@ -1531,6 +1531,10 @@ YOGI_API int YOGI_SignalSetAwaitSignalAsync(
  * Causes the handler function registered via YOGI_SignalSetAwaitSignalAsync()
  * to be called with #YOGI_ERR_CANCELED.
  *
+ * \note
+ *   If the receive handler has already been scheduled for execution, this
+ *   function will fail with the #YOGI_ERR_OPERATION_NOT_RUNNING error.
+ *
  * \param[in] sigset The signal set
  *
  * \returns [=0] #YOGI_OK if successful
@@ -1839,6 +1843,10 @@ YOGI_API int YOGI_BranchAwaitEventAsync(
  *
  * Calling this function will cause the handler registered via
  * YOGI_BranchAwaitEventAsync() to be called with the #YOGI_ERR_CANCELED error.
+ *
+ * \note
+ *   If the receive handler has already been scheduled for execution, this
+ *   function will fail with the #YOGI_ERR_OPERATION_NOT_RUNNING error.
  *
  * \param[in] branch The branch handle
  *
