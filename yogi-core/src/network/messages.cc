@@ -127,7 +127,7 @@ api::Result Payload::SerializeToUserBuffer(boost::asio::mutable_buffer buffer,
     switch (enc) {
       case api::Encoding::kJson: {
         auto raw = static_cast<const unsigned char*>(data_.data());
-        auto json = nlohmann::json::from_msgpack(raw);
+        auto json = nlohmann::json::from_msgpack(raw, data_.size());
         tmp_str = json.dump();
         src = boost::asio::buffer(tmp_str.data(), tmp_str.size() + 1);
         break;
