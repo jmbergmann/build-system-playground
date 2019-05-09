@@ -30,7 +30,6 @@ std::chrono::nanoseconds ExtractDuration(const nlohmann::json& json,
   if (seconds == -1) {
     return (std::chrono::nanoseconds::max)();
   } else if (seconds < 0) {
-    return (std::chrono::nanoseconds::max)();
     throw api::DescriptiveError(YOGI_ERR_CONFIG_NOT_VALID)
         << "Invalid duration value in \"" << key
         << "\". Valid values are >= 0 or -1 for infinity.";

@@ -60,6 +60,8 @@ class BroadcastReceiver {
       if (clock::now() > start + 1s) {
         throw std::runtime_error("No broadcast received within one second.");
       }
+
+      std::this_thread::yield();
     }
   }
 
@@ -107,7 +109,7 @@ class BroadcastManagerTest : public TestFixture {
   BroadcastReceiver rcv_c_;
 
   const char json_data_[8] = "[1,2,3]";
-  const char msgpack_data_[4] = {static_cast<char>(0x93), 0x1, 0x2, 0x3};
+  const char msgpack_data_[4] = {-109, 1, 2, 3};
 };
 
 TEST_F(BroadcastManagerTest, SendJson) {
@@ -218,7 +220,7 @@ TEST_F(BroadcastManagerTest, AsyncSendRetry) {
     int oid = YOGI_BranchSendBroadcastAsync(
         branch_c_, YOGI_ENC_JSON, data.data(), static_cast<int>(data.size()),
         YOGI_TRUE,
-        [](int res, int oid, void* userarg) {
+        [](int res, int, void* userarg) {
           static_cast<decltype(errs)*>(userarg)->push_back(res);
         },
         &errs);
@@ -239,13 +241,11 @@ TEST_F(BroadcastManagerTest, AsyncSendNoRetry) {
 
   int err = YOGI_OK;
   do {
-    int oid =
-        YOGI_BranchSendBroadcastAsync(branch_c_, YOGI_ENC_JSON, data.data(),
-                                      static_cast<int>(data.size()), YOGI_FALSE,
-                                      [](int res, int oid, void* userarg) {
-                                        *static_cast<int*>(userarg) = res;
-                                      },
-                                      &err);
+    int oid = YOGI_BranchSendBroadcastAsync(
+        branch_c_, YOGI_ENC_JSON, data.data(), static_cast<int>(data.size()),
+        YOGI_FALSE,
+        [](int res, int, void* userarg) { *static_cast<int*>(userarg) = res; },
+        &err);
     EXPECT_GT(oid, 0);
 
     PollContextOne(context_);
@@ -282,9 +282,9 @@ TEST_F(BroadcastManagerTest, CancelSend) {
 }
 
 TEST_F(BroadcastManagerTest, ReceiveSourceUuid) {
-  int oid = YOGI_BranchSendBroadcastAsync(
-      branch_a_, YOGI_ENC_JSON, json_data_, sizeof(json_data_), YOGI_TRUE,
-      [](int res, int oid, void* userarg) {}, nullptr);
+  int oid = YOGI_BranchSendBroadcastAsync(branch_a_, YOGI_ENC_JSON, json_data_,
+                                          sizeof(json_data_), YOGI_TRUE,
+                                          [](int, int, void*) {}, nullptr);
   ASSERT_GT(oid, 0);
 
   while (!rcv_b_.BroadcastReceived()) PollContext(context_);
@@ -293,9 +293,9 @@ TEST_F(BroadcastManagerTest, ReceiveSourceUuid) {
 }
 
 TEST_F(BroadcastManagerTest, ReceiveJson) {
-  int oid = YOGI_BranchSendBroadcastAsync(
-      branch_a_, YOGI_ENC_JSON, json_data_, sizeof(json_data_), YOGI_TRUE,
-      [](int res, int oid, void* userarg) {}, nullptr);
+  int oid = YOGI_BranchSendBroadcastAsync(branch_a_, YOGI_ENC_JSON, json_data_,
+                                          sizeof(json_data_), YOGI_TRUE,
+                                          [](int, int, void*) {}, nullptr);
   ASSERT_GT(oid, 0);
 
   while (!rcv_b_.BroadcastReceived()) PollContext(context_);
@@ -308,7 +308,7 @@ TEST_F(BroadcastManagerTest, ReceiveJsonBufferTooSmall) {
   auto data = MakeBigJsonData();
   int oid = YOGI_BranchSendBroadcastAsync(
       branch_a_, YOGI_ENC_JSON, data.data(), static_cast<int>(data.size()),
-      YOGI_TRUE, [](int res, int oid, void* userarg) {}, nullptr);
+      YOGI_TRUE, [](int, int, void*) {}, nullptr);
   ASSERT_GT(oid, 0);
 
   while (!rcv_b_.BroadcastReceived()) PollContext(context_);
@@ -320,9 +320,9 @@ TEST_F(BroadcastManagerTest, ReceiveJsonBufferTooSmall) {
 }
 
 TEST_F(BroadcastManagerTest, ReceiveMessagePack) {
-  int oid = YOGI_BranchSendBroadcastAsync(
-      branch_b_, YOGI_ENC_JSON, json_data_, sizeof(json_data_), YOGI_TRUE,
-      [](int res, int oid, void* userarg) {}, nullptr);
+  int oid = YOGI_BranchSendBroadcastAsync(branch_b_, YOGI_ENC_JSON, json_data_,
+                                          sizeof(json_data_), YOGI_TRUE,
+                                          [](int, int, void*) {}, nullptr);
   ASSERT_GT(oid, 0);
 
   while (!rcv_a_.BroadcastReceived()) PollContext(context_);
@@ -335,7 +335,7 @@ TEST_F(BroadcastManagerTest, ReceiveMessagePackBufferTooSmall) {
   auto data = MakeBigJsonData();
   int oid = YOGI_BranchSendBroadcastAsync(
       branch_b_, YOGI_ENC_JSON, data.data(), static_cast<int>(data.size()),
-      YOGI_TRUE, [](int res, int oid, void* userarg) {}, nullptr);
+      YOGI_TRUE, [](int, int, void*) {}, nullptr);
   ASSERT_GT(oid, 0);
 
   while (!rcv_a_.BroadcastReceived()) PollContext(context_);

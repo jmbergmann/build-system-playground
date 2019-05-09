@@ -92,10 +92,12 @@ class MessageT : virtual public Message {
   virtual MessageType GetType() const override final { return kMessageType; }
 
  protected:
-  static utils::SmallByteVector MakeMsgBytes() { return {kMessageType}; }
+  static utils::SmallByteVector MakeMsgBytes() {
+    return utils::SmallByteVector{kMessageType};
+  }
 
   static utils::SmallByteVector MakeMsgBytes(const Payload& payload) {
-    utils::SmallByteVector bytes({kMessageType});
+    utils::SmallByteVector bytes{kMessageType};
     payload.SerializeTo(&bytes);
     return bytes;
   }
@@ -103,7 +105,7 @@ class MessageT : virtual public Message {
   template <typename... Fields>
   static utils::SmallByteVector MakeMsgBytes(
       const std::tuple<Fields...>& fields) {
-    utils::SmallByteVector bytes({kMessageType});
+    utils::SmallByteVector bytes{kMessageType};
     internal::MsgPackBufferStream stream(&bytes);
     msgpack::pack(stream, fields);
     return bytes;
@@ -112,7 +114,7 @@ class MessageT : virtual public Message {
   template <typename... Fields>
   static utils::SmallByteVector MakeMsgBytes(
       const std::tuple<Fields...>& fields, const Payload& payload) {
-    utils::SmallByteVector bytes({kMessageType});
+    utils::SmallByteVector bytes{kMessageType};
     internal::MsgPackBufferStream stream(&bytes);
     msgpack::pack(stream, fields);
     payload.SerializeTo(&bytes);

@@ -23,28 +23,16 @@
 //! Includes the msgpack-c MessagePack library.
 
 #ifdef MSGPACK_VERSION_MAJOR
+
 #if MSGPACK_VERSION_MAJOR != 3
 #error "Incompatible version of the msgpack-c library has been included"
 #endif
+
 #else
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wall"
-#pragma GCC diagnostic ignored "-Wextra"
-#pragma GCC diagnostic ignored "-Wsign-conversion"
-#pragma GCC diagnostic ignored "-Wold-style-cast"
 
-#ifdef __clang__
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Weverything"
-#endif
-
+#include "internal/push_diagnostics_ignore_warnings.h"
 #include "3rd_party/msgpack/msgpack.hpp"
-
-#pragma GCC diagnostic pop
-
-#ifdef __clang__
-#pragma clang diagnostic pop
-#endif
+#include "internal/pop_diagnostics.h"
 
 #endif
 

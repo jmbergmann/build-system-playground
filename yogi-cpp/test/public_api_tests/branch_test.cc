@@ -39,7 +39,7 @@ class BranchTest : public testing::Test {
   const yogi::JsonView json_view_;
   const std::vector<char> big_json_data_;
   const yogi::JsonView big_json_view_;
-  const char msgpack_data_[4] = {static_cast<char>(0x93), 0x1, 0x2, 0x3};
+  const char msgpack_data_[4] = {-109, 1, 2, 3};
   const yogi::MsgpackView msgpack_view_;
 };
 
@@ -256,9 +256,9 @@ TEST_F(BranchTest, SendBroadcastAsync) {
 
   // Send with retry = false
   do {
-    branch_a->SendBroadcastAsync(
-        big_json_view_, false,
-        [&](auto& res, auto oid) { results.push_back(res); });
+    branch_a->SendBroadcastAsync(big_json_view_, false, [&](auto& res, auto) {
+      results.push_back(res);
+    });
 
     context_->PollOne();
   } while (results.back() == yogi::Success());

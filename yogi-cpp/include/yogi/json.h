@@ -23,27 +23,16 @@
 //! Includes Niels Lohmann's JSON library.
 
 #ifdef NLOHMANN_JSON_VERSION_MAJOR
+
 #if NLOHMANN_JSON_VERSION_MAJOR != 3
 #error "Incompatible version of Niels Lohmann's JSON library has been included"
 #endif
+
 #else
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wall"
-#pragma GCC diagnostic ignored "-Wextra"
-#pragma GCC diagnostic ignored "-Wsign-conversion"
 
-#ifdef __clang__
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Weverything"
-#endif
-
+#include "internal/push_diagnostics_ignore_warnings.h"
 #include "3rd_party/nlohmann/json.hpp"
-
-#pragma GCC diagnostic pop
-
-#ifdef __clang__
-#pragma clang diagnostic pop
-#endif
+#include "internal/pop_diagnostics.h"
 
 #endif
 

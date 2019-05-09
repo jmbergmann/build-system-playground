@@ -1,8 +1,9 @@
 # Windows x86, x64 and VS solution
 
-cmake .. -DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake -DVCPKG_TARGET_TRIPLET=x86-windows-static -DCMAKE_BUILD_TYPE=Debug -G "NMake Makefiles"
-cmake .. -DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake -DVCPKG_TARGET_TRIPLET=x64-windows-static -DCMAKE_BUILD_TYPE=Debug -G "NMake Makefiles"
-cmake .. -DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake xx86-windows-static -DCMAKE_BUILD_TYPE=Debug
+cmake .. -DCMAKE_TOOLCHAIN_FILE=C:/Users/j-ber/Documents/Projects/vcpkg/scripts/buildsystems/vcpkg.cmake -DVCPKG_TARGET_TRIPLET=x86-windows-static -DCMAKE_BUILD_TYPE=Debug -G "NMake Makefiles"
+cmake .. -DCMAKE_TOOLCHAIN_FILE=C:/Users/j-ber/Documents/Projects/vcpkg/scripts/buildsystems/vcpkg.cmake -DVCPKG_TARGET_TRIPLET=x64-windows-static -DCMAKE_BUILD_TYPE=Debug -G "NMake Makefiles"
+cmake .. -DCMAKE_TOOLCHAIN_FILE=C:/Users/j-ber/Documents/Projects/vcpkg/scripts/buildsystems/vcpkg.cmake -DVCPKG_TARGET_TRIPLET=x86-windows-static -DCMAKE_BUILD_TYPE=Debug
+cmake .. -DCMAKE_TOOLCHAIN_FILE=C:/Users/j-ber/Documents/Projects/vcpkg/scripts/buildsystems/vcpkg.cmake -DVCPKG_TARGET_TRIPLET=x64-windows-static -DCMAKE_BUILD_TYPE=Debug
 
 # Linux
 

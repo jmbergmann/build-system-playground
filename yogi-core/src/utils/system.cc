@@ -24,6 +24,8 @@
 
 #include <memory>
 #include <cstdio>
+#include <locale>
+#include <codecvt>
 
 #ifdef _WIN32
 #include <process.h>
@@ -166,7 +168,8 @@ std::vector<NetworkInterfaceInfo> GetNetworkInterfaces() {
     info.identifier = std::to_string(adapter->Ipv6IfIndex);
 
     std::wstring name(adapter->FriendlyName);
-    info.name = std::string(name.begin(), name.end());
+    info.name =
+        std::wstring_convert<std::codecvt_utf8<wchar_t>>().to_bytes(name);
 
     if (adapter->PhysicalAddressLength == 6) {
       auto p = adapter->PhysicalAddress;

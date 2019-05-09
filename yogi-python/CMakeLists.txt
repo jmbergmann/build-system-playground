@@ -35,7 +35,9 @@ add_custom_command (
   WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
 )
 
-add_custom_target (yogi-python-code-style
-  ALL
-  DEPENDS ${pycodestyle_ok_file}
-)
+if (PYCODESTYLE_EXECUTABLE)
+  add_custom_target (yogi-python-code-style
+    ALL
+    DEPENDS ${pycodestyle_ok_file}
+  )
+endif()
