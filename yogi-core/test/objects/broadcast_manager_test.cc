@@ -60,8 +60,6 @@ class BroadcastReceiver {
       if (clock::now() > start + 1s) {
         throw std::runtime_error("No broadcast received within one second.");
       }
-
-      std::this_thread::yield();
     }
   }
 
