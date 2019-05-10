@@ -22,6 +22,8 @@
 
 #include <boost/asio.hpp>
 
+#include <mutex>
+
 namespace network {
 
 class TcpTransport;
@@ -95,6 +97,7 @@ class TcpTransport : public Transport {
 
   static const objects::LoggerPtr logger_;
   boost::asio::ip::tcp::socket socket_;
+  std::mutex socket_mutex_;
 };
 
 }  // namespace network

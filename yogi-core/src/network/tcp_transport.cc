@@ -110,6 +110,7 @@ TcpTransport::ConnectGuardPtr TcpTransport::ConnectAsync(
 
 void TcpTransport::WriteSomeAsync(boost::asio::const_buffer data,
                                   TransferSomeHandler handler) {
+  std::lock_guard<std::mutex> lock(socket_mutex_);
   socket_.async_write_some(data, [=](auto& ec, auto bytes_written) {
     if (!ec) {
       handler(api::kSuccess, bytes_written);
@@ -123,6 +124,7 @@ void TcpTransport::WriteSomeAsync(boost::asio::const_buffer data,
 
 void TcpTransport::ReadSomeAsync(boost::asio::mutable_buffer data,
                                  TransferSomeHandler handler) {
+  std::lock_guard<std::mutex> lock(socket_mutex_);
   socket_.async_read_some(data, [=](auto& ec, auto bytes_read) {
     if (!ec) {
       handler(api::kSuccess, bytes_read);
@@ -134,7 +136,10 @@ void TcpTransport::ReadSomeAsync(boost::asio::mutable_buffer data,
   });
 }
 
-void TcpTransport::Shutdown() { CloseSocket(&socket_); }
+void TcpTransport::Shutdown() {
+  std::lock_guard<std::mutex> lock(socket_mutex_);
+  CloseSocket(&socket_);
+}
 
 std::string TcpTransport::MakePeerDescription(
     const boost::asio::ip::tcp::socket& socket) {
@@ -160,6 +165,7 @@ TcpTransport::TcpTransport(objects::ContextPtr context,
 
 void TcpTransport::SetNoDelayOption() {
   boost::system::error_code ec;
+  std::lock_guard<std::mutex> lock(socket_mutex_);
   socket_.set_option(boost::asio::ip::tcp::no_delay(true), ec);
   if (ec) {
     YOGI_LOG_WARNING(logger_, "Could not set TCP_NODELAY option on socket: "
